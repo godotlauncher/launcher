@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ThemeMode } from '../../hooks/useTheme';
+import type { ThemeMode } from '../../hooks/theme.hook';
+import { SettingsSection } from './settings-section.component';
 
 const themeOptions: Array<{
     value: ThemeMode;
@@ -30,6 +31,11 @@ type ThemeSelectorProps = {
     disabled?: boolean;
 };
 
+/**
+ * Renders the theme preference with shared section styling.
+ * @param props - Selected theme, change callback and disabled state.
+ * @returns The labelled theme radio group.
+ */
 export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
     theme,
     onThemeChange,
@@ -38,17 +44,16 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
     const { t } = useTranslation('settings');
 
     return (
-        <fieldset className="flex flex-col gap-1">
-            <legend data-testid="themeHeader" className="font-bold">
-                {t('appearance.theme.title')}
-            </legend>
-            <p
-                data-testid="themeSubHeader"
-                className="text-sm text-base-content/65"
-            >
-                {t('appearance.theme.description')}
-            </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 px-1 py-3">
+        <SettingsSection
+            title={t('appearance.theme.title')}
+            description={t('appearance.theme.description')}
+            titleTestId="themeHeader"
+            descriptionTestId="themeSubHeader"
+        >
+            <fieldset className="flex flex-wrap gap-x-5 gap-y-2">
+                <legend className="sr-only">
+                    {t('appearance.theme.title')}
+                </legend>
                 {themeOptions.map((option) => (
                     <label
                         key={option.value}
@@ -63,14 +68,14 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
                             data-testid={option.testId}
                             type="radio"
                             name="theme-select"
-                            className="radio radio-primary radio-sm"
+                            className="radio radio-sm"
                             checked={theme === option.value}
                             disabled={disabled}
                         />
                         <span>{t(option.labelKey)}</span>
                     </label>
                 ))}
-            </div>
-        </fieldset>
+            </fieldset>
+        </SettingsSection>
     );
 };

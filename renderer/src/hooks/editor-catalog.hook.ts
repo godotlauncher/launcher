@@ -4,7 +4,7 @@ import type {
     GetEditorCatalogOptions,
 } from '@shared/contracts';
 import { useCallback } from 'react';
-import { editorCatalogBridge } from '../bridge.ts';
+import { editorCatalogBridge } from '../renderer.bridge.ts';
 
 /** Catalog operations used by renderer state owners. */
 export type EditorCatalogHook = {

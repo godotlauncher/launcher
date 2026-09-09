@@ -28,17 +28,16 @@ const baseProps = {
 };
 
 describe('RemoteProjectGitIdentity', () => {
-    it('offers an explicit continue action when identity is missing', () => {
+    it('renders the editable identity form when no preset is available', () => {
         const html = renderToStaticMarkup(
-            <RemoteProjectGitIdentity {...baseProps} page="warning" />,
+            <RemoteProjectGitIdentity {...baseProps} page="identity" />,
         );
 
-        expect(html).toContain('addProject.remote.gitIdentity.continueWithout');
-        expect(html).toContain('createProject:gitIdentity.addIdentity');
-        expect(html).not.toContain('remoteProjectGitName');
+        expect(html).toContain('remoteProjectGitName');
+        expect(html).toContain('remoteProjectGitEmail');
     });
 
-    it('shows a suggested preset and the inherited alternative', () => {
+    it('shows a suggested preset identity', () => {
         const html = renderToStaticMarkup(
             <RemoteProjectGitIdentity
                 {...baseProps}
@@ -54,8 +53,6 @@ describe('RemoteProjectGitIdentity', () => {
 
         expect(html).toContain('Preset User');
         expect(html).toContain('preset@example.com');
-        expect(html).toContain('createProject:gitIdentity.useGlobal');
-        expect(html).toContain('addProject.remote.gitIdentity.usePreset');
     });
 
     it('renders validation and future-default choices in the identity form', () => {
@@ -72,7 +69,6 @@ describe('RemoteProjectGitIdentity', () => {
         expect(html).toContain('createProject:gitIdentity.nameRequired');
         expect(html).toContain('createProject:gitIdentity.emailRequired');
         expect(html).toContain('createProject:gitIdentity.localDefault');
-        expect(html).toContain('addProject.remote.gitIdentity.saveAndContinue');
     });
 
     it('uses repository and global scope choices for an existing preset', () => {

@@ -1,13 +1,24 @@
 import { Fragment, type ReactNode, useRef } from 'react';
-import { Dialog } from './dialog.component';
+import { Dialog, type DialogProps, type DialogTone } from './dialog.component';
 
 interface AlertProps {
+    tone?: DialogTone;
     icon?: React.ReactNode;
     title: string;
-    content: ReactNode;
+    content: ConfirmContent;
     buttons?: ConfirmButton[];
     shouldClose: () => void;
 }
+
+export type ConfirmLayout = (
+    body: ReactNode,
+    footer: ReactNode,
+    options?: Pick<DialogProps, 'initialFocusRef' | 'onRequestClose'>,
+) => ReactNode;
+
+export type ConfirmContent =
+    | ReactNode
+    | ((renderLayout: ConfirmLayout, close: () => void) => ReactNode);
 
 export type ConfirmButtonClick = () => boolean | Promise<boolean | undefined>;
 
@@ -74,6 +85,7 @@ export const Confirm: React.FC<AlertProps> = ({
     buttons,
     title,
     icon,
+    tone,
     shouldClose,
 }) => {
     const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -81,8 +93,26 @@ export const Confirm: React.FC<AlertProps> = ({
         (button) => !('render' in button) && button.isCancel,
     );
 
+    if (typeof content === 'function') {
+        return content(
+            (body, footer, options) => (
+                <Dialog
+                    tone={tone}
+                    icon={icon}
+                    title={title}
+                    footer={footer}
+                    {...options}
+                >
+                    {body}
+                </Dialog>
+            ),
+            shouldClose,
+        );
+    }
+
     return (
         <Dialog
+            tone={tone}
             icon={icon}
             title={title}
             initialFocusRef={cancelButton ? cancelButtonRef : undefined}
@@ -115,7 +145,7 @@ export const Confirm: React.FC<AlertProps> = ({
                                     );
                                 }
                             }}
-                            className={`btn ${button.typeClass}`}
+                            className={`btn text-base ${button.typeClass}`}
                         >
                             {button.text}
                         </button>

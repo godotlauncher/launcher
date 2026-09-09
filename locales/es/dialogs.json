@@ -40,7 +40,7 @@
     "removeCustomEditor": {
         "menuLabel": "Eliminar editor personalizado",
         "title": "Eliminar editor personalizado",
-        "message": "¿Eliminar el editor personalizado \"{{name}}\" del launcher?",
+        "message": "¿Eliminar el editor personalizado \"{{name}}\" del Godot Launcher?",
         "detail": "Esto anulará el registro del editor personalizado. No eliminará los archivos del editor en tu dispositivo."
     }
 }

@@ -1,16 +1,16 @@
 import type { UserPreferences } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { usePreferences } from '../../hooks/usePreferences';
+import { usePreferences } from '../../hooks/preferences.hook';
 import {
     SettingsLocationSelector,
     selectSettingsLocation,
 } from './settings-location-selector.component';
 
-vi.mock('../../hooks/usePreferences', () => ({
+vi.mock('../../hooks/preferences.hook', () => ({
     usePreferences: vi.fn(),
 }));
-vi.mock('../../bridge.ts', () => ({
+vi.mock('../../renderer.bridge.ts', () => ({
     appBridge: { openDirectoryDialog: vi.fn() },
 }));
 

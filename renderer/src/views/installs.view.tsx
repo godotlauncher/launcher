@@ -1,34 +1,36 @@
-import { HardDriveDownload } from 'lucide-react';
+import { FileJson, FilePlus2, HardDriveDownload } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { appBridge, editorInstallsBridge } from '../bridge.ts';
 import {
     ActionMenu,
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
-} from '../components/ui/actionMenu.component.tsx';
+} from '../components/ui/action-menu.component.tsx';
+import { ContentDivider } from '../components/ui/content-divider.component';
 import { EmptyState } from '../components/ui/empty-state.component.tsx';
-import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
-import { useAlerts } from '../hooks/useAlerts';
-import { usePreferences } from '../hooks/usePreferences';
-import { useProjects } from '../hooks/useProjects';
-import { useRelease } from '../hooks/useRelease';
-import { CustomEditorManifestDropOverlay } from './installs/components/customEditorManifestDropOverlay.component';
-import { InstalledReleaseList } from './installs/components/installedReleaseList.component';
-import { InstallsHeader } from './installs/components/installsHeader.component';
-import { useCustomEditorManifestDrop } from './installs/hooks/useCustomEditorManifestDrop';
-import { useCustomEditorManifestWorkflow } from './installs/hooks/useCustomEditorManifestWorkflow';
+import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
+import { useAlerts } from '../hooks/alerts.hook';
+import { usePreferences } from '../hooks/preferences.hook';
+import { useProjects } from '../hooks/projects.hook';
+import { useRelease } from '../hooks/release.hook';
+import { appBridge, editorInstallsBridge } from '../renderer.bridge.ts';
+import { CustomEditorManifestDropOverlay } from './installs/components/custom-editor-manifest-drop-overlay.component';
+import { InstalledReleaseList } from './installs/components/installed-release-list.component';
+import { InstallsHeader } from './installs/components/installs-header.component';
+import { InstallsSearchEmptyState } from './installs/components/installs-search-empty-state.component';
+import { useCustomEditorManifestDrop } from './installs/hooks/custom-editor-manifest-drop.hook';
+import { useCustomEditorManifestWorkflow } from './installs/hooks/custom-editor-manifest-workflow.hook';
 import {
     createReleaseActions,
     useReleaseActions,
-} from './installs/hooks/useReleaseActions';
+} from './installs/hooks/release-actions.hook';
 import {
     getEditorProjectUsageCount,
     getFilteredInstalledReleaseRows,
     getInstallsViewState,
-} from './installs/installsView.model';
-import { CustomEditorManifestDrawer } from './subViews/customEditorManifestDrawer.subview';
-import { InstallEditorDrawer } from './subViews/install-editor-drawer.subview.tsx';
+} from './installs/installs-view.model';
+import { CustomEditorManifestDrawer } from './sub-views/custom-editor-manifest-drawer.subview';
+import { InstallEditorDrawer } from './sub-views/install-editor-drawer.subview.tsx';
 
 export { createReleaseActions };
 
@@ -43,7 +45,7 @@ type CustomEditorMenuState = {
 };
 
 /**
- * Renders installed editors and the editor catalog drawer.
+ * Renders installed editors, searchable-list feedback and the catalogue drawer.
  *
  * @param props - Optional controlled drawer state and its change action.
  * @returns The editor installs view.
@@ -52,7 +54,13 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     installOpen: controlledInstallOpen,
     onInstallOpenChange,
 }) => {
-    const { t } = useTranslation(['installs', 'common', 'menus', 'dialogs']);
+    const { t } = useTranslation([
+        'installs',
+        'common',
+        'menus',
+        'dialogs',
+        'installEditor',
+    ]);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localInstallOpen, setLocalInstallOpen] = useState<boolean>(false);
     const installOpen = controlledInstallOpen ?? localInstallOpen;
@@ -78,7 +86,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     const [customEditorMenu, setCustomEditorMenu] =
         useState<CustomEditorMenuState | null>(null);
 
-    const { addAlert, addConfirm } = useAlerts();
+    const { addAlert, addCustomConfirm } = useAlerts();
     const { preferences } = usePreferences();
     const { projects } = useProjects();
     const {
@@ -100,7 +108,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
     } = useReleaseActions({
         t,
         addAlert,
-        addConfirm,
+        addCustomConfirm,
         checkAllReleasesValid,
         reinstallRelease,
         removeRelease,
@@ -113,7 +121,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
             selectingCustomEditorManifest,
             setSelectingCustomEditorManifest,
             addAlert,
-            addConfirm,
+            addCustomConfirm,
             registerCustomEngine,
         });
     const {
@@ -139,20 +147,20 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
 
     return (
         <>
-            {selectingCustomEditorManifest && (
-                <WaitingForDialogOverlay
-                    className="z-20"
-                    message={t('customEditor.waitingForDialog')}
-                />
-            )}
             <section
-                className="flex flex-col h-full w-full overflow-auto p-1"
+                className="relative flex flex-col gap-2 h-full w-full overflow-hidden p-1"
                 aria-label={t('title')}
                 onDragEnter={handleDragEnter}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
+                {selectingCustomEditorManifest && (
+                    <WaitingForDialogOverlay
+                        className="z-20"
+                        message={t('customEditor.waitingForDialog')}
+                    />
+                )}
                 {isDraggingManifest && (
                     <CustomEditorManifestDropOverlay
                         supported={isDraggingSupportedManifest}
@@ -200,31 +208,63 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     />
                 ) : (
                     <>
-                        <div className="divider m-0"></div>
-                        <InstalledReleaseList
-                            rows={filteredRows}
-                            t={t}
-                            isReleaseActionBusy={isReleaseActionBusy}
-                            onRetry={(release) => void handleRetry(release)}
-                            onReinstall={(release) =>
-                                void handleReinstall(release)
-                            }
-                            onRemove={handleRemoveReleaseFromMenu}
-                            onOpenInstalledFolder={(release) =>
-                                runReleaseAction(() =>
-                                    appBridge.openShellFolder(
-                                        release.install_path,
-                                    ),
-                                )
-                            }
-                            onStartProjectManager={(release) =>
-                                runReleaseAction(() =>
-                                    editorInstallsBridge.openProjectManager(
-                                        release,
-                                    ),
-                                )
-                            }
-                        />
+                        <ContentDivider />
+                        {hasError && (
+                            <div
+                                role="alert"
+                                className="alert alert-warning alert-soft shrink-0 text-base text-warning-content dark:text-warning"
+                            >
+                                {t('installEditor:errors.catalogLoadFailed')}
+                            </div>
+                        )}
+                        {filteredRows.length === 0 ? (
+                            <div
+                                role="status"
+                                className="flex min-h-0 flex-1 items-center justify-center gap-2 text-base text-base-content/75"
+                            >
+                                {loading ? (
+                                    <>
+                                        <span
+                                            className="loading loading-spinner loading-sm"
+                                            aria-hidden="true"
+                                        />
+                                        {t('installEditor:catalog.loading')}
+                                    </>
+                                ) : !hasError && textSearch.trim() ? (
+                                    <InstallsSearchEmptyState
+                                        query={textSearch}
+                                        onClearSearch={() => setTextSearch('')}
+                                    />
+                                ) : !hasError ? (
+                                    t('installEditor:catalog.empty')
+                                ) : null}
+                            </div>
+                        ) : (
+                            <InstalledReleaseList
+                                rows={filteredRows}
+                                t={t}
+                                isReleaseActionBusy={isReleaseActionBusy}
+                                onRetry={(release) => void handleRetry(release)}
+                                onReinstall={(release) =>
+                                    void handleReinstall(release)
+                                }
+                                onRemove={handleRemoveReleaseFromMenu}
+                                onOpenInstalledFolder={(release) =>
+                                    runReleaseAction(() =>
+                                        appBridge.openShellFolder(
+                                            release.install_path,
+                                        ),
+                                    )
+                                }
+                                onStartProjectManager={(release) =>
+                                    runReleaseAction(() =>
+                                        editorInstallsBridge.openProjectManager(
+                                            release,
+                                        ),
+                                    )
+                                }
+                            />
+                        )}
                     </>
                 )}
             </section>
@@ -235,6 +275,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 items={[
                     {
                         key: 'select-manifest',
+                        icon: <FileJson size={16} aria-hidden="true" />,
                         label: t('buttons.selectCustomEditorManifest'),
                         testId:
                             customEditorMenu?.source === 'header'
@@ -244,6 +285,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     },
                     {
                         key: 'create-manifest',
+                        icon: <FilePlus2 size={16} aria-hidden="true" />,
                         label: t('buttons.createCustomEditorManifest'),
                         testId:
                             customEditorMenu?.source === 'header'

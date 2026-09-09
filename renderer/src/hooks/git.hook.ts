@@ -6,7 +6,7 @@ import type {
     SaveProjectGitIdentityPresetResult,
 } from '@shared/contracts';
 import { useCallback } from 'react';
-import { gitBridge } from '../bridge.ts';
+import { gitBridge } from '../renderer.bridge.ts';
 
 export type GitHook = {
     getGlobalIdentity: () => Promise<GitIdentity>;

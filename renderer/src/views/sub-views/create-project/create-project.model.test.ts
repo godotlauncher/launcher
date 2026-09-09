@@ -1,0 +1,653 @@
+import type {
+    CodeEditorIntegrationSettings,
+    InstalledRelease,
+    ProjectDetails,
+    ReleaseSummary,
+} from '@shared/contracts';
+import { describe, expect, it, vi } from 'vitest';
+import {
+    addCreateProjectGitLfsOptions,
+    buildCreateProjectReleaseRows,
+    getCreateProjectCatalogueReleaseKey,
+    getCreateProjectCatalogueVariants,
+    getCreateProjectDirectorySegment,
+    getCreateProjectReleaseKey,
+    getDefaultRendererForReleaseVersion,
+    getProjectPathSuffixDisplay,
+    getPublicationTargetValue,
+    getSuggestedGitHubRepositoryName,
+    isCreateProjectNameAvailable,
+    isGitHubRepositoryNameValid,
+    isGitIdentityComplete,
+    isToolIntegrationAvailable,
+    joinBasePathWithProjectSegment,
+    normalizeBasePathForJoin,
+    prepareCreateProjectRelease,
+    resolveCreateProjectCodeEditorId,
+    resolveCreateProjectGitIdentityDecision,
+    resolveCreateProjectGitIdentitySave,
+    resolveCreateProjectReleaseIndex,
+    shouldShowCreateProjectPublishedAlert,
+    toCreateProjectPublicationOptions,
+} from './create-project.model';
+
+const installedRelease = (
+    version: string,
+    overrides: Partial<InstalledRelease> = {},
+): InstalledRelease => ({
+    version,
+    version_number: parseInt(version, 10),
+    install_path: `/Godot/${version}`,
+    editor_path: `/Godot/${version}/Godot`,
+    platform: 'linux',
+    arch: 'x64',
+    mono: false,
+    prerelease: false,
+    config_version: 5,
+    published_at: null,
+    valid: true,
+    ...overrides,
+});
+
+const catalogueRelease = (
+    version: string,
+    overrides: Partial<ReleaseSummary> = {},
+): ReleaseSummary => ({
+    version,
+    version_number: Number.parseFloat(version),
+    name: `Godot ${version}`,
+    published_at: '2026-01-01T00:00:00.000Z',
+    draft: false,
+    prerelease: false,
+    tag: version,
+    assets: [
+        {
+            name: `${version}-standard.zip`,
+            download_url: 'https://example.com/standard.zip',
+            platform_tags: ['linux', 'x64'],
+            mono: false,
+        },
+        {
+            name: `${version}-dotnet.zip`,
+            download_url: 'https://example.com/dotnet.zip',
+            platform_tags: ['linux', 'x64'],
+            mono: true,
+        },
+    ],
+    ...overrides,
+});
+
+const codeEditorSettings = (
+    overrides: Partial<CodeEditorIntegrationSettings> = {},
+): CodeEditorIntegrationSettings => ({
+    integration: {
+        id: 'vscode',
+        displayName: 'Visual Studio Code',
+        capabilities: { dotnet: true },
+    },
+    isDefault: true,
+    enabled: true,
+    customPath: null,
+    defaultExecFlags: '{project} --goto {file}:{line}:{col}',
+    execFlagsOverride: null,
+    resolvedExecFlags: '{project} --goto {file}:{line}:{col}',
+    installation: {
+        integrationId: 'vscode',
+        path: '/usr/bin/code',
+        version: null,
+    },
+    resolvedGodotExecPath: '/usr/bin/code',
+    ...overrides,
+});
+
+describe('create project model helpers', () => {
+    it('checks trimmed, case-insensitive project names against the Launcher project library', () => {
+        const projects = [
+            { name: 'Existing Project' },
+            { name: 'Other Project' },
+        ] as ProjectDetails[];
+
+        expect(
+            isCreateProjectNameAvailable(projects, ' Existing Project '),
+        ).toBe(false);
+        expect(isCreateProjectNameAvailable(projects, 'existing project')).toBe(
+            false,
+        );
+        expect(isCreateProjectNameAvailable(projects, 'New Project')).toBe(
+            true,
+        );
+        expect(isCreateProjectNameAvailable(projects, '   ')).toBe(false);
+    });
+
+    it('suggests and validates conservative GitHub repository names', () => {
+        expect(getSuggestedGitHubRepositoryName('  My Café Game!  ')).toBe(
+            'My-Caf-Game',
+        );
+        expect(isGitHubRepositoryNameValid('My-Game_1.0')).toBe(true);
+        expect(isGitHubRepositoryNameValid('My Game')).toBe(false);
+        expect(isGitHubRepositoryNameValid('')).toBe(false);
+    });
+
+    it('preserves the exact opaque publishing route', () => {
+        const target = {
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'target-id',
+            ownerLogin: 'godotlauncher',
+            ownerType: 'organization' as const,
+            accountLogin: 'octocat',
+        };
+
+        expect(getPublicationTargetValue(target)).toBe(
+            '["connection-id","target-id"]',
+        );
+        expect(toCreateProjectPublicationOptions(target, 'my-game')).toEqual({
+            providerId: 'github',
+            connectionId: 'connection-id',
+            accessTargetId: 'target-id',
+            repositoryName: 'my-game',
+        });
+    });
+
+    it('skips the published alert when the new project opens immediately', () => {
+        expect(shouldShowCreateProjectPublishedAlert(true)).toBe(false);
+        expect(shouldShowCreateProjectPublishedAlert(false)).toBe(true);
+    });
+
+    it.each([
+        ['Example Project', 'Example-Project'],
+        ['Example: Project', 'Example--Project'],
+        ['NUL.txt', '_NUL.txt'],
+        ['trailing. ', 'trailing'],
+        ['../escape', '..-escape'],
+        ['', 'project'],
+    ])('previews %j with directory segment %j', (input, expected) => {
+        expect(getCreateProjectDirectorySegment(input)).toBe(expected);
+    });
+
+    it('normalizes project base paths before joining the project segment', () => {
+        expect(normalizeBasePathForJoin('C:\\Projects\\', '\\')).toBe(
+            'C:\\Projects',
+        );
+        expect(normalizeBasePathForJoin('C:\\', '\\')).toBe('C:\\');
+        expect(joinBasePathWithProjectSegment('C:\\', 'Game', '\\')).toBe(
+            'C:\\Game',
+        );
+        expect(joinBasePathWithProjectSegment('/home/me/', 'Game', '/')).toBe(
+            '/home/me/Game',
+        );
+        expect(joinBasePathWithProjectSegment('/', 'Game', '/')).toBe('/Game');
+    });
+
+    it('shows only the project suffix when the base already ends with a separator', () => {
+        expect(getProjectPathSuffixDisplay('/home/me', 'Game', '/')).toBe(
+            '/Game',
+        );
+        expect(getProjectPathSuffixDisplay('/home/me/', 'Game', '/')).toBe(
+            'Game',
+        );
+        expect(getProjectPathSuffixDisplay('C:\\', 'Game', '\\')).toBe('Game');
+    });
+
+    it('builds create-project release rows from installed and downloading releases', () => {
+        const rows = buildCreateProjectReleaseRows(
+            [installedRelease('4.2')],
+            [
+                {
+                    version: '4.3',
+                    mono: true,
+                    prerelease: true,
+                    published_at: '2026-01-01T00:00:00.000Z',
+                    stage: 'downloading',
+                },
+            ],
+        );
+
+        expect(rows).toHaveLength(2);
+        expect(rows.map((row) => row.version)).toEqual(['4.3', '4.2']);
+        expect(rows.some((row) => row.version === '4.2')).toBe(true);
+        expect(rows.find((row) => row.version === '4.3')).toMatchObject({
+            editor_path: '',
+            mono: true,
+            prerelease: true,
+            valid: true,
+            installStage: 'downloading',
+        });
+    });
+
+    it('keeps invalid editors visible when no matching install is active', () => {
+        const invalid = installedRelease('4.8-dev3', { valid: false });
+
+        expect(buildCreateProjectReleaseRows([invalid], [])).toEqual([invalid]);
+    });
+
+    it('replaces an invalid editor with one matching queued install', () => {
+        const rows = buildCreateProjectReleaseRows(
+            [
+                installedRelease('4.7', { valid: true }),
+                installedRelease('4.8-dev3', { valid: false }),
+            ],
+            [
+                {
+                    version: '4.8-dev3',
+                    mono: false,
+                    prerelease: true,
+                    published_at: '2026-08-07T00:00:00.000Z',
+                    stage: 'queued',
+                    queuePosition: 2,
+                },
+            ],
+        );
+
+        expect(rows).toHaveLength(2);
+        expect(rows.filter((row) => row.version === '4.8-dev3')).toEqual([
+            expect.objectContaining({
+                editor_path: '',
+                installStage: 'queued',
+                queuePosition: 2,
+            }),
+        ]);
+    });
+
+    it('keeps a valid installed editor selectable while its replacement installs', () => {
+        const installed = installedRelease('4.8-dev3', { valid: true });
+
+        const rows = buildCreateProjectReleaseRows(
+            [installed],
+            [
+                {
+                    version: '4.8-dev3',
+                    mono: false,
+                    prerelease: true,
+                    published_at: '2026-08-07T00:00:00.000Z',
+                    stage: 'extracting',
+                },
+            ],
+        );
+
+        expect(rows).toEqual([installed]);
+    });
+
+    it('selects the first usable editor instead of a leading invalid row', () => {
+        const rows = [
+            installedRelease('4.8-dev3', { valid: false }),
+            installedRelease('4.7.1-stable', { valid: true }),
+        ];
+
+        expect(
+            resolveCreateProjectReleaseIndex(
+                rows,
+                getCreateProjectReleaseKey(rows[0]),
+            ),
+        ).toBe(1);
+        expect(
+            resolveCreateProjectReleaseIndex(
+                [rows[0]],
+                getCreateProjectReleaseKey(rows[0]),
+            ),
+        ).toBe(-1);
+    });
+
+    it('preserves the selected editor when a newly installed editor changes its index', () => {
+        const selected = installedRelease('4.7.1-stable');
+        const selectedKey = getCreateProjectReleaseKey(selected);
+        const updatedRows = [
+            installedRelease('4.8-stable'),
+            selected,
+            installedRelease('4.6.2-stable'),
+        ];
+
+        expect(resolveCreateProjectReleaseIndex(updatedRows, selectedKey)).toBe(
+            1,
+        );
+    });
+
+    it('returns all filtered exact release variants newest-first', () => {
+        const releases = Array.from({ length: 7 }, (_, index) =>
+            catalogueRelease(`4.${index + 1}-stable`),
+        );
+
+        const variants = getCreateProjectCatalogueVariants(releases, 'Godot 4');
+
+        expect(variants).toHaveLength(14);
+        expect(variants[0]).toMatchObject({
+            key: 'catalogue:4.7-stable:std',
+            mono: false,
+        });
+        expect(variants[1]).toMatchObject({
+            key: 'catalogue:4.7-stable:mono',
+            mono: true,
+        });
+        expect(variants[variants.length - 1]).toMatchObject({
+            key: 'catalogue:4.1-stable:mono',
+            mono: true,
+        });
+    });
+
+    it('deduplicates exact variants returned by multiple catalogue providers', () => {
+        const stable = catalogueRelease('4.7.1-stable');
+
+        expect(
+            getCreateProjectCatalogueVariants([stable, { ...stable }], ''),
+        ).toEqual([
+            expect.objectContaining({
+                key: 'catalogue:4.7.1-stable:std',
+                mono: false,
+            }),
+            expect.objectContaining({
+                key: 'catalogue:4.7.1-stable:mono',
+                mono: true,
+            }),
+        ]);
+    });
+
+    it('keeps only catalogue variants backed by an exact flavour asset', () => {
+        const release = catalogueRelease('4.8-stable', {
+            assets: [
+                {
+                    name: 'standard.zip',
+                    download_url: 'https://example.com/standard.zip',
+                    platform_tags: ['linux', 'x64'],
+                    mono: false,
+                },
+            ],
+        });
+
+        expect(getCreateProjectCatalogueVariants([release], '')).toEqual([
+            {
+                key: getCreateProjectCatalogueReleaseKey(release, false),
+                release,
+                mono: false,
+            },
+        ]);
+    });
+
+    it('uses installed selections without starting an install', async () => {
+        const release = installedRelease('4.7-stable');
+        const install = vi.fn();
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'installed',
+                key: getCreateProjectReleaseKey(release),
+                release,
+            },
+            install,
+        );
+
+        expect(result).toMatchObject({ success: true, release });
+        expect(install).not.toHaveBeenCalled();
+    });
+
+    it('installs the exact catalogue variant before project creation can continue', async () => {
+        const release = catalogueRelease('4.8-beta1', { prerelease: true });
+        const installed = installedRelease('4.8-beta1', {
+            mono: true,
+            prerelease: true,
+        });
+        const install = vi.fn(async () => ({
+            success: true,
+            version: release.version,
+            release: installed,
+        }));
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'catalogue',
+                key: getCreateProjectCatalogueReleaseKey(release, true),
+                release,
+                mono: true,
+            },
+            install,
+        );
+
+        expect(install).toHaveBeenCalledWith(release, true, 'project');
+        expect(result.release).toBe(installed);
+    });
+
+    it('reuses a catalogue variant that is already installed', async () => {
+        const release = catalogueRelease('4.8-stable');
+        const installed = installedRelease('4.8-stable');
+        const install = vi.fn();
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'catalogue',
+                key: getCreateProjectCatalogueReleaseKey(release, false),
+                release,
+                mono: false,
+                installedRelease: installed,
+            },
+            install,
+        );
+
+        expect(result.release).toBe(installed);
+        expect(install).not.toHaveBeenCalled();
+    });
+
+    it('passes install cancellation through without an installed release', async () => {
+        const release = catalogueRelease('4.8-stable');
+
+        const result = await prepareCreateProjectRelease(
+            {
+                source: 'catalogue',
+                key: getCreateProjectCatalogueReleaseKey(release, false),
+                release,
+                mono: false,
+            },
+            vi.fn(async () => ({
+                success: false,
+                version: release.version,
+                cancelled: true as const,
+            })),
+        );
+
+        expect(result).toMatchObject({ success: false, cancelled: true });
+        expect(result.release).toBeUndefined();
+    });
+
+    it('derives renderer defaults and tool integration availability', () => {
+        expect(getDefaultRendererForReleaseVersion('4.3-stable')).toBe(
+            'FORWARD_PLUS',
+        );
+        expect(getDefaultRendererForReleaseVersion('3.6-stable')).toBe(
+            undefined,
+        );
+        expect(
+            isToolIntegrationAvailable(
+                [
+                    {
+                        id: 'git',
+                        displayName: 'Git',
+                        status: 'available',
+                        version: null,
+                        executablePath: '/usr/bin/git',
+                    },
+                ],
+                'git',
+            ),
+        ).toBe(true);
+        expect(
+            isToolIntegrationAvailable(
+                [
+                    {
+                        id: 'git',
+                        displayName: 'Git',
+                        status: 'unchecked',
+                        version: null,
+                        executablePath: null,
+                    },
+                ],
+                'git',
+            ),
+        ).toBe(false);
+    });
+
+    it('adds Git LFS policy without changing the initial commit choice', () => {
+        expect(
+            addCreateProjectGitLfsOptions(undefined, undefined),
+        ).toBeUndefined();
+        expect(
+            addCreateProjectGitLfsOptions(
+                undefined,
+                'godot-documentation-defaults',
+            ),
+        ).toEqual({
+            initialCommit: 'create',
+            gitLfs: { trackingPolicy: 'godot-documentation-defaults' },
+        });
+        expect(
+            addCreateProjectGitLfsOptions(
+                { initialCommit: 'skip' },
+                'godot-documentation-defaults',
+            ),
+        ).toEqual({
+            initialCommit: 'skip',
+            gitLfs: { trackingPolicy: 'godot-documentation-defaults' },
+        });
+    });
+
+    it('uses only an eligible explicit default or one unambiguous eligible integration', () => {
+        const availableDefault = codeEditorSettings();
+
+        expect(resolveCreateProjectCodeEditorId([availableDefault])).toBe(
+            'vscode',
+        );
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, enabled: false },
+            ]),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, installation: null },
+            ]),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, isDefault: false },
+            ]),
+        ).toBe('vscode');
+        expect(resolveCreateProjectCodeEditorId([])).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, isDefault: false },
+                { ...availableDefault, isDefault: false },
+            ]),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectCodeEditorId([
+                { ...availableDefault, enabled: false },
+                { ...availableDefault, isDefault: false },
+            ]),
+        ).toBeNull();
+    });
+
+    it.each([
+        [{ name: 'John Doe', email: 'john.doe@example.com' }, true],
+        [{ name: '', email: 'john.doe@example.com' }, false],
+        [{ name: 'John Doe', email: '   ' }, false],
+    ])('checks whether Git identity %j is complete', (identity, expected) => {
+        expect(isGitIdentityComplete(identity)).toBe(expected);
+    });
+
+    it('resolves every project identity preset and global identity state', () => {
+        const completeGlobal = {
+            name: 'Global User',
+            email: 'global@example.com',
+        };
+        const missingGlobal = { name: 'Global User', email: '' };
+        const preset = {
+            name: 'Project User',
+            email: 'project@example.com',
+            useForNewRepositories: false,
+        };
+
+        expect(
+            resolveCreateProjectGitIdentityDecision(completeGlobal, null),
+        ).toEqual({ action: 'use-global' });
+        expect(
+            resolveCreateProjectGitIdentityDecision(missingGlobal, null),
+        ).toEqual({
+            action: 'require-identity',
+            globalIdentity: missingGlobal,
+        });
+        expect(
+            resolveCreateProjectGitIdentityDecision(completeGlobal, preset),
+        ).toEqual({
+            action: 'suggest-preset',
+            preset,
+            globalIdentity: completeGlobal,
+        });
+        expect(
+            resolveCreateProjectGitIdentityDecision(missingGlobal, preset),
+        ).toEqual({
+            action: 'suggest-preset',
+            preset,
+            globalIdentity: missingGlobal,
+        });
+        expect(
+            resolveCreateProjectGitIdentityDecision(missingGlobal, {
+                ...preset,
+                useForNewRepositories: true,
+            }),
+        ).toEqual({
+            action: 'apply-preset',
+            preset: { ...preset, useForNewRepositories: true },
+        });
+    });
+
+    it('resolves each first identity save choice without replacing a preset', () => {
+        const identity = {
+            name: ' Project User ',
+            email: ' project@example.com ',
+        };
+        const existingPreset = {
+            name: 'Existing User',
+            email: 'existing@example.com',
+            useForNewRepositories: true,
+        };
+
+        expect(
+            resolveCreateProjectGitIdentitySave(identity, 'ask', null),
+        ).toEqual({
+            scope: 'repository',
+            preset: null,
+        });
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                identity,
+                'local-default',
+                null,
+            ),
+        ).toEqual({
+            scope: 'repository',
+            preset: {
+                name: 'Project User',
+                email: 'project@example.com',
+                useForNewRepositories: true,
+            },
+        });
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                identity,
+                'global-default',
+                null,
+            ),
+        ).toEqual({ scope: 'global', preset: null });
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                identity,
+                'local-default',
+                existingPreset,
+            ),
+        ).toBeNull();
+        expect(
+            resolveCreateProjectGitIdentitySave(
+                { name: '', email: identity.email },
+                'ask',
+                null,
+            ),
+        ).toBeNull();
+    });
+});

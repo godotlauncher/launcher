@@ -2,7 +2,7 @@ import type React from 'react';
 import { useTranslation } from 'react-i18next';
 import githubInvertocatBlack from '../../assets/icons/github-invertocat-black.svg';
 import githubInvertocatWhite from '../../assets/icons/github-invertocat-white.svg';
-import { useTheme } from '../../hooks/useTheme';
+import { useTheme } from '../../hooks/theme.hook';
 import { Dialog } from '../dialog.component';
 import {
     GitHubConnectionFlow,
@@ -11,6 +11,7 @@ import {
 
 export type GitHubConnectionDialogProps = GitHubConnectionFlowProps & {
     returnFocusRef?: React.RefObject<HTMLElement | null>;
+    fallbackReturnFocusRef?: React.RefObject<HTMLElement | null>;
 };
 
 /**
@@ -24,6 +25,7 @@ export const GitHubConnectionDialog: React.FC<GitHubConnectionDialogProps> = ({
     onCancel,
     connectionId,
     returnFocusRef,
+    fallbackReturnFocusRef,
 }) => {
     const { t } = useTranslation(['settings', 'common']);
     const { theme, systemTheme } = useTheme();
@@ -34,22 +36,27 @@ export const GitHubConnectionDialog: React.FC<GitHubConnectionDialogProps> = ({
             onConnected={onConnected}
             onCancel={onCancel}
             connectionId={connectionId}
-            renderLayout={(content, footer) => (
+            plainError
+            renderLayout={(content, footer, state) => (
                 <Dialog
+                    tone={state === 'error' ? 'error' : 'neutral'}
                     icon={
-                        <img
-                            src={
-                                effectiveTheme === 'dark'
-                                    ? githubInvertocatWhite
-                                    : githubInvertocatBlack
-                            }
-                            className="size-6"
-                            alt=""
-                            aria-hidden="true"
-                        />
+                        state === 'error' ? undefined : (
+                            <img
+                                src={
+                                    effectiveTheme === 'dark'
+                                        ? githubInvertocatWhite
+                                        : githubInvertocatBlack
+                                }
+                                className="size-6"
+                                alt=""
+                                aria-hidden="true"
+                            />
+                        )
                     }
                     title={t('connections.flow.title')}
                     returnFocusRef={returnFocusRef}
+                    fallbackReturnFocusRef={fallbackReturnFocusRef}
                     onRequestClose={onCancel}
                     panelClassName="max-w-2xl"
                     bodyClassName="flex flex-col overflow-hidden"

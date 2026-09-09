@@ -21,21 +21,21 @@ vi.mock('react-router', async (importOriginal) => ({
     useNavigate: () => navigate,
 }));
 
-vi.mock('../hooks/useAlerts', () => ({
+vi.mock('../hooks/alerts.hook', () => ({
     useAlerts: () => ({
         addAlert: vi.fn(),
         addCustomConfirm: vi.fn(),
     }),
 }));
 
-vi.mock('../hooks/useAppNavigation', () => ({
+vi.mock('../hooks/app-navigation.hook', () => ({
     useAppNavigation: () => ({
         setCurrentView: vi.fn(),
         openExternalLink: vi.fn(),
     }),
 }));
 
-vi.mock('../hooks/usePreferences', () => ({
+vi.mock('../hooks/preferences.hook', () => ({
     usePreferences: () => ({
         preferences: {
             projects_location: '/Users/test/GodotProjects',
@@ -45,7 +45,7 @@ vi.mock('../hooks/usePreferences', () => ({
     }),
 }));
 
-vi.mock('../hooks/useRelease', () => ({
+vi.mock('../hooks/release.hook', () => ({
     useRelease: () => ({
         installedReleases: releaseState.installedReleases,
         availableReleases: [],
@@ -59,7 +59,7 @@ vi.mock('../hooks/useRelease', () => ({
     }),
 }));
 
-vi.mock('../hooks/useProjects', () => ({
+vi.mock('../hooks/projects.hook', () => ({
     useProjects: () => ({
         projects: projectState.projects,
         projectGitHubUrls: new Map(),
@@ -86,7 +86,7 @@ vi.mock('../hooks/useProjects', () => ({
     }),
 }));
 
-vi.mock('./projects/hooks/useProjectActions', () => ({
+vi.mock('./projects/hooks/project-actions.hook', () => ({
     useProjectActions: () => ({
         projectActionsMenu: null,
         setProjectActionsMenu: vi.fn(),
@@ -100,7 +100,7 @@ vi.mock('./projects/hooks/useProjectActions', () => ({
     }),
 }));
 
-vi.mock('./projects/hooks/useAddProjectWorkflow', () => ({
+vi.mock('./projects/hooks/add-project-workflow.hook', () => ({
     useAddProjectWorkflow: () => ({
         handleAddProjectResult: vi.fn(),
         onAddProject: vi.fn(),
@@ -108,7 +108,7 @@ vi.mock('./projects/hooks/useAddProjectWorkflow', () => ({
     }),
 }));
 
-vi.mock('./projects/hooks/useProjectDropImport', () => ({
+vi.mock('./projects/hooks/project-drop-import.hook', () => ({
     useProjectDropImport: () => ({
         isDraggingOver: false,
         loadingProgress: undefined,
@@ -119,16 +119,16 @@ vi.mock('./projects/hooks/useProjectDropImport', () => ({
     }),
 }));
 
-vi.mock('./projects/components/projectActionsMenu.component', () => ({
+vi.mock('./projects/components/project-actions-menu.component', () => ({
     ProjectActionsMenu: () => null,
 }));
-vi.mock('./projects/components/projectFoldersMenu.component', () => ({
+vi.mock('./projects/components/project-folders-menu.component', () => ({
     ProjectFoldersMenu: () => null,
 }));
-vi.mock('./subViews/createProjectDrawer.subview', () => ({
+vi.mock('./sub-views/create-project-drawer.subview', () => ({
     CreateProjectDrawer: () => null,
 }));
-vi.mock('./subViews/projectSettingsDrawer.subview', () => ({
+vi.mock('./sub-views/project-settings-drawer.subview', () => ({
     ProjectSettingsDrawer: () => null,
 }));
 

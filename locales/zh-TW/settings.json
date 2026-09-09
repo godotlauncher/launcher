@@ -13,7 +13,7 @@
     "appearance": {
         "theme": {
             "title": "主題",
-            "description": "自訂 Godot 啟動器的外觀",
+            "description": "自訂 Godot Launcher 的外觀",
             "light": "淺色",
             "dark": "深色",
             "system": "系統（自動）"
@@ -22,11 +22,11 @@
     "behavior": {
         "trayAvailability": {
             "warning": "無法確認此工作階段是否支援系統匣。Godot Launcher 將保持顯示或結束，而不會隱藏。",
-            "closeFallback": "關閉至系統匣時，啟動器將保持顯示。"
+            "closeFallback": "關閉至系統匣時，Godot Launcher 將保持顯示。"
         },
         "projects": {
             "title": "專案",
-            "description": "選擇 Godot 啟動器在專案中的行為。",
+            "description": "選擇 Godot Launcher 在專案中的行為。",
             "confirmRemove": "移除專案時要求確認。"
         },
         "autoStart": {
@@ -70,7 +70,7 @@
     "general": {
         "language": {
             "label": "語言",
-            "description": "選擇 Godot 啟動器的語言（不會更改 Godot 的語言）",
+            "description": "選擇 Godot Launcher 的語言（不會更改 Godot 的語言）",
             "system": "系統（自動偵測）"
         }
     },
@@ -136,14 +136,14 @@
         },
         "disableConfirm": {
             "title": "要停用 {{editor}} 嗎？",
-            "usage": "已設定專案：{{count}}。.NET 專案：{{dotnetCount}}。",
+            "usage": "<Projects>已設定專案：<Count>{{count}}</Count></Projects><Dotnet>.NET 專案：<Count>{{dotnetCount}}</Count></Dotnet>",
             "existingProjects": "現有專案會保留此編輯器選擇和目前的 Godot 編輯器設定。只要該編輯器仍安裝著，這些專案就能繼續使用。",
             "newProjects": "新選擇和自動專案偵測將無法使用此編輯器。",
             "disable": "停用"
         }
     },
     "tools": {
-        "overview": "當此索引標籤獲得焦點時，啟動器會快速驗證已快取的工具路徑。如果您在此系統上更改了安裝，請執行完整的重新掃描。",
+        "overview": "當此索引標籤獲得焦點時，Godot Launcher 會快速驗證已快取的工具路徑。如果您在此系統上更改了安裝，請執行完整的重新掃描。",
         "actions": {
             "refresh": "重新掃描工具",
             "scanning": "正在重新掃描...",
@@ -232,8 +232,12 @@
         "loadError": "無法載入連線。",
         "genericDescription": "連接此服務，以便在 Godot Launcher 中使用。",
         "flow": {
+            "reauthoriseDescription": "選擇要重新授權的帳號，然後在瀏覽器中繼續以恢復其 GitHub 連線。",
+            "connectAnotherAccount": "連接其他帳號",
             "importDescription": "連接 GitHub 以瀏覽及匯入你的儲存庫。",
             "addAccount": "新增帳號或組織",
+            "missingAccount": "沒有看到所需的帳號或組織？",
+            "manageGitHubAccess": "在 GitHub 上管理存取權限",
             "title": "連接 GitHub",
             "reconnect": "重新連接 GitHub",
             "description": "連接 GitHub 以繼續。你目前的工作將會保留。",
@@ -286,7 +290,7 @@
             "chooseConnection": "選擇連線",
             "chooseConnectionDescription": "選擇一個或多個現有的 GitHub App 安裝，或將 App 安裝到新的位置。",
             "finishSetup": "在 GitHub 上完成設定",
-            "finishSetupDescription": "請在瀏覽器中完成安裝。Launcher 會繼續等待，你可以隨時返回此處。",
+            "finishSetupDescription": "請在瀏覽器中完成安裝。Godot Launcher 會繼續等待，你可以隨時返回此處。",
             "installations": "應用程式安裝",
             "noInstallations": "此連線尚無可存取的應用程式安裝。",
             "organization": "組織",
@@ -296,8 +300,8 @@
             "title": "中斷 {{connection}} 的連線？",
             "description": "這會從 Godot Launcher 移除連線，但不會解除安裝 GitHub 應用程式，也不會變更任何專案的遠端儲存庫。",
             "finalDescription": "這會從此裝置移除連線，但不會解除安裝 GitHub 應用程式，也不會變更儲存庫存取權或專案的遠端儲存庫。",
-            "revokeAllDevices": "同時撤銷所有 Launcher 裝置上的此 GitHub 授權。",
-            "revokeDetail": "連接到此 GitHub 帳戶的其他 Launcher 裝置需要重新連線。",
+            "revokeAllDevices": "同時撤銷所有 Godot Launcher 裝置上的此 GitHub 授權。",
+            "revokeDetail": "連接到此 GitHub 帳戶的其他 Godot Launcher 裝置需要重新連線。",
             "localOnlyWarning": "其他裝置上的 GitHub 存取權仍然有效，任何已複製的權杖在到期或被撤銷前仍可使用。",
             "failureDetail": "無法移除連線。本機憑證已保留。請再試一次。",
             "revokeAction": "撤銷並中斷連線",
@@ -314,8 +318,8 @@
         "downloadNow": "下載更新",
         "skipVersion": "跳過此版本",
         "unskipVersion": "恢復已跳過的更新",
-        "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
-        "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<Button>立即重新啟動</Button>",
+        "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot Launcher 以安裝。<Button>立即重新啟動</Button>",
+        "readyNoVersion": "更新已就緒，重新啟動 Godot Launcher 以安裝。<Button>立即重新啟動</Button>",
         "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>",
         "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<Button>開啟下載頁面</Button>"
     },
@@ -330,12 +334,12 @@
         "enableAction": "啟用符號連結",
         "disableAction": "停用符號連結",
         "enableDescription": {
-            "line1": "啟用後，Godot 啟動器會將每個專案連結到已安裝的編輯器，而非複製。",
+            "line1": "啟用後，Godot Launcher 會將每個專案連結到已安裝的編輯器，而非複製。",
             "line2": "這可降低磁碟用量，但在建立新符號連結時，Windows 可能會要求系統管理員同意。",
             "line3": "現有專案會保留目前的本機副本，直到其編輯器版本變更或重新安裝。"
         },
         "disableDescription": {
-            "line1": "切回本機副本以避免提升提示。Godot 啟動器會將編輯器檔案複製到各專案中。",
+            "line1": "切回本機副本以避免提升提示。Godot Launcher 會將編輯器檔案複製到各專案中。",
             "line2": "現有符號連結會維持不變，直到其編輯器版本變更或重新安裝。"
         }
     }

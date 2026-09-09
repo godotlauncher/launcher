@@ -10,7 +10,7 @@ type BusyOverlayProps = {
  * Blocks an active surface with an accessible loading state.
  *
  * @param props - Loading message and optional stacking classes.
- * @returns A darkened loader overlay.
+ * @returns A translucent loader overlay.
  */
 export const BusyOverlay: React.FC<BusyOverlayProps> = ({
     message,
@@ -18,14 +18,17 @@ export const BusyOverlay: React.FC<BusyOverlayProps> = ({
 }) => (
     <div
         className={clsx(
-            'absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-4 bg-black/80 backdrop-blur-sm',
+            'absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-3 bg-base-100/60 text-base',
             className,
         )}
         role="status"
         aria-live="polite"
         aria-busy="true"
     >
-        <span className="loading loading-circle loading-lg"></span>
-        <p className="text-xl font-semibold text-white">{message}</p>
+        <span
+            className="loading loading-spinner loading-md"
+            aria-hidden="true"
+        />
+        <p className="text-base-content/75">{message}</p>
     </div>
 );

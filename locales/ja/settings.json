@@ -22,7 +22,7 @@
     "behavior": {
         "trayAvailability": {
             "warning": "このセッションではシステムトレイのサポートを確認できませんでした。Godot Launcher は非表示にならず、表示されたままになるか終了します。",
-            "closeFallback": "システムトレイに閉じても、ランチャーは表示されたままになります。"
+            "closeFallback": "システムトレイに閉じても、Godot Launcherは表示されたままになります。"
         },
         "projects": {
             "title": "プロジェクト",
@@ -136,14 +136,14 @@
         },
         "disableConfirm": {
             "title": "{{editor}} を無効にしますか？",
-            "usage": "設定済みプロジェクト: {{count}}。.NET プロジェクト: {{dotnetCount}}。",
+            "usage": "<Projects>設定済みプロジェクト: <Count>{{count}}</Count></Projects><Dotnet>.NET プロジェクト: <Count>{{dotnetCount}}</Count></Dotnet>",
             "existingProjects": "既存のプロジェクトでは、このエディターの選択と現在の Godot エディター設定が維持されます。インストールされている間は引き続き使用できます。",
             "newProjects": "新しい選択とプロジェクトの自動検出では、このエディターを使用できなくなります。",
             "disable": "無効にする"
         }
     },
     "tools": {
-        "overview": "このタブにフォーカスが当たると、ランチャーはキャッシュされたツールのパスを素早く検証します。システムでインストールを変更した場合は、完全な再スキャンを実行してください。",
+        "overview": "このタブにフォーカスが当たると、Godot Launcherはキャッシュされたツールのパスを素早く検証します。システムでインストールを変更した場合は、完全な再スキャンを実行してください。",
         "actions": {
             "refresh": "ツールを再スキャン",
             "scanning": "再スキャン中...",
@@ -232,8 +232,12 @@
         "loadError": "接続を読み込めませんでした。",
         "genericDescription": "このサービスを接続して Godot Launcher で使用します。",
         "flow": {
+            "reauthoriseDescription": "再認証するアカウントを選択し、ブラウザーで操作を続けて GitHub 接続を復元してください。",
+            "connectAnotherAccount": "別のアカウントを接続",
             "importDescription": "GitHub に接続してリポジトリを参照・インポートします。",
             "addAccount": "アカウントまたは組織を追加",
+            "missingAccount": "必要なアカウントや組織が表示されませんか？",
+            "manageGitHubAccess": "GitHub でアクセスを管理",
             "title": "GitHub に接続",
             "reconnect": "GitHub に再接続",
             "description": "続行するには GitHub に接続してください。現在の作業は保持されます。",
@@ -286,7 +290,7 @@
             "chooseConnection": "接続を選択",
             "chooseConnectionDescription": "既存の GitHub App インストール先を 1 つ以上選択するか、新しい場所に App をインストールしてください。",
             "finishSetup": "GitHub でセットアップを完了",
-            "finishSetupDescription": "ブラウザーでインストールを完了してください。Launcher は待機を続けるため、ここに戻ってもかまいません。",
+            "finishSetupDescription": "ブラウザーでインストールを完了してください。Godot Launcher は待機を続けるため、ここに戻ってもかまいません。",
             "installations": "App のインストール",
             "noInstallations": "この接続には、アクセス可能な App のインストールがまだありません。",
             "organization": "Organization",
@@ -296,8 +300,8 @@
             "title": "{{connection}} の接続を解除しますか？",
             "description": "Godot Launcher から接続を削除します。GitHub App はアンインストールされず、プロジェクトのリモートも変更されません。",
             "finalDescription": "このデバイスから接続を削除します。GitHub App のアンインストール、リポジトリへのアクセス権、プロジェクトのリモート設定には影響しません。",
-            "revokeAllDevices": "すべての Launcher デバイスで、この GitHub 認証も取り消す。",
-            "revokeDetail": "この GitHub アカウントに接続している他の Launcher デバイスでは、再接続が必要になります。",
+            "revokeAllDevices": "すべての Godot Launcher デバイスで、この GitHub 認証も取り消す。",
+            "revokeDetail": "この GitHub アカウントに接続している他の Godot Launcher デバイスでは、再接続が必要になります。",
             "localOnlyWarning": "他のデバイスでは GitHub へのアクセスが引き続き有効で、コピーされたトークンも期限切れまたは取り消されるまで有効です。",
             "failureDetail": "接続を削除できませんでした。ローカル認証情報は保持されています。もう一度お試しください。",
             "revokeAction": "取り消して接続解除",

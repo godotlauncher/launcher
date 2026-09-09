@@ -140,7 +140,15 @@ export class ProjectDiscoveryService {
         const parsed = parseGodotProjectFile(
             await fs.readFile(projectFilePath, 'utf8'),
         );
-        const name = await getProjectNameFromParsed(parsed);
+        let savedName: string | undefined;
+        try {
+            savedName = (
+                await readProjectLauncherConfig(path.dirname(projectFilePath))
+            )?.launcher.project_name;
+        } catch {
+            /* Optional metadata falls back to the Godot name. */
+        }
+        const name = savedName ?? (await getProjectNameFromParsed(parsed));
         const configVersion = await getProjectConfigVersionFromParsed(parsed);
         if (!name || name === 'Unknown' || configVersion !== 5) {
             return null;

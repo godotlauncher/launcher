@@ -112,12 +112,12 @@
         "retry": "公開を再試行",
         "checkAndRetry": "確認して再試行",
         "useRepository": "このリポジトリを使用",
-        "recoveryRepositoryFound": "GitHub に該当する空のリポジトリがあります。Launcher で使用することを確認してください。",
+        "recoveryRepositoryFound": "GitHub に該当する空のリポジトリがあります。Godot Launcher で使用することを確認してください。",
         "retryFailed": "公開を再試行できませんでした。ローカルプロジェクトは安全です。",
         "continueLocally": "ローカルで続行",
         "openGitHub": "GitHub を開く",
         "localTitle": "プロジェクトをローカルに保持しました",
-        "localMessage": "プロジェクトはこのコンピューターと Launcher ライブラリに残ります。",
+        "localMessage": "プロジェクトはこのコンピューターと Godot Launcher ライブラリに残ります。",
         "requiresInitialCommit": "公開には、最初のコミットを持つ新しい Git リポジトリが必要です。",
         "publicationFailed": "プロジェクトはローカルに作成されましたが、GitHub への公開は完了しませんでした。",
         "attemptExpired": "この公開操作は期限切れです。ローカルプロジェクトは安全です。",
@@ -137,7 +137,7 @@
             "rate-limited": "GitHub が一時的にリクエストを制限しています。後でもう一度お試しください。",
             "network-unavailable": "公開中にネットワーク接続が失敗しました。",
             "remote-creation-uncertain": "GitHub がリポジトリを作成したか確認できませんでした。接続を復元してから確認し、再試行してください。",
-            "recovered-repository-not-empty": "GitHub にこのリポジトリがありますが、空ではありません。Launcher はこのリポジトリに公開しません。",
+            "recovered-repository-not-empty": "GitHub にこのリポジトリがありますが、空ではありません。Godot Launcher はこのリポジトリに公開しません。",
             "remote-created-origin-failed": "プライベートリポジトリは作成されましたが、ローカルプロジェクトに接続できませんでした。",
             "remote-created-push-failed": "プライベートリポジトリは作成されましたが、プロジェクトをプッシュできませんでした。",
             "remote-created-verification-failed": "プロジェクトはプッシュされた可能性がありますが、確認できませんでした。",
@@ -148,7 +148,7 @@
     "existingRepository": {
         "confirmationTitle": "このプロジェクトは別の Git リポジトリ内に作成されます",
         "warningMessage": "選択したフォルダーは {{root}} の Git リポジトリ内にあります。",
-        "gitSkipped": "Launcher は別の Git リポジトリや最初のコミットを作成しません。",
+        "gitSkipped": "Godot Launcher は別の Git リポジトリや最初のコミットを作成しません。",
         "gitLfsSkipped": "Git LFS は設定されません。",
         "githubSkipped": "プロジェクトは GitHub に公開されません。",
         "question": "続行しますか？",
@@ -238,6 +238,6 @@
         "failedGitLfsInstall": "新しいリポジトリへのGit LFSのインストールに失敗しました",
         "failedGitLfsTrack": "Git LFS追跡ルールの追加に失敗しました",
         "failedGitLfsVerify": "Git LFS設定の検証に失敗しました",
-        "failedProjectRecovery": "Git LFSの設定に失敗し、Launcherはプロジェクトフォルダーを復元できませんでした。再試行する前に'{{path}}'を確認してください"
+        "failedProjectRecovery": "Git LFSの設定に失敗し、Godot Launcherはプロジェクトフォルダーを復元できませんでした。再試行する前に'{{path}}'を確認してください"
     }
 }

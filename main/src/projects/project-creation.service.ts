@@ -614,6 +614,7 @@ export class ProjectCreationService {
             );
             await writeProjectLauncherConfig(projectPath, {
                 release,
+                projectName,
                 launcherVersion: app.getVersion(),
             });
 

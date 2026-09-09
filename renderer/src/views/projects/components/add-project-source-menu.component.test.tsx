@@ -1,6 +1,34 @@
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { AddProjectSourceMenu } from './add-project-source-menu.component';
+
+vi.mock('../../../components/ui/action-menu.component', () => ({
+    ActionMenu: ({
+        open,
+        items,
+    }: {
+        open: boolean;
+        items: Array<{
+            key: string;
+            label?: ReactNode;
+            disabled?: boolean;
+        }>;
+    }) =>
+        open ? (
+            <div>
+                {items.map((item) => (
+                    <button
+                        key={item.key}
+                        type="button"
+                        disabled={item.disabled}
+                    >
+                        {item.label}
+                    </button>
+                ))}
+            </div>
+        ) : null,
+}));
 
 const translate = (key: string) => key;
 const anchorRect = {
@@ -26,9 +54,9 @@ describe('AddProjectSourceMenu', () => {
             />,
         );
 
-        expect(html).toContain('btnAddProjectFromComputer');
-        expect(html).toContain('btnAddProjectPublicGit');
-        expect(html).toContain('btnAddProjectGitHub');
+        expect(html).toContain('addProject.sources.fromComputer');
+        expect(html).toContain('addProject.sources.publicGit');
+        expect(html).toContain('addProject.sources.github');
         expect(html).toContain('addProject.sources.gitUnavailable');
         expect(html.match(/disabled=""/g)).toHaveLength(2);
     });

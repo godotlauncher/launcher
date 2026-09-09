@@ -370,23 +370,11 @@ export class ProjectsService {
     }
 
     /**
-     * Removes one project from Launcher without deleting its directory.
+     * Removes one project from Launcher without changing its launcher metadata or deleting its directory.
      *
      * @param project - Project to remove.
      */
     async removeProject(project: ProjectDetails) {
-        try {
-            await writeProjectLauncherConfig(project.path, {
-                release: project.release,
-                launcherVersion: app.getVersion(),
-            });
-        } catch (error) {
-            logger.warn(
-                `Failed to write project launcher config for '${project.name}' before removing it`,
-                error,
-            );
-        }
-
         await removeProjectEditor(project);
         const projects = await this.store.remove(project.path);
         this.publishProjects(projects);
@@ -399,7 +387,7 @@ export class ProjectsService {
     }
 
     /**
-     * Renames a project and optionally its Godot project name.
+     * Renames a project, saves its import name, and optionally renames its Godot project.
      *
      * @param project - Project to rename.
      * @param options - New name and Godot project update choice.
@@ -487,6 +475,18 @@ export class ProjectsService {
             projects.find((candidate) => candidate.path === project.path) ??
             updatedProject;
         project.name = latestProject.name;
+        try {
+            await writeProjectLauncherConfig(latestProject.path, {
+                release: latestProject.release,
+                projectName: latestProject.name,
+                launcherVersion: app.getVersion(),
+            });
+        } catch (error) {
+            logger.warn(
+                `Failed to save renamed project metadata for '${latestProject.name}'`,
+                error,
+            );
+        }
         this.publishProjects(projects);
 
         return {
@@ -503,6 +503,14 @@ export class ProjectsService {
      */
     getProjectGodotName(project: ProjectDetails) {
         return readGodotProjectName(project.path);
+    }
+
+    /**
+     * Reads the names of explicitly selected project files without registering them.
+     * @param paths - Bounded list of selected project files.
+     */
+    inspectProjectImports(paths: string[]) {
+        return this.projectImport.inspectProjectImports(paths);
     }
 
     /**
@@ -651,6 +659,7 @@ export class ProjectsService {
             };
             await writeProjectLauncherConfig(updatedProject.path, {
                 release: updatedProject.release,
+                projectName: updatedProject.name,
                 launcherVersion: app.getVersion(),
             });
 
@@ -1051,6 +1060,7 @@ export class ProjectsService {
             try {
                 await writeProjectLauncherConfig(launchedProject.path, {
                     release: launchedProject.release,
+                    projectName: launchedProject.name,
                     launcherVersion: app.getVersion(),
                 });
             } catch (error) {

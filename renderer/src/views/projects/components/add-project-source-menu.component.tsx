@@ -4,7 +4,7 @@ import {
     ActionMenu,
     type ActionMenuAnchorRect,
     type ActionMenuItem,
-} from '../../../components/ui/actionMenu.component';
+} from '../../../components/ui/action-menu.component';
 import type { GitAvailability } from '../remote-project-import.model';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -19,7 +19,7 @@ type AddProjectSourceMenuProps = {
     onGitHub: () => void;
 };
 
-const iconClassName = 'h-4 w-4';
+const iconClassName = 'size-[16px]';
 
 /** Renders the three Add Project source choices. */
 export const AddProjectSourceMenu: React.FC<AddProjectSourceMenuProps> = ({
@@ -33,9 +33,9 @@ export const AddProjectSourceMenu: React.FC<AddProjectSourceMenuProps> = ({
 }) => {
     const gitUnavailable = gitAvailability !== 'available';
     const unavailableRemoteLabel = (label: string) => (
-        <span className="flex min-w-0 flex-col items-start">
+        <span className="flex min-w-0 flex-col items-start gap-1">
             <span>{label}</span>
-            <span className="text-xs font-normal opacity-70">
+            <span className="text-sm text-base-content/60">
                 {t('addProject.sources.gitUnavailable')}
             </span>
         </span>

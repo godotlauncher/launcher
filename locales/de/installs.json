@@ -14,6 +14,9 @@
         "createCustomEditorManifest": "Manifest für benutzerdefinierten Editor erstellen"
     },
     "search": {
+        "noResults": "Keine passenden Editoren",
+        "noResultsHint": "Kein installierter Editor entspricht „{{query}}“. Suche nach einer anderen Version oder lösche die Suche.",
+        "clear": "Suche löschen",
         "placeholder": "Suchen"
     },
     "table": {
@@ -48,10 +51,11 @@
         "manifestFilterName": "Godot-Launcher-Editor-Manifest",
         "waitingForDialog": "Warten auf Dialog...",
         "replace": {
+            "action": "Ersetzen",
             "title": "Benutzerdefinierten Editor ersetzen?",
             "message": "Ein benutzerdefinierter Editor mit dieser Version ist bereits registriert.",
             "versionLabel": "Version",
-            "detail": "Beim Ersetzen wird der Launcher-Eintrag aktualisiert, um das ausgewählte Manifest zu verwenden. Deine Editor-Dateien werden nicht gelöscht."
+            "detail": "Beim Ersetzen wird der Godot Launcher-Eintrag aktualisiert, um das ausgewählte Manifest zu verwenden. Deine Editor-Dateien werden nicht gelöscht."
         },
         "drop": {
             "title": "Manifest ablegen, um benutzerdefinierten Editor hinzuzufügen",

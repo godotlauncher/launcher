@@ -8,8 +8,10 @@ import {
     test,
 } from '@playwright/test';
 import type {
+    AddProjectEditorResolution,
     AddProjectOptions,
     InstalledRelease,
+    ProjectImportInspection,
     ReleaseInstallProgress,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -197,7 +199,7 @@ test('Installs custom editor actions share the accessible action menu contract',
             await expect(customEditorDrawer).toBeVisible();
             await expect(customEditorDrawer.locator(':focus')).toHaveCount(1);
             await customEditorDrawer
-                .getByRole('button', { name: 'Close drawer' })
+                .getByRole('button', { name: 'Close', exact: true })
                 .click();
             await expect(customEditorDrawer).not.toBeVisible();
             await expect(trigger).toBeFocused();
@@ -261,7 +263,16 @@ test('Custom editor manifest controls remain usable at supported desktop sizes',
             }),
         ).toBeVisible();
 
+        const windowsPlatform = drawer.getByRole('button', {
+            name: 'Windows',
+            exact: true,
+        });
+        await windowsPlatform.focus();
+        await windowsPlatform.press('Space');
+        await expect(windowsPlatform).toHaveAttribute('aria-expanded', 'true');
+
         const architecture = drawer.locator('#customEditorwindowsArch');
+        await expect(architecture).toBeVisible();
         await architecture.focus();
         await architecture.press('Space');
         await expect(architecture).toHaveAttribute('aria-expanded', 'true');
@@ -293,7 +304,9 @@ test('Custom editor manifest controls remain usable at supported desktop sizes',
             )
             .toBe(true);
 
-        await drawer.getByRole('button', { name: 'Close drawer' }).click();
+        await drawer
+            .getByRole('button', { name: 'Close', exact: true })
+            .click();
         await expect(drawer).not.toBeVisible();
     }
 });
@@ -425,24 +438,30 @@ test('Native import offers the newest stable patch for an inferred Godot branch'
     await mainPage.getByTestId('btnAddProjectFromComputer').click();
 
     const dialog = mainPage.getByRole('dialog', {
-        name: 'Editor version required',
+        name: 'Review project imports',
     });
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText('4.4', { exact: true })).toBeVisible();
-    await dialog.getByRole('button', { name: 'Options' }).click();
     await expect(
-        dialog.getByRole('button', {
-            name: 'Download 4.4.3-stable - Recommended',
+        dialog.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toBeVisible();
+    await dialog.locator('button[aria-haspopup="listbox"]').click();
+    await expect(
+        mainPage.getByRole('option', {
+            name: 'Download 4.4.3-stable · Standard - Recommended',
         }),
     ).toBeVisible();
     await expect(
-        dialog.getByRole('button', { name: 'Use 4.4.1-stable' }),
+        mainPage.getByRole('option', {
+            name: 'Use 4.4.1-stable · Standard',
+        }),
     ).toBeVisible();
     await expect(
-        dialog.getByRole('button', { name: 'Use Team build (4.4-custom.1)' }),
+        mainPage.getByRole('option', {
+            name: 'Use Team build (4.4-custom.1) · Standard',
+        }),
     ).toBeVisible();
-    const recommended = dialog.getByRole('button', {
-        name: 'Download 4.4.3-stable - Recommended',
+    const recommended = mainPage.getByRole('option', {
+        name: 'Download 4.4.3-stable · Standard - Recommended',
         exact: true,
     });
     const labelLayout = await recommended.evaluate((button) => {
@@ -454,6 +473,8 @@ test('Native import offers the newest stable patch for an inferred Godot branch'
         };
     });
     expect(labelLayout).toEqual({ lines: 1, fits: true });
+    await mainPage.keyboard.press('Escape');
+    await expect(mainPage.getByRole('listbox')).not.toBeVisible();
     await dialog.getByRole('button', { name: 'Cancel' }).click();
 });
 
@@ -482,9 +503,20 @@ test('Dropped project finishes adding while its selected editor downloads', asyn
         element.remove();
     });
 
-    const dialog = mainPage.getByRole('dialog', { name: 'Editor version required' });
-    await dialog.getByRole('button', { name: 'Options' }).click();
-    await dialog.getByRole('button', { name: 'Download 4.4.3-stable - Recommended', exact: true }).click();
+    const dialog = mainPage.getByRole('dialog', {
+        name: 'Review project imports',
+    });
+    await expect(
+        dialog.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toBeVisible();
+    await dialog.locator('button[aria-haspopup="listbox"]').click();
+    await mainPage
+        .getByRole('option', {
+            name: 'Download 4.4.3-stable · Standard - Recommended',
+            exact: true,
+        })
+        .click();
+    await dialog.getByRole('button', { name: 'Add projects', exact: true }).click();
 
     try {
         await expect(mainPage.getByText('Adding projects: 1/1', { exact: true })).not.toBeVisible();
@@ -537,7 +569,7 @@ test('Remote repository discovery lets users exclude projects before adding', as
     await checkboxes.nth(0).click();
     await expect(modal.getByTestId('btnAddDiscoveredProjects')).toBeDisabled();
     await checkboxes.nth(0).click();
-    await modal.getByText('Example Fixture').locator('..').click();
+    await checkboxes.nth(2).click();
     await expect(checkboxes.nth(0)).not.toBeChecked();
     await expect(checkboxes.nth(1)).toBeChecked();
     await expect(checkboxes.nth(2)).not.toBeChecked();
@@ -555,12 +587,10 @@ test('Remote clone can set repository Git identity before project review', async
     await stubMissingRemoteGitIdentity();
 
     const modal = await clonePublicRepositoryForReview();
-    await expect(modal.getByText('Set Git identity')).toBeVisible();
-    const addIdentityButton = modal.getByRole('button', {
-        name: 'Add Git identity',
-    });
-    await expect(addIdentityButton).toBeFocused();
-    await addIdentityButton.click();
+    await expect(modal.getByText('Add Git identity')).toBeVisible();
+    await expect(
+        modal.getByRole('button', { name: 'Save and continue' }),
+    ).toBeFocused();
 
     await modal.locator('#remoteProjectGitName').fill('  Example Developer  ');
     await modal.locator('#remoteProjectGitEmail').fill('  developer@example.com  ');
@@ -606,12 +636,20 @@ test('Remote clone continues when a global Git identity write fails', async () =
     await stubRemoteGitIdentitySettingsWriteFailures({ global: true });
 
     const modal = await clonePublicRepositoryForReview();
-    await modal.getByRole('button', { name: 'Add Git identity' }).click();
     await modal.locator('#remoteProjectGitName').fill('Example Developer');
     await modal.locator('#remoteProjectGitEmail').fill('developer@example.com');
     await modal
-        .getByRole('radio', { name: 'Save as default global identity' })
-        .check();
+        .getByRole('button', {
+            name: 'For future projects: Always ask me',
+            exact: true,
+        })
+        .click();
+    await mainPage
+        .getByRole('option', {
+            name: 'Save as default global identity',
+            exact: true,
+        })
+        .click();
     await modal.getByRole('button', { name: 'Save and continue' }).click();
 
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
@@ -629,12 +667,20 @@ test('Remote clone warns when its future local identity preset cannot be saved',
     await stubRemoteGitIdentitySettingsWriteFailures({ preset: true });
 
     const modal = await clonePublicRepositoryForReview();
-    await modal.getByRole('button', { name: 'Add Git identity' }).click();
     await modal.locator('#remoteProjectGitName').fill('Example Developer');
     await modal.locator('#remoteProjectGitEmail').fill('developer@example.com');
     await modal
-        .getByRole('radio', { name: 'Save as default local identity' })
-        .check();
+        .getByRole('button', {
+            name: 'For future projects: Always ask me',
+            exact: true,
+        })
+        .click();
+    await mainPage
+        .getByRole('option', {
+            name: 'Save as default local identity',
+            exact: true,
+        })
+        .click();
     await modal.getByRole('button', { name: 'Save and continue' }).click();
 
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
@@ -666,7 +712,6 @@ test('Remote clone keeps import available when Git identity cannot be saved', as
     await stubRemoteGitIdentityWriteFailure();
 
     const modal = await clonePublicRepositoryForReview();
-    await modal.getByRole('button', { name: 'Add Git identity' }).click();
     await modal.locator('#remoteProjectGitName').fill('Example Developer');
     await modal.locator('#remoteProjectGitEmail').fill('developer@example.com');
     await modal.getByRole('button', { name: 'Save and continue' }).click();
@@ -772,7 +817,9 @@ test('Remote repositories can initialise public submodules before review', async
     await expect(addProjectsButton).toBeFocused();
     await addProjectsButton.press('Enter');
     await expect(modal.getByText('Project import complete')).toBeVisible();
-    await expect(modal.getByText('GDExtension Demo')).toBeVisible();
+    await expect(
+        modal.getByText('GDExtension Demo', { exact: true }),
+    ).toBeVisible();
     const doneButton = modal.getByTestId('btnCompleteRemoteProjectImport');
     await expect(doneButton).toBeFocused();
     await doneButton.press('Enter');
@@ -1001,9 +1048,7 @@ test('GitHub import connects in the existing modal and refreshes repositories', 
     const list = modal.getByTestId('github-connection-options');
     await expect(list).toBeVisible();
     const footer = modal.locator('footer');
-    const toolbar = modal.getByRole('button', {
-        name: 'Add account or organisation',
-    });
+    const toolbar = modal.getByRole('heading', { name: 'Connect GitHub', exact: true });
     const footerBefore = await footer.boundingBox();
     const toolbarBefore = await toolbar.boundingBox();
     await list.evaluate((element) => { element.scrollTop = element.scrollHeight; });
@@ -1021,18 +1066,17 @@ test('GitHub import connects in the existing modal and refreshes repositories', 
     await modal.getByRole('button', { name: 'team/games' }).click();
     await expect(modal.getByText("Don't see your repository?", { exact: true })).toBeVisible();
     await modal.getByRole('button', { name: 'Manage accounts and access' }).click();
-    await expect(modal.getByRole('button', { name: 'Manage repository access', exact: true })).toBeVisible();
-    await expect(modal).toHaveAccessibleName('GitHub connections');
-    await expect(modal.getByRole('button', { name: 'Refresh repositories' })).toBeEnabled();
-    const reviewDirectory = path.resolve('.internal-docs/shared-github-connection');
-    await fs.mkdir(reviewDirectory, { recursive: true });
-    await mainPage.screenshot({ path: path.join(reviewDirectory, 'repository-access-light.png') });
-    await modal.getByRole('button', { name: 'Manage repository access', exact: true }).click();
-    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
-    await expect(search).toHaveValue('games');
-    await expect(modal.getByRole('button', { name: 'team/games' })).toHaveAttribute('aria-pressed', 'true');
-    await modal.getByRole('button', { name: 'Manage accounts and access' }).click();
-    await modal.getByRole('button', { name: 'Refresh repositories' }).click();
+    const accessMenu = modal.getByRole('dialog', {
+        name: 'Manage accounts and access',
+        exact: true,
+    });
+    await expect(accessMenu.getByRole('button', { name: 'docs', exact: true })).toBeVisible();
+    await accessMenu.getByRole('button', { name: 'docs', exact: true }).click();
+    const refreshesBeforeReturn = await readGitHubImportRefreshCount();
+    await mainPage.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect.poll(readGitHubImportRefreshCount).toBe(
+        refreshesBeforeReturn + 1,
+    );
     await expect(search).toHaveValue('games');
     await expect(modal.getByRole('button', { name: 'team/games' })).toHaveAttribute('aria-pressed', 'true');
     await search.fill('not-present');
@@ -1083,8 +1127,12 @@ test('GitHub repositories use the same multi-project review', async () => {
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
     await expect(modal.getByText('Root Game')).toBeVisible();
     await expect(modal.getByText('Example Fixture')).toBeVisible();
-    await expect(modal.getByText('4.4 stable')).toBeVisible();
-    await expect(modal.getByText('4.3.2-stable (.NET)')).toBeVisible();
+    await expect(
+        modal.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toBeVisible();
+    await expect(
+        modal.getByText('Exact: 4.3.2-stable · .NET', { exact: true }),
+    ).toBeVisible();
     await expect(modal.getByRole('checkbox')).toHaveCount(3);
     await expect(
         modal.getByTestId('selectRemoteProjectCodeEditor-0'),
@@ -1098,8 +1146,8 @@ test('GitHub repositories use the same multi-project review', async () => {
         '/home/docs/Godot/Projects/games/examples/fixture/project.godot',
     ]);
     await expect.poll(readRemoteAddProjectOptions).toEqual([
-        {},
-        { codeEditorId: 'vscodium' },
+        { name: 'Root Game' },
+        { codeEditorId: 'vscodium', name: 'Example Fixture' },
     ]);
     await expect(
         modal.getByTestId('btnOpenPreservedCloneFolder'),
@@ -1263,42 +1311,38 @@ test('Remote registration collects editor resolution inside the import modal', a
         .click();
     await expect(importModal.getByText('Choose projects to add')).toBeVisible();
     await importModal.getByRole('checkbox').first().click();
-    await importModal.getByText('Example Fixture').locator('..').click();
-    await importModal.getByTestId('btnAddDiscoveredProjects').click();
-
-    await expect(importModal.getByText('Editors required')).toBeVisible();
+    await importModal.getByRole('checkbox').nth(2).click();
     await expect(
-        importModal.getByTestId('remoteProjectEditorPlan'),
-    ).toContainText('Example Fixture');
+        importModal.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toHaveCount(2);
     await importModal
-        .getByTestId('selectRemoteProjectEditorResolution-0')
+        .getByRole('button', {
+            name: 'Godot Editor: Example Fixture: Download 4.4.3-stable · Standard - Recommended',
+            exact: true,
+        })
         .click();
     await expect(
         mainPage.getByRole('option', {
-            name: 'Download 4.4.3-stable - Recommended',
+            name: 'Download 4.4.3-stable · Standard - Recommended',
             exact: true,
         }),
     ).toBeVisible();
     await expect(
         mainPage.getByRole('option', {
-            name: 'Download 4.4.3-stable',
+            name: 'Download 4.4.3-stable · Standard',
             exact: true,
         }),
     ).toHaveCount(0);
     await expect(
         mainPage.getByRole('option', {
-            name: 'Use Team build (4.4-custom.1)',
+            name: 'Use Team build (4.4-custom.1) · Standard',
             exact: true,
         }),
     ).toBeVisible();
     await mainPage.keyboard.press('Escape');
-    await importModal
-        .getByRole('button', { name: 'Finish without remaining projects' })
-        .click();
-    await expect(importModal.getByText('Project import complete')).toBeVisible();
-    await expect(
-        importModal.getByText(/Skipped: The project was not added\./),
-    ).toBeVisible();
+    await importModal.getByRole('checkbox').nth(2).click();
+    await expect(importModal.getByTestId('btnAddDiscoveredProjects')).toBeDisabled();
+    await expect.poll(readRemoteAddProjectOptions).toEqual([]);
 });
 
 test('Remote registration preserves the code editor through editor resolution retries', async () => {
@@ -1327,20 +1371,26 @@ test('Remote registration preserves the code editor through editor resolution re
     await importModal.getByRole('option', { name: 'VSCodium' }).click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
-    await expect(importModal.getByText('Editors required')).toBeVisible();
+    await expect(
+        importModal.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toHaveCount(2);
     await importModal
-        .getByTestId('selectRemoteProjectEditorResolution-0')
+        .getByRole('button', { name: /^Godot Editor: Example Fixture:/ })
         .click();
-    await importModal
+    await mainPage
         .getByRole('option', { name: 'Add With Missing Editor' })
         .click();
     await importModal
-        .getByTestId('btnApplyRemoteProjectEditorPlan')
+        .getByTestId('btnAddDiscoveredProjects')
         .click();
     await expect(importModal.getByText('Project import complete')).toBeVisible();
     await expect.poll(readRemoteAddProjectOptions).toEqual([
-        { codeEditorId: 'vscodium' },
-        { codeEditorId: 'vscodium', resolution: 'add_missing' },
+        { codeEditorId: 'vscodium', name: 'Example Fixture' },
+        {
+            codeEditorId: 'vscodium',
+            name: 'Example Fixture',
+            resolution: 'add_missing',
+        },
     ]);
 });
 
@@ -1368,9 +1418,11 @@ test('Remote registration continues while Installs shows editor progress', async
     await importModal.getByRole('checkbox').nth(1).click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
-    await expect(importModal.getByText('Editors required')).toBeVisible();
+    await expect(
+        importModal.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toHaveCount(2);
     const addProjectsButton = importModal.getByTestId(
-        'btnApplyRemoteProjectEditorPlan',
+        'btnAddDiscoveredProjects',
     );
     await expect(addProjectsButton).toBeFocused();
     await addProjectsButton.press('Enter');
@@ -1434,14 +1486,16 @@ test('Remote registration shows two different missing editors together', async (
         .click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
-    const editorPlan = importModal.getByTestId('remoteProjectEditorPlan');
-    await expect(importModal.getByText('Editors required')).toBeVisible();
-    await expect(editorPlan).toContainText('4.4.3-stable');
-    await expect(editorPlan).toContainText('4.3.2-stable');
-    await expect(editorPlan).toContainText('Root Game');
-    await expect(editorPlan).toContainText('Example Fixture');
+    await expect(
+        importModal.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toBeVisible();
+    await expect(
+        importModal.getByText('Exact: 4.3.2-stable · Standard', {
+            exact: true,
+        }),
+    ).toBeVisible();
     await importModal
-        .getByTestId('btnApplyRemoteProjectEditorPlan')
+        .getByTestId('btnAddDiscoveredProjects')
         .click();
     await expect(importModal.getByText('Project import complete')).toBeVisible();
     await expect(
@@ -1478,8 +1532,11 @@ test('Remote registration continues after one editor download fails', async () =
         .getByRole('button', { name: 'Clone repository' })
         .click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
+    await expect(
+        importModal.getByText('Requested: 4.4 · Standard', { exact: true }),
+    ).toBeVisible();
     await importModal
-        .getByTestId('btnApplyRemoteProjectEditorPlan')
+        .getByTestId('btnAddDiscoveredProjects')
         .click();
 
     await expect(importModal.getByText('Project import complete')).toBeVisible();
@@ -1570,8 +1627,10 @@ async function stubGitHubImportConnection(): Promise<void> {
     await electronApp.evaluate(({ ipcMain }) => {
         const state = globalThis as typeof globalThis & {
             __guidedGitHubImportConnected?: boolean;
+            __guidedGitHubImportRefreshCount?: number;
         };
         state.__guidedGitHubImportConnected = false;
+        state.__guidedGitHubImportRefreshCount = 0;
 
         const integration = () => ({
             id: 'github',
@@ -1603,7 +1662,14 @@ async function stubGitHubImportConnection(): Promise<void> {
         ipcMain.removeHandler('appIntegrations.manageAccess');
         ipcMain.handle('appIntegrations.manageAccess', () => ({ success: true, data: { ok: true, integration: integration() } }));
         ipcMain.removeHandler('appIntegrations.refresh');
-        ipcMain.handle('appIntegrations.refresh', () => ({ success: true, data: { ok: true, integration: integration() } }));
+        ipcMain.handle('appIntegrations.refresh', () => {
+            state.__guidedGitHubImportRefreshCount =
+                (state.__guidedGitHubImportRefreshCount ?? 0) + 1;
+            return {
+                success: true,
+                data: { ok: true, integration: integration() },
+            };
+        });
         ipcMain.removeHandler('projects.listConnectedRepositories');
         ipcMain.handle('projects.listConnectedRepositories', async () => ({
             success: true,
@@ -1653,9 +1719,72 @@ async function stubGitHubImportConnection(): Promise<void> {
     });
 }
 
+/** Reads how often the GitHub fixture refreshed after browser return. */
+async function readGitHubImportRefreshCount(): Promise<number> {
+    return electronApp.evaluate(() => {
+        const state = globalThis as typeof globalThis & {
+            __guidedGitHubImportRefreshCount?: number;
+        };
+        return state.__guidedGitHubImportRefreshCount ?? 0;
+    });
+}
+
 /** Installs a native Add Project result for an inferred stable branch. */
 async function stubInferredEditorResolution(): Promise<void> {
-    await electronApp.evaluate(({ ipcMain }, projectFixture) => {
+    const editorResolution: AddProjectEditorResolution = {
+        requested: {
+            kind: 'stable-base',
+            channel: 'official',
+            flavor: 'gdscript',
+            base_version: '4.4',
+        },
+        choices: [
+            {
+                id: 'catalog:official-stable:4.4.3:gdscript',
+                version: '4.4.3-stable',
+                name: '4.4.3-stable',
+                source: 'official',
+                flavor: 'gdscript',
+                prerelease: false,
+                installed: false,
+                recommended: true,
+                release: {
+                    version: '4.4.3-stable',
+                    version_number: 4.4,
+                    name: '4.4.3-stable',
+                    published_at: null,
+                    draft: false,
+                    prerelease: false,
+                    assets: [],
+                },
+            },
+            {
+                id: 'installed:official:4.4.1-stable:standard',
+                version: '4.4.1-stable',
+                source: 'official',
+                flavor: 'gdscript',
+                prerelease: false,
+                installed: true,
+                recommended: false,
+            },
+            {
+                id: 'installed:custom:4.4-custom.1:standard',
+                version: '4.4-custom.1',
+                name: 'Team build',
+                source: 'custom',
+                flavor: 'gdscript',
+                prerelease: true,
+                installed: true,
+                recommended: false,
+            },
+        ],
+        downloadable: {
+            match: 'stable-base',
+            base_version: '4.4',
+            flavor: 'gdscript',
+        },
+    };
+    await electronApp.evaluate(({ ipcMain }, { projectFixture, editorResolution }) => {
         ipcMain.removeHandler('app.openFileDialog');
         ipcMain.handle('app.openFileDialog', async () => ({
             success: true,
@@ -1666,6 +1795,31 @@ async function stubInferredEditorResolution(): Promise<void> {
                 ],
             },
         }));
+        ipcMain.removeHandler('projects.inspectProjectImports');
+        ipcMain.handle(
+            'projects.inspectProjectImports',
+            async (_event, paths: string[]) => ({
+                success: true,
+                data: paths.map(
+                    (projectFilePath): ProjectImportInspection => ({
+                        projectFilePath,
+                        directory: projectFilePath.replace(
+                            /[/\\]project.godot$/,
+                            '',
+                        ),
+                        name: projectFilePath.includes('/examples/fixture/')
+                            ? 'Example Fixture'
+                            : projectFilePath.endsWith(
+                                    '/Godot/Projects/games/project.godot',
+                                )
+                              ? 'Root Game'
+                              : 'Downloaded Editor Project',
+                        editorRequest: editorResolution.requested,
+                        editorResolution,
+                    }),
+                ),
+            }),
+        );
         ipcMain.removeHandler('projects.addProject');
         ipcMain.handle('projects.addProject', async (_event, projectFilePath: string, options: AddProjectOptions = {}) => {
             if (options.resolution === 'add_missing') {
@@ -1682,67 +1836,12 @@ async function stubInferredEditorResolution(): Promise<void> {
                 };
                 return { success: true, data: { success: true, newProject, projects: [newProject] } };
             }
-            return ({
-            success: true,
-            data: {
-                success: false,
-                editorResolution: {
-                    requested: {
-                        kind: 'stable-base',
-                        channel: 'official',
-                        flavor: 'gdscript',
-                        base_version: '4.4',
-                    },
-                    choices: [
-                        {
-                            id: 'catalog:official-stable:4.4.3:gdscript',
-                            version: '4.4.3-stable',
-                            name: '4.4.3-stable',
-                            source: 'official',
-                            flavor: 'gdscript',
-                            prerelease: false,
-                            installed: false,
-                            recommended: true,
-                            release: {
-                                version: '4.4.3-stable',
-                                version_number: 4.4,
-                                name: '4.4.3-stable',
-                                published_at: null,
-                                draft: false,
-                                prerelease: false,
-                                assets: [],
-                            },
-                        },
-                        {
-                            id: 'installed:official:4.4.1-stable:standard',
-                            version: '4.4.1-stable',
-                            source: 'official',
-                            flavor: 'gdscript',
-                            prerelease: false,
-                            installed: true,
-                            recommended: false,
-                        },
-                        {
-                            id: 'installed:custom:4.4-custom.1:standard',
-                            version: '4.4-custom.1',
-                            name: 'Team build',
-                            source: 'custom',
-                            flavor: 'gdscript',
-                            prerelease: true,
-                            installed: true,
-                            recommended: false,
-                        },
-                    ],
-                    downloadable: {
-                        match: 'stable-base',
-                        base_version: '4.4',
-                        flavor: 'gdscript',
-                    },
-                },
-            },
+            return {
+                success: true,
+                data: { success: false, editorResolution },
+            };
         });
-        });
-    }, SAMPLE_PROJECT_WITH_MISSING_EDITOR);
+    }, { projectFixture: SAMPLE_PROJECT_WITH_MISSING_EDITOR, editorResolution });
 }
 
 /**
@@ -2056,6 +2155,39 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                 ],
             },
         }));
+        ipcMain.removeHandler('projects.inspectProjectImports');
+        ipcMain.handle(
+            'projects.inspectProjectImports',
+            async (_event, paths: string[]) => ({
+                success: true,
+                data: paths.map(
+                    (projectFilePath): ProjectImportInspection => ({
+                        projectFilePath,
+                        name: projectFilePath.includes('/examples/fixture/')
+                            ? 'Example Fixture'
+                            : projectFilePath.includes('/demo/')
+                              ? 'GDExtension Demo'
+                              : 'Root Game',
+                        editorRequest: projectFilePath.includes(
+                            '/examples/fixture/',
+                        )
+                            ? {
+                                  kind: 'exact',
+                                  channel: 'official',
+                                  flavor: 'dotnet',
+                                  base_version: '4.3',
+                                  version: '4.3.2-stable',
+                              }
+                            : {
+                                  kind: 'stable-base',
+                                  channel: 'official',
+                                  flavor: 'gdscript',
+                                  base_version: '4.4',
+                              },
+                    }),
+                ),
+            }),
+        );
         ipcMain.removeHandler('projects.addProject');
         ipcMain.handle(
             'projects.addProject',
@@ -2131,7 +2263,9 @@ async function stubRemoteProjectDiscovery(): Promise<void> {
                 const newProject = {
                     name: projectFilePath.includes('fixture')
                         ? 'Example Fixture'
-                        : 'Root Game',
+                        : projectFilePath.includes('/demo/')
+                          ? 'GDExtension Demo'
+                          : 'Root Game',
                     path: projectDirectory,
                     icon_path: '',
                     version: '4.4 (missing)',

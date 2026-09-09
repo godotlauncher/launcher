@@ -5,7 +5,7 @@ import {
 import logger from 'electron-log';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { appBridge } from '../bridge.ts';
+import { appBridge } from '../renderer.bridge.ts';
 
 const i18nBridge = createI18nRendererBridge();
 

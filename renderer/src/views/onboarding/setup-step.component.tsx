@@ -2,13 +2,14 @@ import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
 } from '@shared/contracts';
+import { Check, CodeXml } from 'lucide-react';
 import type React from 'react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CodeEditorIntegrationIcon } from '../../components/codeEditorIntegrationIcon.component';
-import { WindowsSymlinkSetting } from '../../components/settings/WindowsSymlinkSetting.component';
-import { PathField } from '../../components/ui/pathField.component';
-import { SelectField } from '../../components/ui/selectField.component';
+import { CodeEditorIntegrationIcon } from '../../components/code-editor-integration-icon.component';
+import { WindowsSymlinkSetting } from '../../components/settings/windows-symlink-setting.component';
+import { HelpTooltip } from '../../components/ui/help-tooltip.component';
+import { OverlayTitle } from '../../components/ui/overlay-title.component';
+import { PathField } from '../../components/ui/path-field.component';
 import { PlatformStorageNotice } from './platform-storage-notice.component';
 
 type SetupStepProps = {
@@ -55,31 +56,18 @@ export const SetupStep: React.FC<SetupStepProps> = ({
     onWindowsSymlinksChange,
 }) => {
     const { t } = useTranslation(['welcome', 'settings', 'common']);
-    const selectableIntegrations = useMemo(
-        () =>
-            integrations.filter(
-                (integration) =>
-                    integration.enabled && Boolean(integration.installation),
-            ),
-        [integrations],
-    );
-    const selectedIntegration = selectableIntegrations.find(
-        (integration) => integration.integration.id === selectedCodeEditorId,
-    );
 
     return (
         <div className="flex max-w-3xl flex-col gap-5">
             <div className="flex flex-col gap-2">
-                <h1
+                <OverlayTitle
+                    as="h1"
                     data-testid="onboarding-step-heading"
-                    tabIndex={-1}
-                    className="text-3xl font-bold tracking-tight outline-none"
+                    className="text-[20px] font-semibold"
                 >
                     {t('welcome:onboarding.setup.title')}
-                </h1>
-                <p className="text-base-content/65">
-                    {t('welcome:onboarding.setup.description')}
-                </p>
+                </OverlayTitle>
+                <p>{t('welcome:onboarding.setup.description')}</p>
             </div>
 
             <div className="grid gap-4">
@@ -110,7 +98,7 @@ export const SetupStep: React.FC<SetupStepProps> = ({
                     label={t('settings:behavior.editorsLocation.title')}
                     labelAction={
                         editorLocation === recommendedEditorLocation ? (
-                            <span className="badge badge-sm badge-ghost">
+                            <span className="badge badge-ghost">
                                 {t('welcome:onboarding.setup.recommended')}
                             </span>
                         ) : undefined
@@ -130,7 +118,7 @@ export const SetupStep: React.FC<SetupStepProps> = ({
             </div>
 
             {platform === 'win32' ? (
-                <div className="rounded-box border border-primary/35 bg-primary/5 p-4">
+                <div className="p-4">
                     <WindowsSymlinkSetting
                         value={windowsSymlinksEnabled}
                         onChange={(enabled) => {
@@ -146,35 +134,88 @@ export const SetupStep: React.FC<SetupStepProps> = ({
             )}
 
             <div className="flex flex-col gap-2">
-                <SelectField
-                    id="onboarding-code-editor"
-                    label={t('welcome:onboarding.setup.codeEditor')}
-                    help={t('welcome:onboarding.setup.codeEditorHelp')}
-                    value={selectedCodeEditorId ?? 'none'}
-                    onChange={(value) =>
-                        onCodeEditorChange(
-                            value === 'none' ? null : (value as CodeEditorId),
-                        )
-                    }
-                    options={[
-                        {
-                            value: 'none',
-                            label: t('welcome:onboarding.setup.noCodeEditor'),
-                        },
-                        ...selectableIntegrations.map((integration) => ({
-                            value: integration.integration.id,
-                            label: integration.integration.displayName,
-                        })),
-                    ]}
+                <fieldset
                     disabled={pending || integrationsLoading}
-                    showSelectedCheck
-                />
+                    className="flex flex-col gap-1"
+                >
+                    <legend className="mb-2">
+                        <span className="inline-flex items-center gap-2">
+                            {t('welcome:onboarding.setup.codeEditor')}
+                            <HelpTooltip
+                                help={t(
+                                    'welcome:onboarding.setup.codeEditorHelp',
+                                )}
+                            />
+                        </span>
+                    </legend>
+                    {[
+                        {
+                            id: null,
+                            name: t('welcome:onboarding.setup.noCodeEditor'),
+                            disabled: false,
+                            status: null,
+                        },
+                        ...integrations.map(
+                            ({ integration, installation, enabled }) => ({
+                                id: integration.id,
+                                name: integration.displayName,
+                                disabled: !installation || !enabled,
+                                status: !installation
+                                    ? t('settings:codeEditors.status.missing')
+                                    : !enabled
+                                      ? t(
+                                            'settings:codeEditors.status.disabled',
+                                        )
+                                      : t(
+                                            'settings:codeEditors.status.available',
+                                        ),
+                            }),
+                        ),
+                    ].map((option) => (
+                        <label
+                            key={option.id ?? 'none'}
+                            className="flex items-center gap-3 rounded-md bg-base-content/2 px-3 py-2 hover:bg-base-content/5 has-[:checked]:bg-primary/10 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary has-[:disabled]:opacity-50"
+                        >
+                            <input
+                                type="radio"
+                                name="onboarding-code-editor"
+                                value={option.id ?? 'none'}
+                                className="peer sr-only"
+                                disabled={option.disabled}
+                                checked={selectedCodeEditorId === option.id}
+                                onChange={() => onCodeEditorChange(option.id)}
+                            />
+                            {option.id ? (
+                                <CodeEditorIntegrationIcon
+                                    integrationId={option.id}
+                                    className="size-5 shrink-0"
+                                />
+                            ) : (
+                                <CodeXml
+                                    size={20}
+                                    className="shrink-0 text-base-content/60"
+                                    aria-hidden="true"
+                                />
+                            )}
+                            <span className="min-w-0 flex-1 truncate">
+                                {option.name}
+                            </span>
+                            {option.status && (
+                                <span className="shrink-0 text-sm text-base-content/60">
+                                    {option.status}
+                                </span>
+                            )}
+                            <Check
+                                size={18}
+                                className="invisible shrink-0 text-primary peer-checked:visible"
+                                aria-hidden="true"
+                            />
+                        </label>
+                    ))}
+                </fieldset>
 
                 {integrationsLoading && (
-                    <div
-                        className="flex items-center gap-2 text-sm text-base-content/65"
-                        role="status"
-                    >
+                    <div className="flex items-center gap-2" role="status">
                         <span
                             className="loading loading-spinner loading-xs"
                             aria-hidden="true"
@@ -183,25 +224,11 @@ export const SetupStep: React.FC<SetupStepProps> = ({
                     </div>
                 )}
                 {!integrationsLoading && integrationsLoadFailed && (
-                    <p className="text-sm text-warning" role="status">
+                    <p className="text-warning" role="status">
                         {t(
                             'welcome:onboarding.setup.codeEditorDetectionFailed',
                         )}
                     </p>
-                )}
-                {!integrationsLoading && selectedIntegration && (
-                    <div className="flex items-center gap-2 text-sm text-base-content/65">
-                        <CodeEditorIntegrationIcon
-                            integrationId={selectedIntegration.integration.id}
-                            className="size-4"
-                        />
-                        <span>
-                            {selectedIntegration.integration.displayName}
-                        </span>
-                        <span className="badge badge-success badge-sm">
-                            {t('welcome:onboarding.setup.detected')}
-                        </span>
-                    </div>
                 )}
             </div>
         </div>

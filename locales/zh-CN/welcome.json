@@ -1,5 +1,5 @@
 {
-    "title": "Godot 启动器",
+    "title": "Godot Launcher",
     "steps": {
         "welcome": "欢迎",
         "macos": "macOS",
@@ -28,14 +28,14 @@
         "backCustomizeBehavior": "返回：自定义行为"
     },
     "welcomeStep": {
-        "title": "感谢使用 Godot 启动器！",
-        "description": "Godot 启动器 可让您轻松 <strong>管理多个 Godot 引擎 版本</strong>，并为每个项目单独保存 <strong>编辑器设置</strong>。",
+        "title": "感谢使用 Godot Launcher！",
+        "description": "Godot Launcher 可让您轻松 <strong>管理多个 Godot 引擎 版本</strong>，并为每个项目单独保存 <strong>编辑器设置</strong>。",
         "feedback": "使用本软件即可帮助支持该项目！如果您有反馈或发现错误，请告诉我们，我们很乐意为您改进。",
         "enjoy": "祝您使用愉快，编程顺利！"
     },
     "startStep": {
         "title": "全部准备就绪！ 🚀",
-        "subtitle": "Godot 启动器 已准备好！您现在可以管理项目并探索所有功能。",
+        "subtitle": "Godot Launcher 已准备好！您现在可以管理项目并探索所有功能。",
         "whatsNext": "接下来？",
         "installTab": "在 <strong>安装</strong> 选项卡中安装并试用最新的预发布版本。",
         "projectsTab": "在 <strong>项目</strong> 选项卡中快速添加或创建项目。",
@@ -43,8 +43,8 @@
     },
     "customizeBehavior": {
         "trayAvailabilityWarning": "无法确认此会话是否支持系统托盘。Godot Launcher 将保持可见或退出，而不会隐藏。",
-        "trayCloseFallback": "关闭到系统托盘时，启动器将保持可见。",
-        "trayStartFallback": "在托盘中启动时，启动器将正常打开。",
+        "trayCloseFallback": "关闭到系统托盘时，Godot Launcher 将保持可见。",
+        "trayStartFallback": "在托盘中启动时，Godot Launcher 将正常打开。",
         "afterLaunching": "启动项目后",
         "nothing": "不做任何事",
         "minimize": "最小化",
@@ -74,94 +74,94 @@
     },
     "macosStep": {
         "title": "macOS 说明",
-        "intro": "Godot 启动器 会为每个项目创建编辑器的副本。",
+        "intro": "Godot Launcher 会为每个项目创建编辑器的副本。",
         "whyTitle": "为什么？",
         "reason": "在 macOS 上创建符号链接并不受权限限制，但通过符号链接打开编辑器已被证明不可靠。为确保顺畅体验，我们为每个项目提供专用的引擎副本。虽然 Godot 大约只有 200MB（通常不是问题），但请注意多个项目可能会导致磁盘使用量增加。",
         "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
     },
     "windowsStep": {
         "title": "Windows 说明",
-        "intro": "从 1.4.0 版本起，Godot 启动器 可以为每个项目创建指向编辑器的 <code>符号链接</code>。为简化设置，我们默认使用本地副本。当您希望降低磁盘使用量时，可以随时在 <strong>设置 → 行为 → 编辑器符号链接</strong> 中启用符号链接。",
-        "change1": "在 Windows 上创建符号链接需要管理员权限和提升的命令执行权限。启动器现在仅在创建符号链接时提升权限。",
+        "intro": "从 1.4.0 版本起，Godot Launcher 可以为每个项目创建指向编辑器的 <code>符号链接</code>。为简化设置，我们默认使用本地副本。当您希望降低磁盘使用量时，可以随时在 <strong>设置 → 行为 → 编辑器符号链接</strong> 中启用符号链接。",
+        "change1": "在 Windows 上创建符号链接需要管理员权限和提升的命令执行权限。Godot Launcher 现在仅在创建符号链接时提升权限。",
         "change2": "仅当您不是计算机上的 <code>管理员</code> 且未启用 <code>开发者模式</code> 时，才会看到 UAC 提示。",
         "change3": "准备尝试符号链接吗？在准备好接受偶发的提升提示时，在设置中启用 <strong>编辑器符号链接</strong>。",
         "dotnetNote": "注意：如果您使用的是基于 .NET 的编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
     },
     "linuxStep": {
         "title": "Linux 说明",
-        "intro": "Godot 启动器 为每个项目使用符号链接",
+        "intro": "Godot Launcher 为每个项目使用符号链接",
         "whyTitle": "为什么？",
         "reason": "与 Windows 和 macOS 版本不同，Linux 使用指向编辑器的符号链接来启动项目。这可节省磁盘空间并允许每个项目使用独立的设置。",
         "dotnetNote": "注意：如果您正在使用 .NET 编辑器，您需要从 <ButtonLink>Microsoft .NET 网站</ButtonLink> 安装 .NET SDK <Icon />"
     },
     "onboarding": {
         "steps": {
-            "welcome": "Welcome",
-            "appearance": "Appearance",
-            "setup": "Setup",
-            "preferences": "Preferences"
+            "welcome": "欢迎",
+            "appearance": "外观",
+            "setup": "配置",
+            "preferences": "偏好设置"
         },
-        "progressLabel": "Onboarding progress",
-        "reassurance": "You can change these options later in Settings.",
+        "progressLabel": "初始设置进度",
+        "reassurance": "您可以稍后在设置中更改这些选项。",
         "welcome": {
-            "title": "Welcome",
-            "description": "Set up the launcher for the way you work.",
-            "expectation": "In a few short steps, choose where projects and editors are stored, connect a code editor, and set the launch behavior you prefer.",
-            "benefitsLabel": "What the launcher helps you do",
-            "officialAndCustomEditors": "Install and manage official or custom Godot editors.",
-            "projectSettings": "Keep editor choices and settings separate for each project.",
-            "codeEditorIntegration": "Open project files in a detected code editor."
+            "title": "欢迎",
+            "description": "根据您的工作方式设置 Godot Launcher。",
+            "expectation": "只需几个简短步骤，即可选择项目和编辑器的存储位置、连接代码编辑器并设置您偏好的启动行为。",
+            "benefitsLabel": "Godot Launcher 能帮您做什么",
+            "officialAndCustomEditors": "安装和管理官方或自定义 Godot 编辑器。",
+            "projectSettings": "为每个项目单独管理编辑器选择和设置。",
+            "codeEditorIntegration": "在检测到的代码编辑器中打开项目文件。"
         },
         "appearance": {
-            "title": "Choose your appearance",
-            "description": "Choose how the launcher looks. Your selection is applied immediately.",
-            "preview": "You can change the appearance later in Settings."
+            "title": "选择外观",
+            "description": "选择 Godot Launcher 的外观。您的选择将立即生效。",
+            "preview": "您可以稍后在设置中更改外观。"
         },
         "setup": {
-            "title": "Choose your setup",
-            "description": "Confirm the default locations and optionally choose a detected code editor.",
-            "recommended": "Recommended",
-            "selectProjectsLocation": "Choose the projects location",
-            "selectEditorLocation": "Choose the editors location",
-            "browseProjectsLocation": "Browse for a projects location",
-            "browseEditorLocation": "Browse for an editors location",
-            "codeEditor": "Default code editor",
-            "codeEditorHelp": "Used when opening scripts and files from the launcher. You can change this later.",
-            "noCodeEditor": "None",
-            "detectingCodeEditors": "Detecting installed code editors...",
-            "codeEditorDetectionFailed": "Code editors could not be detected. You can configure one later in Settings.",
-            "detected": "Detected",
-            "advancedOptions": "Advanced options",
+            "title": "选择配置",
+            "description": "确认默认存储位置，并根据需要选择检测到的代码编辑器。",
+            "recommended": "推荐",
+            "selectProjectsLocation": "选择项目位置",
+            "selectEditorLocation": "选择编辑器位置",
+            "browseProjectsLocation": "浏览项目位置",
+            "browseEditorLocation": "浏览编辑器位置",
+            "codeEditor": "默认代码编辑器",
+            "codeEditorHelp": "用于从 Godot Launcher 打开脚本和文件。您可以稍后更改。",
+            "noCodeEditor": "无",
+            "detectingCodeEditors": "正在检测已安装的代码编辑器...",
+            "codeEditorDetectionFailed": "无法检测代码编辑器。您可以稍后在设置中配置。",
+            "detected": "已检测到",
+            "advancedOptions": "高级选项",
             "platformNotice": {
-                "windows": "By default, Windows keeps a local editor copy for each project. Advanced options can enable editor symlinks to reduce disk use.",
-                "macos": "macOS keeps a local editor copy for each project because launching editors through symlinks can be unreliable.",
-                "linux": "Linux uses editor symlinks for projects to reduce disk use while keeping project settings separate."
+                "windows": "默认情况下，Windows 会为每个项目保留编辑器的本地副本。您可以在高级选项中启用编辑器符号链接以减少磁盘占用。",
+                "macos": "macOS 会为每个项目保留编辑器的本地副本，因为通过符号链接启动编辑器可能不可靠。",
+                "linux": "Linux 使用编辑器符号链接来减少磁盘占用，同时为各个项目保留独立设置。"
             }
         },
         "preferences": {
-            "title": "Choose your preferences",
-            "description": "Set what the launcher does after opening a project and when your computer starts.",
-            "afterLaunching": "After launching a project",
-            "keepOpen": "Keep the launcher open",
-            "keepOpenHelp": "Leave the launcher window visible.",
-            "minimizeHelp": "Minimize the launcher window.",
-            "closeToTrayHelp": "Hide the launcher window and keep it available from the system tray.",
-            "closeToTrayFallback": "If a system tray is unavailable, the launcher stays open.",
-            "trayUnavailable": "System tray support could not be confirmed. Tray actions will safely fall back to keeping the launcher window open.",
-            "startupTitle": "Startup",
-            "startWithComputer": "Start the launcher when the computer starts",
-            "startInTray": "Start in the system tray",
-            "startInTrayFallback": "Falls back to a normal window if the tray is unavailable."
+            "title": "选择偏好设置",
+            "description": "设置 Godot Launcher 在打开项目后和计算机启动时的行为。",
+            "afterLaunching": "启动项目后",
+            "keepOpen": "保持 Godot Launcher 打开",
+            "keepOpenHelp": "保持 Godot Launcher 窗口可见。",
+            "minimizeHelp": "最小化 Godot Launcher 窗口。",
+            "closeToTrayHelp": "隐藏 Godot Launcher 窗口，仍可通过系统托盘访问。",
+            "closeToTrayFallback": "如果系统托盘不可用，Godot Launcher 将保持打开。",
+            "trayUnavailable": "无法确认系统托盘支持情况。托盘操作将安全地回退为保持 Godot Launcher 窗口打开。",
+            "startupTitle": "启动",
+            "startWithComputer": "计算机启动时启动 Godot Launcher",
+            "startInTray": "启动到系统托盘",
+            "startInTrayFallback": "如果系统托盘不可用，将以普通窗口启动。"
         },
         "navigation": {
-            "finishInstall": "Finish and install an editor",
-            "finishProjects": "Finish and view projects"
+            "finishInstall": "完成并安装编辑器",
+            "finishProjects": "完成并查看项目"
         },
         "errors": {
-            "directoryPicker": "The folder picker could not be opened. Enter an absolute path instead.",
-            "absolutePath": "Enter an absolute folder path.",
-            "saveSetup": "Setup could not be saved. Your previous preferences are unchanged.",
-            "finish": "Onboarding could not be completed. Review your choices and try again."
+            "directoryPicker": "无法打开文件夹选择器。请改为输入绝对路径。",
+            "absolutePath": "请输入文件夹的绝对路径。",
+            "saveSetup": "无法保存配置。您之前的偏好设置未更改。",
+            "finish": "无法完成初始设置。请检查您的选择并重试。"
         }
     }
 }

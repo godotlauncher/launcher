@@ -34,27 +34,24 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
     return (
         <section
-            className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center pt-14 text-center"
+            className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center pt-14 text-center text-base"
             aria-labelledby={headingId}
             data-testid="emptyState"
         >
             <div
-                className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15"
+                className="flex size-16 items-center justify-center"
                 aria-hidden="true"
             >
-                <Icon className="size-8" strokeWidth={1.75} />
+                <Icon className="size-8" />
             </div>
-            <h2
-                id={headingId}
-                className="mt-7 text-2xl font-semibold text-base-content"
-            >
+            <h2 id={headingId} className="mt-3 text-lg font-semibold">
                 {heading}
             </h2>
-            <p className="mt-2 text-base-content/65">{description}</p>
-            <div className="mt-7 flex flex-col items-center gap-4">
+            <p className="mt-2 text-base-content/75">{description}</p>
+            <div className="mt-4 flex flex-col items-center gap-2">
                 <button
                     type="button"
-                    className="btn btn-primary min-w-52 disabled:border-primary/20 disabled:bg-primary/15 disabled:text-primary disabled:opacity-100"
+                    className="btn btn-primary min-w-52 text-base"
                     onClick={onPrimaryAction}
                     disabled={primaryActionPending}
                     aria-busy={primaryActionPending || undefined}
@@ -71,7 +68,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
                 {secondaryActionLabel && (
                     <button
                         type="button"
-                        className="btn btn-link h-auto min-h-0 px-2 py-0 font-normal no-underline hover:underline"
+                        className="btn btn-link text-base"
                         onClick={onSecondaryAction}
                         data-testid="btnEmptyStateSecondary"
                     >

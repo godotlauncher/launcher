@@ -1,0 +1,237 @@
+import type { ReleaseSummary } from '@shared/contracts';
+import { HardDrive, HardDriveDownload } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useRelease } from '../hooks/release.hook';
+import { ReleaseInstallProgressIndicator } from './release-install-progress.component';
+import { Tooltip } from './ui/tooltip.component';
+
+type InstallReleaseTableProps = {
+    releases: ReleaseSummary[];
+    onInstall: (release: ReleaseSummary, mono: boolean) => void;
+    onReinstall: (release: ReleaseSummary, mono: boolean) => void;
+};
+
+export const InstallReleaseTable: React.FC<InstallReleaseTableProps> = ({
+    releases,
+    onInstall,
+    onReinstall,
+}) => {
+    const { t } = useTranslation(['installEditor', 'common']);
+    const {
+        getInstalledRelease,
+        getReleaseInstallProgress,
+        isDownloadingRelease,
+    } = useRelease();
+
+    const installReleaseRequest = (release: ReleaseSummary, mono: boolean) => {
+        onInstall(release, mono);
+    };
+
+    const reinstallReleaseRequest = (
+        release: ReleaseSummary,
+        mono: boolean,
+    ) => {
+        onReinstall(release, mono);
+    };
+
+    return (
+        <table className="table table-pin-rows h-full">
+            <thead className="sticky top-0 z-10 bg-base-200">
+                <tr>
+                    <th className="min-w-[150px]">
+                        {t('table.headers.version')}
+                    </th>
+                    <th>{t('table.headers.released')}</th>
+                    <th className="min-w-[200px]">
+                        {t('table.headers.download')}{' '}
+                    </th>
+                    <th className="min-w-[200px]"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {releases.map((row) => {
+                    const standardProgress = getReleaseInstallProgress(
+                        row.version,
+                        false,
+                    );
+                    const dotNetProgress = getReleaseInstallProgress(
+                        row.version,
+                        true,
+                    );
+
+                    return (
+                        <tr
+                            key={`installReleaseRow_${row.version}_${row.name}`}
+                            className="even:bg-base-100"
+                        >
+                            <td>{row.version}</td>
+                            <td>{row.published_at?.split('T')[0]}</td>
+                            <td className="flex flex-row gap-2">
+                                {getInstalledRelease(row.version, false)
+                                    ?.valid !== false &&
+                                getInstalledRelease(row.version, false) ? (
+                                    <Tooltip
+                                        className="flex items-center text-info gap-1"
+                                        placement="left"
+                                        tip={t(
+                                            'table.tooltips.installedGDScript',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <HardDrive /> {t('table.gdscript')}
+                                    </Tooltip>
+                                ) : isDownloadingRelease(row.version, false) &&
+                                  standardProgress ? (
+                                    <ReleaseInstallProgressIndicator
+                                        progress={standardProgress}
+                                        className="max-w-56"
+                                    />
+                                ) : getInstalledRelease(row.version, false)
+                                      ?.valid === false ? (
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
+                                            'table.tooltips.reinstallGDScript',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <button
+                                            type="button"
+                                            data-testid={`btnReinstall${row.version}`}
+                                            className="flex items-end gap-1 text-warning"
+                                            onClick={() =>
+                                                reinstallReleaseRequest(
+                                                    row,
+                                                    false,
+                                                )
+                                            }
+                                            aria-label={t(
+                                                'table.tooltips.reinstallGDScript',
+                                                { version: row.version },
+                                            )}
+                                        >
+                                            <HardDriveDownload />
+                                            {t('buttons.reinstall', {
+                                                ns: 'common',
+                                            })}{' '}
+                                            {t('table.gdscript')}
+                                        </button>
+                                    </Tooltip>
+                                ) : (
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
+                                            'table.tooltips.downloadGDScript',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <button
+                                            type="button"
+                                            data-testid={`btnDownload${row.version}`}
+                                            className="flex items-end gap-1"
+                                            onClick={() =>
+                                                installReleaseRequest(
+                                                    row,
+                                                    false,
+                                                )
+                                            }
+                                            aria-label={t(
+                                                'table.tooltips.downloadGDScript',
+                                                { version: row.version },
+                                            )}
+                                        >
+                                            <HardDriveDownload />{' '}
+                                            {t('table.gdscript')}
+                                        </button>
+                                    </Tooltip>
+                                )}
+                            </td>
+                            <td>
+                                {getInstalledRelease(row.version, true)
+                                    ?.valid !== false &&
+                                getInstalledRelease(row.version, true) ? (
+                                    <Tooltip
+                                        className="flex items-center gap-1 text-info"
+                                        placement="left"
+                                        tip={t(
+                                            'table.tooltips.installedDotNet',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <HardDrive />
+                                        {t('table.dotnet')}
+                                    </Tooltip>
+                                ) : isDownloadingRelease(row.version, true) &&
+                                  dotNetProgress ? (
+                                    <ReleaseInstallProgressIndicator
+                                        progress={dotNetProgress}
+                                        className="max-w-56"
+                                    />
+                                ) : getInstalledRelease(row.version, true)
+                                      ?.valid === false ? (
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
+                                            'table.tooltips.reinstallDotNet',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <button
+                                            type="button"
+                                            data-testid={`btnReinstall${row.version}-mono`}
+                                            className="flex flex-row items-end gap-1 text-warning"
+                                            onClick={() =>
+                                                reinstallReleaseRequest(
+                                                    row,
+                                                    true,
+                                                )
+                                            }
+                                            aria-label={t(
+                                                'table.tooltips.reinstallDotNet',
+                                                { version: row.version },
+                                            )}
+                                        >
+                                            <HardDriveDownload />
+                                            {t('buttons.reinstall', {
+                                                ns: 'common',
+                                            })}{' '}
+                                            {t('table.dotnet')}
+                                        </button>
+                                    </Tooltip>
+                                ) : (
+                                    <Tooltip
+                                        className="flex items-center"
+                                        placement="left"
+                                        tip={t(
+                                            'table.tooltips.downloadDotNet',
+                                            { version: row.version },
+                                        )}
+                                    >
+                                        <button
+                                            type="button"
+                                            data-testid={`btnDownload${row.version}-mono`}
+                                            className="flex flex-row items-end gap-1"
+                                            onClick={() =>
+                                                installReleaseRequest(row, true)
+                                            }
+                                            aria-label={t(
+                                                'table.tooltips.downloadDotNet',
+                                                { version: row.version },
+                                            )}
+                                        >
+                                            <HardDriveDownload />
+                                            {t('table.dotnet')}
+                                        </button>
+                                    </Tooltip>
+                                )}
+                            </td>
+                        </tr>
+                    );
+                })}
+            </tbody>
+        </table>
+    );
+};

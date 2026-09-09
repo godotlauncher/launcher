@@ -1,5 +1,6 @@
 {
     "buttons": {
+        "copy": "複製",
         "ok": "確定",
         "cancel": "取消",
         "continue": "繼續",
@@ -36,8 +37,8 @@
         "update": {
             "availableWithVersion": "版本 {{version}} 可用。<DownloadButton>下載更新</DownloadButton> 或 <SkipButton>跳過此版本</SkipButton>",
             "availableNoVersion": "有新版本可用。<DownloadButton>下載更新</DownloadButton>",
-            "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
-            "readyNoVersion": "更新已就緒，重新啟動 Godot 啟動器以安裝。<RestartButton>立即重新啟動</RestartButton>",
+            "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot Launcher 以安裝。<RestartButton>立即重新啟動</RestartButton>",
+            "readyNoVersion": "更新已就緒，重新啟動 Godot Launcher 以安裝。<RestartButton>立即重新啟動</RestartButton>",
             "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>或<SkipButton>略過此版本</SkipButton>",
             "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>"
         }

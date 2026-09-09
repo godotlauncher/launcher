@@ -9,17 +9,18 @@
     "emptyState": {
         "welcome": {
             "heading": "Adicione ou crie um projeto",
-            "description": "Traga o seu trabalho existente para o Launcher ou comece algo novo.",
+            "description": "Traga o seu trabalho existente para o Godot Launcher ou comece algo novo.",
             "newProject": {
                 "heading": "Novo projeto",
-                "description": "Escolha uma versão do Godot.\nO Launcher transfere-a se necessário.",
+                "description": "Escolha uma versão do Godot.\nO Godot Launcher transfere-a se necessário.",
                 "action": "Criar projeto"
             },
             "existingProject": {
                 "heading": "Projeto existente",
-                "description": "O Launcher encontra a versão do Godot\nde que cada projeto precisa.",
+                "description": "O Godot Launcher encontra a versão do Godot\nde que cada projeto precisa.",
                 "fromComputer": "Deste computador",
                 "fromGitHub": "Do GitHub",
+                "fromPublicGit": "A partir de um URL Git público",
                 "gitRequired": "É necessário ter o Git para importar do GitHub"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "Selecionar ficheiro do projeto",
         "godotProject": "Projeto Godot",
         "editorResolution": {
+            "official": "Oficial",
             "title": "Versão do editor necessária",
             "message": "Escolha o editor Godot a utilizar neste projeto.",
             "version": "Versão",
@@ -193,7 +195,7 @@
                 "addProjects": "Adicionar projetos selecionados ({{count}})",
                 "cloneAndAdd": "Clonar e adicionar projeto",
                 "cancelImport": "Cancelar importação",
-                "retryRegistration": "Tente adicionar novamente ao Launcher",
+                "retryRegistration": "Tente adicionar novamente ao Godot Launcher",
                 "reviewAndRetry": "Revise e tente novamente",
                 "close": "Fechar",
                 "done": "Concluído",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "Este repositório utiliza submódulos Git",
-                "description": "O Launcher pode inicializar submódulos HTTPS públicos e anónimos antes de voltar a procurar. A operação para se um submódulo for privado ou utilizar um URL não suportado.",
+                "description": "O Godot Launcher pode inicializar submódulos HTTPS públicos e anónimos antes de voltar a procurar. A operação para se um submódulo for privado ou utilizar um URL não suportado.",
                 "preparing": "A preparar a inicialização dos submódulos...",
                 "initialise": "Inicializar submódulos",
                 "continueWithoutSubmodules": "Continuar sem submódulos",
@@ -236,13 +238,16 @@
             },
             "registration": {
                 "preserved": "O repositório foi clonado com sucesso e mantido neste local.",
+                "cloneKeptAt": "Clone mantido em",
                 "editorsQueued": "As transferências dos editores selecionados foram adicionadas a Instalações. Os projetos são atualizados automaticamente quando os seus editores estão prontos.",
                 "adding": "A adicionar projetos: {{current}}/{{total}}",
                 "complete": "Importação de projetos concluída",
+                "renamed": "Renomeado",
+                "renamedFromTo": "Renomeado de {{original}} para {{final}}",
                 "added": "Adicionado",
                 "skipped": "Ignorado",
                 "failed": "Falhou",
-                "alreadyAdded": "Já existe no Launcher um projeto com este nome ou caminho.",
+                "alreadyAdded": "Já existe no Godot Launcher um projeto com este nome ou caminho.",
                 "notAdded": "O projeto não foi adicionado."
             },
             "editorBatch": {
@@ -274,11 +279,39 @@
                 "discoveryLimitExceeded": "O repositório foi clonado, mas é demasiado grande ou profundamente aninhado para ser analisado em segurança.",
                 "finaliseFailed": "O clone concluído não pôde ser movido para seu destino.",
                 "cancelled": "A importação foi cancelada.",
-                "registration-failed": "O repositório foi clonado, mas não pôde ser adicionado ao Launcher.",
+                "registration-failed": "O repositório foi clonado, mas não pôde ser adicionado ao Godot Launcher.",
                 "cloneFolderOpenFailed": "Não foi possível abrir a pasta do clone.",
                 "cloneCleanupChanged": "O clone foi alterado ou substituído após a importação, pelo que não foi eliminado.",
                 "cloneCleanupFailed": "Não foi possível eliminar o clone. Foi mantido."
             }
+        },
+        "conflicts": {
+            "title": "Rever importações",
+            "description": "Escolha um nome no Godot Launcher ou ignore o projeto. Os nomes do Godot e as pastas permanecem inalterados.",
+            "label": "Nome no Godot Launcher",
+            "name": "Este nome ou a sua pasta de definições já está em uso. Escolha outro nome ou ignore o projeto.",
+            "folder": "Esta pasta já está registada ou selecionada. Ignore esta entrada.",
+            "invalid": "Introduza um nome válido. Ignore ficheiros de projeto ilegíveis.",
+            "skip": "Ignorar este projeto",
+            "continue": "Adicionar projetos",
+            "edit": "Editar nome",
+            "include": "Incluir projeto",
+            "badges": {
+                "ready": "Pronto",
+                "skipped": "Ignorado",
+                "name": "Conflito de nome",
+                "folder": "Já adicionado",
+                "invalid": "Inválido"
+            }
+        },
+        "editorReview": {
+            "description": "Escolha nomes e editores antes de adicionar os projetos.",
+            "requested": "Pedido",
+            "exact": "Exato",
+            "details": "Detalhes do editor necessário",
+            "summary": "{{count}} selecionados · {{downloads}} transferências",
+            "download": "Transferência",
+            "missing": "Editor em falta"
         }
     },
     "messages": {
@@ -295,7 +328,7 @@
         "failedAddProject": "Falha ao adicionar o projeto: {{error}}",
         "dropProjectFilesHere": "Largue aqui os ficheiros do projeto Godot",
         "dropProjectFilesHelpPrefix": "Largue um ou mais",
-        "dropProjectFilesHelpSuffix": "ficheiros para os adicionar ao launcher.",
+        "dropProjectFilesHelpSuffix": "ficheiros para os adicionar ao Godot Launcher.",
         "invalidReasons": {
             "missingProjectFile": "Ficheiro do projeto não encontrado. Verifique a localização do projeto ou remova-o e volte a adicioná-lo.",
             "missingEditor": "O editor selecionado está indisponível. Monte a unidade ou escolha outro editor."
@@ -416,7 +449,7 @@
             "renameLabel": "Mudar também o nome do projeto Godot",
             "loading": "A verificar o projeto Godot...",
             "currentName": "Nome atual do projeto Godot: {{name}}",
-            "unavailable": "project.godot não está disponível. Apenas o nome no launcher pode ser alterado."
+            "unavailable": "project.godot não está disponível. Apenas o nome no Godot Launcher pode ser alterado."
         },
         "actions": {
             "installAndSave": "Instalar e guardar",

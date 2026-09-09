@@ -917,7 +917,7 @@ describe('removeProject', () => {
         writeProjectLauncherConfig.mockResolvedValue(undefined);
     });
 
-    it('writes project launcher config before removing a project', async () => {
+    it('preserves project launcher metadata when removing a project', async () => {
         const project: ProjectDetails = {
             name: 'Demo',
             path: '/projects/demo',
@@ -950,22 +950,14 @@ describe('removeProject', () => {
 
         await removeProject(project);
 
-        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
-            '/projects/demo',
-            expect.objectContaining({
-                release: expect.objectContaining({ version: '4.3-stable' }),
-                launcherVersion: '1.0.0',
-            }),
-        );
-        const [, input] = writeProjectLauncherConfig.mock.calls[0];
-        expect(input).not.toHaveProperty('codeEditorId');
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
         expect(removeProjectFromList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
             '/projects/demo',
         );
     });
 
-    it('still removes local state when the best-effort sidecar write fails', async () => {
+    it('removes local state without attempting a sidecar write', async () => {
         const project = createProjectDetails();
         writeProjectLauncherConfig.mockRejectedValue(
             new Error('Sidecar is read-only'),
@@ -1017,6 +1009,7 @@ describe('renameProject', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        writeProjectLauncherConfig.mockResolvedValue(undefined);
         getDefaultDirs.mockReturnValue({ configDir: '/config' });
         windowMock = { webContents: {} };
         getMainWindow.mockReturnValue(windowMock);
@@ -1050,6 +1043,10 @@ describe('renameProject', () => {
             }),
         );
         expect(updateGodotProjectName).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).toHaveBeenCalledWith(
+            project.path,
+            expect.objectContaining({ projectName: 'Renamed Demo' }),
+        );
         expect(storeProjectsList).toHaveBeenCalledWith(
             path.resolve('/config', 'projects.json'),
             expect.arrayContaining([

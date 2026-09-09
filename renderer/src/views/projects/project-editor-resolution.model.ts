@@ -34,13 +34,13 @@ function getReleaseVersionParts(version: string): number[] {
 }
 
 /**
- * Compares stable releases from newest patch to oldest patch.
+ * Compares release versions by patch, then stable/RC/beta/dev and iteration.
  *
  * @param first - First release to compare.
  * @param second - Second release to compare.
  * @returns A negative value when the first release is newer.
  */
-function compareStableReleases(
+function compareEditorReleases(
     first: ReleaseSummary,
     second: ReleaseSummary,
 ): number {
@@ -53,7 +53,14 @@ function compareStableReleases(
         }
     }
 
-    return 0;
+    const firstChannel = first.version.match(/-(stable|rc|beta|dev)(\d*)$/i);
+    const secondChannel = second.version.match(/-(stable|rc|beta|dev)(\d*)$/i);
+    const channels = ['dev', 'beta', 'rc', 'stable'];
+    return (
+        channels.indexOf(secondChannel?.[1]?.toLowerCase() ?? '') -
+            channels.indexOf(firstChannel?.[1]?.toLowerCase() ?? '') ||
+        Number(secondChannel?.[2] || 0) - Number(firstChannel?.[2] || 0)
+    );
 }
 
 /**
@@ -103,17 +110,16 @@ export function findDownloadableProjectEditor(
                     downloadable.base_version &&
                 hasEditorFlavor(release, downloadable.flavor),
         )
-        .sort(compareStableReleases)[0];
+        .sort(compareEditorReleases)[0];
 }
 
 /**
- * Finds the exact official editor requested by a project already stored with
- * a missing editor.
+ * Finds a downloadable editor for an exact or unresolved stored requirement.
  *
  * @param project - Project whose editor is missing.
  * @param availableReleases - Available stable releases.
  * @param availablePrereleases - Available prereleases.
- * @returns The matching official catalogue release, when it can be installed.
+ * @returns The exact release, or latest compatible stable/prerelease for a bare branch.
  */
 export function findDownloadableMissingProjectEditor(
     project: ProjectDetails,
@@ -125,6 +131,24 @@ export function findDownloadableMissingProjectEditor(
         project.release.source === 'custom'
     ) {
         return undefined;
+    }
+
+    const baseVersion = getReleaseBaseVersion(project.release.version);
+    if (project.release.version === baseVersion) {
+        const compatible = [
+            ...availableReleases,
+            ...availablePrereleases,
+        ].filter(
+            (release) =>
+                getReleaseBaseVersion(release.version) === baseVersion &&
+                release.assets.some(
+                    (asset) => asset.mono === project.release.mono,
+                ),
+        );
+        const stable = compatible.filter((release) => !release.prerelease);
+        return (stable.length ? stable : compatible).sort(
+            compareEditorReleases,
+        )[0];
     }
 
     return [...availableReleases, ...availablePrereleases].find(

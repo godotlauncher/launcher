@@ -9,17 +9,18 @@
     "emptyState": {
         "welcome": {
             "heading": "Ajoutez ou créez un projet",
-            "description": "Importez votre travail existant dans Launcher ou commencez quelque chose de nouveau.",
+            "description": "Importez votre travail existant dans Godot Launcher ou commencez quelque chose de nouveau.",
             "newProject": {
                 "heading": "Nouveau projet",
-                "description": "Choisissez une version de Godot.\nLauncher la télécharge si nécessaire.",
+                "description": "Choisissez une version de Godot.\nGodot Launcher la télécharge si nécessaire.",
                 "action": "Créer un projet"
             },
             "existingProject": {
                 "heading": "Projet existant",
-                "description": "Launcher trouve la version de Godot\ndont chaque projet a besoin.",
+                "description": "Godot Launcher trouve la version de Godot\ndont chaque projet a besoin.",
                 "fromComputer": "Depuis cet ordinateur",
                 "fromGitHub": "Depuis GitHub",
+                "fromPublicGit": "Depuis une URL Git publique",
                 "gitRequired": "Git est requis pour importer depuis GitHub"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "Sélectionner le fichier du projet",
         "godotProject": "Projet Godot",
         "editorResolution": {
+            "official": "Officiel",
             "title": "Version de l'éditeur requise",
             "message": "Choisissez l'éditeur Godot à utiliser pour ce projet.",
             "version": "Version",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "Ce dépôt utilise des sous-modules Git",
-                "description": "Launcher peut initialiser les sous-modules HTTPS publics et anonymes avant une nouvelle analyse. L’opération s’arrête si un sous-module est privé ou utilise une URL non prise en charge.",
+                "description": "Godot Launcher peut initialiser les sous-modules HTTPS publics et anonymes avant une nouvelle analyse. L’opération s’arrête si un sous-module est privé ou utilise une URL non prise en charge.",
                 "preparing": "Préparation de l’initialisation des sous-modules...",
                 "initialise": "Initialiser les sous-modules",
                 "continueWithoutSubmodules": "Continuer sans les sous-modules",
@@ -236,13 +238,16 @@
             },
             "registration": {
                 "preserved": "Le référentiel a été cloné avec succès et a été conservé à cet emplacement.",
+                "cloneKeptAt": "Clone conservé dans",
                 "editorsQueued": "Les téléchargements d'éditeurs sélectionnés ont été ajoutés aux installations. Les projets se mettent à jour automatiquement lorsque leurs éditeurs sont prêts.",
                 "adding": "Ajout des projets : {{current}}/{{total}}",
                 "complete": "Importation des projets terminée",
+                "renamed": "Renommé",
+                "renamedFromTo": "Renommé de {{original}} en {{final}}",
                 "added": "Ajouté",
                 "skipped": "Ignoré",
                 "failed": "Échec",
-                "alreadyAdded": "Un projet portant ce nom ou ce chemin existe déjà dans Launcher.",
+                "alreadyAdded": "Un projet portant ce nom ou ce chemin existe déjà dans Godot Launcher.",
                 "notAdded": "Le projet n'a pas été ajouté."
             },
             "editorBatch": {
@@ -274,11 +279,39 @@
                 "discoveryLimitExceeded": "Le dépôt a été cloné, mais il est trop volumineux ou trop imbriqué pour être analysé en toute sécurité.",
                 "finaliseFailed": "Le clone terminé n'a pas pu être déplacé vers sa destination.",
                 "cancelled": "L'importation a été annulée.",
-                "registration-failed": "Le référentiel a été cloné mais n'a pas pu être ajouté au Launcher.",
+                "registration-failed": "Le référentiel a été cloné mais n'a pas pu être ajouté au Godot Launcher.",
                 "cloneFolderOpenFailed": "Le dossier du clone n'a pas pu être ouvert.",
                 "cloneCleanupChanged": "Le clone a été modifié ou remplacé depuis l'importation, il n'a donc pas été supprimé.",
                 "cloneCleanupFailed": "Le clone n'a pas pu être supprimé. Il a été conservé."
             }
+        },
+        "conflicts": {
+            "title": "Vérifier les imports",
+            "description": "Choisissez un nom dans Godot Launcher ou ignorez le projet. Les noms Godot et les dossiers restent inchangés.",
+            "label": "Nom dans Godot Launcher",
+            "name": "Ce nom ou son dossier de paramètres est déjà utilisé. Choisissez un autre nom ou ignorez le projet.",
+            "folder": "Ce dossier est déjà enregistré ou sélectionné. Ignorez cette entrée.",
+            "invalid": "Saisissez un nom valide. Ignorez les fichiers de projet illisibles.",
+            "skip": "Ignorer ce projet",
+            "continue": "Ajouter les projets",
+            "edit": "Modifier le nom",
+            "include": "Inclure le projet",
+            "badges": {
+                "ready": "Prêt",
+                "skipped": "Ignoré",
+                "name": "Conflit de nom",
+                "folder": "Déjà ajouté",
+                "invalid": "Invalide"
+            }
+        },
+        "editorReview": {
+            "description": "Choisissez les noms et les éditeurs avant d’ajouter vos projets.",
+            "requested": "Demandé",
+            "exact": "Exact",
+            "details": "Détails de l’éditeur requis",
+            "summary": "{{count}} sélectionnés · {{downloads}} téléchargements",
+            "download": "Téléchargement",
+            "missing": "Éditeur manquant"
         }
     },
     "messages": {
@@ -416,7 +449,7 @@
             "renameLabel": "Renommer aussi le projet Godot",
             "loading": "Vérification du projet Godot...",
             "currentName": "Nom actuel du projet Godot : {{name}}",
-            "unavailable": "project.godot est indisponible. Seul le nom dans le launcher peut être modifié."
+            "unavailable": "project.godot est indisponible. Seul le nom dans Godot Launcher peut être modifié."
         },
         "actions": {
             "installAndSave": "Installer et enregistrer",

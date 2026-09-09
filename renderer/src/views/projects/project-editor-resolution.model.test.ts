@@ -167,6 +167,50 @@ describe('project editor resolution model', () => {
         ).toBe(release);
     });
 
+    it('offers the newest stable patch for an unresolved stored branch', () => {
+        const latest = createRelease('4.8.2-stable');
+        expect(
+            findDownloadableMissingProjectEditor(
+                createMissingProject('4.8'),
+                [
+                    createRelease('4.8-stable'),
+                    latest,
+                    createRelease('4.9-stable'),
+                ],
+                [createRelease('4.8.3-beta1', true)],
+            ),
+        ).toBe(latest);
+    });
+
+    it('offers the latest compatible prerelease when no stable flavour exists', () => {
+        const latest = createRelease('4.8-beta10', true);
+        const standardOnly = createRelease('4.8-stable');
+        standardOnly.assets = standardOnly.assets.filter(
+            (asset) => !asset.mono,
+        );
+        expect(
+            findDownloadableMissingProjectEditor(
+                createMissingProject('4.8', true),
+                [standardOnly],
+                [
+                    createRelease('4.8-dev9', true),
+                    createRelease('4.8-beta2', true),
+                    latest,
+                ],
+            ),
+        ).toBe(latest);
+    });
+
+    it('does not substitute a different version for an exact missing requirement', () => {
+        expect(
+            findDownloadableMissingProjectEditor(
+                createMissingProject('4.8-beta2'),
+                [],
+                [createRelease('4.8-beta3', true)],
+            ),
+        ).toBeUndefined();
+    });
+
     it('does not offer catalogue downloads for custom missing editors', () => {
         const project = createMissingProject('4.4.3-stable');
         project.release.source = 'custom';

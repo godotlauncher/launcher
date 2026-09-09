@@ -43,8 +43,8 @@
     },
     "customizeBehavior": {
         "trayAvailabilityWarning": "このセッションではシステムトレイのサポートを確認できませんでした。Godot Launcher は非表示にならず、表示されたままになるか終了します。",
-        "trayCloseFallback": "システムトレイに閉じても、ランチャーは表示されたままになります。",
-        "trayStartFallback": "トレイで起動しても、ランチャーは通常どおり開きます。",
+        "trayCloseFallback": "システムトレイに閉じても、Godot Launcherは表示されたままになります。",
+        "trayStartFallback": "トレイで起動しても、Godot Launcherは通常どおり開きます。",
         "afterLaunching": "プロジェクト起動後",
         "nothing": "何もしない",
         "minimize": "最小化",
@@ -82,7 +82,7 @@
     "windowsStep": {
         "title": "Windowsに関する注意事項",
         "intro": "バージョン1.4.0から、Godot Launcherは各プロジェクトのエディタへの<code>シンボリックリンク</code>を作成できます。セットアップを簡単にするため、現在はデフォルトでローカルコピーにしています。ディスク使用量を減らしたい場合は、<strong>設定 → 動作 → エディタシンボリックリンク</strong>からいつでもシンボリックリンクを有効にできます。",
-        "change1": "Windowsでシンボリックリンクを作成するには管理者権限と昇格したコマンド実行が必要です。ランチャーは、シンボリックリンクの作成時にのみ権限を昇格します。",
+        "change1": "Windowsでシンボリックリンクを作成するには管理者権限と昇格したコマンド実行が必要です。Godot Launcherは、シンボリックリンクの作成時にのみ権限を昇格します。",
         "change2": "UAC プロンプトは、PCで<code>管理者</code>でない場合、および<code>開発者モード</code>が有効でない場合にのみ表示されます。",
         "change3": "シンボリックリンクを試す準備はできていますか？時々の昇格プロンプトに対応できる準備ができたら、設定で<strong>エディタシンボリックリンク</strong>をオンに切り替えてください。",
         "dotnetNote": "注：.NETベースのエディタを使用する場合は、<ButtonLink>Microsoft .NETウェブサイト</ButtonLink> <Icon />から.NET SDKをインストールする必要があります"
@@ -96,72 +96,72 @@
     },
     "onboarding": {
         "steps": {
-            "welcome": "Welcome",
-            "appearance": "Appearance",
-            "setup": "Setup",
-            "preferences": "Preferences"
+            "welcome": "ようこそ",
+            "appearance": "外観",
+            "setup": "セットアップ",
+            "preferences": "設定"
         },
-        "progressLabel": "Onboarding progress",
-        "reassurance": "You can change these options later in Settings.",
+        "progressLabel": "初期設定の進行状況",
+        "reassurance": "これらのオプションは後から設定で変更できます。",
         "welcome": {
-            "title": "Welcome",
-            "description": "Set up the launcher for the way you work.",
-            "expectation": "In a few short steps, choose where projects and editors are stored, connect a code editor, and set the launch behavior you prefer.",
-            "benefitsLabel": "What the launcher helps you do",
-            "officialAndCustomEditors": "Install and manage official or custom Godot editors.",
-            "projectSettings": "Keep editor choices and settings separate for each project.",
-            "codeEditorIntegration": "Open project files in a detected code editor."
+            "title": "ようこそ",
+            "description": "作業スタイルに合わせて Godot Launcher を設定しましょう。",
+            "expectation": "いくつかの簡単な手順で、プロジェクトとエディターの保存先、コードエディター、起動時の動作を設定します。",
+            "benefitsLabel": "Godot Launcher でできること",
+            "officialAndCustomEditors": "公式またはカスタムの Godot エディターをインストールして管理できます。",
+            "projectSettings": "プロジェクトごとにエディターと設定を個別に管理できます。",
+            "codeEditorIntegration": "検出されたコードエディターでプロジェクトのファイルを開けます。"
         },
         "appearance": {
-            "title": "Choose your appearance",
-            "description": "Choose how the launcher looks. Your selection is applied immediately.",
-            "preview": "You can change the appearance later in Settings."
+            "title": "外観を選択",
+            "description": "Godot Launcher の外観を選択します。選択内容はすぐに適用されます。",
+            "preview": "外観は後から設定で変更できます。"
         },
         "setup": {
-            "title": "Choose your setup",
-            "description": "Confirm the default locations and optionally choose a detected code editor.",
-            "recommended": "Recommended",
-            "selectProjectsLocation": "Choose the projects location",
-            "selectEditorLocation": "Choose the editors location",
-            "browseProjectsLocation": "Browse for a projects location",
-            "browseEditorLocation": "Browse for an editors location",
-            "codeEditor": "Default code editor",
-            "codeEditorHelp": "Used when opening scripts and files from the launcher. You can change this later.",
-            "noCodeEditor": "None",
-            "detectingCodeEditors": "Detecting installed code editors...",
-            "codeEditorDetectionFailed": "Code editors could not be detected. You can configure one later in Settings.",
-            "detected": "Detected",
-            "advancedOptions": "Advanced options",
+            "title": "セットアップ",
+            "description": "デフォルトの保存先を確認し、必要に応じて検出されたコードエディターを選択します。",
+            "recommended": "推奨",
+            "selectProjectsLocation": "プロジェクトの保存先を選択",
+            "selectEditorLocation": "エディターの保存先を選択",
+            "browseProjectsLocation": "プロジェクトの保存先を参照",
+            "browseEditorLocation": "エディターの保存先を参照",
+            "codeEditor": "デフォルトのコードエディター",
+            "codeEditorHelp": "Godot Launcher からスクリプトやファイルを開く際に使用します。後から変更できます。",
+            "noCodeEditor": "なし",
+            "detectingCodeEditors": "インストール済みのコードエディターを検出中...",
+            "codeEditorDetectionFailed": "コードエディターを検出できませんでした。後から設定で追加できます。",
+            "detected": "検出済み",
+            "advancedOptions": "詳細オプション",
             "platformNotice": {
-                "windows": "By default, Windows keeps a local editor copy for each project. Advanced options can enable editor symlinks to reduce disk use.",
-                "macos": "macOS keeps a local editor copy for each project because launching editors through symlinks can be unreliable.",
-                "linux": "Linux uses editor symlinks for projects to reduce disk use while keeping project settings separate."
+                "windows": "Windows では、デフォルトで各プロジェクトにエディターのローカルコピーを保存します。詳細オプションでエディターのシンボリックリンクを有効にすると、ディスク使用量を削減できます。",
+                "macos": "macOS では、シンボリックリンク経由の起動が不安定になる場合があるため、各プロジェクトにエディターのローカルコピーを保存します。",
+                "linux": "Linux では、エディターのシンボリックリンクを使用して、プロジェクトごとの設定を維持しながらディスク使用量を削減します。"
             }
         },
         "preferences": {
-            "title": "Choose your preferences",
-            "description": "Set what the launcher does after opening a project and when your computer starts.",
-            "afterLaunching": "After launching a project",
-            "keepOpen": "Keep the launcher open",
-            "keepOpenHelp": "Leave the launcher window visible.",
-            "minimizeHelp": "Minimize the launcher window.",
-            "closeToTrayHelp": "Hide the launcher window and keep it available from the system tray.",
-            "closeToTrayFallback": "If a system tray is unavailable, the launcher stays open.",
-            "trayUnavailable": "System tray support could not be confirmed. Tray actions will safely fall back to keeping the launcher window open.",
-            "startupTitle": "Startup",
-            "startWithComputer": "Start the launcher when the computer starts",
-            "startInTray": "Start in the system tray",
-            "startInTrayFallback": "Falls back to a normal window if the tray is unavailable."
+            "title": "動作を設定",
+            "description": "プロジェクトを開いた後とコンピューターの起動時の Godot Launcher の動作を設定します。",
+            "afterLaunching": "プロジェクトの起動後",
+            "keepOpen": "Godot Launcher を開いたままにする",
+            "keepOpenHelp": "Godot Launcher のウィンドウを表示したままにします。",
+            "minimizeHelp": "Godot Launcher のウィンドウを最小化します。",
+            "closeToTrayHelp": "Godot Launcher のウィンドウを非表示にし、システムトレイからアクセスできるようにします。",
+            "closeToTrayFallback": "システムトレイを利用できない場合、Godot Launcher は開いたままになります。",
+            "trayUnavailable": "システムトレイの対応状況を確認できませんでした。トレイ操作の代わりに Godot Launcher のウィンドウを開いたままにします。",
+            "startupTitle": "起動",
+            "startWithComputer": "コンピューターの起動時に Godot Launcher を起動する",
+            "startInTray": "システムトレイで起動する",
+            "startInTrayFallback": "システムトレイを利用できない場合は、通常のウィンドウで起動します。"
         },
         "navigation": {
-            "finishInstall": "Finish and install an editor",
-            "finishProjects": "Finish and view projects"
+            "finishInstall": "完了してエディターをインストール",
+            "finishProjects": "完了してプロジェクトを表示"
         },
         "errors": {
-            "directoryPicker": "The folder picker could not be opened. Enter an absolute path instead.",
-            "absolutePath": "Enter an absolute folder path.",
-            "saveSetup": "Setup could not be saved. Your previous preferences are unchanged.",
-            "finish": "Onboarding could not be completed. Review your choices and try again."
+            "directoryPicker": "フォルダー選択画面を開けませんでした。代わりに絶対パスを入力してください。",
+            "absolutePath": "フォルダーの絶対パスを入力してください。",
+            "saveSetup": "セットアップを保存できませんでした。以前の設定は変更されていません。",
+            "finish": "初期設定を完了できませんでした。選択内容を確認して、もう一度お試しください。"
         }
     }
 }

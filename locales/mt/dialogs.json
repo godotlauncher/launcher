@@ -40,7 +40,7 @@
     "removeCustomEditor": {
         "menuLabel": "Neħħi editur personalizzat",
         "title": "Neħħi editur personalizzat",
-        "message": "Tneħħi l-editur personalizzat \"{{name}}\" mil-launcher?",
+        "message": "Tneħħi l-editur personalizzat \"{{name}}\" minn Godot Launcher?",
         "detail": "Dan ineħħi r-reġistrazzjoni tal-editur personalizzat. Ma jħassarx il-fajls tal-editur fuq it-tagħmir tiegħek."
     }
 }

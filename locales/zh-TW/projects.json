@@ -9,17 +9,18 @@
     "emptyState": {
         "welcome": {
             "heading": "新增或建立專案",
-            "description": "將現有工作加入 Launcher，或開始新的專案。",
+            "description": "將現有工作加入 Godot Launcher，或開始新的專案。",
             "newProject": {
                 "heading": "新專案",
-                "description": "選擇 Godot 版本。\n需要時 Launcher 會下載它。",
+                "description": "選擇 Godot 版本。\n需要時 Godot Launcher 會下載它。",
                 "action": "建立專案"
             },
             "existingProject": {
                 "heading": "現有專案",
-                "description": "Launcher 會找到每個專案\n需要的 Godot 版本。",
+                "description": "Godot Launcher 會找到每個專案\n需要的 Godot 版本。",
                 "fromComputer": "從這部電腦",
                 "fromGitHub": "從 GitHub",
+                "fromPublicGit": "從公開 Git URL",
                 "gitRequired": "從 GitHub 匯入需要 Git"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "選擇專案檔",
         "godotProject": "Godot 專案",
         "editorResolution": {
+            "official": "官方",
             "title": "需要編輯器版本",
             "message": "選擇要用於此專案的 Godot 編輯器。",
             "version": "版本",
@@ -193,7 +195,7 @@
                 "addProjects": "新增所選專案（{{count}}）",
                 "cloneAndAdd": "克隆並添加項目",
                 "cancelImport": "取消導入",
-                "retryRegistration": "重試添加到啟動器",
+                "retryRegistration": "重試添加到 Godot Launcher",
                 "reviewAndRetry": "檢查並重試",
                 "close": "關閉",
                 "done": "完成",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "此儲存庫使用 Git 子模組",
-                "description": "Launcher 可以在重新掃描前初始化可匿名存取的公開 HTTPS 子模組。如果子模組是私人儲存庫或使用不支援的 URL，操作將停止。",
+                "description": "Godot Launcher 可以在重新掃描前初始化可匿名存取的公開 HTTPS 子模組。如果子模組是私人儲存庫或使用不支援的 URL，操作將停止。",
                 "preparing": "正在準備初始化子模組...",
                 "initialise": "初始化子模組",
                 "continueWithoutSubmodules": "不初始化子模組並繼續",
@@ -236,13 +238,16 @@
             },
             "registration": {
                 "preserved": "存儲庫已成功克隆並已保存在此位置。",
+                "cloneKeptAt": "複製儲存位置",
                 "editorsQueued": "所選編輯器下載已加入安裝佇列。編輯器準備就緒後，專案會自動更新。",
                 "adding": "正在新增專案：{{current}}/{{total}}",
                 "complete": "專案匯入完成",
+                "renamed": "已重新命名",
+                "renamedFromTo": "已從 {{original}} 重新命名為 {{final}}",
                 "added": "已新增",
                 "skipped": "已略過",
                 "failed": "失敗",
-                "alreadyAdded": "Launcher 中已有相同名稱或路徑的專案。",
+                "alreadyAdded": "Godot Launcher 中已有相同名稱或路徑的專案。",
                 "notAdded": "未新增此專案。"
             },
             "editorBatch": {
@@ -274,11 +279,39 @@
                 "discoveryLimitExceeded": "儲存庫已克隆，但規模過大或巢狀層級過深，無法安全掃描。",
                 "finaliseFailed": "已完成的克隆無法移動到其目的地。",
                 "cancelled": "進口被取消。",
-                "registration-failed": "儲存庫已克隆，但無法新增至啟動器。",
+                "registration-failed": "儲存庫已克隆，但無法新增至 Godot Launcher。",
                 "cloneFolderOpenFailed": "無法開啟克隆資料夾。",
                 "cloneCleanupChanged": "匯入後克隆已被變更或取代，因此未將其刪除。",
                 "cloneCleanupFailed": "無法刪除克隆。克隆已保留。"
             }
+        },
+        "conflicts": {
+            "title": "檢查專案匯入",
+            "description": "選擇 Godot Launcher 中的名稱或略過專案。Godot 專案名稱和資料夾保持不變。",
+            "label": "Godot Launcher 名稱",
+            "name": "此名稱或其設定資料夾已被使用。請選擇其他名稱或略過。",
+            "folder": "此資料夾已註冊或已選取。請略過此項。",
+            "invalid": "請輸入有效名稱。無法讀取的專案檔案必須略過。",
+            "skip": "略過此專案",
+            "continue": "新增專案",
+            "edit": "編輯名稱",
+            "include": "包含專案",
+            "badges": {
+                "ready": "就緒",
+                "skipped": "已略過",
+                "name": "名稱衝突",
+                "folder": "已新增",
+                "invalid": "無效"
+            }
+        },
+        "editorReview": {
+            "description": "新增專案前請選擇名稱和編輯器。",
+            "requested": "要求",
+            "exact": "確切版本",
+            "details": "所需編輯器詳細資訊",
+            "summary": "已選 {{count}} 項 · {{downloads}} 項下載",
+            "download": "下載",
+            "missing": "缺少編輯器"
         }
     },
     "messages": {
@@ -295,7 +328,7 @@
         "failedAddProject": "新增專案失敗：{{error}}",
         "dropProjectFilesHere": "將 Godot 專案檔案拖放到這裡",
         "dropProjectFilesHelpPrefix": "拖放一個或多個",
-        "dropProjectFilesHelpSuffix": "檔案以將其新增至啟動器。",
+        "dropProjectFilesHelpSuffix": "檔案以將其新增至 Godot Launcher。",
         "invalidReasons": {
             "missingProjectFile": "找不到專案檔案。請檢查專案位置，或移除後重新新增專案。",
             "missingEditor": "所選編輯器無法使用。請掛載磁碟機或選擇其他編輯器。"
@@ -416,7 +449,7 @@
             "renameLabel": "同時重新命名 Godot 專案",
             "loading": "正在檢查 Godot 專案...",
             "currentName": "目前的 Godot 專案名稱：{{name}}",
-            "unavailable": "project.godot 無法使用。只能變更啟動器中的名稱。"
+            "unavailable": "project.godot 無法使用。只能變更 Godot Launcher 中的名稱。"
         },
         "actions": {
             "installAndSave": "安裝並儲存",

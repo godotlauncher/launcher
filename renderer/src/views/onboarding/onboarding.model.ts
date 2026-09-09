@@ -2,7 +2,7 @@ import type {
     OnboardingRecommendedLocations,
     UserPreferences,
 } from '@shared/contracts';
-import { appRoutePaths } from '../../routes.ts';
+import { appRoutePaths } from '../../app.routes.ts';
 
 export const onboardingStepIds = [
     'welcome',

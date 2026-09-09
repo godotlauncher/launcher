@@ -18,8 +18,6 @@ export type RemoteProjectImportStep =
     | 'initialising-submodules'
     | 'review'
     | 'cancel-review'
-    | 'checking-projects'
-    | 'editors-required'
     | 'registering-projects'
     | 'registration-complete';
 
@@ -27,11 +25,21 @@ export type RemoteProjectPostGitIdentityStep = 'submodules' | 'review';
 
 export type RemoteProjectGitIdentityWarning = 'identity' | 'preset';
 
-export type RemoteProjectRegistrationOutcome = {
+type RemoteProjectRegistrationOutcomeBase = {
     project: RemoteDiscoveredProject;
-    status: 'added' | 'skipped' | 'failed';
-    error?: string;
+    originalName: string;
+    launcherName: string;
 };
+
+export type RemoteProjectRegistrationOutcome =
+    | (RemoteProjectRegistrationOutcomeBase & {
+          status: 'added';
+          error?: never;
+      })
+    | (RemoteProjectRegistrationOutcomeBase & {
+          status: 'skipped' | 'failed';
+          error: string;
+      });
 
 export type RemoteProjectSubmoduleActivityEntry = {
     id: number;

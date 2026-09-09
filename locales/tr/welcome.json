@@ -82,7 +82,7 @@
     "windowsStep": {
         "title": "Windows Notu",
         "intro": "1.4.0 sürümünden başlayarak, Godot Launcher her proje için editöre <code>sembolik bağlantılar</code> oluşturabilir. Kurulumu basit tutmak için artık varsayılan olarak yerel kopyalar kullanıyoruz. Daha düşük disk kullanımı istediğinizde <strong>Ayarlar → Davranış → Editör sembolik bağlantıları</strong> bölümünden sembolik bağlantıları istediğiniz zaman etkinleştirebilirsiniz.",
-        "change1": "Windows'ta sembolik bağlantı oluşturmak yönetici ayrıcalıkları ve yükseltilmiş komut yürütme gerektirir. Launcher artık yalnızca sembolik bağlantılar oluşturulurken izinleri yükseltir.",
+        "change1": "Windows'ta sembolik bağlantı oluşturmak yönetici ayrıcalıkları ve yükseltilmiş komut yürütme gerektirir. Godot Launcher artık yalnızca sembolik bağlantılar oluşturulurken izinleri yükseltir.",
         "change2": "Yalnızca PC'nizde <code>Yönetici</code> değilseniz ve <code>Geliştirici Modu</code> etkin değilse UAC istemi göreceksiniz.",
         "change3": "Sembolik bağlantıları denemek için hazır mısınız? Ara sıra yetki yükseltme istemi için hazır olduğunuzda Ayarlar'da <strong>Editör sembolik bağlantılarını</strong> açın.",
         "dotnetNote": "NOT: .NET tabanlı editörler kullanıyorsanız, .NET SDK'yı <ButtonLink>Microsoft .NET web sitesinden</ButtonLink> <Icon /> yüklemeniz gerekir"
@@ -96,72 +96,72 @@
     },
     "onboarding": {
         "steps": {
-            "welcome": "Welcome",
-            "appearance": "Appearance",
-            "setup": "Setup",
-            "preferences": "Preferences"
+            "welcome": "Hoş geldiniz",
+            "appearance": "Görünüm",
+            "setup": "Kurulum",
+            "preferences": "Tercihler"
         },
-        "progressLabel": "Onboarding progress",
-        "reassurance": "You can change these options later in Settings.",
+        "progressLabel": "İlk kurulum ilerlemesi",
+        "reassurance": "Bu seçenekleri daha sonra Ayarlar'dan değiştirebilirsiniz.",
         "welcome": {
-            "title": "Welcome",
-            "description": "Set up the launcher for the way you work.",
-            "expectation": "In a few short steps, choose where projects and editors are stored, connect a code editor, and set the launch behavior you prefer.",
-            "benefitsLabel": "What the launcher helps you do",
-            "officialAndCustomEditors": "Install and manage official or custom Godot editors.",
-            "projectSettings": "Keep editor choices and settings separate for each project.",
-            "codeEditorIntegration": "Open project files in a detected code editor."
+            "title": "Hoş geldiniz",
+            "description": "Godot Launcher'ı çalışma şeklinize göre ayarlayın.",
+            "expectation": "Birkaç kısa adımda projelerin ve editörlerin depolanacağı konumları seçin, bir kod editörü bağlayın ve tercih ettiğiniz başlatma davranışını belirleyin.",
+            "benefitsLabel": "Godot Launcher ile yapabilecekleriniz",
+            "officialAndCustomEditors": "Resmî veya özel Godot editörlerini yükleyin ve yönetin.",
+            "projectSettings": "Her proje için editör seçimini ve ayarları ayrı tutun.",
+            "codeEditorIntegration": "Proje dosyalarını algılanan bir kod editöründe açın."
         },
         "appearance": {
-            "title": "Choose your appearance",
-            "description": "Choose how the launcher looks. Your selection is applied immediately.",
-            "preview": "You can change the appearance later in Settings."
+            "title": "Görünümü seçin",
+            "description": "Godot Launcher'ın görünümünü seçin. Seçiminiz hemen uygulanır.",
+            "preview": "Görünümü daha sonra Ayarlar'dan değiştirebilirsiniz."
         },
         "setup": {
-            "title": "Choose your setup",
-            "description": "Confirm the default locations and optionally choose a detected code editor.",
-            "recommended": "Recommended",
-            "selectProjectsLocation": "Choose the projects location",
-            "selectEditorLocation": "Choose the editors location",
-            "browseProjectsLocation": "Browse for a projects location",
-            "browseEditorLocation": "Browse for an editors location",
-            "codeEditor": "Default code editor",
-            "codeEditorHelp": "Used when opening scripts and files from the launcher. You can change this later.",
-            "noCodeEditor": "None",
-            "detectingCodeEditors": "Detecting installed code editors...",
-            "codeEditorDetectionFailed": "Code editors could not be detected. You can configure one later in Settings.",
-            "detected": "Detected",
-            "advancedOptions": "Advanced options",
+            "title": "Kurulumu seçin",
+            "description": "Varsayılan konumları onaylayın ve isterseniz algılanan bir kod editörü seçin.",
+            "recommended": "Önerilen",
+            "selectProjectsLocation": "Projelerin konumunu seçin",
+            "selectEditorLocation": "Editörlerin konumunu seçin",
+            "browseProjectsLocation": "Projeler için konum seçmek üzere göz atın",
+            "browseEditorLocation": "Editörler için konum seçmek üzere göz atın",
+            "codeEditor": "Varsayılan kod editörü",
+            "codeEditorHelp": "Godot Launcher üzerinden betik ve dosya açarken kullanılır. Daha sonra değiştirebilirsiniz.",
+            "noCodeEditor": "Yok",
+            "detectingCodeEditors": "Yüklü kod editörleri algılanıyor...",
+            "codeEditorDetectionFailed": "Kod editörleri algılanamadı. Daha sonra Ayarlar'dan bir editör yapılandırabilirsiniz.",
+            "detected": "Algılandı",
+            "advancedOptions": "Gelişmiş seçenekler",
             "platformNotice": {
-                "windows": "By default, Windows keeps a local editor copy for each project. Advanced options can enable editor symlinks to reduce disk use.",
-                "macos": "macOS keeps a local editor copy for each project because launching editors through symlinks can be unreliable.",
-                "linux": "Linux uses editor symlinks for projects to reduce disk use while keeping project settings separate."
+                "windows": "Windows'ta varsayılan olarak her proje için editörün yerel bir kopyası tutulur. Disk kullanımını azaltmak için gelişmiş seçeneklerden sembolik bağlantılar etkinleştirilebilir.",
+                "macos": "macOS'te sembolik bağlantılar üzerinden editör başlatmak güvenilir olmayabileceğinden her proje için editörün yerel bir kopyası tutulur.",
+                "linux": "Linux, proje ayarlarını ayrı tutarken disk kullanımını azaltmak için editörlere sembolik bağlantılar kullanır."
             }
         },
         "preferences": {
-            "title": "Choose your preferences",
-            "description": "Set what the launcher does after opening a project and when your computer starts.",
-            "afterLaunching": "After launching a project",
-            "keepOpen": "Keep the launcher open",
-            "keepOpenHelp": "Leave the launcher window visible.",
-            "minimizeHelp": "Minimize the launcher window.",
-            "closeToTrayHelp": "Hide the launcher window and keep it available from the system tray.",
-            "closeToTrayFallback": "If a system tray is unavailable, the launcher stays open.",
-            "trayUnavailable": "System tray support could not be confirmed. Tray actions will safely fall back to keeping the launcher window open.",
-            "startupTitle": "Startup",
-            "startWithComputer": "Start the launcher when the computer starts",
-            "startInTray": "Start in the system tray",
-            "startInTrayFallback": "Falls back to a normal window if the tray is unavailable."
+            "title": "Tercihlerinizi seçin",
+            "description": "Godot Launcher'ın bir proje açıldıktan sonra ve bilgisayar başladığında ne yapacağını belirleyin.",
+            "afterLaunching": "Bir proje başlatıldıktan sonra",
+            "keepOpen": "Godot Launcher'ı açık tut",
+            "keepOpenHelp": "Godot Launcher penceresini görünür tutar.",
+            "minimizeHelp": "Godot Launcher penceresini simge durumuna küçültür.",
+            "closeToTrayHelp": "Godot Launcher penceresini gizler ve sistem tepsisinden erişilebilir tutar.",
+            "closeToTrayFallback": "Sistem tepsisi kullanılamıyorsa Godot Launcher açık kalır.",
+            "trayUnavailable": "Sistem tepsisi desteği doğrulanamadı. Tepsi işlemleri yerine güvenli biçimde Godot Launcher penceresi açık tutulur.",
+            "startupTitle": "Başlangıç",
+            "startWithComputer": "Bilgisayar başladığında Godot Launcher'ı başlat",
+            "startInTray": "Sistem tepsisinde başlat",
+            "startInTrayFallback": "Sistem tepsisi kullanılamıyorsa normal bir pencere açar."
         },
         "navigation": {
-            "finishInstall": "Finish and install an editor",
-            "finishProjects": "Finish and view projects"
+            "finishInstall": "Bitir ve bir editör yükle",
+            "finishProjects": "Bitir ve projeleri görüntüle"
         },
         "errors": {
-            "directoryPicker": "The folder picker could not be opened. Enter an absolute path instead.",
-            "absolutePath": "Enter an absolute folder path.",
-            "saveSetup": "Setup could not be saved. Your previous preferences are unchanged.",
-            "finish": "Onboarding could not be completed. Review your choices and try again."
+            "directoryPicker": "Klasör seçici açılamadı. Bunun yerine mutlak bir yol girin.",
+            "absolutePath": "Mutlak bir klasör yolu girin.",
+            "saveSetup": "Kurulum kaydedilemedi. Önceki tercihleriniz değiştirilmedi.",
+            "finish": "İlk kurulum tamamlanamadı. Seçimlerinizi gözden geçirip tekrar deneyin."
         }
     }
 }

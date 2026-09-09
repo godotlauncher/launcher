@@ -1,6 +1,9 @@
-/* @config "../../tailwind.config.js"; */
 @import "tailwindcss";
 @plugin "daisyui";
+
+@theme {
+    --font-sans: "Nunito Sans", sans-serif;
+}
 
 @plugin "daisyui/theme" {
     name: "light";
@@ -28,7 +31,7 @@
     --color-warning-content: oklch(41% 0.112 45.904);
     --color-error: oklch(71% 0.194 13.428);
     --color-error-content: oklch(27% 0.105 12.094);
-    --radius-selector: 0.5rem;
+    --radius-selector: 0.25rem;
     --radius-field: 0.375rem;
     --radius-box: 0.5rem;
     --size-selector: 0.25rem;
@@ -64,7 +67,7 @@
     --color-warning-content: oklch(41% 0.112 45.904);
     --color-error: oklch(71% 0.194 13.428);
     --color-error-content: oklch(27% 0.105 12.094);
-    --radius-selector: 0.5rem;
+    --radius-selector: 0.25rem;
     --radius-field: 0.375rem;
     --radius-box: 0.5rem;
     --size-selector: 0.25rem;
@@ -76,6 +79,19 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+@media (forced-colors: none) {
+    :focus-visible,
+    .btn:has(:focus-visible),
+    label:has(:focus-visible) {
+        outline-width: 1px;
+        outline-color: color-mix(
+            in oklch,
+            var(--color-base-content) 20%,
+            transparent
+        );
+    }
+}
+
 @keyframes reveal-after-delay {
     from {
         visibility: hidden;
@@ -84,24 +100,6 @@
     to {
         visibility: visible;
     }
-}
-
-:focus-visible {
-    outline: 2px solid
-        color-mix(in oklab, var(--color-primary) 40%, transparent);
-    outline-offset: 1px;
-    @apply border-primary/50;
-}
-
-.input:focus-within,
-.input:focus-visible,
-.input:focus,
-.select:focus-within,
-.select:focus,
-.select:open,
-.path-field-input:focus-visible {
-    outline: none;
-    box-shadow: none;
 }
 
 .reveal-after-one-second {
@@ -161,6 +159,17 @@
     font-style: normal;
 }
 
+*,
+*::before,
+*::after,
+::file-selector-button {
+    cursor: default;
+}
+
+:where(.link, .btn-link):not(:disabled, [aria-disabled="true"]):hover {
+    text-decoration-line: none;
+}
+
 @font-face {
     font-family: "Nunito Sans";
     src: url("/assets/Nunito_Sans/NunitoSans-Italic-VariableFont_YTLC,opsz,wdth,wght.ttf")
@@ -177,52 +186,8 @@ body,
     margin: 0;
     padding: 0;
 
-    background-color: "#1d232a";
-
-    font-family: "Nunito Sans", sans-serif;
+    font-family: var(--font-sans);
     font-size: 14px;
 
     @apply select-none;
-    /* @apply bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100; */
-}
-/*
-.btn-primary {
-  @apply text-slate-50;
-
-}
-
-.btn-primary:disabled {
-  @apply text-slate-50/50 bg-primary/50;
-} */
-
-/* Desktop controls use the native arrow. External links opt into the hand. */
-#root
-:where(
-    a,
-    button,
-    [role="button"],
-    [role="link"],
-    [role="menuitem"],
-    [role="option"],
-    [role="tab"],
-    input[type="button"],
-    input[type="checkbox"],
-    input[type="file"],
-    input[type="radio"],
-    input[type="range"],
-    input[type="reset"],
-    input[type="submit"],
-    label,
-    select,
-    summary
-) {
-    cursor: default;
-}
-
-#root [data-external-link] {
-    cursor: pointer;
-}
-
-#root :where(:disabled, [aria-disabled="true"], .cursor-not-allowed) {
-    cursor: not-allowed;
 }

@@ -8,11 +8,11 @@ import type {
     RemoteRepositorySummary,
     ToolIntegrationSummary,
 } from '@shared/contracts';
-import type { SelectFieldOption } from '../../components/ui/selectField.component';
+import type { SelectFieldOption } from '../../components/ui/select-field.component';
 import {
     getCreateProjectDirectorySegment,
     normalizeBasePathForJoin,
-} from '../subViews/createProject/createProject.model';
+} from '../sub-views/create-project/create-project.model';
 
 export type GitAvailability = 'loading' | 'available' | 'unavailable';
 
@@ -313,10 +313,10 @@ export function appendRemoteRepositories(
  */
 export function getRemoteRepositoryRowClassName(selected: boolean): string {
     const base =
-        'btn h-auto min-h-0 w-full justify-start rounded-box px-3 py-2 text-left text-sm font-normal shadow-none focus-visible:outline-none';
+        'flex w-full items-center gap-3 rounded-md px-3 py-3 text-left text-base transition-colors focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2 disabled:opacity-60';
     return selected
-        ? `${base} btn-soft btn-primary hover:border-primary hover:bg-primary/10 hover:text-primary focus-visible:border-primary focus-visible:bg-primary/10 focus-visible:text-primary`
-        : `${base} btn-ghost`;
+        ? `${base} bg-primary/10 text-primary`
+        : `${base} bg-base-content/2 enabled:hover:bg-base-content/5`;
 }
 
 /**

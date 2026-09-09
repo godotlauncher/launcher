@@ -112,12 +112,12 @@
         "retry": "Veröffentlichung erneut versuchen",
         "checkAndRetry": "Prüfen und erneut versuchen",
         "useRepository": "Dieses Repository verwenden",
-        "recoveryRepositoryFound": "GitHub enthält dieses exakte leere Repository. Bestätigen Sie, dass Launcher es verwenden soll.",
+        "recoveryRepositoryFound": "GitHub enthält dieses exakte leere Repository. Bestätigen Sie, dass Godot Launcher es verwenden soll.",
         "retryFailed": "Die Veröffentlichung konnte nicht wiederholt werden. Das lokale Projekt ist weiterhin sicher.",
         "continueLocally": "Lokal fortfahren",
         "openGitHub": "GitHub öffnen",
         "localTitle": "Projekt lokal behalten",
-        "localMessage": "Das Projekt bleibt auf diesem Computer und in Ihrer Launcher-Bibliothek.",
+        "localMessage": "Das Projekt bleibt auf diesem Computer und in Ihrer Godot Launcher-Bibliothek.",
         "requiresInitialCommit": "Die Veröffentlichung erfordert ein neues Git-Repository mit einem ersten Commit.",
         "publicationFailed": "Das Projekt wurde lokal erstellt, aber die GitHub-Veröffentlichung wurde nicht abgeschlossen.",
         "attemptExpired": "Dieser Veröffentlichungsversuch ist abgelaufen. Das lokale Projekt ist weiterhin sicher.",
@@ -136,19 +136,19 @@
             "repository-name-unavailable-or-policy-rejected": "GitHub konnte diesen Repository-Namen nicht verwenden. Er ist möglicherweise bereits vergeben oder durch eine Organisationsrichtlinie gesperrt.",
             "rate-limited": "GitHub begrenzt Anfragen vorübergehend. Versuchen Sie es später erneut.",
             "network-unavailable": "Die Netzwerkverbindung ist während der Veröffentlichung fehlgeschlagen.",
-            "remote-creation-uncertain": "Launcher konnte nicht bestätigen, ob GitHub das Repository erstellt hat. Stellen Sie die Verbindung wieder her und prüfen Sie es erneut.",
-            "recovered-repository-not-empty": "GitHub enthält dieses Repository, aber es ist nicht leer. Launcher veröffentlicht nicht darin.",
+            "remote-creation-uncertain": "Godot Launcher konnte nicht bestätigen, ob GitHub das Repository erstellt hat. Stellen Sie die Verbindung wieder her und prüfen Sie es erneut.",
+            "recovered-repository-not-empty": "GitHub enthält dieses Repository, aber es ist nicht leer. Godot Launcher veröffentlicht nicht darin.",
             "remote-created-origin-failed": "Das private Repository wurde erstellt, konnte aber nicht mit dem lokalen Projekt verbunden werden.",
             "remote-created-push-failed": "Das private Repository wurde erstellt, aber das Projekt konnte nicht übertragen werden.",
-            "remote-created-verification-failed": "Das Projekt wurde möglicherweise übertragen, aber Launcher konnte dies nicht bestätigen.",
-            "local-repository-changed": "Das lokale Git-Repository hat sich geändert. Launcher hat den erneuten Versuch beendet.",
+            "remote-created-verification-failed": "Das Projekt wurde möglicherweise übertragen, aber Godot Launcher konnte dies nicht bestätigen.",
+            "local-repository-changed": "Das lokale Git-Repository hat sich geändert. Godot Launcher hat den erneuten Versuch beendet.",
             "provider-unavailable": "GitHub konnte die Anfrage nicht abschließen."
         }
     },
     "existingRepository": {
         "confirmationTitle": "Dieses Projekt wird sich in einem anderen Git-Repository befinden",
         "warningMessage": "Der ausgewählte Ordner befindet sich im Git-Repository unter {{root}}.",
-        "gitSkipped": "Launcher erstellt kein separates Git-Repository und keinen ersten Commit.",
+        "gitSkipped": "Godot Launcher erstellt kein separates Git-Repository und keinen ersten Commit.",
         "gitLfsSkipped": "Git LFS wird nicht eingerichtet.",
         "githubSkipped": "Das Projekt wird nicht auf GitHub veröffentlicht.",
         "question": "Möchten Sie fortfahren?",
@@ -238,6 +238,6 @@
         "failedGitLfsInstall": "Git LFS konnte für das neue Repository nicht installiert werden",
         "failedGitLfsTrack": "Die Git-LFS-Tracking-Regeln konnten nicht hinzugefügt werden",
         "failedGitLfsVerify": "Die Git-LFS-Konfiguration konnte nicht überprüft werden",
-        "failedProjectRecovery": "Die Git-LFS-Einrichtung ist fehlgeschlagen und Launcher konnte den Projektordner nicht wiederherstellen. Prüfen Sie '{{path}}', bevor Sie es erneut versuchen"
+        "failedProjectRecovery": "Die Git-LFS-Einrichtung ist fehlgeschlagen und Godot Launcher konnte den Projektordner nicht wiederherstellen. Prüfen Sie '{{path}}', bevor Sie es erneut versuchen"
     }
 }

@@ -497,8 +497,14 @@ test('Tooltip stays inside the viewport without expanding settings overflow', as
     );
     await mainPage.mouse.move(0, 0);
     await expect(tooltip).toHaveCount(0);
-    await defaultButton.focus();
-    await expect(tooltip).toBeVisible();
+    const focusTooltipWithKeyboard = async () => {
+        await defaultButton.focus();
+        await mainPage.keyboard.press('Tab');
+        await mainPage.keyboard.press('Shift+Tab');
+        await expect(defaultButton).toBeFocused();
+        await expect(tooltip).toBeVisible();
+    };
+    await focusTooltipWithKeyboard();
 
     const assertInsideViewport = async () => {
         const box = await tooltip.boundingBox();
@@ -577,14 +583,12 @@ test('Tooltip stays inside the viewport without expanding settings overflow', as
     await defaultButton.blur();
     await expect(tooltip).toHaveCount(0);
 
-    await defaultButton.focus();
-    await expect(tooltip).toBeVisible();
+    await focusTooltipWithKeyboard();
     await mainPage.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);
 
     await defaultButton.blur();
-    await defaultButton.focus();
-    await expect(tooltip).toBeVisible();
+    await focusTooltipWithKeyboard();
     await defaultButton.press('Enter');
     await expect(tooltip).toHaveCount(0);
 });
@@ -632,9 +636,8 @@ test('Code Editor settings lock overlapping actions and recover from a failed up
         name: 'Disable Visual Studio Code?',
     });
     await expect(disableDialog).toBeVisible();
-    await expect(disableDialog).toContainText(
-        'Configured projects: 3. .NET projects: 1.',
-    );
+    await expect(disableDialog).toContainText('Configured projects: 3');
+    await expect(disableDialog).toContainText('.NET projects: 1');
     await expect(disableDialog).toContainText(
         'Existing projects will keep this editor selection',
     );
@@ -796,9 +799,8 @@ test('Code Editor drawer confirms disabling when settings are saved', async () =
         name: 'Disable Visual Studio Code?',
     });
     await expect(disableDialog).toBeVisible();
-    await expect(disableDialog).toContainText(
-        'Configured projects: 3. .NET projects: 1.',
-    );
+    await expect(disableDialog).toContainText('Configured projects: 3');
+    await expect(disableDialog).toContainText('.NET projects: 1');
     await expect(
         readRecordedIpcCalls(electronApp, 'integrationUpdate'),
     ).resolves.toHaveLength(0);

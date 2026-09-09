@@ -11,6 +11,7 @@ type ProjectsWelcomeProps = {
     onCreateProject: () => void;
     onAddFromComputer: () => void;
     onAddFromGitHub: () => void;
+    onAddFromPublicGit: () => void;
 };
 
 /**
@@ -25,53 +26,62 @@ export const ProjectsWelcome: React.FC<ProjectsWelcomeProps> = ({
     onCreateProject,
     onAddFromComputer,
     onAddFromGitHub,
+    onAddFromPublicGit,
 }) => (
     <section
-        className="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center py-12"
+        className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-y-auto px-3 py-6 text-base"
         aria-labelledby="projectsWelcomeHeading"
         data-testid="projectsWelcome"
     >
-        <div className="text-center">
-            <h2
-                id="projectsWelcomeHeading"
-                className="text-3xl font-semibold text-base-content"
-            >
-                {t('emptyState.welcome.heading')}
-            </h2>
-            <p className="mt-2 text-base text-base-content/65">
-                {t('emptyState.welcome.description')}
-            </p>
-        </div>
-        <div className="mt-14 grid grid-cols-1 divide-y divide-base-content/15 md:grid-cols-2 md:divide-x md:divide-y-0">
-            <WelcomeChoice
-                icon={FolderPlus}
-                heading={t('emptyState.welcome.newProject.heading')}
-                description={t('emptyState.welcome.newProject.description')}
-                actionLabel={t('emptyState.welcome.newProject.action')}
-                actionTestId="btnWelcomeCreateProject"
-                onAction={onCreateProject}
-            />
-            <WelcomeChoice
-                icon={FolderOpen}
-                heading={t('emptyState.welcome.existingProject.heading')}
-                description={t(
-                    'emptyState.welcome.existingProject.description',
-                )}
-                actionLabel={t(
-                    'emptyState.welcome.existingProject.fromComputer',
-                )}
-                actionTestId="btnWelcomeAddFromComputer"
-                onAction={onAddFromComputer}
-                secondaryAction={{
-                    available: gitAvailable,
-                    unavailableReason: t(
-                        'emptyState.welcome.existingProject.gitRequired',
-                    ),
-                    label: t('emptyState.welcome.existingProject.fromGitHub'),
-                    testId: 'btnWelcomeAddFromGitHub',
-                    onAction: onAddFromGitHub,
-                }}
-            />
+        <div className="my-auto shrink-0 py-6">
+            <div className="text-center">
+                <h2
+                    id="projectsWelcomeHeading"
+                    className="text-2xl font-semibold"
+                >
+                    {t('emptyState.welcome.heading')}
+                </h2>
+                <p className="mt-2 text-base-content/75">
+                    {t('emptyState.welcome.description')}
+                </p>
+            </div>
+            <div className="mt-10 grid grid-cols-2 divide-x divide-base-content/5">
+                <WelcomeChoice
+                    icon={FolderPlus}
+                    heading={t('emptyState.welcome.newProject.heading')}
+                    description={t('emptyState.welcome.newProject.description')}
+                    actionLabel={t('emptyState.welcome.newProject.action')}
+                    actionTestId="btnWelcomeCreateProject"
+                    onAction={onCreateProject}
+                />
+                <WelcomeChoice
+                    icon={FolderOpen}
+                    heading={t('emptyState.welcome.existingProject.heading')}
+                    description={t(
+                        'emptyState.welcome.existingProject.description',
+                    )}
+                    actionLabel={t(
+                        'emptyState.welcome.existingProject.fromComputer',
+                    )}
+                    actionTestId="btnWelcomeAddFromComputer"
+                    onAction={onAddFromComputer}
+                    secondaryAction={{
+                        available: gitAvailable,
+                        unavailableReason: t(
+                            'emptyState.welcome.existingProject.gitRequired',
+                        ),
+                        label: t(
+                            'emptyState.welcome.existingProject.fromGitHub',
+                        ),
+                        testId: 'btnWelcomeAddFromGitHub',
+                        onAction: onAddFromGitHub,
+                        publicGitLabel: t(
+                            'emptyState.welcome.existingProject.fromPublicGit',
+                        ),
+                        onPublicGit: onAddFromPublicGit,
+                    }}
+                />
+            </div>
         </div>
     </section>
 );
@@ -89,6 +99,8 @@ type WelcomeChoiceProps = {
         label: string;
         testId: string;
         onAction: () => void;
+        publicGitLabel: string;
+        onPublicGit: () => void;
     };
 };
 
@@ -109,23 +121,21 @@ const WelcomeChoice: React.FC<WelcomeChoiceProps> = ({
 }) => {
     const reasonId = useId();
     return (
-        <div className="flex flex-col items-center px-6 py-10 text-center md:px-14">
+        <div className="flex flex-col items-center px-6 py-8 text-center">
             <div
-                className="flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15"
+                className="flex size-16 items-center justify-center rounded-md text-primary ring-1 ring-primary/15"
                 aria-hidden="true"
             >
-                <Icon className="size-8" strokeWidth={1.75} />
+                <Icon className="size-8" />
             </div>
-            <h3 className="mt-8 text-2xl font-semibold text-base-content">
-                {heading}
-            </h3>
-            <p className="mt-3 max-w-xs whitespace-pre-line text-base text-base-content/65">
+            <h3 className="mt-6 text-base font-semibold">{heading}</h3>
+            <p className="mt-3 max-w-xs whitespace-pre-line text-base-content/75">
                 {description}
             </p>
-            <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
+            <div className="mt-6 flex w-full max-w-xs flex-col gap-3">
                 <button
                     type="button"
-                    className="btn btn-primary w-full"
+                    className="btn btn-primary w-full text-base"
                     data-testid={actionTestId}
                     onClick={onAction}
                 >
@@ -135,7 +145,7 @@ const WelcomeChoice: React.FC<WelcomeChoiceProps> = ({
                     <>
                         <button
                             type="button"
-                            className="btn btn-neutral w-full"
+                            className="btn btn-neutral w-full text-base"
                             data-testid={secondaryAction.testId}
                             disabled={!secondaryAction.available}
                             aria-describedby={
@@ -153,10 +163,19 @@ const WelcomeChoice: React.FC<WelcomeChoiceProps> = ({
                             />
                             {secondaryAction.label}
                         </button>
+                        <button
+                            type="button"
+                            className="link link-primary self-center text-base disabled:opacity-50"
+                            data-testid="btnWelcomeAddFromPublicGit"
+                            disabled={!secondaryAction.available}
+                            onClick={secondaryAction.onPublicGit}
+                        >
+                            {secondaryAction.publicGitLabel}
+                        </button>
                         <p
                             id={reasonId}
-                            className={`text-sm text-base-content/60 ${secondaryAction.available ? 'invisible' : ''}`}
                             aria-hidden={secondaryAction.available}
+                            className={`text-sm text-base-content/60 ${secondaryAction.available ? 'invisible' : ''}`}
                         >
                             {secondaryAction.unavailableReason}
                         </p>

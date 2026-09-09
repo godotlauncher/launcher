@@ -9,17 +9,18 @@
     "emptyState": {
         "welcome": {
             "heading": "Bir proje ekleyin veya oluşturun",
-            "description": "Mevcut çalışmanızı Launcher'a getirin veya yeni bir şeye başlayın.",
+            "description": "Mevcut çalışmanızı Godot Launcher'a getirin veya yeni bir şeye başlayın.",
             "newProject": {
                 "heading": "Yeni proje",
-                "description": "Bir Godot sürümü seçin.\nGerekirse Launcher indirir.",
+                "description": "Bir Godot sürümü seçin.\nGerekirse Godot Launcher indirir.",
                 "action": "Proje oluştur"
             },
             "existingProject": {
                 "heading": "Mevcut proje",
-                "description": "Launcher, her projenin ihtiyaç duyduğu\nGodot sürümünü bulur.",
+                "description": "Godot Launcher, her projenin ihtiyaç duyduğu\nGodot sürümünü bulur.",
                 "fromComputer": "Bu bilgisayardan",
                 "fromGitHub": "GitHub'dan",
+                "fromPublicGit": "Herkese açık Git URL'sinden",
                 "gitRequired": "GitHub’dan içe aktarmak için Git gereklidir"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "Proje Dosyasını Seç",
         "godotProject": "Godot Projesi",
         "editorResolution": {
+            "official": "Resmî",
             "title": "Editör sürümü gerekli",
             "message": "Bu proje için kullanılacak Godot editörünü seçin.",
             "version": "Sürüm",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "Bu depo Git alt modülleri kullanıyor",
-                "description": "Launcher yeniden taramadan önce anonim ve herkese açık HTTPS alt modüllerini başlatabilir. Bir alt modül gizliyse veya desteklenmeyen bir URL kullanıyorsa işlem durur.",
+                "description": "Godot Launcher yeniden taramadan önce anonim ve herkese açık HTTPS alt modüllerini başlatabilir. Bir alt modül gizliyse veya desteklenmeyen bir URL kullanıyorsa işlem durur.",
                 "preparing": "Alt modül başlatma hazırlanıyor...",
                 "initialise": "Alt modülleri başlat",
                 "continueWithoutSubmodules": "Alt modüller olmadan devam et",
@@ -236,13 +238,16 @@
             },
             "registration": {
                 "preserved": "Depo başarıyla klonlandı ve bu konumda tutuldu.",
+                "cloneKeptAt": "Klonun saklandığı konum",
                 "editorsQueued": "Seçilen düzenleyici indirmeleri Kurulumlar'a eklendi. Düzenleyicileri hazır olduğunda projeler otomatik olarak güncellenir.",
                 "adding": "Projeler ekleniyor: {{current}}/{{total}}",
                 "complete": "Proje içe aktarma tamamlandı",
+                "renamed": "Yeniden adlandırıldı",
+                "renamedFromTo": "{{original}} adı {{final}} olarak değiştirildi",
                 "added": "Eklendi",
                 "skipped": "Atlandı",
                 "failed": "Başarısız",
-                "alreadyAdded": "Bu ada veya yola sahip bir proje zaten Launcher'da bulunuyor.",
+                "alreadyAdded": "Bu ada veya yola sahip bir proje zaten Godot Launcher'da bulunuyor.",
                 "notAdded": "Proje eklenmedi."
             },
             "editorBatch": {
@@ -279,6 +284,34 @@
                 "cloneCleanupChanged": "Klon içe aktarıldıktan sonra değiştirildi veya yenisiyle değiştirildi, bu nedenle silinmedi.",
                 "cloneCleanupFailed": "Klon silinemedi. Korundu."
             }
+        },
+        "conflicts": {
+            "title": "Proje içe aktarımlarını incele",
+            "description": "Bir Godot Launcher adı seçin veya projeyi atlayın. Godot proje adları ve klasörler değişmez.",
+            "label": "Godot Launcher adı",
+            "name": "Bu ad veya ayar klasörü zaten kullanılıyor. Başka bir ad seçin veya atlayın.",
+            "folder": "Bu klasör zaten kayıtlı veya seçili. Bu girdiyi atlayın.",
+            "invalid": "Geçerli bir ad girin. Okunamayan proje dosyalarını atlayın.",
+            "skip": "Bu projeyi atla",
+            "continue": "Projeleri ekle",
+            "edit": "Adı düzenle",
+            "include": "Projeyi dahil et",
+            "badges": {
+                "ready": "Hazır",
+                "skipped": "Atlandı",
+                "name": "Ad çakışması",
+                "folder": "Zaten eklendi",
+                "invalid": "Geçersiz"
+            }
+        },
+        "editorReview": {
+            "description": "Projelerinizi eklemeden önce adları ve editörleri seçin.",
+            "requested": "İstenen",
+            "exact": "Tam sürüm",
+            "details": "Gerekli editör ayrıntıları",
+            "summary": "{{count}} seçili · {{downloads}} indirme",
+            "download": "İndirme",
+            "missing": "Editör eksik"
         }
     },
     "messages": {
@@ -416,7 +449,7 @@
             "renameLabel": "Godot projesini de yeniden adlandır",
             "loading": "Godot projesi denetleniyor...",
             "currentName": "Geçerli Godot proje adı: {{name}}",
-            "unavailable": "project.godot kullanılamıyor. Yalnızca launcher adı değiştirilebilir."
+            "unavailable": "project.godot kullanılamıyor. Yalnızca Godot Launcher adı değiştirilebilir."
         },
         "actions": {
             "installAndSave": "Yükle ve kaydet",

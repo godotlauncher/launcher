@@ -20,7 +20,7 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
     const currentIndex = onboardingStepIds.indexOf(currentStep);
 
     return (
-        <aside className="flex w-60 shrink-0 flex-col border-r border-base-300 bg-base-200/45 px-7 py-10">
+        <aside className="flex w-60 shrink-0 flex-col bg-base-200/45 px-7 py-10">
             <nav aria-label={progressLabel}>
                 <ol className="flex flex-col">
                     {onboardingStepIds.map((step, index) => {
@@ -36,51 +36,36 @@ export const OnboardingProgress: React.FC<OnboardingProgressProps> = ({
                                 <div className="flex flex-col items-center">
                                     <span
                                         className={clsx(
-                                            'flex size-9 items-center justify-center rounded-full border text-sm font-semibold',
-                                            complete || active
-                                                ? 'border-primary bg-primary text-primary-content'
-                                                : 'border-base-content/25 bg-base-100 text-base-content/70',
+                                            'badge size-9 justify-center text-base',
+                                            complete
+                                                ? 'badge-success badge-soft text-success-content dark:text-success'
+                                                : active
+                                                  ? 'badge-primary'
+                                                  : 'badge-ghost',
                                         )}
                                         aria-hidden="true"
                                     >
                                         {complete ? (
-                                            <Check
-                                                size={18}
-                                                strokeWidth={2.5}
-                                            />
+                                            <Check size={16} />
                                         ) : (
                                             index + 1
                                         )}
                                     </span>
                                     {index < onboardingStepIds.length - 1 && (
                                         <span
-                                            className={clsx(
-                                                'my-2 h-12 w-px',
-                                                complete
-                                                    ? 'bg-primary'
-                                                    : 'bg-base-content/20',
-                                            )}
+                                            className="my-2 h-12 w-px bg-base-content/10"
                                             aria-hidden="true"
                                         />
                                     )}
                                 </div>
-                                <span
-                                    className={clsx(
-                                        'pt-2 text-base',
-                                        active
-                                            ? 'font-bold text-base-content'
-                                            : 'text-base-content/75',
-                                    )}
-                                >
-                                    {labels[step]}
-                                </span>
+                                <span className="pt-2">{labels[step]}</span>
                             </li>
                         );
                     })}
                 </ol>
             </nav>
 
-            <p className="mt-auto text-sm leading-relaxed text-base-content/60">
+            <p className="mt-auto text-sm text-base-content/60">
                 {reassurance}
             </p>
         </aside>

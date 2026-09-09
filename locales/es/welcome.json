@@ -43,8 +43,8 @@
     },
     "customizeBehavior": {
         "trayAvailabilityWarning": "No se pudo confirmar la compatibilidad con la bandeja del sistema para esta sesión. Godot Launcher permanecerá visible o se cerrará en lugar de ocultarse.",
-        "trayCloseFallback": "Cerrar en la bandeja del sistema dejará el lanzador visible.",
-        "trayStartFallback": "Iniciar en la bandeja abrirá el lanzador normalmente.",
+        "trayCloseFallback": "Cerrar en la bandeja del sistema dejará Godot Launcher visible.",
+        "trayStartFallback": "Iniciar en la bandeja abrirá Godot Launcher normalmente.",
         "afterLaunching": "Después de iniciar un proyecto",
         "nothing": "Nada",
         "minimize": "Minimizar",
@@ -82,7 +82,7 @@
     "windowsStep": {
         "title": "Nota para Windows",
         "intro": "A partir de la versión 1.4.0, Godot Launcher puede crear <code>enlaces simbólicos</code> al editor para cada proyecto. Para mantener la configuración simple, ahora usamos copias locales por defecto. Puedes habilitar los enlaces simbólicos en cualquier momento desde <strong>Configuración → Comportamiento → Enlaces simbólicos del editor</strong> cuando quieras un menor uso del disco.",
-        "change1": "Crear enlaces simbólicos en Windows requiere privilegios de administrador y ejecución de comandos elevados. El lanzador ahora eleva los permisos solo al crear enlaces simbólicos.",
+        "change1": "Crear enlaces simbólicos en Windows requiere privilegios de administrador y ejecución de comandos elevados. Godot Launcher ahora eleva los permisos solo al crear enlaces simbólicos.",
         "change2": "Solo verás un aviso de UAC si no eres <code>Administrador</code> en tu PC y si el <code>Modo de desarrollador</code> no está habilitado.",
         "change3": "¿Listo para probar los enlaces simbólicos? Activa <strong>Enlaces simbólicos del editor</strong> en Configuración cuando estés preparado para el aviso de elevación ocasional.",
         "dotnetNote": "NOTA: Si estás usando editores basados en .NET, necesitas instalar el SDK de .NET desde el <ButtonLink>sitio web de Microsoft .NET</ButtonLink> <Icon />"
@@ -96,72 +96,72 @@
     },
     "onboarding": {
         "steps": {
-            "welcome": "Welcome",
-            "appearance": "Appearance",
-            "setup": "Setup",
-            "preferences": "Preferences"
+            "welcome": "Bienvenido",
+            "appearance": "Apariencia",
+            "setup": "Configuración",
+            "preferences": "Preferencias"
         },
-        "progressLabel": "Onboarding progress",
-        "reassurance": "You can change these options later in Settings.",
+        "progressLabel": "Progreso de la configuración",
+        "reassurance": "Puedes cambiar estas opciones más adelante en Ajustes.",
         "welcome": {
-            "title": "Welcome",
-            "description": "Set up the launcher for the way you work.",
-            "expectation": "In a few short steps, choose where projects and editors are stored, connect a code editor, and set the launch behavior you prefer.",
-            "benefitsLabel": "What the launcher helps you do",
-            "officialAndCustomEditors": "Install and manage official or custom Godot editors.",
-            "projectSettings": "Keep editor choices and settings separate for each project.",
-            "codeEditorIntegration": "Open project files in a detected code editor."
+            "title": "Bienvenido",
+            "description": "Configura Godot Launcher según tu forma de trabajar.",
+            "expectation": "En unos pocos pasos, elige dónde guardar los proyectos y editores, conecta un editor de código y define el comportamiento de inicio que prefieras.",
+            "benefitsLabel": "Lo que puedes hacer con Godot Launcher",
+            "officialAndCustomEditors": "Instalar y gestionar editores de Godot oficiales o personalizados.",
+            "projectSettings": "Mantener la elección del editor y los ajustes separados para cada proyecto.",
+            "codeEditorIntegration": "Abrir archivos del proyecto en un editor de código detectado."
         },
         "appearance": {
-            "title": "Choose your appearance",
-            "description": "Choose how the launcher looks. Your selection is applied immediately.",
-            "preview": "You can change the appearance later in Settings."
+            "title": "Elige la apariencia",
+            "description": "Elige el aspecto de Godot Launcher. Tu selección se aplica inmediatamente.",
+            "preview": "Puedes cambiar la apariencia más adelante en Ajustes."
         },
         "setup": {
-            "title": "Choose your setup",
-            "description": "Confirm the default locations and optionally choose a detected code editor.",
-            "recommended": "Recommended",
-            "selectProjectsLocation": "Choose the projects location",
-            "selectEditorLocation": "Choose the editors location",
-            "browseProjectsLocation": "Browse for a projects location",
-            "browseEditorLocation": "Browse for an editors location",
-            "codeEditor": "Default code editor",
-            "codeEditorHelp": "Used when opening scripts and files from the launcher. You can change this later.",
-            "noCodeEditor": "None",
-            "detectingCodeEditors": "Detecting installed code editors...",
-            "codeEditorDetectionFailed": "Code editors could not be detected. You can configure one later in Settings.",
-            "detected": "Detected",
-            "advancedOptions": "Advanced options",
+            "title": "Elige la configuración",
+            "description": "Confirma las ubicaciones predeterminadas y, si quieres, elige un editor de código detectado.",
+            "recommended": "Recomendado",
+            "selectProjectsLocation": "Elegir la ubicación de los proyectos",
+            "selectEditorLocation": "Elegir la ubicación de los editores",
+            "browseProjectsLocation": "Buscar una ubicación para los proyectos",
+            "browseEditorLocation": "Buscar una ubicación para los editores",
+            "codeEditor": "Editor de código predeterminado",
+            "codeEditorHelp": "Se usa para abrir scripts y archivos desde Godot Launcher. Puedes cambiarlo más adelante.",
+            "noCodeEditor": "Ninguno",
+            "detectingCodeEditors": "Detectando editores de código instalados...",
+            "codeEditorDetectionFailed": "No se pudieron detectar editores de código. Puedes configurar uno más adelante en Ajustes.",
+            "detected": "Detectado",
+            "advancedOptions": "Opciones avanzadas",
             "platformNotice": {
-                "windows": "By default, Windows keeps a local editor copy for each project. Advanced options can enable editor symlinks to reduce disk use.",
-                "macos": "macOS keeps a local editor copy for each project because launching editors through symlinks can be unreliable.",
-                "linux": "Linux uses editor symlinks for projects to reduce disk use while keeping project settings separate."
+                "windows": "En Windows se guarda de forma predeterminada una copia local del editor para cada proyecto. Las opciones avanzadas permiten activar enlaces simbólicos para reducir el uso de disco.",
+                "macos": "En macOS se guarda una copia local del editor para cada proyecto, ya que iniciarlo mediante enlaces simbólicos puede no ser fiable.",
+                "linux": "Linux usa enlaces simbólicos a los editores para reducir el uso de disco y mantener separados los ajustes de cada proyecto."
             }
         },
         "preferences": {
-            "title": "Choose your preferences",
-            "description": "Set what the launcher does after opening a project and when your computer starts.",
-            "afterLaunching": "After launching a project",
-            "keepOpen": "Keep the launcher open",
-            "keepOpenHelp": "Leave the launcher window visible.",
-            "minimizeHelp": "Minimize the launcher window.",
-            "closeToTrayHelp": "Hide the launcher window and keep it available from the system tray.",
-            "closeToTrayFallback": "If a system tray is unavailable, the launcher stays open.",
-            "trayUnavailable": "System tray support could not be confirmed. Tray actions will safely fall back to keeping the launcher window open.",
-            "startupTitle": "Startup",
-            "startWithComputer": "Start the launcher when the computer starts",
-            "startInTray": "Start in the system tray",
-            "startInTrayFallback": "Falls back to a normal window if the tray is unavailable."
+            "title": "Elige tus preferencias",
+            "description": "Define qué hace Godot Launcher después de abrir un proyecto y al iniciar el equipo.",
+            "afterLaunching": "Después de iniciar un proyecto",
+            "keepOpen": "Mantener Godot Launcher abierto",
+            "keepOpenHelp": "Dejar visible la ventana de Godot Launcher.",
+            "minimizeHelp": "Minimizar la ventana de Godot Launcher.",
+            "closeToTrayHelp": "Ocultar la ventana de Godot Launcher y mantenerla disponible en la bandeja del sistema.",
+            "closeToTrayFallback": "Si la bandeja del sistema no está disponible, Godot Launcher permanece abierto.",
+            "trayUnavailable": "No se pudo confirmar la compatibilidad con la bandeja del sistema. Por seguridad, sus acciones mantendrán abierta la ventana de Godot Launcher.",
+            "startupTitle": "Inicio",
+            "startWithComputer": "Iniciar Godot Launcher al encender el equipo",
+            "startInTray": "Iniciar en la bandeja del sistema",
+            "startInTrayFallback": "Abre una ventana normal si la bandeja del sistema no está disponible."
         },
         "navigation": {
-            "finishInstall": "Finish and install an editor",
-            "finishProjects": "Finish and view projects"
+            "finishInstall": "Finalizar e instalar un editor",
+            "finishProjects": "Finalizar y ver los proyectos"
         },
         "errors": {
-            "directoryPicker": "The folder picker could not be opened. Enter an absolute path instead.",
-            "absolutePath": "Enter an absolute folder path.",
-            "saveSetup": "Setup could not be saved. Your previous preferences are unchanged.",
-            "finish": "Onboarding could not be completed. Review your choices and try again."
+            "directoryPicker": "No se pudo abrir el selector de carpetas. Introduce una ruta absoluta.",
+            "absolutePath": "Introduce una ruta de carpeta absoluta.",
+            "saveSetup": "No se pudo guardar la configuración. Tus preferencias anteriores no han cambiado.",
+            "finish": "No se pudo completar la configuración inicial. Revisa tus elecciones e inténtalo de nuevo."
         }
     }
 }

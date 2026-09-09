@@ -1,0 +1,121 @@
+import type { SetAutoStartResult, UserPreferences } from '@shared/contracts';
+import {
+    createContext,
+    type PropsWithChildren,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
+} from 'react';
+import { appBridge } from '../renderer.bridge.ts';
+
+interface AppPreferences {
+    preferences: UserPreferences | null;
+    savePreferences: (preferences: UserPreferences) => Promise<UserPreferences>;
+    loadPreferences: () => Promise<UserPreferences>;
+    updatePreferences: (
+        preferences: Partial<UserPreferences>,
+    ) => Promise<UserPreferences>;
+    setAutoStart: (
+        autoStart: boolean,
+        hidden: boolean,
+    ) => Promise<SetAutoStartResult>;
+    setAutoUpdates: (enabled: boolean) => Promise<boolean>;
+    setReceiveBetaUpdates: (enabled: boolean) => Promise<boolean>;
+    platform: string;
+}
+
+const preferencesContext = createContext<AppPreferences>({} as AppPreferences);
+
+export const usePreferences = () => {
+    const context = useContext(preferencesContext);
+    if (!context) {
+        throw new Error('usePreferences must be used within a PrefsProvider');
+    }
+    return context;
+};
+
+type AppPreferencesProviderProps = PropsWithChildren;
+
+export const PreferencesProvider: React.FC<AppPreferencesProviderProps> = ({
+    children,
+}) => {
+    const [preferences, setPreferences] = useState<UserPreferences | null>(
+        null,
+    );
+    const [platform, setPlatform] = useState<string>('');
+
+    const loadPreferences = useCallback(async () => {
+        const preferences = await appBridge.getUserPreferences();
+        setPreferences(preferences);
+        return preferences;
+    }, []);
+
+    const savePreferences = useCallback(
+        async (preferences: UserPreferences) => {
+            const newPreferences =
+                await appBridge.setUserPreferences(preferences);
+            setPreferences({ ...newPreferences });
+            return newPreferences;
+        },
+        [],
+    );
+
+    useEffect(() => {
+        appBridge.getPlatform().then(setPlatform);
+        // Load preferences on mount - this is intentional initial data fetching
+        void loadPreferences();
+    }, [loadPreferences]);
+
+    const updatePreferences = useCallback(
+        async (newPrefs: Partial<UserPreferences>) => {
+            const prefs = { ...preferences, ...newPrefs } as UserPreferences;
+            return savePreferences(prefs);
+        },
+        [preferences, savePreferences],
+    );
+
+    const setAutoStart = async (
+        autoStart: boolean,
+        hidden: boolean,
+    ): Promise<SetAutoStartResult> => {
+        const result = await appBridge.setAutoStart(autoStart, hidden);
+        await loadPreferences();
+        return result;
+    };
+
+    const setAutoUpdates = async (enabled: boolean): Promise<boolean> => {
+        const result = await appBridge.setAutoCheckUpdates(enabled);
+        await loadPreferences();
+        return result;
+    };
+
+    const setReceiveBetaUpdates = async (
+        enabled: boolean,
+    ): Promise<boolean> => {
+        setPreferences((prev) =>
+            prev ? { ...prev, receive_beta_updates: enabled } : prev,
+        );
+        const result = await appBridge.setReceiveBetaUpdates(enabled);
+        await loadPreferences();
+        return result;
+    };
+
+    return (
+        <preferencesContext.Provider
+            value={{
+                platform,
+                preferences,
+                savePreferences,
+                loadPreferences,
+                updatePreferences,
+                setAutoStart,
+                setAutoUpdates,
+                setReceiveBetaUpdates,
+            }}
+        >
+            {' '}
+            {children}
+        </preferencesContext.Provider>
+    );
+};

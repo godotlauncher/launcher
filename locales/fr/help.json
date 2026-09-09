@@ -5,7 +5,7 @@
         "title": "Godot Launcher",
         "changelog": "Journal des modifications",
         "homePage": "Page d'accueil",
-        "docs": "Documentation du Launcher"
+        "docs": "Documentation du Godot Launcher"
     },
     "godot": {
         "title": "Moteur Godot",

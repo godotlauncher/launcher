@@ -40,7 +40,7 @@
     "removeCustomEditor": {
         "menuLabel": "移除自訂編輯器",
         "title": "移除自訂編輯器",
-        "message": "要從啟動器中移除自訂編輯器「{{name}}」嗎？",
+        "message": "要從 Godot Launcher 中移除自訂編輯器「{{name}}」嗎？",
         "detail": "這會取消註冊自訂編輯器，但不會刪除裝置上的編輯器檔案。"
     }
 }

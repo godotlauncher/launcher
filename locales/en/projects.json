@@ -9,17 +9,18 @@
     "emptyState": {
         "welcome": {
             "heading": "Add or create a project",
-            "description": "Bring your existing work into Launcher, or start something new.",
+            "description": "Bring your existing work into Godot Launcher, or start something new.",
             "newProject": {
                 "heading": "New project",
-                "description": "Choose a Godot version.\nLauncher downloads it if needed.",
+                "description": "Choose a Godot version.\nGodot Launcher downloads it if needed.",
                 "action": "Create project"
             },
             "existingProject": {
                 "heading": "Existing project",
-                "description": "Launcher finds the Godot\nversion each project needs.",
+                "description": "Godot Launcher finds the Godot\nversion each project needs.",
                 "fromComputer": "From this computer",
                 "fromGitHub": "From GitHub",
+                "fromPublicGit": "From public Git URL",
                 "gitRequired": "Git is required to import from GitHub"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "Select Project File",
         "godotProject": "Godot Project",
         "editorResolution": {
+            "official": "Official",
             "title": "Editor version required",
             "message": "Choose the Godot editor to use for this project.",
             "version": "Version",
@@ -193,7 +195,7 @@
                 "addProjects": "Add selected projects ({{count}})",
                 "cloneAndAdd": "Clone and add project",
                 "cancelImport": "Cancel import",
-                "retryRegistration": "Retry adding to Launcher",
+                "retryRegistration": "Retry adding to Godot Launcher",
                 "reviewAndRetry": "Review and retry",
                 "close": "Close",
                 "done": "Done",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "This repository uses Git submodules",
-                "description": "Launcher can initialise anonymous public HTTPS submodules before scanning again. It stops if a submodule is private or uses an unsupported URL.",
+                "description": "Godot Launcher can initialise anonymous public HTTPS submodules before scanning again. It stops if a submodule is private or uses an unsupported URL.",
                 "preparing": "Preparing submodule initialisation...",
                 "initialise": "Initialise submodules",
                 "continueWithoutSubmodules": "Continue without submodules",
@@ -236,13 +238,16 @@
             },
             "registration": {
                 "preserved": "The repository was cloned successfully and has been kept at this location.",
+                "cloneKeptAt": "Clone kept at",
                 "editorsQueued": "Selected editor downloads were added to Installs. Projects update automatically when their editors are ready.",
                 "adding": "Adding projects: {{current}}/{{total}}",
                 "complete": "Project import complete",
+                "renamed": "Renamed",
+                "renamedFromTo": "Renamed from {{original}} to {{final}}",
                 "added": "Added",
                 "skipped": "Skipped",
                 "failed": "Failed",
-                "alreadyAdded": "A project with this name or path is already in Launcher.",
+                "alreadyAdded": "A project with this name or path is already in Godot Launcher.",
                 "notAdded": "The project was not added."
             },
             "editorBatch": {
@@ -274,11 +279,39 @@
                 "discoveryLimitExceeded": "The repository was cloned, but it is too large or deeply nested to scan safely.",
                 "finaliseFailed": "The completed clone could not be moved to its destination.",
                 "cancelled": "The import was cancelled.",
-                "registration-failed": "The repository was cloned but could not be added to Launcher.",
+                "registration-failed": "The repository was cloned but could not be added to Godot Launcher.",
                 "cloneFolderOpenFailed": "The clone folder could not be opened.",
                 "cloneCleanupChanged": "The clone has changed or been replaced since the import, so it was not deleted.",
                 "cloneCleanupFailed": "The clone could not be deleted. It has been kept."
             }
+        },
+        "conflicts": {
+            "title": "Review project imports",
+            "description": "Choose a display name in Godot Launcher or skip a project. Godot project names and folders stay unchanged.",
+            "label": "Name in Godot Launcher",
+            "name": "This name or its settings folder is already in use. Choose another name or skip.",
+            "folder": "This folder is already registered or selected. Skip this entry.",
+            "invalid": "Enter a valid name. Unreadable project files must be skipped.",
+            "skip": "Skip this project",
+            "continue": "Add projects",
+            "edit": "Edit name",
+            "include": "Include project",
+            "badges": {
+                "ready": "Ready",
+                "skipped": "Skipped",
+                "name": "Name conflict",
+                "folder": "Already added",
+                "invalid": "Invalid"
+            }
+        },
+        "editorReview": {
+            "description": "Choose names and editors before adding your projects.",
+            "requested": "Requested",
+            "exact": "Exact",
+            "details": "Editor requirement details",
+            "summary": "{{count}} selected · Downloads: {{downloads}}",
+            "download": "Download",
+            "missing": "Missing editor"
         }
     },
     "messages": {
@@ -295,7 +328,7 @@
         "failedAddProject": "Failed to add project: {{error}}",
         "dropProjectFilesHere": "Drop Godot project files here",
         "dropProjectFilesHelpPrefix": "Drop one or more",
-        "dropProjectFilesHelpSuffix": "files to add them to the launcher.",
+        "dropProjectFilesHelpSuffix": "files to add them to Godot Launcher.",
         "invalidReasons": {
             "missingProjectFile": "Project file not found. Check the project location or remove and re-add the project.",
             "missingEditor": "The selected editor is unavailable. Mount the drive or choose another editor."
@@ -416,7 +449,7 @@
             "renameLabel": "Also rename Godot project",
             "loading": "Checking Godot project...",
             "currentName": "Current Godot project name: {{name}}",
-            "unavailable": "project.godot is unavailable. Only the launcher name can be changed."
+            "unavailable": "project.godot is unavailable. Only the name shown in Godot Launcher can be changed."
         },
         "actions": {
             "installAndSave": "Install and save",

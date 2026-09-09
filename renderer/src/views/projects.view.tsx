@@ -9,41 +9,42 @@ import { useTranslation } from 'react-i18next';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
-} from '../components/ui/actionMenu.component';
-import { WaitingForDialogOverlay } from '../components/waitingForDialogOverlay.component';
-import { useAlerts } from '../hooks/useAlerts';
-import { useAppNavigation } from '../hooks/useAppNavigation';
-import { usePreferences } from '../hooks/usePreferences';
-import { useProjects } from '../hooks/useProjects';
-import { useRelease } from '../hooks/useRelease';
-import { useToolIntegrations } from '../hooks/useToolIntegrations';
+} from '../components/ui/action-menu.component';
+import { ContentDivider } from '../components/ui/content-divider.component';
+import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
+import { useAlerts } from '../hooks/alerts.hook';
+import { useAppNavigation } from '../hooks/app-navigation.hook';
+import { usePreferences } from '../hooks/preferences.hook';
+import { useProjects } from '../hooks/projects.hook';
+import { useRelease } from '../hooks/release.hook';
+import { useToolIntegrations } from '../hooks/tool-integrations.hook';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
-import { ProjectActionsMenu } from './projects/components/projectActionsMenu.component';
-import { ProjectFoldersMenu } from './projects/components/projectFoldersMenu.component';
+import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
+import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
+import { ProjectsDropOverlay } from './projects/components/projects-drop-overlay.component';
+import { ProjectsHeader } from './projects/components/projects-header.component';
+import { ProjectsList } from './projects/components/projects-list.component';
 import { ProjectsWelcome } from './projects/components/projects-welcome.component';
-import { ProjectsDropOverlay } from './projects/components/projectsDropOverlay.component';
-import { ProjectsHeader } from './projects/components/projectsHeader.component';
-import { ProjectsList } from './projects/components/projectsList.component';
 import {
     RemoteProjectImportModal,
     type RemoteProjectSource,
 } from './projects/components/remote-project-import.modal';
-import { useAddProjectWorkflow } from './projects/hooks/useAddProjectWorkflow';
-import { useProjectActions } from './projects/hooks/useProjectActions';
-import { useProjectDropImport } from './projects/hooks/useProjectDropImport';
+import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hook';
+import { useProjectActions } from './projects/hooks/project-actions.hook';
+import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
 import type { ProjectViewMode } from './projects/project-view.types';
 import {
     getInvalidProjectMessageKey,
     getProjectSections,
     getProjectsViewState,
-} from './projects/projectsView.model';
+} from './projects/projects-view.model';
 import {
     type GitAvailability,
     getGitAvailability,
 } from './projects/remote-project-import.model';
-import { CreateProjectDrawer } from './subViews/createProjectDrawer.subview';
-import { ProjectSettingsDrawer } from './subViews/projectSettingsDrawer.subview';
+import { CreateProjectDrawer } from './sub-views/create-project-drawer.subview';
+import { ProjectSettingsDrawer } from './sub-views/project-settings-drawer.subview';
 
 type ProjectsViewProps = {
     createOpen?: boolean;
@@ -68,6 +69,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 }) => {
     const { t, i18n } = useTranslation([
         'projects',
+        'installs',
         'common',
         'menus',
         'dialogs',
@@ -195,7 +197,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         importProjectEditorSettings,
         removeProject,
     });
-    const { handleAddProjectResult, onAddProject } = useAddProjectWorkflow({
+    const {
+        handleAddProjectResult,
+        onAddProject,
+        importLocalProjects,
+        localImportDialog,
+    } = useAddProjectWorkflow({
         t,
         addingProject,
         projectsLocation: preferences?.projects_location,
@@ -246,8 +253,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         t,
         addAlert,
         setAddingProject,
-        addProject,
-        handleAddProjectResult,
+        importLocalProjects,
     });
 
     /**
@@ -403,28 +409,27 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 
     return (
         <>
-            {addingProject && (
-                <WaitingForDialogOverlay
-                    className="z-20"
-                    message={
-                        loadingProgress
-                            ? t('messages.addingProjects', {
-                                  current: loadingProgress.current,
-                                  total: loadingProgress.total,
-                              })
-                            : t('messages.waitingForDialog')
-                    }
-                />
-            )}
-
             {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag-and-drop requires event handlers on container */}
             <div
-                className="flex flex-col h-full w-full overflow-auto p-1"
+                className="relative flex h-full min-h-0 w-full flex-col overflow-hidden p-1"
                 onDragEnter={handleDragEnter}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
             >
+                {addingProject && (
+                    <WaitingForDialogOverlay
+                        className="z-20"
+                        message={
+                            loadingProgress
+                                ? t('messages.addingProjects', {
+                                      current: loadingProgress.current,
+                                      total: loadingProgress.total,
+                                  })
+                                : t('messages.waitingForDialog')
+                        }
+                    />
+                )}
                 {isDraggingOver && <ProjectsDropOverlay t={t} />}
                 {!showEmptyState && (
                     <ProjectsHeader
@@ -447,6 +452,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         createLabel={t('buttons.newProject')}
                         copyPathLabel={t('common:buttons.copyPath')}
                         copiedLabel={t('common:success')}
+                        showControls={!showEmptyState}
                     />
                 )}
 
@@ -459,12 +465,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         onAddFromGitHub={() =>
                             openRemoteProjectSource('github')
                         }
+                        onAddFromPublicGit={() =>
+                            openRemoteProjectSource('public-git-url')
+                        }
                     />
                 )}
                 {!showEmptyState && (
                     <>
-                        <div className="divider m-0"></div>
+                        <ContentDivider />
                         <ProjectsList
+                            searchQuery={textSearch}
+                            onClearSearch={() => setTextSearch('')}
                             viewMode={projectViewMode}
                             sections={projectSections}
                             projectGitHubUrls={projectGitHubUrls}
@@ -603,6 +614,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 open={createOpen}
                 onOpenChange={setCreateOpen}
             />
+            {localImportDialog}
             <RemoteProjectImportModal
                 source={remoteProjectSource}
                 onOpenChange={(open) => {

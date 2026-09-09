@@ -1,0 +1,143 @@
+import type {
+    InstalledRelease,
+    ReleaseInstallProgress,
+    ReleaseSummary,
+} from '@shared/contracts';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it, vi } from 'vitest';
+import { InstallReleaseTable } from './install-release-table.component';
+
+const invalidRelease: InstalledRelease = {
+    version: '4.2.0',
+    version_number: 40200,
+    install_path: '/missing/Godot',
+    editor_path: '/missing/Godot/Godot',
+    platform: 'darwin',
+    arch: 'arm64',
+    mono: false,
+    prerelease: false,
+    config_version: 5,
+    published_at: '2024-01-01T00:00:00Z',
+    valid: false,
+};
+
+let downloadingStandardRelease = false;
+let standardProgress: ReleaseInstallProgress | undefined;
+
+vi.mock('../hooks/release.hook', () => ({
+    useRelease: () => ({
+        getInstalledRelease: (version: string, mono: boolean) =>
+            version === invalidRelease.version && mono === invalidRelease.mono
+                ? invalidRelease
+                : undefined,
+        getReleaseInstallProgress: (version: string, mono: boolean) =>
+            version === invalidRelease.version && mono === invalidRelease.mono
+                ? standardProgress
+                : undefined,
+        isDownloadingRelease: vi.fn(
+            (version: string, mono: boolean) =>
+                downloadingStandardRelease &&
+                version === invalidRelease.version &&
+                mono === invalidRelease.mono,
+        ),
+    }),
+}));
+
+vi.mock('react-i18next', () => {
+    const dictionary: Record<string, string> = {
+        'installEditor:table.headers.version': 'Version',
+        'installEditor:table.headers.released': 'Released',
+        'installEditor:table.headers.download': 'Download',
+        'installEditor:table.gdscript': 'Standard',
+        'installEditor:table.dotnet': '.NET',
+        'installEditor:table.installing': 'Installing...',
+        'installEditor:table.status.unavailable': 'Unavailable',
+        'installEditor:table.tooltips.installedGDScript':
+            'Godot {{version}} Standard is installed',
+        'installEditor:table.tooltips.installedDotNet':
+            'Godot {{version}} .NET is installed',
+        'installEditor:table.tooltips.downloadGDScript':
+            'Install Godot {{version}} Standard',
+        'installEditor:table.tooltips.downloadDotNet':
+            'Install Godot {{version}} .NET',
+        'installEditor:table.tooltips.reinstallGDScript':
+            'Reinstall Godot {{version}} Standard',
+        'installEditor:table.tooltips.reinstallDotNet':
+            'Reinstall Godot {{version}} .NET',
+        'common:buttons.reinstall': 'Reinstall',
+        'installEditor:progress.downloading': 'Downloading',
+        'installEditor:progress.cancelLabel': 'Cancel install',
+    };
+
+    return {
+        useTranslation: (namespaces?: string[]) => ({
+            t: (key: string, opts?: { ns?: string; version?: string }) => {
+                const namespace =
+                    opts?.ns ??
+                    (Array.isArray(namespaces) ? namespaces[0] : namespaces);
+                const dictKey = namespace ? `${namespace}:${key}` : key;
+                const value = dictionary[dictKey] ?? key;
+                return opts?.version
+                    ? value.replace('{{version}}', opts.version)
+                    : value;
+            },
+        }),
+    };
+});
+
+const releaseSummary: ReleaseSummary = {
+    version: '4.2.0',
+    version_number: 40200,
+    name: 'Godot 4.2.0',
+    published_at: '2024-01-01T00:00:00Z',
+    draft: false,
+    prerelease: false,
+    assets: [],
+};
+
+describe('InstallReleaseTable', () => {
+    it('shows warning reinstall action for invalid installed releases instead of download', () => {
+        downloadingStandardRelease = false;
+        standardProgress = undefined;
+        const html = renderToStaticMarkup(
+            <InstallReleaseTable
+                releases={[releaseSummary]}
+                onInstall={vi.fn()}
+                onReinstall={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('Reinstall');
+        expect(html).toContain('Reinstall Godot 4.2.0 Standard');
+        expect(html).not.toContain('Unavailable');
+        expect(html).not.toContain('Install Godot 4.2.0 Standard');
+    });
+
+    it('shows installing state when reinstall is in progress', () => {
+        downloadingStandardRelease = true;
+        standardProgress = {
+            id: 'install-1',
+            version: invalidRelease.version,
+            mono: invalidRelease.mono,
+            prerelease: invalidRelease.prerelease,
+            published_at: invalidRelease.published_at,
+            stage: 'downloading',
+            canCancel: false,
+            percent: 55,
+            receivedBytes: 55,
+            totalBytes: 100,
+        };
+        const html = renderToStaticMarkup(
+            <InstallReleaseTable
+                releases={[releaseSummary]}
+                onInstall={vi.fn()}
+                onReinstall={vi.fn()}
+            />,
+        );
+
+        expect(html).toContain('Downloading');
+        expect(html).toContain('55%');
+        expect(html).toContain('progress');
+        expect(html).not.toContain('Reinstall');
+    });
+});

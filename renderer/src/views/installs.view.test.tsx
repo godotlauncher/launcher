@@ -18,7 +18,7 @@ const releaseState = vi.hoisted(() => ({
     hasError: undefined as string | undefined,
 }));
 
-vi.mock('../hooks/useAlerts', () => ({
+vi.mock('../hooks/alerts.hook', () => ({
     useAlerts: () => ({
         addAlert,
         clearAlerts: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock('../hooks/useAlerts', () => ({
     }),
 }));
 
-vi.mock('../hooks/usePreferences', () => ({
+vi.mock('../hooks/preferences.hook', () => ({
     usePreferences: () => ({
         preferences: {
             install_location: '/Users/test/GodotEditors',
@@ -36,11 +36,11 @@ vi.mock('../hooks/usePreferences', () => ({
     }),
 }));
 
-vi.mock('../hooks/useProjects', () => ({
+vi.mock('../hooks/projects.hook', () => ({
     useProjects: () => ({ projects: [] }),
 }));
 
-vi.mock('../hooks/useRelease', () => {
+vi.mock('../hooks/release.hook', () => {
     return {
         useRelease: () => ({
             availableReleases: [],

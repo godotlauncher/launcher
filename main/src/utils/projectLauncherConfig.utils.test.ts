@@ -22,6 +22,35 @@ const release: InstalledRelease = {
 };
 
 describe('projectLauncherConfig.utils', () => {
+    it.each(['My project', 'Demo "one" = #value', '日本語 \\ project'])(
+        'round-trips a saved Launcher name: %s',
+        (projectName) => {
+            const config = createProjectLauncherConfig({
+                release,
+                launcherVersion: '1.11.1',
+                projectName,
+            });
+            expect(
+                parseProjectLauncherConfig(
+                    serializeProjectLauncherConfig(config),
+                )?.launcher.project_name,
+            ).toBe(projectName);
+        },
+    );
+
+    it('ignores invalid optional names without losing editor metadata', () => {
+        const original = serializeProjectLauncherConfig(
+            createProjectLauncherConfig({ release, launcherVersion: '1.11.1' }),
+        );
+        const content = original.replace(
+            '[launcher]',
+            '[launcher]\nproject_name="bad\\nname"',
+        );
+        const parsed = parseProjectLauncherConfig(content);
+        expect(parsed?.launcher.project_name).toBeUndefined();
+        expect(parsed?.editor.version).toBe(release.version);
+    });
+
     it('serializes the v1 project config shape', () => {
         const config = createProjectLauncherConfig({
             release,

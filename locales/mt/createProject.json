@@ -112,12 +112,12 @@
         "retry": "Erġa' pprova ppubblika",
         "checkAndRetry": "Iċċekkja u erġa' pprova",
         "useRepository": "Uża dan ir-repożitorju",
-        "recoveryRepositoryFound": "GitHub fih eżatt dan ir-repożitorju vojt. Ikkonferma li trid lil Launcher jużah.",
+        "recoveryRepositoryFound": "GitHub fih eżatt dan ir-repożitorju vojt. Ikkonferma li trid lil Godot Launcher jużah.",
         "retryFailed": "Ma setax jerġa' jipprova. Il-proġett lokali għadu sigur.",
         "continueLocally": "Kompli lokalment",
         "openGitHub": "Iftaħ GitHub",
         "localTitle": "Il-proġett inżamm lokalment",
-        "localMessage": "Il-proġett jibqa' fuq dan il-kompjuter u fil-librerija tal-Launcher.",
+        "localMessage": "Il-proġett jibqa' fuq dan il-kompjuter u fil-librerija tal-Godot Launcher.",
         "requiresInitialCommit": "Il-pubblikazzjoni teħtieġ repożitorju Git ġdid b'commit inizjali.",
         "publicationFailed": "Il-proġett inħoloq lokalment, iżda l-pubblikazzjoni fuq GitHub ma tlestietx.",
         "attemptExpired": "Dan it-tentattiv skada. Il-proġett lokali għadu sigur.",
@@ -136,19 +136,19 @@
             "repository-name-unavailable-or-policy-rejected": "GitHub ma setax juża dan l-isem. Jista' jeżisti jew ikun imblukkat minn regola tal-organizzazzjoni.",
             "rate-limited": "GitHub qed jillimita t-talbiet temporanjament. Erġa' pprova aktar tard.",
             "network-unavailable": "Il-konnessjoni tan-netwerk falliet waqt il-pubblikazzjoni.",
-            "remote-creation-uncertain": "Launcher ma setax jikkonferma li GitHub ħoloq ir-repożitorju. Erġa' qabbad u mbagħad iċċekkja u erġa' pprova.",
-            "recovered-repository-not-empty": "GitHub fih dan ir-repożitorju, iżda mhuwiex vojt. Launcher mhux se jippubblika fih.",
-            "remote-created-origin-failed": "Ir-repożitorju privat inħoloq, iżda Launcher ma setax jgħaqqdu mal-proġett lokali.",
+            "remote-creation-uncertain": "Godot Launcher ma setax jikkonferma li GitHub ħoloq ir-repożitorju. Erġa' qabbad u mbagħad iċċekkja u erġa' pprova.",
+            "recovered-repository-not-empty": "GitHub fih dan ir-repożitorju, iżda mhuwiex vojt. Godot Launcher mhux se jippubblika fih.",
+            "remote-created-origin-failed": "Ir-repożitorju privat inħoloq, iżda Godot Launcher ma setax jgħaqqdu mal-proġett lokali.",
             "remote-created-push-failed": "Ir-repożitorju privat inħoloq, iżda l-proġett ma setax jintbagħat.",
-            "remote-created-verification-failed": "Il-proġett seta' ntbagħat, iżda Launcher ma setax jivverifika.",
-            "local-repository-changed": "Ir-repożitorju Git lokali nbidel, għalhekk Launcher waqqaf it-tentattiv.",
+            "remote-created-verification-failed": "Il-proġett seta' ntbagħat, iżda Godot Launcher ma setax jivverifika.",
+            "local-repository-changed": "Ir-repożitorju Git lokali nbidel, għalhekk Godot Launcher waqqaf it-tentattiv.",
             "provider-unavailable": "GitHub ma setax ilesti t-talba."
         }
     },
     "existingRepository": {
         "confirmationTitle": "Dan il-proġett se jkun ġewwa repożitorju Git ieħor",
         "warningMessage": "Il-folder li għażilt jinsab fir-repożitorju Git f'{{root}}.",
-        "gitSkipped": "Launcher mhux se joħloq repożitorju Git separat jew commit inizjali.",
+        "gitSkipped": "Godot Launcher mhux se joħloq repożitorju Git separat jew commit inizjali.",
         "gitLfsSkipped": "Git LFS mhux se jiġi kkonfigurat.",
         "githubSkipped": "Il-proġett mhux se jiġi ppubblikat fuq GitHub.",
         "question": "Trid tkompli?",
@@ -238,6 +238,6 @@
         "failedGitLfsInstall": "Ma rnexxiex jiġi installat Git LFS għar-repository il-ġdid",
         "failedGitLfsTrack": "Ma rnexxiex jiżdiedu r-regoli ta' traċċar ta' Git LFS",
         "failedGitLfsVerify": "Ma rnexxiex tiġi vverifikata l-konfigurazzjoni ta' Git LFS",
-        "failedProjectRecovery": "Il-konfigurazzjoni ta' Git LFS falliet u Launcher ma setax jirrestawra l-folder tal-proġett. Iċċekkja '{{path}}' qabel terġa' tipprova"
+        "failedProjectRecovery": "Il-konfigurazzjoni ta' Git LFS falliet u Godot Launcher ma setax jirrestawra l-folder tal-proġett. Iċċekkja '{{path}}' qabel terġa' tipprova"
     }
 }

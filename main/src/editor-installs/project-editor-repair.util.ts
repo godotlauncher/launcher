@@ -180,6 +180,7 @@ export async function setProjectEditor(
 
         await writeProjectLauncherConfig(updatedProject.path, {
             release: updatedProject.release,
+            projectName: updatedProject.name,
             launcherVersion: app.getVersion(),
         });
         const updatedProjects = [...currentProjects];

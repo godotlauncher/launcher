@@ -9,17 +9,18 @@
     "emptyState": {
         "welcome": {
             "heading": "Żid jew oħloq proġett",
-            "description": "Daħħal ix-xogħol eżistenti tiegħek fil-Launcher, jew ibda xi ħaġa ġdida.",
+            "description": "Daħħal ix-xogħol eżistenti tiegħek fil-Godot Launcher, jew ibda xi ħaġa ġdida.",
             "newProject": {
                 "heading": "Proġett ġdid",
-                "description": "Agħżel verżjoni ta' Godot.\nIl-Launcher iniżżilha jekk hemm bżonn.",
+                "description": "Agħżel verżjoni ta' Godot.\nIl-Godot Launcher iniżżilha jekk hemm bżonn.",
                 "action": "Oħloq proġett"
             },
             "existingProject": {
                 "heading": "Proġett eżistenti",
-                "description": "Il-Launcher isib il-verżjoni ta' Godot\nli jeħtieġ kull proġett.",
+                "description": "Il-Godot Launcher isib il-verżjoni ta' Godot\nli jeħtieġ kull proġett.",
                 "fromComputer": "Minn dan il-kompjuter",
                 "fromGitHub": "Minn GitHub",
+                "fromPublicGit": "Minn URL pubbliku ta' Git",
                 "gitRequired": "Git huwa meħtieġ biex timporta minn GitHub"
             }
         },
@@ -98,6 +99,7 @@
         "selectFile": "Agħżel Fajl tal-Proġett",
         "godotProject": "Proġett Godot",
         "editorResolution": {
+            "official": "Uffiċjali",
             "title": "Verżjoni tal-editur meħtieġa",
             "message": "Agħżel l-editur ta' Godot li għandu jintuża għal dan il-proġett.",
             "version": "Verżjoni",
@@ -193,7 +195,7 @@
                 "addProjects": "Żid il-proġetti magħżula ({{count}})",
                 "cloneAndAdd": "Iklonja u żid il-proġett",
                 "cancelImport": "Ikkanċella l-importazzjoni",
-                "retryRegistration": "Erġa' ipprova żid mal-Launcher",
+                "retryRegistration": "Erġa' ipprova żid mal-Godot Launcher",
                 "reviewAndRetry": "Irrevedi u erġa' pprova",
                 "close": "Agħlaq",
                 "done": "Lest",
@@ -209,7 +211,7 @@
             },
             "submodules": {
                 "title": "Dan ir-repożitorju juża submodules ta' Git",
-                "description": "Launcher jista' jinizjalizza submodules HTTPS pubbliċi u anonimi qabel jerġa' jiskennja. Jieqaf jekk submodule ikun privat jew juża URL mhux appoġġjat.",
+                "description": "Godot Launcher jista' jinizjalizza submodules HTTPS pubbliċi u anonimi qabel jerġa' jiskennja. Jieqaf jekk submodule ikun privat jew juża URL mhux appoġġjat.",
                 "preparing": "Qed titħejja l-inizjalizzazzjoni tas-submodules...",
                 "initialise": "Inizjalizza s-submodules",
                 "continueWithoutSubmodules": "Kompli mingħajr submodules",
@@ -236,13 +238,16 @@
             },
             "registration": {
                 "preserved": "Ir-repożitorju ġie kklonat b'suċċess u nżamm f'dan il-post.",
+                "cloneKeptAt": "Il-klonu nżamm fi",
                 "editorsQueued": "It-tniżżil tal-edituri magħżula żdied ma' Installazzjonijiet. Il-proġetti jaġġornaw awtomatikament meta l-edituri jkunu lesti.",
                 "adding": "Qed jiżdiedu l-proġetti: {{current}}/{{total}}",
                 "complete": "L-importazzjoni tal-proġetti tlestiet",
+                "renamed": "Isem mibdul",
+                "renamedFromTo": "Isem mibdul minn {{original}} għal {{final}}",
                 "added": "Miżjud",
                 "skipped": "Maqbuż",
                 "failed": "Falla",
-                "alreadyAdded": "Proġett b'dan l-isem jew triq diġà jinsab fil-Launcher.",
+                "alreadyAdded": "Proġett b'dan l-isem jew triq diġà jinsab fil-Godot Launcher.",
                 "notAdded": "Il-proġett ma żdiedx."
             },
             "editorBatch": {
@@ -274,11 +279,39 @@
                 "discoveryLimitExceeded": "Ir-repożitorju ġie kklonat, iżda huwa kbir wisq jew imdaħħal fil-fond biex jiġi skannjat b'mod sigur.",
                 "finaliseFailed": "Il-klonu komplut ma setax jiġi mċaqlaq lejn id-destinazzjoni tiegħu.",
                 "cancelled": "L-importazzjoni ġiet ikkanċellata.",
-                "registration-failed": "Ir-repożitorju ġie kklonat iżda ma setax jiġi miżjud mal-Launcher.",
+                "registration-failed": "Ir-repożitorju ġie kklonat iżda ma setax jiġi miżjud mal-Godot Launcher.",
                 "cloneFolderOpenFailed": "Il-folder tal-klonu ma setax jinfetaħ.",
                 "cloneCleanupChanged": "Il-klonu nbidel jew ġie sostitwit wara l-importazzjoni, għalhekk ma tħassarx.",
                 "cloneCleanupFailed": "Il-klonu ma setax jitħassar. Inżamm."
             }
+        },
+        "conflicts": {
+            "title": "Irrevedi l-importazzjonijiet",
+            "description": "Agħżel isem f’Godot Launcher jew aqbeż il-proġett. L-ismijiet ta’ Godot u l-fowlders jibqgħu l-istess.",
+            "label": "Isem f’Godot Launcher",
+            "name": "Dan l-isem jew il-fowlder tas-settings tiegħu diġà qed jintuża. Agħżel isem ieħor jew aqbeż.",
+            "folder": "Dan il-fowlder diġà huwa rreġistrat jew magħżul. Aqbeż din l-entrata.",
+            "invalid": "Daħħal isem validu. Aqbeż fajls tal-proġett li ma jistgħux jinqraw.",
+            "skip": "Aqbeż dan il-proġett",
+            "continue": "Żid il-proġetti",
+            "edit": "Editja l-isem",
+            "include": "Inkludi l-proġett",
+            "badges": {
+                "ready": "Lest",
+                "skipped": "Maqbuż",
+                "name": "Kunflitt fl-isem",
+                "folder": "Diġà miżjud",
+                "invalid": "Invalidu"
+            }
+        },
+        "editorReview": {
+            "description": "Agħżel l-ismijiet u l-edituri qabel iżżid il-proġetti tiegħek.",
+            "requested": "Mitlub",
+            "exact": "Eżatt",
+            "details": "Dettalji tal-editur meħtieġ",
+            "summary": "{{count}} magħżula · {{downloads}} downloads",
+            "download": "Niżżel",
+            "missing": "Editur nieqes"
         }
     },
     "messages": {
@@ -295,7 +328,7 @@
         "failedAddProject": "Ma setax jiżdied il-proġett: {{error}}",
         "dropProjectFilesHere": "Waqqa’ l-fajls tal-proġett Godot hawn",
         "dropProjectFilesHelpPrefix": "Waqqa’ wieħed jew aktar",
-        "dropProjectFilesHelpSuffix": "fajls biex iżżidhom mal-launcher.",
+        "dropProjectFilesHelpSuffix": "fajls biex iżżidhom ma' Godot Launcher.",
         "invalidReasons": {
             "missingProjectFile": "Il-fajl tal-proġett ma nstabx. Iċċekkja l-post tal-proġett jew neħħi u erġa’ żid il-proġett.",
             "missingEditor": "L-editur magħżul mhuwiex disponibbli. Immonta d-drive jew agħżel editur ieħor."
@@ -416,7 +449,7 @@
             "renameLabel": "Ibdel ukoll l-isem tal-proġett Godot",
             "loading": "Qed jiġi ċċekkjat il-proġett Godot...",
             "currentName": "Isem attwali tal-proġett Godot: {{name}}",
-            "unavailable": "project.godot mhux disponibbli. Jista' jinbidel biss l-isem fil-launcher."
+            "unavailable": "project.godot mhux disponibbli. Jista' jinbidel biss l-isem f'Godot Launcher."
         },
         "actions": {
             "installAndSave": "Installa u ssejvja",
