@@ -7,7 +7,7 @@ import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { ProjectListItemProps } from './project-list.types';
 
 /**
- * Keeps compact icons and labelled card badges visually consistent.
+ * Keeps compact icons at their original size and fits 14px icons inside card badges.
  * @param props - Presentation mode, warning state and badge content.
  */
 function ProjectBadge({
@@ -28,7 +28,7 @@ function ProjectBadge({
     ) : (
         <StatusBadge
             tone={warning ? 'warning' : 'neutral'}
-            className="max-w-full gap-2"
+            className="max-w-full gap-2 [&>svg]:size-[14px] [&>img]:size-[14px]"
         >
             {children}
         </StatusBadge>
