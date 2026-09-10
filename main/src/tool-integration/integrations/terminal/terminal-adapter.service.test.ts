@@ -8,9 +8,15 @@ const mocks = vi.hoisted(() => ({
     spawn: vi.fn(),
     access: vi.fn(),
     stat: vi.fn(),
+    lstat: vi.fn(),
 }));
 vi.mock('node:child_process', () => ({ spawn: mocks.spawn }));
-vi.mock('node:fs/promises', () => ({ access: mocks.access, stat: mocks.stat }));
+vi.mock('node:fs/promises', () => ({
+    access: mocks.access,
+    stat: mocks.stat,
+    lstat: mocks.lstat,
+}));
+vi.mock('electron-log', () => ({ default: { info: vi.fn(), warn: vi.fn() } }));
 
 const newLinuxTargets: TerminalTarget[] = [
     'foot',
@@ -55,7 +61,12 @@ const targets: TerminalTarget[] = [
 describe('TerminalAdapterService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
         mocks.access.mockResolvedValue(undefined);
+        mocks.lstat.mockResolvedValue({
+            isFile: () => false,
+            isSymbolicLink: () => true,
+        });
         mocks.stat.mockResolvedValue({
             isFile: () => true,
             isDirectory: () => true,
@@ -155,16 +166,22 @@ describe('TerminalAdapterService', () => {
             else if (target.id === 'kitty')
                 expect(args).toEqual(['--directory', directory]);
             else {
-                expect(args).toEqual([]);
+                expect(args).toEqual([
+                    '/d',
+                    '/c',
+                    `start "" "${target.executablePath}" /d`,
+                ]);
                 expect(options).toMatchObject({
-                    windowsHide: false,
-                    detached: true,
+                    windowsHide: true,
+                    detached: false,
+                    windowsVerbatimArguments: true,
                 });
             }
             expect(child.unref).toHaveBeenCalledTimes(
                 ![
                     'macos-terminal',
                     'windows-terminal',
+                    'command-prompt',
                     'gnome-terminal',
                 ].includes(target.id)
                     ? 1
