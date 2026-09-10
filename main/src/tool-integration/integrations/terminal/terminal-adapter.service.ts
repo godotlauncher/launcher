@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { constants } from 'node:fs';
-import { access, stat } from 'node:fs/promises';
+import { access, lstat, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type { TerminalLaunchResult } from '@shared/contracts';
@@ -90,6 +90,11 @@ export class TerminalAdapterService {
                     ? path.posix.join(TERMINAL_APP, 'Contents/MacOS/Terminal')
                     : target.executablePath;
             await access(executable, constants.X_OK);
+            if (target.id === 'windows-terminal') {
+                // Windows app execution aliases cannot reliably be followed by stat.
+                const alias = await lstat(executable);
+                return alias.isFile() || alias.isSymbolicLink();
+            }
             return (await stat(executable)).isFile();
         } catch {
             return false;
@@ -97,7 +102,7 @@ export class TerminalAdapterService {
     }
 
     /**
-     * Opens an exact directory without supplying any shell command.
+     * Opens an exact directory, keeping project paths out of shell commands.
      * @param target - Freshly resolved compiled terminal candidate.
      * @param directory - Validated absolute project directory.
      */
@@ -123,6 +128,7 @@ export class TerminalAdapterService {
         const dispatcher =
             target.id === 'macos-terminal' ||
             target.id === 'windows-terminal' ||
+            target.id === 'command-prompt' ||
             target.id === 'gnome-terminal';
         const executable =
             target.id === 'macos-terminal'
@@ -147,6 +153,10 @@ export class TerminalAdapterService {
                           : target.id === 'foot' || target.id === 'alacritty'
                             ? ['--working-directory', directory]
                             : [];
+        if (target.id === 'command-prompt') {
+            // START gives CMD its own interactive console; the project stays in cwd.
+            args.push('/d', '/c', `start "" "${executable}" /d`);
+        }
         return new Promise((resolve) => {
             try {
                 const child = spawn(executable, args, {
@@ -154,7 +164,10 @@ export class TerminalAdapterService {
                     shell: false,
                     detached: !dispatcher,
                     stdio: 'ignore',
-                    windowsHide: target.id !== 'command-prompt',
+                    windowsHide: target.id !== 'windows-terminal',
+                    ...(target.id === 'command-prompt'
+                        ? { windowsVerbatimArguments: true }
+                        : {}),
                 });
                 child.once('error', () =>
                     resolve({ success: false, reason: 'launch-failed' }),
