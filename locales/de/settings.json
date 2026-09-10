@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Terminaleinstellungen konnten nicht geladen werden.",
                 "save": "Terminaleinstellungen konnten nicht gespeichert werden.",
-                "invalidConfiguration": "Diese Terminaleinstellungen stammen aus einer neueren Version von Godot Launcher. Aktualisieren Sie Godot Launcher, bevor Sie sie ändern."
+                "invalidConfiguration": "Die gespeicherten Terminaleinstellungen verwenden ein nicht unterstütztes Format. Setzen Sie sie zurück, um die automatische Terminalauswahl zu verwenden."
+            },
+            "reset": {
+                "button": "Terminaleinstellungen zurücksetzen",
+                "title": "Terminaleinstellungen zurücksetzen?",
+                "message": "Dadurch werden gespeicherte Terminalauswahlen und benutzerdefinierte Terminaleinstellungen für alle Betriebssysteme entfernt. Andere Werkzeugeinstellungen werden nicht geändert.",
+                "confirm": "Einstellungen zurücksetzen"
             }
         },
         "git": {

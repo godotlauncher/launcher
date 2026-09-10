@@ -38,6 +38,8 @@ export type TerminalBridge = {
     getSummary(): Promise<TerminalSummary>;
     /** Rescans supported terminal installations. */
     rescan(): Promise<TerminalSummary>;
+    /** Restores automatic terminal selection on every operating system. */
+    resetConfiguration(): Promise<TerminalSummary>;
     /**
      * Remembers a compiled terminal target for this operating system.
      * @param selection - Automatic or a supported target identifier.

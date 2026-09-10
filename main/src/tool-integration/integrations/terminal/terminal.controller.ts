@@ -26,6 +26,11 @@ export class TerminalController implements TerminalBridge {
     rescan() {
         return this.service.rescan();
     }
+    /** Restores automatic terminal selection. */
+    @TerminalHandler('resetConfiguration')
+    resetConfiguration() {
+        return this.service.resetConfiguration();
+    }
     /**
      * Saves a compiled terminal choice.
      * @param selection - Automatic or a supported platform target.

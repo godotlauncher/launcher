@@ -23,7 +23,7 @@ const dialogTones = {
     },
     warning: {
         Icon: TriangleAlert,
-        iconClassName: 'text-warning-content dark:text-warning',
+        iconClassName: 'text-[color:var(--color-warning-readable)]',
         headerClassName: 'bg-warning/10',
     },
     error: {

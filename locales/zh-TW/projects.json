@@ -10,11 +10,12 @@
             "missing-project": "此專案已無法使用。",
             "missing-directory": "專案資料夾已無法使用。",
             "disabled": "終端機已停用。請在設定 > 工具 > 終端機中啟用。",
-            "invalid-configuration": "終端機設定需要處理。請開啟設定 > 工具 > 終端機。",
+            "invalid-configuration": "儲存的終端機設定與此版本的 Godot Launcher 不相容。",
             "unavailable": "找不到選取的終端機。請在設定 > 工具 > 終端機中選擇。",
             "unsupported-directory": "選取的終端機無法開啟此專案資料夾。",
             "launch-failed": "Godot Launcher 無法開啟選取的終端機。請重試或選擇其他終端機。"
-        }
+        },
+        "openSettings": "開啟終端機設定"
     },
     "title": "專案",
     "emptyState": {

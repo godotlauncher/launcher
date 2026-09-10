@@ -1,11 +1,12 @@
 import type { TerminalSelection, TerminalSummary } from '@shared/contracts';
 import logger from 'electron-log';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, TriangleAlert } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { Switch } from '../../components/ui/switch.component';
+import { useAlerts } from '../../hooks/alerts.hook';
 import { terminalBridge } from '../../renderer.bridge';
 
 type TerminalToolSettingsDrawerProps = {
@@ -22,6 +23,7 @@ export const TerminalToolSettingsDrawer: React.FC<
     TerminalToolSettingsDrawerProps
 > = ({ open, onOpenChange, onSummaryChanged }) => {
     const { t } = useTranslation(['settings', 'common']);
+    const { addCustomConfirm } = useAlerts();
     const [summary, setSummary] = useState<TerminalSummary | null>(null);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -95,6 +97,31 @@ export const TerminalToolSettingsDrawer: React.FC<
         }
     };
 
+    /** Confirms removal of unsupported terminal preferences before recovering defaults. */
+    const confirmReset = () => {
+        addCustomConfirm(
+            t('tools.terminal.reset.title'),
+            t('tools.terminal.reset.message'),
+            [
+                {
+                    isCancel: true,
+                    typeClass: 'btn-ghost',
+                    text: t('common:buttons.cancel'),
+                },
+                {
+                    typeClass: 'btn-warning',
+                    text: t('tools.terminal.reset.confirm'),
+                    onClick: () => {
+                        void update(() => terminalBridge.resetConfiguration());
+                        return true;
+                    },
+                },
+            ],
+            undefined,
+            'warning',
+        );
+    };
+
     const selected = summary?.selection ?? 'automatic';
     const resolved = summary?.targets.find(
         (target) => target.id === summary?.resolvedTargetId,
@@ -124,10 +151,31 @@ export const TerminalToolSettingsDrawer: React.FC<
                         {error}
                     </p>
                 )}
-                {summary?.enabled && !summary.configurationValid && (
-                    <p className="text-warning" role="alert">
-                        {t('tools.terminal.errors.invalidConfiguration')}
-                    </p>
+                {summary && !summary.configurationValid && (
+                    <div
+                        className="alert alert-warning alert-soft flex flex-row items-start gap-2 text-base text-[color:var(--color-warning-readable)]"
+                        role="alert"
+                    >
+                        <TriangleAlert
+                            className="size-5 shrink-0"
+                            aria-hidden="true"
+                        />
+                        <div className="flex flex-col items-start gap-3">
+                            <p>
+                                {t(
+                                    'tools.terminal.errors.invalidConfiguration',
+                                )}
+                            </p>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-warning"
+                                disabled={loading || saving}
+                                onClick={confirmReset}
+                            >
+                                {t('tools.terminal.reset.button')}
+                            </button>
+                        </div>
+                    </div>
                 )}
                 {summary && (
                     <>

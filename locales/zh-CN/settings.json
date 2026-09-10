@@ -183,7 +183,13 @@
             "errors": {
                 "load": "无法加载终端设置。",
                 "save": "无法保存终端设置。",
-                "invalidConfiguration": "终端设置由较新版本的 Godot Launcher 创建。请在修改前更新。"
+                "invalidConfiguration": "保存的终端设置使用了不受支持的格式。请重置它们以使用自动终端选择。"
+            },
+            "reset": {
+                "button": "重置终端设置",
+                "title": "重置终端设置？",
+                "message": "这将移除所有操作系统中保存的终端选择和自定义终端设置。其他工具设置不会改变。",
+                "confirm": "重置设置"
             }
         },
         "git": {

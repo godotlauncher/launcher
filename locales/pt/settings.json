@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Não foi possível carregar as definições do terminal.",
                 "save": "Não foi possível guardar as definições do terminal.",
-                "invalidConfiguration": "As definições foram criadas por uma versão mais recente do Godot Launcher. Atualize antes de as alterar."
+                "invalidConfiguration": "As definições do terminal guardadas utilizam um formato não suportado. Reponha-as para utilizar a seleção automática do terminal."
+            },
+            "reset": {
+                "button": "Repor definições do terminal",
+                "title": "Repor definições do terminal?",
+                "message": "Isto remove as escolhas de terminal guardadas e as definições personalizadas do terminal para todos os sistemas operativos. As outras definições das ferramentas não serão alteradas.",
+                "confirm": "Repor definições"
             }
         },
         "git": {

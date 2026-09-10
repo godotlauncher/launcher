@@ -183,7 +183,13 @@
             "errors": {
                 "load": "無法載入終端機設定。",
                 "save": "無法儲存終端機設定。",
-                "invalidConfiguration": "終端機設定由較新版本的 Godot Launcher 建立。請在修改前更新。"
+                "invalidConfiguration": "儲存的終端機設定使用不支援的格式。請重設設定，以使用自動終端機選擇。"
+            },
+            "reset": {
+                "button": "重設終端機設定",
+                "title": "重設終端機設定？",
+                "message": "這會移除所有作業系統中儲存的終端機選擇和自訂終端機設定。其他工具設定不會變更。",
+                "confirm": "重設設定"
             }
         },
         "git": {

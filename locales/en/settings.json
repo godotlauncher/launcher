@@ -190,7 +190,13 @@
             "errors": {
                 "load": "Unable to load terminal settings.",
                 "save": "Unable to save terminal settings.",
-                "invalidConfiguration": "Terminal settings were created by a newer version of Godot Launcher. Update Godot Launcher before changing them."
+                "invalidConfiguration": "The saved terminal settings use an unsupported format. Reset them to use automatic terminal selection."
+            },
+            "reset": {
+                "button": "Reset terminal settings",
+                "title": "Reset terminal settings?",
+                "message": "This removes saved terminal choices and custom terminal settings for all operating systems. Other tool settings will not change.",
+                "confirm": "Reset settings"
             }
         },
         "git": {

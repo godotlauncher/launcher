@@ -10,11 +10,12 @@
             "missing-project": "Este projeto já não está disponível.",
             "missing-directory": "A pasta do projeto já não está disponível.",
             "disabled": "O terminal está desativado. Ative-o em Definições > Ferramentas > Terminal.",
-            "invalid-configuration": "As definições do terminal requerem atenção. Abra Definições > Ferramentas > Terminal.",
+            "invalid-configuration": "As definições do terminal guardadas não são compatíveis com esta versão do Godot Launcher.",
             "unavailable": "O terminal selecionado não foi encontrado. Escolha um em Definições > Ferramentas > Terminal.",
             "unsupported-directory": "O terminal selecionado não consegue abrir esta pasta de projeto.",
             "launch-failed": "O Godot Launcher não conseguiu abrir o terminal selecionado. Tente novamente ou escolha outro."
-        }
+        },
+        "openSettings": "Abrir definições do terminal"
     },
     "title": "Projetos",
     "emptyState": {

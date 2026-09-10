@@ -55,4 +55,24 @@ describe('terminal configuration', () => {
         ).rejects.toThrow('Unsupported terminal configuration');
         expect(current).toEqual(original);
     });
+    it('replaces unsupported provider configuration with automatic preferences', async () => {
+        let current: Record<string, unknown> = {
+            version: 8,
+            preferences: { linux: 'custom-terminal' },
+            customTargets: [{ executablePath: '/unsafe/terminal' }],
+        };
+        const store = {
+            updateConfiguration: vi.fn(async (_id, mutate) => {
+                current = mutate(current);
+            }),
+        } as unknown as ToolIntegrationStore;
+
+        await new TerminalConfigurationService(store).reset();
+
+        expect(store.updateConfiguration).toHaveBeenCalledWith(
+            'terminal',
+            expect.any(Function),
+        );
+        expect(current).toEqual({ version: 1, preferences: {} });
+    });
 });

@@ -1,7 +1,12 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { _electron, expect, test } from '@playwright/test';
-import { createFixtureHome, prepareAppWithStubbedData, setAppLanguage } from './support/e2e-fixture-runtime';
+import {
+    applyTheme,
+    createFixtureHome,
+    prepareAppWithStubbedData,
+    setAppLanguage,
+} from './support/e2e-fixture-runtime';
 import { SAMPLE_PROJECTS } from './support/e2e-fixture-data';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
@@ -82,3 +87,152 @@ test('remembers a terminal choice and opens a stored project through the real ma
         await fs.rm(fixtureHome, { recursive: true, force: true });
     }
 });
+
+test('recovers unsupported terminal settings through the warning shortcut', async ({}, testInfo) => {
+    const fixtureHome = await createFixtureHome();
+    const configDir = path.join(fixtureHome, '.gd-launcher');
+    await fs.writeFile(
+        path.join(configDir, 'tool-integrations.json'),
+        JSON.stringify({
+            schemaVersion: 2,
+            tools: {
+                terminal: {
+                    settings: {
+                        enabled: true,
+                        executablePathOverride: null,
+                        executableArgsOverride: null,
+                    },
+                    configuration: { version: 2, preferences: { linux: 'custom' }, customTargets: ['legacy'] },
+                    installations: {},
+                },
+            },
+        }),
+    );
+    const env = Object.fromEntries(
+        Object.entries(process.env).filter(
+            (entry): entry is [string, string] => typeof entry[1] === 'string',
+        ),
+    );
+    delete env.ELECTRON_RUN_AS_NODE;
+    const app = await _electron.launch({
+        args: ['.', `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`],
+        env: {
+            ...env,
+            GODOT_LAUNCHER_E2E_FIXTURES: '1',
+            GODOT_LAUNCHER_E2E_HOME_DIR: fixtureHome,
+        },
+    });
+    try {
+        const page = await getMainWindow(app);
+        await setAppLanguage(page, 'English');
+        await prepareAppWithStubbedData(page, app, {
+            projects: [SAMPLE_PROJECTS[0]],
+            toolIntegrations: [
+                {
+                    id: 'terminal',
+                    displayName: 'Terminal',
+                    status: 'available',
+                    executablePath: '/fixture/terminal',
+                    version: null,
+                },
+            ],
+        });
+        await applyTheme(page, {
+            colorScheme: 'light',
+            toggleTestId: 'themeLight',
+        });
+        await page.getByTestId('btnProjectTerminal').first().click();
+        const warning = page.getByRole('dialog', { name: 'Warning' });
+        await expect(warning).toContainText(
+            'The saved terminal settings are incompatible with this version of Godot Launcher.',
+        );
+        await expect(warning.locator('header svg.lucide-triangle-alert')).toBeVisible();
+        await captureSettledScreenshot(
+            page,
+            testInfo.outputPath('terminal-invalid-configuration-warning-light.png'),
+        );
+        await warning.getByRole('button', { name: 'Open terminal settings' }).click();
+        const drawer = page.getByRole('dialog', { name: 'Terminal settings' });
+        const notice = drawer.getByRole('alert');
+        await expect(notice).toContainText(
+            'The saved terminal settings use an unsupported format. Reset them to use automatic terminal selection.',
+        );
+        await expect(notice.locator('svg.lucide-triangle-alert')).toBeVisible();
+        await expect(drawer.getByRole('button', { name: 'Rescan' })).toBeDisabled();
+        await expect(drawer.getByRole('radio', { name: 'Automatic' })).toBeDisabled();
+        await expect.poll(async () => {
+            const box = await drawer.boundingBox();
+            return box ? Math.round(box.x) : null;
+        }).toBe(464);
+        await captureSettledScreenshot(
+            page,
+            testInfo.outputPath('terminal-invalid-configuration-drawer-light.png'),
+        );
+        await page.keyboard.press('Escape');
+
+        await applyTheme(page, {
+            colorScheme: 'dark',
+            toggleTestId: 'themeDark',
+        });
+        await page.getByTestId('btnProjectTerminal').first().click();
+        await captureSettledScreenshot(
+            page,
+            testInfo.outputPath('terminal-invalid-configuration-warning-dark.png'),
+        );
+        await warning.getByRole('button', { name: 'Open terminal settings' }).click();
+        await expect.poll(async () => {
+            const box = await drawer.boundingBox();
+            return box ? Math.round(box.x) : null;
+        }).toBe(464);
+        await captureSettledScreenshot(
+            page,
+            testInfo.outputPath('terminal-invalid-configuration-drawer-dark.png'),
+        );
+        await page.keyboard.press('Escape');
+        await applyTheme(page, { colorScheme: 'dark', toggleTestId: 'themeAuto' });
+        await page.getByTestId('btnProjectTerminal').first().click();
+        await captureSettledScreenshot(page, testInfo.outputPath('terminal-invalid-configuration-warning-auto-dark.png'));
+        await warning.getByRole('button', { name: 'Open terminal settings' }).click();
+        await expect(drawer).toBeVisible();
+        await captureSettledScreenshot(page, testInfo.outputPath('terminal-invalid-configuration-drawer-auto-dark.png'));
+        const configPath = path.join(configDir, 'tool-integrations.json');
+        const beforeReset = JSON.parse(await fs.readFile(configPath, 'utf8'));
+        await drawer.getByRole('button', { name: 'Reset terminal settings', exact: true }).click();
+        const resetDialog = page.getByRole('dialog', { name: 'Reset terminal settings?' });
+        await expect(resetDialog).toContainText('all operating systems');
+        await resetDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+        expect(JSON.parse(await fs.readFile(configPath, 'utf8')).tools.terminal.configuration).toEqual(beforeReset.tools.terminal.configuration);
+        await drawer.getByRole('button', { name: 'Reset terminal settings', exact: true }).click();
+        await resetDialog.getByRole('button', { name: 'Reset settings', exact: true }).click();
+        await expect(drawer.getByRole('radio', { name: 'Automatic', exact: true })).toBeEnabled();
+        await expect(drawer.getByRole('radio', { name: 'Automatic', exact: true })).toBeChecked();
+        await expect(drawer.getByRole('alert')).toHaveCount(0);
+        const recovered = JSON.parse(await fs.readFile(configPath, 'utf8'));
+        expect(recovered.tools.terminal.configuration).toEqual({ version: 1, preferences: {} });
+        expect(recovered.tools.terminal.settings).toEqual(beforeReset.tools.terminal.settings);
+        await page.keyboard.press('Escape');
+        await expect(drawer).not.toBeVisible();
+        await page.getByRole('button', { name: 'Edit Terminal' }).click();
+        await expect(drawer.getByRole('radio', { name: 'Automatic', exact: true })).toBeChecked();
+        await expect(drawer.getByRole('button', { name: 'Reset terminal settings', exact: true })).toHaveCount(0);
+
+    } finally {
+        await app.close();
+        await fs.rm(fixtureHome, { recursive: true, force: true });
+    }
+});
+
+/**
+ * Waits for the transition frame before capturing a stable Electron frame.
+ *
+ * @param page - Electron renderer page.
+ * @param screenshotPath - Destination for the stable screenshot.
+ * @returns A promise that resolves after the image is written.
+ */
+async function captureSettledScreenshot(
+    page: Awaited<ReturnType<typeof getMainWindow>>,
+    screenshotPath: string,
+): Promise<void> {
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: screenshotPath, animations: 'disabled' });
+}

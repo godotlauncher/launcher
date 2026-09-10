@@ -38,10 +38,18 @@ import { ToolInstallationSettingsDrawer } from './sub-views/tool-installation-se
 
 type SettingsViewProps = {
     activeTab?: SettingsTab;
+    terminalSettingsOpen?: boolean;
+    onTerminalSettingsClose?: () => void;
     onActiveTabChange?: (tab: SettingsTab) => void;
 };
 
+/**
+ * Renders settings panels and route-requested terminal recovery.
+ * @param props - Active tab, optional terminal drawer request and navigation callbacks.
+ */
 export const SettingsView: React.FC<SettingsViewProps> = ({
+    terminalSettingsOpen = false,
+    onTerminalSettingsClose,
     activeTab: controlledActiveTab,
     onActiveTabChange,
 }) => {
@@ -856,9 +864,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 onRescan={rescanToolById}
             />
             <TerminalToolSettingsDrawer
-                open={selectedToolId === 'terminal'}
+                open={selectedToolId === 'terminal' || terminalSettingsOpen}
                 onOpenChange={(drawerOpen) => {
-                    if (!drawerOpen) setSelectedToolId(null);
+                    if (!drawerOpen) {
+                        setSelectedToolId(null);
+                        if (terminalSettingsOpen) onTerminalSettingsClose?.();
+                    }
                 }}
                 onSummaryChanged={async () => {
                     replaceToolIntegration(

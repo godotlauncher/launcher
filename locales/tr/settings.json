@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Terminal ayarları yüklenemedi.",
                 "save": "Terminal ayarları kaydedilemedi.",
-                "invalidConfiguration": "Terminal ayarları Godot Launcher'ın daha yeni bir sürümünde oluşturuldu. Değiştirmeden önce güncelleyin."
+                "invalidConfiguration": "Kayıtlı terminal ayarları desteklenmeyen bir biçim kullanıyor. Otomatik terminal seçimini kullanmak için ayarları sıfırlayın."
+            },
+            "reset": {
+                "button": "Terminal ayarlarını sıfırla",
+                "title": "Terminal ayarları sıfırlansın mı?",
+                "message": "Bu işlem, tüm işletim sistemleri için kayıtlı terminal seçimlerini ve özel terminal ayarlarını kaldırır. Diğer araç ayarları değişmez.",
+                "confirm": "Ayarları sıfırla"
             }
         },
         "git": {
