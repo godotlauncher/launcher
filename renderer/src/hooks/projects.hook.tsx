@@ -16,6 +16,8 @@ import type {
     LaunchProjectResult,
     ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
+    ProjectEditorSelection,
+    ProjectEditorSelectionExpectation,
     ProjectGitIdentityResult,
     ProjectPublicationRecoveryAction,
     ReleaseSummary,
@@ -77,7 +79,8 @@ interface ProjectsContext {
     ) => Promise<AddProjectToListResult>;
     setProjectEditor: (
         project: ProjectDetails,
-        release: InstalledRelease,
+        release: ProjectEditorSelection,
+        expectedEditor?: ProjectEditorSelectionExpectation,
     ) => Promise<ChangeProjectEditorResult>;
     queueProjectEditorRepairs: (
         requests: ProjectEditorRepairRequest[],
@@ -412,11 +415,22 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return addResult;
     };
 
+    /**
+     * Saves an editor selection, optionally only while its repair target is current.
+     * @param project - Project to update.
+     * @param release - Installed editor or official catalogue selection.
+     * @param expectedEditor - Selection that must still be current for repair.
+     */
     const setProjectEditor = async (
         project: ProjectDetails,
-        release: InstalledRelease,
+        release: ProjectEditorSelection,
+        expectedEditor?: ProjectEditorSelectionExpectation,
     ) => {
-        const result = await projectsBridge.setProjectEditor(project, release);
+        const result = await projectsBridge.setProjectEditor(
+            project,
+            release,
+            expectedEditor,
+        );
         if (result.success && result.projects) {
             setProjects(result.projects);
         }
@@ -425,7 +439,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     /**
-     * Installs one queued editor and assigns it to every associated project.
+     * Installs one queued editor and repairs projects still using that selection.
      *
      * @param request - Editor release and projects to repair in the background.
      * @returns A promise that ends after installation and project repair.
@@ -453,6 +467,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 const result = await setProjectEditor(
                     project,
                     installResult.release,
+                    { version: request.release.version, mono: request.mono },
                 );
                 if (!result.success) {
                     assignmentError ??=

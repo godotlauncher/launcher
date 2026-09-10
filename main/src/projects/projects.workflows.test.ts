@@ -281,6 +281,7 @@ function createProjectsService(
         git,
         {} as ProjectCreationService,
         tray,
+        {} as never,
         projectsStore,
         {
             inspectPublicGitSource: vi.fn(),

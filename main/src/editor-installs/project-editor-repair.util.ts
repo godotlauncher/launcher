@@ -1,8 +1,10 @@
+import { existsSync } from 'node:fs';
 import * as path from 'node:path';
 import type {
     ChangeProjectEditorResult,
     InstalledRelease,
     ProjectDetails,
+    ProjectEditorSelectionExpectation,
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
@@ -49,6 +51,7 @@ function resolveProjectEditorPath(
  * @param newRelease - Installed editor to assign.
  * @param codeEditorIntegrationService - Code editor integration facade.
  * @param projectsStore - Canonical project store.
+ * @param expectedEditor - Optional current selection required for repair.
  * @returns The bridge-compatible editor change result.
  */
 export async function setProjectEditor(
@@ -56,6 +59,7 @@ export async function setProjectEditor(
     newRelease: InstalledRelease,
     codeEditorIntegrationService: CodeEditorIntegrationService,
     projectsStore: ProjectsStore,
+    expectedEditor?: ProjectEditorSelectionExpectation,
 ): Promise<ChangeProjectEditorResult> {
     const { install_location: installLocation } = await getUserPreferences();
     const recoveredCodeEditorConfigFiles = new Set<string>();
@@ -67,6 +71,9 @@ export async function setProjectEditor(
             (candidate) => candidate.path === project.path,
         );
         if (projectIndex === -1) {
+            if (expectedEditor) {
+                return currentProjects;
+            }
             failure = {
                 success: false,
                 error: t('projects:changeEditor.errors.projectNotFound'),
@@ -75,6 +82,14 @@ export async function setProjectEditor(
         }
 
         const currentProject = currentProjects[projectIndex];
+        if (
+            expectedEditor &&
+            (currentProject.release.version !== expectedEditor.version ||
+                currentProject.release.mono !== expectedEditor.mono ||
+                currentProject.release.source === 'custom')
+        ) {
+            return currentProjects;
+        }
 
         if (
             currentProject.release.version === newRelease.version &&
@@ -162,6 +177,9 @@ export async function setProjectEditor(
             );
         }
 
+        const projectFileExists = existsSync(
+            path.resolve(currentProject.path, 'project.godot'),
+        );
         updatedProject = {
             ...currentProject,
             release: {
@@ -175,7 +193,10 @@ export async function setProjectEditor(
                 path.dirname(newEditorSettingsFile),
             ),
             editor_settings_file: newEditorSettingsFile,
-            valid: true,
+            valid: projectFileExists,
+            invalid_reason: projectFileExists
+                ? undefined
+                : 'missing_project_file',
         };
 
         await writeProjectLauncherConfig(updatedProject.path, {
@@ -192,18 +213,15 @@ export async function setProjectEditor(
         return failure;
     }
 
-    const latestProject =
-        projects.find((candidate) => candidate.path === project.path) ??
-        updatedProject;
-    if (latestProject) {
-        project.release = latestProject.release;
-        project.version = latestProject.version;
-        project.version_number = latestProject.version_number;
-        project.launch_path = latestProject.launch_path;
-        project.editor_settings_file = latestProject.editor_settings_file;
-        project.editor_settings_path = latestProject.editor_settings_path;
-        project.valid = latestProject.valid;
-        project.codeEditorId = latestProject.codeEditorId;
+    if (updatedProject) {
+        project.release = updatedProject.release;
+        project.version = updatedProject.version;
+        project.version_number = updatedProject.version_number;
+        project.launch_path = updatedProject.launch_path;
+        project.editor_settings_file = updatedProject.editor_settings_file;
+        project.editor_settings_path = updatedProject.editor_settings_path;
+        project.valid = updatedProject.valid;
+        project.codeEditorId = updatedProject.codeEditorId;
     }
 
     return {

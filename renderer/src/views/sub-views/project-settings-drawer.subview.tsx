@@ -5,6 +5,7 @@ import type {
     InitializeProjectGitResult,
     InstalledRelease,
     ProjectDetails,
+    ProjectEditorSelection,
     ProjectGitIdentityResult,
     RenameProjectOptions,
     RenameProjectResult,
@@ -29,7 +30,6 @@ import { CreateProjectEditorPicker } from './create-project/components/create-pr
 import {
     type CreateProjectEditorSelection,
     getCreateProjectReleaseKey,
-    prepareCreateProjectRelease,
 } from './create-project/create-project.model';
 import { ProjectCodeEditorSection } from './project-settings-drawer/components/project-code-editor-section.component';
 import {
@@ -59,7 +59,7 @@ type ProjectSettingsDrawerProps = {
     ) => Promise<RenameProjectResult>;
     onSetProjectEditor: (
         project: ProjectDetails,
-        release: InstalledRelease,
+        release: ProjectEditorSelection,
     ) => Promise<ProjectDetails>;
     onSetProjectCodeEditor: (
         project: ProjectDetails,
@@ -117,7 +117,6 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         hasError: catalogueError,
         refreshAvailableReleases,
         cancelInstall,
-        installRelease,
     } = useRelease();
     const [activeTab, setActiveTab] = useState<ProjectSettingsTab>('project');
     const [initialName, setInitialName] = useState('');
@@ -148,7 +147,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     const [godotError, setGodotError] = useState<string>();
     const [formError, setFormError] = useState<string>();
     const [isSavingLocally, setIsSubmitting] = useState(false);
-    const { settingsSaves, startSettingsSave, clearSettingsSave } =
+    const { settingsSaves, queueProjectEditorRepairs, clearSettingsSave } =
         useProjects();
     const settingsSave = project ? settingsSaves?.get(project.path) : undefined;
     const savingInBackground = settingsSave?.status === 'pending';
@@ -550,7 +549,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
     };
 
     /**
-     * Submits catalogue installation and settings in the background, or saves an installed selection.
+     * Saves settings and the selected editor before queuing any required download.
      *
      * @param event - The settings form submission event.
      * @returns A promise that ends after the staged settings are saved or fail.
@@ -572,85 +571,6 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
         setIsSubmitting(true);
         setFormError(undefined);
         setGodotError(undefined);
-
-        if (
-            releaseSelection.source === 'catalogue' &&
-            !releaseSelection.installedRelease
-        ) {
-            startSettingsSave(
-                project.path,
-                {
-                    name,
-                    renameGodotProject,
-                    windowed,
-                    codeEditorId,
-                    codeEditorTouched,
-                    releaseSelection,
-                },
-                async () => {
-                    const installation = prepareCreateProjectRelease(
-                        releaseSelection,
-                        installRelease,
-                    );
-                    const result = await installation;
-                    if (!result.success || !result.release) {
-                        throw new Error(
-                            result.error ?? t('editProject.updateFailed'),
-                        );
-                    }
-                    let savedProject = project;
-                    if (
-                        hasProjectRenameChanges(
-                            initialName,
-                            godotProjectName,
-                            name,
-                            renameGodotProject,
-                        )
-                    ) {
-                        const renamed = await onRenameProject(savedProject, {
-                            name: name.trim(),
-                            renameGodotProject,
-                        });
-                        if (!renamed.success) {
-                            throw new Error(
-                                renamed.error ?? t('editProject.updateFailed'),
-                            );
-                        }
-                        savedProject = renamed.project ?? {
-                            ...savedProject,
-                            name: name.trim(),
-                        };
-                    }
-                    if (
-                        hasProjectCodeEditorChanges(
-                            initialCodeEditorId,
-                            codeEditorId,
-                            codeEditorTouched,
-                        )
-                    ) {
-                        savedProject = await onSetProjectCodeEditor(
-                            savedProject,
-                            codeEditorId,
-                        );
-                    }
-                    savedProject = await onSetProjectEditor(
-                        savedProject,
-                        result.release,
-                    );
-                    if (initialWindowed !== windowed) {
-                        savedProject = await onSetProjectWindowed(
-                            savedProject,
-                            windowed,
-                        );
-                    }
-                    return savedProject;
-                },
-            );
-            setIsSubmitting(false);
-            submissionRef.current = false;
-            onOpenChange(false);
-            return;
-        }
 
         try {
             let currentProject = project;
@@ -678,7 +598,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                     (project.release.valid === false ||
                         !project.release.editor_path));
             const windowedChanged = initialWindowed !== windowed;
-            let selectedRelease: InstalledRelease | undefined;
+            let selectedRelease: ProjectEditorSelection | undefined;
 
             if (releaseChanged) {
                 if (
@@ -690,34 +610,13 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                     return;
                 }
 
-                const installResult = await prepareCreateProjectRelease(
-                    releaseSelection,
-                    installRelease,
-                );
-
-                if (submissionSession !== sessionRef.current) {
-                    return;
-                }
-
-                if (!installResult.success || !installResult.release) {
-                    setFormError(
-                        installResult.error ?? t('editProject.updateFailed'),
-                    );
-                    return;
-                }
-
-                selectedRelease = installResult.release;
-                if (releaseSelection.source === 'catalogue') {
-                    setReleaseSelection((currentSelection) =>
-                        currentSelection?.source === 'catalogue' &&
-                        currentSelection.key === releaseSelection.key
-                            ? {
-                                  ...currentSelection,
-                                  installedRelease: installResult.release,
-                              }
-                            : currentSelection,
-                    );
-                }
+                selectedRelease =
+                    releaseSelection.source === 'installed'
+                        ? releaseSelection.release
+                        : {
+                              release: releaseSelection.release,
+                              mono: releaseSelection.mono,
+                          };
             }
 
             if (renameChanged) {
@@ -771,18 +670,39 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = ({
                     currentProject,
                     selectedRelease,
                 );
-                setInitialReleaseKey(
-                    getCreateProjectReleaseKey(selectedRelease),
-                );
+                setInitialReleaseKey(selectedReleaseKey);
             }
 
             if (windowedChanged) {
-                await onSetProjectWindowed(currentProject, windowed);
+                currentProject = await onSetProjectWindowed(
+                    currentProject,
+                    windowed,
+                );
                 setInitialWindowed(windowed);
             }
 
             clearSettingsSave(project.path);
             onOpenChange(false);
+            if (
+                releaseSelection.source === 'catalogue' &&
+                (currentProject.release.valid === false ||
+                    !currentProject.release.editor_path)
+            ) {
+                void queueProjectEditorRepairs([
+                    {
+                        release: releaseSelection.release,
+                        mono: releaseSelection.mono,
+                        projects: [currentProject],
+                    },
+                ]).catch((error: unknown) => {
+                    addAlert(
+                        t('common:error'),
+                        error instanceof Error
+                            ? error.message
+                            : t('editProject.updateFailed'),
+                    );
+                });
+            }
         } catch (error) {
             if (submissionSession === sessionRef.current) {
                 setFormError(

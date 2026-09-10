@@ -1,5 +1,9 @@
 import path from 'node:path';
-import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
+import type {
+    InstalledRelease,
+    ProjectDetails,
+    ProjectEditorSelectionExpectation,
+} from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import type { ProjectsStore } from '../projects/projects.store.js';
@@ -139,17 +143,20 @@ const projectsStore = {
  * @param project - Project to update.
  * @param release - Replacement editor release.
  * @param codeEditors - Code editor integration facade.
+ * @param expectedEditor - Optional current selection required for repair.
  */
 function setProjectEditor(
     project: ProjectDetails,
     release: InstalledRelease,
     codeEditors: CodeEditorIntegrationService,
+    expectedEditor?: ProjectEditorSelectionExpectation,
 ) {
     return setProjectEditorForRepair(
         project,
         release,
         codeEditors,
         projectsStore,
+        expectedEditor,
     );
 }
 
@@ -244,7 +251,7 @@ describe('setProjectEditor', () => {
 
         SetProjectEditorRelease.mockResolvedValue('/fake/launch/new');
 
-        existsSync.mockReturnValue(false);
+        existsSync.mockReturnValue(true);
 
         writeProjectLauncherConfig.mockResolvedValue(undefined);
         integrationMocks.scanIntegration.mockResolvedValue({
@@ -497,6 +504,54 @@ describe('setProjectEditor', () => {
 
         expect(result.success).toBe(false);
         expect(result.error).toBeDefined();
+    });
+
+    it.each(['version', 'custom'] as const)(
+        'skips a repair after a %s selection change',
+        async (change) => {
+            const replacementProject = {
+                ...mockProject,
+                release: {
+                    ...mockProject.release,
+                    ...(change === 'version'
+                        ? { version: '4.4-stable' }
+                        : { source: 'custom' as const }),
+                },
+            };
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [replacementProject],
+                version: 'v1',
+            });
+
+            const result = await setProjectEditor(
+                mockProject,
+                mockNewRelease,
+                codeEditorIntegrationService,
+                { version: mockOldRelease.version, mono: mockOldRelease.mono },
+            );
+
+            expect(result).toEqual({
+                success: true,
+                projects: [replacementProject],
+            });
+            expect(SetProjectEditorRelease).not.toHaveBeenCalled();
+            expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+        },
+    );
+
+    it('skips a repair when the project was removed', async () => {
+        getProjectsSnapshot.mockResolvedValue({ projects: [], version: 'v1' });
+
+        const result = await setProjectEditor(
+            mockProject,
+            mockNewRelease,
+            codeEditorIntegrationService,
+            { version: mockOldRelease.version, mono: mockOldRelease.mono },
+        );
+
+        expect(result).toEqual({ success: true, projects: [] });
+        expect(SetProjectEditorRelease).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
     });
 
     it('should return error when trying to change to different major version', async () => {

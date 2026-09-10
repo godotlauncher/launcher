@@ -32,6 +32,18 @@ const mocks = vi.hoisted(() => ({
     updateLinuxTray: vi.fn(),
     writeProjectLauncherConfig: vi.fn(),
     hasProjectHealthChanged: vi.fn(),
+    getInstalledEditors: vi.fn(),
+    getProjectDefinition: vi.fn(),
+    getUserPreferences: vi.fn(),
+    setProjectEditorRelease: vi.fn(),
+}));
+
+const fsMocks = vi.hoisted(() => ({
+    existsSync: vi.fn(),
+}));
+
+vi.mock('node:fs', () => ({
+    existsSync: fsMocks.existsSync,
 }));
 
 vi.mock('electron', () => ({
@@ -53,7 +65,7 @@ vi.mock('../commands/projectEditorSettings.js', () => ({
     importProjectEditorSettings: mocks.importProjectEditorSettings,
 }));
 vi.mock('../commands/userPreferences.js', () => ({
-    getUserPreferences: vi.fn(),
+    getUserPreferences: mocks.getUserPreferences,
 }));
 vi.mock('../codeEditorIntegration/codeEditorIntegration.service.js', () => ({
     CodeEditorIntegrationService: class CodeEditorIntegrationService {},
@@ -76,9 +88,9 @@ vi.mock('../tool-integration/integrations/git/git.service.js', () => ({
 }));
 vi.mock('../utils/godot.utils.js', () => ({
     DEFAULT_PROJECT_DEFINITION: new Map(),
-    getProjectDefinition: vi.fn(),
+    getProjectDefinition: mocks.getProjectDefinition,
     removeProjectEditor: mocks.removeProjectEditor,
-    SetProjectEditorRelease: vi.fn(),
+    SetProjectEditorRelease: mocks.setProjectEditorRelease,
 }));
 vi.mock('../utils/godotProject.utils.js', () => ({
     readGodotProjectName: mocks.getProjectGodotName,
@@ -103,7 +115,11 @@ vi.mock('./project-import.service.js', () => ({
 import { ProjectsService } from './projects.service.js';
 
 describe('ProjectsService', () => {
-    const codeEditors = { id: 'code-editors' };
+    const codeEditors = {
+        id: 'code-editors',
+        scanIntegration: vi.fn(),
+        disableForProject: vi.fn(),
+    };
     const projectImport = { addProject: mocks.addProject };
     const git = {
         getIdentity: vi.fn(),
@@ -118,6 +134,9 @@ describe('ProjectsService', () => {
         inspectCreateProjectRepository: mocks.inspectCreateProjectRepository,
     };
     const trayAvailability = { id: 'tray' };
+    const installedEditors = {
+        getInstalledEditors: mocks.getInstalledEditors,
+    };
     const store = {
         list: vi.fn(),
         put: vi.fn(),
@@ -150,6 +169,12 @@ describe('ProjectsService', () => {
         vi.clearAllMocks();
         mocks.addProject.mockResolvedValue({ success: false });
         mocks.createProject.mockResolvedValue({ success: true });
+        mocks.getInstalledEditors.mockResolvedValue([]);
+        mocks.getUserPreferences.mockResolvedValue({
+            install_location: '/install',
+        });
+        codeEditors.scanIntegration.mockResolvedValue(null);
+        fsMocks.existsSync.mockReturnValue(true);
         store.list.mockResolvedValue([]);
         store.remove.mockResolvedValue([]);
         mocks.checkProjectHealth.mockImplementation(async (project) => project);
@@ -164,6 +189,7 @@ describe('ProjectsService', () => {
             git as never,
             projectCreation as never,
             trayAvailability as never,
+            installedEditors as never,
             store as never,
             remoteSources as never,
             remoteImport as never,
@@ -641,5 +667,311 @@ describe('ProjectsService', () => {
         expect(mocks.removeProjectEditor).toHaveBeenCalledWith(project);
         expect(store.remove).toHaveBeenCalledWith(project.path);
         expect(mocks.ipcWebContentsSend).toHaveBeenCalledOnce();
+    });
+
+    it('persists an uninstalled official editor without installed-only setup', async () => {
+        const project = {
+            name: 'Game',
+            version: '4.4-stable',
+            version_number: 4.4,
+            path: '/projects/game',
+            editor_settings_path: '/projects/editor-data',
+            editor_settings_file:
+                '/projects/editor-data/editor_settings-4.4.tres',
+            release: {
+                version: '4.4-stable',
+                mono: false,
+                editor_path: '/editors/4.4/Godot',
+                valid: true,
+            },
+            launch_path: '/projects/editor/Godot',
+            config_version: 5,
+            codeEditorId: 'vscode',
+            valid: true,
+        } as ProjectDetails;
+        const selection = {
+            release: {
+                version: '4.5-stable',
+                version_number: 4.5,
+                name: 'Godot 4.5',
+                published_at: '2026-01-01T00:00:00Z',
+                draft: false,
+                prerelease: false,
+                assets: [],
+            },
+            mono: true,
+        };
+        store.update.mockImplementation(async (mutator) => mutator([project]));
+        mocks.getProjectDefinition.mockReturnValue({
+            editorConfigFilename: vi.fn(),
+            editorConfigFormat: 3,
+        });
+        fsMocks.existsSync.mockReturnValue(false);
+
+        const result = await service.setProjectEditor(project, selection);
+
+        expect(result).toMatchObject({
+            success: true,
+            projects: [
+                expect.objectContaining({
+                    valid: false,
+                    invalid_reason: 'missing_project_file',
+                    launch_path: '',
+                    editor_settings_path: '/projects/editor-data',
+                    editor_settings_file:
+                        '/projects/editor-data/editor_settings-4.4.tres',
+                    release: expect.objectContaining({
+                        version: '4.5-stable',
+                        mono: true,
+                        flavor: 'dotnet',
+                        editor_path: '',
+                        install_path: '',
+                        valid: false,
+                        source: 'official',
+                    }),
+                }),
+            ],
+        });
+        expect(mocks.getUserPreferences).not.toHaveBeenCalled();
+        expect(mocks.setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(codeEditors.scanIntegration).not.toHaveBeenCalled();
+        expect(mocks.writeProjectLauncherConfig).toHaveBeenCalledOnce();
+    });
+
+    it('uses the registered official editor when it is already installed', async () => {
+        const missingProject = {
+            name: 'Game',
+            version: '4.5-stable',
+            version_number: 4.5,
+            path: '/projects/game',
+            editor_settings_path: '',
+            editor_settings_file: '',
+            release: {
+                version: '4.5-stable',
+                mono: false,
+                editor_path: '',
+                install_path: '',
+                valid: false,
+            },
+            launch_path: '',
+            config_version: 5,
+            codeEditorId: 'vscode',
+            valid: false,
+            invalid_reason: 'missing_editor',
+        } as ProjectDetails;
+        const installedRelease = {
+            version: '4.5-stable',
+            version_number: 4.5,
+            install_path: '/editors/4.5',
+            editor_path: '/editors/4.5/Godot',
+            platform: process.platform,
+            arch: process.arch,
+            mono: false,
+            prerelease: false,
+            config_version: 5 as const,
+            published_at: null,
+            valid: true,
+            source: 'official' as const,
+        } satisfies InstalledRelease;
+        const selection = {
+            release: {
+                version: installedRelease.version,
+                version_number: installedRelease.version_number,
+                name: 'Godot 4.5',
+                published_at: null,
+                draft: false,
+                prerelease: false,
+                assets: [],
+            },
+            mono: false,
+        };
+        const previousRelease = { ...missingProject.release };
+        store.update.mockImplementation(async (mutator) =>
+            mutator([missingProject]),
+        );
+        mocks.getInstalledEditors.mockResolvedValue([installedRelease]);
+        mocks.getProjectDefinition.mockReturnValue({
+            editorConfigFilename: vi.fn(() => 'editor_settings-4.5.tres'),
+            editorConfigFormat: 3,
+        });
+        mocks.setProjectEditorRelease.mockResolvedValue(
+            '/projects/editor/Godot',
+        );
+
+        const result = await service.setProjectEditor(
+            missingProject,
+            selection,
+        );
+
+        expect(mocks.setProjectEditorRelease).toHaveBeenCalledWith(
+            '/install/.editor_config/Game',
+            installedRelease,
+            previousRelease,
+        );
+        expect(result.projects?.[0]).toMatchObject({
+            valid: true,
+            invalid_reason: undefined,
+            release: installedRelease,
+        });
+    });
+
+    it('marks a present project as missing only its selected editor', async () => {
+        const project = {
+            name: 'Game',
+            version: '4.4-stable',
+            version_number: 4.4,
+            path: '/projects/game',
+            editor_settings_path: '/projects/editor-data',
+            editor_settings_file:
+                '/projects/editor-data/editor_settings-4.4.tres',
+            release: {
+                version: '4.4-stable',
+                mono: false,
+                editor_path: '/editors/4.4/Godot',
+                valid: true,
+            },
+            launch_path: '/projects/editor/Godot',
+            config_version: 5,
+            codeEditorId: null,
+            valid: true,
+        } as ProjectDetails;
+        store.update.mockImplementation(async (mutator) => mutator([project]));
+        mocks.getProjectDefinition.mockReturnValue({
+            editorConfigFilename: vi.fn(),
+            editorConfigFormat: 3,
+        });
+
+        const result = await service.setProjectEditor(project, {
+            release: {
+                version: '4.5-stable',
+                version_number: 4.5,
+                name: 'Godot 4.5',
+                published_at: null,
+                draft: false,
+                prerelease: false,
+                assets: [],
+            },
+            mono: false,
+        });
+
+        expect(result.projects?.[0]).toMatchObject({
+            valid: false,
+            invalid_reason: 'missing_editor',
+            release: expect.objectContaining({ valid: false }),
+        });
+    });
+
+    it('does not mutate the selected project when missing-editor metadata fails to write', async () => {
+        const project = {
+            name: 'Game',
+            version: '4.4-stable',
+            version_number: 4.4,
+            path: '/projects/game',
+            editor_settings_path: '',
+            editor_settings_file: '',
+            release: {
+                version: '4.4-stable',
+                mono: false,
+                editor_path: '/editors/4.4/Godot',
+                valid: true,
+            },
+            launch_path: '/projects/editor/Godot',
+            config_version: 5,
+            codeEditorId: null,
+            valid: true,
+        } as ProjectDetails;
+        store.update.mockImplementation(async (mutator) => mutator([project]));
+        mocks.getProjectDefinition.mockReturnValue({
+            editorConfigFilename: vi.fn(),
+            editorConfigFormat: 3,
+        });
+        mocks.writeProjectLauncherConfig.mockRejectedValueOnce(
+            new Error('metadata write failed'),
+        );
+
+        await expect(
+            service.setProjectEditor(project, {
+                release: {
+                    version: '4.5-stable',
+                    version_number: 4.5,
+                    name: 'Godot 4.5',
+                    published_at: null,
+                    draft: false,
+                    prerelease: false,
+                    assets: [],
+                },
+                mono: false,
+            }),
+        ).rejects.toThrow('metadata write failed');
+
+        expect(project).toMatchObject({
+            version: '4.4-stable',
+            valid: true,
+            release: expect.objectContaining({
+                editor_path: '/editors/4.4/Godot',
+                valid: true,
+            }),
+        });
+    });
+
+    it('does not repair a custom selection that matches an official install identity', async () => {
+        const project = {
+            path: '/projects/game',
+            release: {
+                version: '4.5-stable',
+                mono: false,
+                source: 'custom',
+            },
+        } as ProjectDetails;
+        const replacement = {
+            version: '4.5-stable',
+            mono: false,
+        } as InstalledRelease;
+        store.update.mockImplementation(async (mutator) => mutator([project]));
+
+        const result = await service.setProjectEditor(project, replacement, {
+            version: '4.5-stable',
+            mono: false,
+        });
+
+        expect(result).toEqual({ success: true, projects: [project] });
+        expect(mocks.setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(mocks.writeProjectLauncherConfig).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        {
+            name: 'the project selected a newer editor',
+            projects: [
+                {
+                    path: '/projects/game',
+                    release: { version: '4.6-stable', mono: false },
+                } as ProjectDetails,
+            ],
+        },
+        {
+            name: 'the project was removed',
+            projects: [] as ProjectDetails[],
+        },
+    ])('skips a bridge repair when $name', async ({ projects }) => {
+        const staleProject = {
+            path: '/projects/game',
+            release: { version: '4.5-stable', mono: false },
+        } as ProjectDetails;
+        const installedRelease = {
+            version: '4.5-stable',
+            mono: false,
+        } as InstalledRelease;
+        store.update.mockImplementation(async (mutator) => mutator(projects));
+
+        const result = await service.setProjectEditor(
+            staleProject,
+            installedRelease,
+            { version: '4.5-stable', mono: false },
+        );
+
+        expect(result).toEqual({ success: true, projects });
+        expect(mocks.setProjectEditorRelease).not.toHaveBeenCalled();
+        expect(mocks.writeProjectLauncherConfig).not.toHaveBeenCalled();
     });
 });

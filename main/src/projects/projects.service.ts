@@ -1,5 +1,6 @@
 import type { ChildProcess, ChildProcessByStdio } from 'node:child_process';
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type {
@@ -17,6 +18,8 @@ import type {
     LaunchProjectOptions,
     LaunchProjectResult,
     ProjectDetails,
+    ProjectEditorSelection,
+    ProjectEditorSelectionExpectation,
     ProjectGitIdentityResult,
     ProjectGitIdentityValue,
     ProjectPublicationRecoveryAction,
@@ -46,6 +49,8 @@ import {
 } from '../commands/projectEditorSettings.js';
 import { getUserPreferences } from '../commands/userPreferences.js';
 import { EDITOR_CONFIG_DIRNAME } from '../constants.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';
@@ -81,6 +86,65 @@ import { ProjectRepositoryOriginIndexService } from './project-repository-origin
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
+/**
+ * Identifies a catalogue selection that main must resolve before assignment.
+ * @param selection - Installed editor or official catalogue selection.
+ */
+function isOfficialEditorSelection(
+    selection: ProjectEditorSelection,
+): selection is Extract<ProjectEditorSelection, { release: unknown }> {
+    return 'release' in selection;
+}
+
+/**
+ * Builds the persisted missing-editor representation for an official selection.
+ *
+ * @param selection - Official release selected before its installation.
+ * @param project - Current project whose configuration format is retained.
+ * @returns Invalid editor data that preserves the requested download identity.
+ */
+function createMissingOfficialRelease(
+    selection: ProjectEditorSelection,
+    project: ProjectDetails,
+): InstalledRelease {
+    if (!isOfficialEditorSelection(selection)) {
+        throw new Error('An installed editor cannot be persisted as missing');
+    }
+
+    const { release, mono } = selection;
+    const baseVersion =
+        release.version.match(/^v?(\d+\.\d+)/)?.[1] ??
+        release.version_number.toFixed(1);
+
+    return {
+        version: release.version,
+        name: release.name,
+        base_version: baseVersion,
+        flavor: mono ? 'dotnet' : 'gdscript',
+        version_number: release.version_number,
+        install_path: '',
+        editor_path: '',
+        platform: process.platform,
+        arch: process.arch,
+        mono,
+        prerelease: release.prerelease,
+        config_version: project.config_version,
+        published_at: release.published_at,
+        valid: false,
+        source: 'official',
+    };
+}
+
+/**
+ * Checks whether the project's Godot configuration file currently exists.
+ *
+ * @param projectPath - Root directory of the project.
+ * @returns Whether project.godot is present at the project root.
+ */
+function hasProjectFile(projectPath: string): boolean {
+    return existsSync(path.resolve(projectPath, 'project.godot'));
+}
+
 /** Provides the application-facing boundary for existing project workflows. */
 @Injectable()
 export class ProjectsService {
@@ -92,6 +156,7 @@ export class ProjectsService {
      * @param git - Guarded Git command service.
      * @param projectCreation - Transactional Create Project workflow.
      * @param trayAvailability - System tray availability service.
+     * @param installedEditors - Registered Godot editor facade.
      * @param store - Canonical project persistence store.
      * @param remoteSources - Remote project source discovery boundary.
      * @param remoteImport - Cancellable remote clone transaction boundary.
@@ -104,6 +169,7 @@ export class ProjectsService {
         private readonly git: GitService,
         private readonly projectCreation: ProjectCreationService,
         private readonly trayAvailability: TrayAvailabilityService,
+        private readonly installedEditors: InstalledEditorService,
         private readonly store: ProjectsStore,
         private readonly remoteSources: ProjectRemoteSourceService,
         private readonly remoteImport: ProjectRemoteImportService,
@@ -535,14 +601,24 @@ export class ProjectsService {
      * Changes the Godot editor assigned to a project.
      *
      * @param project - Project to update.
-     * @param release - Godot editor to assign.
+     * @param selection - Installed editor or official editor selection to assign.
+     * @param expectedEditor - Optional current selection required for repair.
      */
     async setProjectEditor(
         project: ProjectDetails,
-        release: InstalledRelease,
+        selection: ProjectEditorSelection,
+        expectedEditor?: ProjectEditorSelectionExpectation,
     ): Promise<ChangeProjectEditorResult> {
-        const { install_location: installLocation } =
-            await getUserPreferences();
+        const installedRelease = isOfficialEditorSelection(selection)
+            ? (await this.installedEditors.getInstalledEditors()).find(
+                  (candidate) =>
+                      candidate.source !== 'custom' &&
+                      candidate.valid !== false &&
+                      Boolean(candidate.editor_path) &&
+                      candidate.version === selection.release.version &&
+                      candidate.mono === selection.mono,
+              )
+            : selection;
         const recoveredFiles = new Set<string>();
         let failure: ChangeProjectEditorResult | undefined;
         let updatedProject: ProjectDetails | undefined;
@@ -552,6 +628,9 @@ export class ProjectsService {
                 (candidate) => candidate.path === project.path,
             );
             if (projectIndex === -1) {
+                if (expectedEditor) {
+                    return currentProjects;
+                }
                 failure = {
                     success: false,
                     error: t('projects:changeEditor.errors.projectNotFound'),
@@ -561,10 +640,23 @@ export class ProjectsService {
 
             const currentProject = currentProjects[projectIndex];
             if (
+                expectedEditor &&
+                (currentProject.release.version !== expectedEditor.version ||
+                    currentProject.release.mono !== expectedEditor.mono ||
+                    currentProject.release.source === 'custom')
+            ) {
+                return currentProjects;
+            }
+
+            const release =
+                installedRelease ??
+                createMissingOfficialRelease(selection, currentProject);
+            if (
                 currentProject.release.version === release.version &&
                 currentProject.release.mono === release.mono &&
                 currentProject.release.editor_path === release.editor_path &&
-                currentProject.release.valid !== false
+                currentProject.release.valid === release.valid &&
+                installedRelease !== undefined
             ) {
                 logger.warn(
                     `Project already using the selected release, ${release.version} - ${release.mono ? 'mono' : ''}`,
@@ -598,6 +690,33 @@ export class ProjectsService {
                 return currentProjects;
             }
 
+            if (!installedRelease) {
+                updatedProject = {
+                    ...currentProject,
+                    release,
+                    version: release.version,
+                    version_number: release.version_number,
+                    launch_path: '',
+                    valid: false,
+                    invalid_reason:
+                        !hasProjectFile(currentProject.path) ||
+                        currentProject.invalid_reason === 'missing_project_file'
+                            ? 'missing_project_file'
+                            : 'missing_editor',
+                };
+                await writeProjectLauncherConfig(updatedProject.path, {
+                    release: updatedProject.release,
+                    projectName: updatedProject.name,
+                    launcherVersion: app.getVersion(),
+                });
+
+                const updatedProjects = [...currentProjects];
+                updatedProjects[projectIndex] = updatedProject;
+                return updatedProjects;
+            }
+
+            const { install_location: installLocation } =
+                await getUserPreferences();
             const projectEditorPath = resolveProjectEditorPath(
                 currentProject,
                 installLocation,
@@ -645,6 +764,7 @@ export class ProjectsService {
                 );
             }
 
+            const projectFileExists = hasProjectFile(currentProject.path);
             updatedProject = {
                 ...currentProject,
                 release: { ...release, valid: true },
@@ -655,7 +775,10 @@ export class ProjectsService {
                     path.dirname(newEditorSettingsFile),
                 ),
                 editor_settings_file: newEditorSettingsFile,
-                valid: true,
+                valid: projectFileExists,
+                invalid_reason: projectFileExists
+                    ? undefined
+                    : 'missing_project_file',
             };
             await writeProjectLauncherConfig(updatedProject.path, {
                 release: updatedProject.release,
@@ -672,18 +795,15 @@ export class ProjectsService {
             return failure;
         }
 
-        const latestProject =
-            projects.find((candidate) => candidate.path === project.path) ??
-            updatedProject;
-        if (latestProject) {
-            project.release = latestProject.release;
-            project.version = latestProject.version;
-            project.version_number = latestProject.version_number;
-            project.launch_path = latestProject.launch_path;
-            project.editor_settings_file = latestProject.editor_settings_file;
-            project.editor_settings_path = latestProject.editor_settings_path;
-            project.valid = latestProject.valid;
-            project.codeEditorId = latestProject.codeEditorId;
+        if (updatedProject) {
+            project.release = updatedProject.release;
+            project.version = updatedProject.version;
+            project.version_number = updatedProject.version_number;
+            project.launch_path = updatedProject.launch_path;
+            project.editor_settings_file = updatedProject.editor_settings_file;
+            project.editor_settings_path = updatedProject.editor_settings_path;
+            project.valid = updatedProject.valid;
+            project.codeEditorId = updatedProject.codeEditorId;
         }
 
         return {
