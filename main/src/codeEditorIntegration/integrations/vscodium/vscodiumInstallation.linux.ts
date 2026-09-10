@@ -133,6 +133,7 @@ export async function findLinuxVSCodium(): Promise<CodeEditorInstallation | null
         '/usr/bin/vscodium',
         '/usr/local/bin/codium',
         '/usr/local/bin/vscodium',
+        '/home/linuxbrew/.linuxbrew/bin/codium',
     ];
 
     if (home) {
