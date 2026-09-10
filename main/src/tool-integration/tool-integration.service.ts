@@ -172,6 +172,14 @@ export class ToolIntegrationService {
         const next = this.settingsStore.normalize({ ...current, ...update });
 
         if (
+            toolId === 'terminal' &&
+            (next.executablePathOverride !== null ||
+                next.executableArgsOverride !== null)
+        ) {
+            throw new Error('Terminal does not support executable overrides');
+        }
+
+        if (
             next.enabled &&
             (next.executablePathOverride || next.executableArgsOverride)
         ) {

@@ -5,6 +5,14 @@
     --font-sans: "Nunito Sans", sans-serif;
 }
 
+:root {
+    --shell-sidebar-width: 15rem;
+}
+
+@theme inline {
+    --spacing-shell-sidebar: var(--shell-sidebar-width);
+}
+
 @plugin "daisyui/theme" {
     name: "light";
     default: true;
@@ -14,7 +22,7 @@
     --color-base-200: oklch(98% 0 0);
     --color-base-300: oklch(95% 0 0);
     --select-field-background: var(--color-base-100);
-    --color-base-content: oklch(21% 0.006 285.885);
+    --color-base-content: oklch(22.3% 0.006 285.885);
     --color-primary: #3c77c2;
     --color-primary-content: #f8f6f2;
     --color-secondary: #eb9486;
@@ -22,7 +30,7 @@
     --color-accent: oklch(77% 0.152 181.912);
     --color-accent-content: oklch(38% 0.063 188.416);
     --color-neutral: #2a323c;
-    --color-neutral-content: oklch(92% 0.004 286.32);
+    --color-neutral-content: oklch(90.7% 0.004 286.32);
     --color-info: oklch(74% 0.16 232.661);
     --color-info-content: oklch(29% 0.066 243.157);
     --color-success: oklch(76% 0.177 163.223);
@@ -50,7 +58,7 @@
     --color-base-200: #101010;
     --color-base-300: #363636;
     --select-field-background: #2a2a2a;
-    --color-base-content: #f5f5f5;
+    --color-base-content: #dadada;
     --color-primary: #4376c7;
     --color-primary-content: #ffffff;
     --color-secondary: #d18478;
@@ -58,7 +66,7 @@
     --color-accent: oklch(77% 0.152 181.912);
     --color-accent-content: oklch(38% 0.063 188.416);
     --color-neutral: #2a2a2a;
-    --color-neutral-content: #f5f5f5;
+    --color-neutral-content: #dadada;
     --color-info: oklch(74% 0.16 232.661);
     --color-info-content: oklch(29% 0.066 243.157);
     --color-success: oklch(76% 0.177 163.223);

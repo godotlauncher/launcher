@@ -33,6 +33,7 @@ import { ProjectsModule } from './projects/projects.module.js';
 import { TrayAvailabilityModule } from './services/tray-availability.module.js';
 import { GitModule } from './tool-integration/integrations/git/git.module.js';
 import { GitLfsModule } from './tool-integration/integrations/git-lfs/git-lfs.module.js';
+import { TerminalModule } from './tool-integration/integrations/terminal/terminal.module.js';
 import { ToolIntegrationModule } from './tool-integration/tool-integration.module.js';
 
 @Module({
@@ -84,6 +85,7 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
         }),
         GitModule,
         GitLfsModule,
+        TerminalModule,
         ProjectsModule,
         TrayAvailabilityModule,
     ],

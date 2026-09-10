@@ -84,6 +84,7 @@ describe('ProjectFoldersMenu', () => {
 
         expect(html).toContain('project.openProjectFolder');
         expect(html).toContain('project.openEditorSettingsFolder');
+        expect(html).not.toContain('project.openTerminal');
         expect(html).not.toContain('project.openInGitHub');
     });
 

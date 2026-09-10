@@ -5,6 +5,17 @@
         "openProject": "Abrir {{project}} en Godot",
         "saveFailed": "No se pudo guardar la vista de proyectos. Inténtalo de nuevo."
     },
+    "terminal": {
+        "errors": {
+            "missing-project": "Este proyecto ya no está disponible.",
+            "missing-directory": "La carpeta del proyecto ya no está disponible.",
+            "disabled": "La terminal está desactivada. Actívela en Configuración > Herramientas > Terminal.",
+            "invalid-configuration": "La configuración de terminal requiere atención. Abra Configuración > Herramientas > Terminal.",
+            "unavailable": "No se encontró la terminal seleccionada. Elija una en Configuración > Herramientas > Terminal.",
+            "unsupported-directory": "La terminal seleccionada no puede abrir esta carpeta de proyecto.",
+            "launch-failed": "Godot Launcher no pudo abrir la terminal seleccionada. Inténtelo de nuevo o elija otra."
+        }
+    },
     "title": "Proyectos",
     "emptyState": {
         "welcome": {

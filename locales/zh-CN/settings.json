@@ -169,6 +169,23 @@
             "path": "可执行路径",
             "version": "版本"
         },
+        "terminal": {
+            "drawer": { "title": "终端设置" },
+            "loading": "正在加载终端设置...",
+            "enabled": "为项目文件夹启用终端",
+            "selection": {
+                "title": "终端应用程序",
+                "automatic": "自动",
+                "resolved": "当前使用 {{terminal}}。",
+                "unavailable": "没有可用的受支持终端。",
+                "unavailableSelection": "{{terminal}} 已不可用。请重新扫描或选择其他终端。"
+            },
+            "errors": {
+                "load": "无法加载终端设置。",
+                "save": "无法保存终端设置。",
+                "invalidConfiguration": "终端设置由较新版本的 Godot Launcher 创建。请在修改前更新。"
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Git 是一个分布式的版本控制系统，用于管理代码更改和协作。",

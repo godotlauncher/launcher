@@ -1,5 +1,12 @@
 import type { ToolIntegrationSummary } from '@shared/contracts';
-import { Database, GitBranch, Pencil, RotateCw, Wrench } from 'lucide-react';
+import {
+    Database,
+    GitBranch,
+    Pencil,
+    RotateCw,
+    Terminal,
+    Wrench,
+} from 'lucide-react';
 import type React from 'react';
 import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import { StatusBadge } from '../../../components/ui/status-badge.component';
@@ -20,7 +27,10 @@ type ToolsSettingsPanelProps = {
     onRescan: (tool: ToolIntegrationSummary) => Promise<boolean>;
 };
 
-/** Lists registered tools and their focused actions. */
+/**
+ * Lists registered tools with their status and focused actions.
+ * @param props - Tool summaries, loading state and action callbacks.
+ */
 export const ToolsSettingsPanel: React.FC<ToolsSettingsPanelProps> = ({
     active,
     t,
@@ -53,7 +63,9 @@ export const ToolsSettingsPanel: React.FC<ToolsSettingsPanelProps> = ({
                             ? GitBranch
                             : tool.id === 'git-lfs'
                               ? Database
-                              : Wrench;
+                              : tool.id === 'terminal'
+                                ? Terminal
+                                : Wrench;
                     const pending = pendingToolId === tool.id;
                     const available = tool.status === 'available';
                     const statusKey = `tools.status.${
@@ -94,15 +106,20 @@ export const ToolsSettingsPanel: React.FC<ToolsSettingsPanelProps> = ({
                                             copiedLabel={t('common:success')}
                                             className="col-span-2 row-start-2 -ml-3 justify-self-start"
                                         />
-                                    ) : (
+                                    ) : tool.id === 'terminal' &&
+                                      tool.status === 'disabled' ? null : (
                                         <span className="col-span-2 row-start-2 text-base-content/75">
                                             {t('tools.status.unknownPath')}
                                         </span>
                                     )}
-                                    <span className="col-span-2 row-start-3 text-sm text-base-content/75">
-                                        {tool.version ||
-                                            t('tools.status.unknownVersion')}
-                                    </span>
+                                    {tool.id !== 'terminal' && (
+                                        <span className="col-span-2 row-start-3 text-sm text-base-content/75">
+                                            {tool.version ||
+                                                t(
+                                                    'tools.status.unknownVersion',
+                                                )}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="col-start-2 row-start-1 flex min-h-8 items-center gap-2">
                                     {pending && (

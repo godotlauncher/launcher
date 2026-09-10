@@ -14,7 +14,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import githubInvertocatBlack from '../../../assets/icons/github-invertocat-black.svg';
 import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
 import { ListGroupHeading } from '../../../components/ui/list-group-heading.component';
-import { Tooltip } from '../../../components/ui/tooltip.component';
 import { useTheme } from '../../../hooks/theme.hook';
 import type {
     ProjectListItemProps,
@@ -32,6 +31,10 @@ type SortablePinnedProjectItemProps = Omit<
     pinnedItemRef: (element: HTMLLIElement | null) => void;
 };
 
+/**
+ * Renders a pinned project with an exterior handle revealed on hover or focus.
+ * @param props - Project content and pinned sorting state.
+ */
 const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
     project,
     index,
@@ -47,6 +50,10 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
         disabled: reorderingDisabled,
         data: { projectName: project.name },
     });
+    /**
+     * Connects the project element to sorting and focus restoration.
+     * @param element - Mounted project item or null during removal.
+     */
     const setItemRef = (element: HTMLLIElement | null) => {
         ref(element);
         pinnedItemRef(element);
@@ -61,28 +68,22 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
             pinnedItemRef={setItemRef}
             reorderStateClassName={`${isDragging ? 'z-[1] opacity-70' : ''} ${isDropTarget ? 'outline outline-primary' : ''}`}
             reorderHandle={
-                <Tooltip
-                    placement="top"
-                    tip={t(
-                        reorderingDisabled
-                            ? 'pinning.reorder.disabledSearch'
-                            : 'pinning.reorder.label',
-                        { project: project.name },
-                    )}
+                <div
+                    className={`absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transition-opacity motion-reduce:transition-none ${isDragging ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover/project:pointer-events-auto group-hover/project:opacity-100 group-focus-within/project:pointer-events-auto group-focus-within/project:opacity-100'}`}
                 >
                     <button
                         ref={handleRef}
                         type="button"
                         data-testid="btnReorderPinnedProject"
                         disabled={reorderingDisabled}
-                        className="btn btn-sm btn-ghost btn-square"
+                        className={`btn btn-sm h-10 w-8 p-0 transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary focus-visible:border-primary focus-visible:bg-primary/10 focus-visible:text-primary active:border-primary active:bg-primary/10 active:text-primary active:cursor-grabbing motion-reduce:transition-none ${isDragging ? 'border-primary bg-primary/10 text-primary cursor-grabbing' : 'border-transparent bg-base-200 cursor-grab'}`}
                         aria-label={t('pinning.reorder.label', {
                             project: project.name,
                         })}
                     >
                         <GripVertical size={16} aria-hidden="true" />
                     </button>
-                </Tooltip>
+                </div>
             }
         />
     );
@@ -296,7 +297,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
     }
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col overflow-auto pb-4 pr-3">
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto pb-4 pl-4 pr-3">
             {visibleSections.map((section) => (
                 <section
                     key={section.key}

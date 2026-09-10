@@ -169,6 +169,23 @@
             "path": "実行可能パス",
             "version": "バージョン"
         },
+        "terminal": {
+            "drawer": { "title": "ターミナル設定" },
+            "loading": "ターミナル設定を読み込んでいます...",
+            "enabled": "プロジェクトフォルダーでターミナルを有効にする",
+            "selection": {
+                "title": "ターミナルアプリケーション",
+                "automatic": "自動",
+                "resolved": "現在 {{terminal}} を使用しています。",
+                "unavailable": "対応しているターミナルはありません。",
+                "unavailableSelection": "{{terminal}} は利用できません。再スキャンするか別のターミナルを選択してください。"
+            },
+            "errors": {
+                "load": "ターミナル設定を読み込めませんでした。",
+                "save": "ターミナル設定を保存できませんでした。",
+                "invalidConfiguration": "ターミナル設定はより新しい Godot Launcher で作成されました。変更する前に更新してください。"
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Gitは、コードの変更管理とコラボレーションのための分散型バージョン管理システムです。",

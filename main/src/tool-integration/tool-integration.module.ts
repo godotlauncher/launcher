@@ -42,6 +42,7 @@ type ToolIntegrationModuleAsyncOptions = Pick<
         ToolIntegrationController,
     ],
     exports: [
+        ToolInstallationCache,
         ToolIntegrationService,
         ToolIntegrationStore,
         ToolProcessExecutor,

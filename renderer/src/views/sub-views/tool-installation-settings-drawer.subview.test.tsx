@@ -72,4 +72,17 @@ describe('ToolInstallationSettingsDrawer', () => {
 
         expect(html).toBe('');
     });
+
+    it('does not replace the specialised Terminal drawer', () => {
+        const html = renderToStaticMarkup(
+            <ToolInstallationSettingsDrawer
+                tool={{ ...gitLfs, id: 'terminal', displayName: 'Terminal' }}
+                open
+                onOpenChange={vi.fn()}
+                onRescan={vi.fn(async () => true)}
+            />,
+        );
+
+        expect(html).toBe('');
+    });
 });

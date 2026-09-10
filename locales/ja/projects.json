@@ -5,6 +5,17 @@
         "openProject": "{{project}} を Godot で開く",
         "saveFailed": "プロジェクトの表示設定を保存できませんでした。もう一度お試しください。"
     },
+    "terminal": {
+        "errors": {
+            "missing-project": "このプロジェクトは利用できなくなりました。",
+            "missing-directory": "プロジェクトフォルダーは利用できなくなりました。",
+            "disabled": "ターミナルは無効です。設定 > ツール > ターミナルで有効にしてください。",
+            "invalid-configuration": "ターミナル設定を確認してください。設定 > ツール > ターミナルを開いてください。",
+            "unavailable": "選択したターミナルが見つかりません。設定 > ツール > ターミナルで選択してください。",
+            "unsupported-directory": "選択したターミナルではこのプロジェクトフォルダーを開けません。",
+            "launch-failed": "Godot Launcher は選択したターミナルを開けませんでした。再試行するか別のターミナルを選択してください。"
+        }
+    },
     "title": "プロジェクト",
     "emptyState": {
         "welcome": {

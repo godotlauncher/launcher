@@ -57,7 +57,12 @@ export const ToolInstallationSettingsDrawer: React.FC<
 
     return (
         <Drawer
-            open={open && Boolean(tool) && tool?.id !== 'git'}
+            open={
+                open &&
+                Boolean(tool) &&
+                tool?.id !== 'git' &&
+                tool?.id !== 'terminal'
+            }
             onOpenChange={onOpenChange}
             side="right"
             ariaLabel={t('tools.installation.drawerTitle', {

@@ -18,6 +18,7 @@ import { usePreferences } from '../hooks/preferences.hook';
 import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
 import { useToolIntegrations } from '../hooks/tool-integrations.hook';
+import { terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
@@ -526,6 +527,22 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             }
                             onLaunchProject={(project) =>
                                 void onLaunchProject(project)
+                            }
+                            onOpenTerminal={(project) =>
+                                runProjectAction(async () => {
+                                    const result =
+                                        await terminalBridge.openProject(
+                                            project.path,
+                                        );
+                                    if (!result.success) {
+                                        addAlert(
+                                            t('common:error'),
+                                            t(
+                                                `terminal.errors.${result.reason}`,
+                                            ),
+                                        );
+                                    }
+                                })
                             }
                             onProjectFoldersOptions={(event, project) => {
                                 event.stopPropagation();

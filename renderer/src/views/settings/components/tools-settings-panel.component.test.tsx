@@ -46,6 +46,23 @@ function renderPanel(
 }
 
 describe('ToolsSettingsPanel', () => {
+    it('shows a disabled terminal without claiming its executable is unavailable', () => {
+        const html = renderPanel({
+            tools: [
+                {
+                    id: 'terminal',
+                    displayName: 'Terminal',
+                    status: 'disabled',
+                    executablePath: null,
+                    version: null,
+                },
+            ],
+        });
+        expect(html).toContain('tools.status.disabled');
+        expect(html).not.toContain('tools.status.unknownPath');
+        expect(html).not.toContain('tools.status.invalid');
+        expect(html).not.toContain('tools.status.missing');
+    });
     it('renders a generic tool card with display-safe installation data', () => {
         const html = renderPanel({ tools: [git, gitLfs] });
 

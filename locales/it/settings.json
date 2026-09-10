@@ -169,6 +169,23 @@
             "path": "Percorso eseguibile",
             "version": "Versione"
         },
+        "terminal": {
+            "drawer": { "title": "Impostazioni terminale" },
+            "loading": "Caricamento impostazioni terminale...",
+            "enabled": "Abilita terminale per le cartelle dei progetti",
+            "selection": {
+                "title": "Applicazione terminale",
+                "automatic": "Automatico",
+                "resolved": "Attualmente usa {{terminal}}.",
+                "unavailable": "Nessun terminale supportato disponibile.",
+                "unavailableSelection": "{{terminal}} non è più disponibile. Esegui una nuova ricerca o scegli un altro terminale."
+            },
+            "errors": {
+                "load": "Impossibile caricare le impostazioni del terminale.",
+                "save": "Impossibile salvare le impostazioni del terminale.",
+                "invalidConfiguration": "Le impostazioni del terminale provengono da una versione più recente di Godot Launcher. Aggiorna prima di modificarle."
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Git è un sistema di controllo versione distribuito per gestire modifiche al codice e collaborazioni.",

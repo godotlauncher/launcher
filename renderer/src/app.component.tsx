@@ -264,8 +264,8 @@ function MainLayout() {
 
     return (
         <div className="flex h-full overflow-hidden">
-            <div className="flex h-full w-56 flex-col">
-                <ul className="menu w-56 gap-2 text-base">
+            <div className="flex h-full w-shell-sidebar shrink-0 flex-col">
+                <ul className="menu w-full gap-2 text-base">
                     <li>
                         <NavLink
                             to={appRoutePaths.projects}
@@ -298,7 +298,7 @@ function MainLayout() {
                 />
                 <div className="pt-2">
                     <MenuDivider />
-                    <ul className="menu w-56 gap-1 text-base">
+                    <ul className="menu w-full gap-1 text-base">
                         <li>
                             <button
                                 type="button"
