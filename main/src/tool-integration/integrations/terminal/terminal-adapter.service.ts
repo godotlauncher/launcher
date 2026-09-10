@@ -4,6 +4,7 @@ import { access, lstat, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type { TerminalLaunchResult } from '@shared/contracts';
+import logger from 'electron-log';
 import type { TerminalTarget } from './terminal.types.js';
 
 const TERMINAL_APP = '/System/Applications/Utilities/Terminal.app';
@@ -76,7 +77,10 @@ export class TerminalAdapterService {
         const availability = await Promise.all(
             candidates.map((candidate) => this.isAvailable(candidate)),
         );
-        return candidates.filter((_, index) => availability[index]);
+        const detected = candidates.filter((_, index) => availability[index]);
+        if (process.platform === 'linux')
+            logger.info('[Terminal] Detected Linux terminals', detected);
+        return detected;
     }
 
     /**
@@ -102,7 +106,7 @@ export class TerminalAdapterService {
     }
 
     /**
-     * Opens an exact directory, keeping project paths out of shell commands.
+     * Opens an exact directory and records bounded Linux launch diagnostics.
      * @param target - Freshly resolved compiled terminal candidate.
      * @param directory - Validated absolute project directory.
      */
@@ -113,16 +117,44 @@ export class TerminalAdapterService {
         if (target.id === 'command-prompt' && /^\\\\/.test(directory)) {
             return { success: false, reason: 'unsupported-directory' };
         }
-        if (!(await this.isAvailable(target)))
+        const logLinux = process.platform === 'linux';
+        if (logLinux)
+            logger.info('[Terminal] Linux launch requested', {
+                target: target.id,
+                executable: target.executablePath,
+                desktop: process.env.XDG_CURRENT_DESKTOP,
+                sessionType: process.env.XDG_SESSION_TYPE,
+                hasWaylandDisplay: Boolean(process.env.WAYLAND_DISPLAY),
+                hasXDisplay: Boolean(process.env.DISPLAY),
+                hasRuntimeDirectory: Boolean(process.env.XDG_RUNTIME_DIR),
+                hasSessionBus: Boolean(process.env.DBUS_SESSION_BUS_ADDRESS),
+                appImage: Boolean(process.env.APPIMAGE),
+            });
+        if (!(await this.isAvailable(target))) {
+            if (logLinux)
+                logger.warn('[Terminal] Launch target unavailable', target.id);
             return { success: false, reason: 'unavailable' };
+        }
         try {
             if (
                 !path.isAbsolute(directory) ||
                 !(await stat(directory)).isDirectory()
-            )
+            ) {
+                if (logLinux)
+                    logger.warn(
+                        '[Terminal] Project directory missing or invalid',
+                        target.id,
+                    );
                 return { success: false, reason: 'missing-directory' };
+            }
             await access(directory, constants.R_OK | constants.X_OK);
-        } catch {
+        } catch (error) {
+            if (logLinux)
+                logger.warn(
+                    '[Terminal] Project directory access failed',
+                    target.id,
+                    error,
+                );
             return { success: false, reason: 'missing-directory' };
         }
         const dispatcher =
@@ -157,21 +189,84 @@ export class TerminalAdapterService {
             // START gives CMD its own interactive console; the project stays in cwd.
             args.push('/d', '/c', `start "" "${executable}" /d`);
         }
+        const startedAt = Date.now();
+        if (logLinux)
+            logger.info('[Terminal] Spawning Linux terminal', {
+                target: target.id,
+                executable,
+                args: args.map((arg) =>
+                    arg.replaceAll(directory, '<project-directory>'),
+                ),
+                dispatcher,
+            });
         return new Promise((resolve) => {
             try {
                 const child = spawn(executable, args, {
                     cwd: directory,
                     shell: false,
                     detached: !dispatcher,
-                    stdio: 'ignore',
+                    stdio: logLinux ? ['ignore', 'ignore', 'pipe'] : 'ignore',
                     windowsHide: target.id !== 'windows-terminal',
                     ...(target.id === 'command-prompt'
                         ? { windowsVerbatimArguments: true }
                         : {}),
                 });
-                child.once('error', () =>
-                    resolve({ success: false, reason: 'launch-failed' }),
-                );
+                if (logLinux) {
+                    let remainingBytes = 16 * 1024;
+                    child.stderr?.on('data', (chunk: Buffer) => {
+                        if (remainingBytes <= 0) return;
+                        const output = chunk.subarray(0, remainingBytes);
+                        remainingBytes -= output.length;
+                        logger.warn('[Terminal] Linux stderr', {
+                            target: target.id,
+                            pid: child.pid,
+                            output: output.toString('utf8'),
+                        });
+                        if (remainingBytes === 0)
+                            logger.warn(
+                                '[Terminal] Stderr capture limit reached',
+                                child.pid,
+                            );
+                    });
+                    child.stderr?.on('error', (error) =>
+                        logger.warn(
+                            '[Terminal] Stderr stream failed',
+                            target.id,
+                            error,
+                        ),
+                    );
+                    // Keep draining stderr without keeping the launcher alive.
+                    if (
+                        child.stderr &&
+                        'unref' in child.stderr &&
+                        typeof child.stderr.unref === 'function'
+                    )
+                        child.stderr.unref();
+                    child.once('spawn', () =>
+                        logger.info('[Terminal] Linux process spawned', {
+                            target: target.id,
+                            pid: child.pid,
+                        }),
+                    );
+                    child.once('exit', (code, signal) =>
+                        logger.info('[Terminal] Linux process exited', {
+                            target: target.id,
+                            pid: child.pid,
+                            code,
+                            signal,
+                            elapsedMs: Date.now() - startedAt,
+                        }),
+                    );
+                }
+                child.once('error', (error) => {
+                    if (logLinux)
+                        logger.warn(
+                            '[Terminal] Linux spawn failed',
+                            target.id,
+                            error,
+                        );
+                    resolve({ success: false, reason: 'launch-failed' });
+                });
                 if (dispatcher) {
                     child.once('exit', (code) =>
                         resolve(
@@ -186,7 +281,13 @@ export class TerminalAdapterService {
                         resolve({ success: true });
                     });
                 }
-            } catch {
+            } catch (error) {
+                if (logLinux)
+                    logger.warn(
+                        '[Terminal] Linux spawn threw',
+                        target.id,
+                        error,
+                    );
                 resolve({ success: false, reason: 'launch-failed' });
             }
         });

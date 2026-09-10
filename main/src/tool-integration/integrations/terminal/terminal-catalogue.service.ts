@@ -1,5 +1,6 @@
 import { Injectable } from '@mariodebono/di';
 import type { TerminalSummary } from '@shared/contracts';
+import logger from 'electron-log';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationStore } from '../../tool-integration.store.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -77,6 +78,16 @@ export class TerminalCatalogueService {
                 : targets.find(
                       (target) => target.id === configuration.selection,
                   );
+        if (process.platform === 'linux')
+            logger.info('[Terminal] Linux terminal selection', {
+                selection: configuration.selection,
+                enabled: settings.enabled,
+                configurationValid: configuration.valid,
+                resolvedTargetId:
+                    settings.enabled && configuration.valid
+                        ? (selected?.id ?? null)
+                        : null,
+            });
         return {
             enabled: settings.enabled,
             selection: configuration.selection,
