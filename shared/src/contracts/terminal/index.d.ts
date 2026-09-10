@@ -3,7 +3,11 @@ export type TerminalTargetId =
     | 'command-prompt'
     | 'macos-terminal'
     | 'gnome-terminal'
-    | 'konsole';
+    | 'konsole'
+    | 'foot'
+    | 'alacritty'
+    | 'ghostty'
+    | 'kitty';
 export type TerminalSelection = 'automatic' | TerminalTargetId;
 export type TerminalSummary = {
     enabled: boolean;

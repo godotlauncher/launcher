@@ -54,6 +54,10 @@ export class TerminalAdapterService {
             for (const [id, displayName, executable] of [
                 ['gnome-terminal', 'GNOME Terminal', 'gnome-terminal'],
                 ['konsole', 'Konsole', 'konsole'],
+                ['foot', 'Foot', 'foot'],
+                ['alacritty', 'Alacritty', 'alacritty'],
+                ['ghostty', 'Ghostty', 'ghostty'],
+                ['kitty', 'Kitty', 'kitty'],
             ] as const) {
                 // Fixed native system locations exclude project PATH entries and sandbox wrappers.
                 for (const directory of ['/usr/bin', '/bin']) {
@@ -133,7 +137,16 @@ export class TerminalAdapterService {
                     ? ['--working-directory', directory]
                     : target.id === 'konsole'
                       ? ['--separate', '--workdir', '.']
-                      : [];
+                      : target.id === 'ghostty'
+                        ? [
+                              '--gtk-single-instance=false',
+                              `--working-directory=${directory}`,
+                          ]
+                        : target.id === 'kitty'
+                          ? ['--directory', directory]
+                          : target.id === 'foot' || target.id === 'alacritty'
+                            ? ['--working-directory', directory]
+                            : [];
         return new Promise((resolve) => {
             try {
                 const child = spawn(executable, args, {

@@ -12,6 +12,17 @@ const mocks = vi.hoisted(() => ({
 vi.mock('node:child_process', () => ({ spawn: mocks.spawn }));
 vi.mock('node:fs/promises', () => ({ access: mocks.access, stat: mocks.stat }));
 
+const newLinuxTargets: TerminalTarget[] = [
+    'foot',
+    'alacritty',
+    'ghostty',
+    'kitty',
+].map((id) => ({
+    id: id as TerminalTarget['id'],
+    displayName: id,
+    executablePath: `/usr/bin/${id}`,
+}));
+
 const targets: TerminalTarget[] = [
     {
         id: 'macos-terminal',
@@ -38,6 +49,7 @@ const targets: TerminalTarget[] = [
         displayName: 'Konsole',
         executablePath: '/usr/bin/konsole',
     },
+    ...newLinuxTargets,
 ];
 
 describe('TerminalAdapterService', () => {
@@ -66,6 +78,38 @@ describe('TerminalAdapterService', () => {
         expect(mocks.spawn).not.toHaveBeenCalled();
         vi.unstubAllEnvs();
         vi.restoreAllMocks();
+    });
+
+    it('discovers additional Linux terminals from system locations, skipping missing executables', async () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+        mocks.access.mockImplementation(async (executable: string) => {
+            if (
+                ![
+                    '/usr/bin/foot',
+                    '/bin/alacritty',
+                    '/usr/bin/ghostty',
+                    '/usr/bin/kitty',
+                ].includes(executable)
+            )
+                throw new Error('ENOENT');
+        });
+        try {
+            const candidates = await new TerminalAdapterService().discover();
+            expect(
+                candidates.map(({ id, executablePath }) => ({
+                    id,
+                    executablePath,
+                })),
+            ).toEqual([
+                { id: 'foot', executablePath: '/usr/bin/foot' },
+                { id: 'alacritty', executablePath: '/bin/alacritty' },
+                { id: 'ghostty', executablePath: '/usr/bin/ghostty' },
+                { id: 'kitty', executablePath: '/usr/bin/kitty' },
+            ]);
+            expect(mocks.spawn).not.toHaveBeenCalled();
+        } finally {
+            vi.restoreAllMocks();
+        }
     });
 
     it.each(targets)(
@@ -97,10 +141,19 @@ describe('TerminalAdapterService', () => {
                 expect(args).toEqual(['-a', target.executablePath, directory]);
             } else if (target.id === 'windows-terminal')
                 expect(args).toEqual(['-d', '.']);
-            else if (target.id === 'gnome-terminal')
+            else if (
+                ['gnome-terminal', 'foot', 'alacritty'].includes(target.id)
+            )
                 expect(args).toEqual(['--working-directory', directory]);
             else if (target.id === 'konsole')
                 expect(args).toEqual(['--separate', '--workdir', '.']);
+            else if (target.id === 'ghostty')
+                expect(args).toEqual([
+                    '--gtk-single-instance=false',
+                    `--working-directory=${directory}`,
+                ]);
+            else if (target.id === 'kitty')
+                expect(args).toEqual(['--directory', directory]);
             else {
                 expect(args).toEqual([]);
                 expect(options).toMatchObject({
@@ -109,7 +162,11 @@ describe('TerminalAdapterService', () => {
                 });
             }
             expect(child.unref).toHaveBeenCalledTimes(
-                target.id === 'konsole' || target.id === 'command-prompt'
+                ![
+                    'macos-terminal',
+                    'windows-terminal',
+                    'gnome-terminal',
+                ].includes(target.id)
                     ? 1
                     : 0,
             );

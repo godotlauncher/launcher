@@ -66,7 +66,14 @@ export class TerminalService {
                 : process.platform === 'darwin'
                   ? ['macos-terminal']
                   : process.platform === 'linux'
-                    ? ['gnome-terminal', 'konsole']
+                    ? [
+                          'gnome-terminal',
+                          'konsole',
+                          'foot',
+                          'alacritty',
+                          'ghostty',
+                          'kitty',
+                      ]
                     : [];
         if (selection !== 'automatic' && !supported.includes(selection))
             throw new Error('Unsupported terminal target');

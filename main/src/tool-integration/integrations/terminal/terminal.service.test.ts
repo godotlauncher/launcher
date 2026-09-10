@@ -86,6 +86,26 @@ describe('TerminalService', () => {
             expect(adapters.launch).not.toHaveBeenCalled();
         },
     );
+    it.each(['foot', 'alacritty', 'ghostty', 'kitty'] as const)(
+        'allows selecting %s only on Linux',
+        async (selection) => {
+            const platform = vi.spyOn(process, 'platform', 'get');
+            const { service, configuration } = setup();
+            try {
+                platform.mockReturnValue('linux');
+                await service.selectTarget(selection);
+                expect(configuration.select).toHaveBeenCalledWith(selection);
+                configuration.select.mockClear();
+                platform.mockReturnValue('darwin');
+                await expect(service.selectTarget(selection)).rejects.toThrow(
+                    'Unsupported terminal target',
+                );
+                expect(configuration.select).not.toHaveBeenCalled();
+            } finally {
+                platform.mockRestore();
+            }
+        },
+    );
     it('rejects unknown target identifiers without persisting', async () => {
         const { service, configuration } = setup();
         await expect(
