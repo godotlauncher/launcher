@@ -15,6 +15,7 @@
         "pinProject": "Épingler le projet",
         "unpinProject": "Désépingler le projet",
         "openProjectFolder": "Ouvrir le dossier du projet",
+        "openTerminal": "Ouvrir un terminal ici",
         "openInGitHub": "Ouvrir sur GitHub",
         "launchEditor": "Modifier dans Godot",
         "projectSettings": "Paramètres du projet",

@@ -5,6 +5,7 @@ import {
     FolderOpen,
     Pin,
     Settings,
+    Terminal,
 } from 'lucide-react';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { ProjectListItemProps } from './project-list.types';
@@ -12,10 +13,10 @@ import type { ProjectListItemProps } from './project-list.types';
 type ProjectActionsProps = Pick<
     ProjectListItemProps,
     | 'project'
-    | 'reorderHandle'
     | 'onInstallRequiredProjectEditor'
     | 'onTogglePinned'
     | 'onProjectFoldersOptions'
+    | 'onOpenTerminal'
     | 'onProjectSettings'
     | 'onProjectMoreOptions'
     | 't'
@@ -32,10 +33,10 @@ type ProjectActionsProps = Pick<
  */
 export function ProjectActions({
     project,
-    reorderHandle,
     onInstallRequiredProjectEditor,
     onTogglePinned,
     onProjectFoldersOptions,
+    onOpenTerminal,
     onProjectSettings,
     onProjectMoreOptions,
     t,
@@ -48,7 +49,6 @@ export function ProjectActions({
         <div
             className={`flex min-h-10 shrink-0 items-center gap-2 ${compact ? 'self-end' : 'self-start'}`}
         >
-            {reorderHandle}
             {downloadableProjectEditor && !releaseInstalled && (
                 <Tooltip placement="top" tip={t('card.installRequiredEditor')}>
                     <button
@@ -99,6 +99,21 @@ export function ProjectActions({
                         aria-hidden="true"
                         className={project.pinned ? 'text-primary' : undefined}
                     />
+                </button>
+            </Tooltip>
+            <Tooltip
+                placement="top"
+                tip={t('project.openTerminal', { ns: 'menus' })}
+            >
+                <button
+                    type="button"
+                    data-testid="btnProjectTerminal"
+                    className="btn btn-sm btn-ghost btn-square"
+                    aria-label={t('project.openTerminal', { ns: 'menus' })}
+                    disabled={project.path.length === 0}
+                    onClick={() => onOpenTerminal(project)}
+                >
+                    <Terminal size={16} aria-hidden="true" />
                 </button>
             </Tooltip>
             <Tooltip placement="top" tip={t('card.openFolders')}>

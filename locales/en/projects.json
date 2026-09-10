@@ -5,6 +5,17 @@
         "openProject": "Open {{project}} in Godot",
         "saveFailed": "Could not save the project view. Please try again."
     },
+    "terminal": {
+        "errors": {
+            "missing-project": "This project is no longer available.",
+            "missing-directory": "The project folder is no longer available.",
+            "disabled": "Terminal is disabled. Enable it in Settings > Tools > Terminal.",
+            "invalid-configuration": "Terminal settings need attention. Open Settings > Tools > Terminal.",
+            "unavailable": "No selected terminal was found. Choose one in Settings > Tools > Terminal.",
+            "unsupported-directory": "The selected terminal cannot open this project folder.",
+            "launch-failed": "Godot Launcher could not open the selected terminal. Try again or choose another terminal."
+        }
+    },
     "title": "Projects",
     "emptyState": {
         "welcome": {

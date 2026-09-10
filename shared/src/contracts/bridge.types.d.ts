@@ -6,6 +6,7 @@ import type { EditorInstallsBridge } from './editor-installs/index.js';
 import type { GitBridge } from './git/index.js';
 import type { GitLfsBridge } from './git-lfs/index.js';
 import type { ProjectsBridge } from './projects/index.js';
+import type { TerminalBridge } from './terminal/index.js';
 import type { ToolIntegrationBridge } from './tools/index.js';
 
 /**
@@ -21,4 +22,5 @@ export type BridgeNamespaces = {
     gitLfs: GitLfsBridge;
     projects: ProjectsBridge;
     toolIntegration: ToolIntegrationBridge;
+    terminal: TerminalBridge;
 };

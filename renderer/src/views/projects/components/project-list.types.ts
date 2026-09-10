@@ -33,6 +33,7 @@ export type ProjectsListProps = {
         release: ReleaseSummary,
     ) => void;
     onLaunchProject: (project: ProjectDetails) => void;
+    onOpenTerminal: (project: ProjectDetails) => void;
     onProjectFoldersOptions: (
         event: React.MouseEvent,
         project: ProjectDetails,

@@ -63,7 +63,7 @@ export const SearchField: React.FC<SearchFieldProps> = ({
                     type="button"
                     tabIndex={-1}
                     onClick={() => onChange('')}
-                    className="btn btn-sm btn-ghost btn-circle absolute right-0 top-1/2 -translate-y-1/2"
+                    className="absolute right-0 top-1/2 inline-flex size-8 -translate-y-1/2 items-center justify-center border-0 bg-transparent p-0 text-base-content/50 shadow-none hover:border-0 hover:bg-transparent hover:text-base-content hover:shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-primary"
                     aria-label={clearLabel}
                 >
                     <CircleX size={16} aria-hidden="true" />

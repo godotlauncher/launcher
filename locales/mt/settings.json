@@ -169,6 +169,23 @@
             "path": "Mogħdija eżegwibbli",
             "version": "Verżjoni"
         },
+        "terminal": {
+            "drawer": { "title": "Settings tat-Terminal" },
+            "loading": "Qed jitgħabbew is-settings tat-terminal...",
+            "enabled": "Ippermetti terminal għall-folders tal-proġetti",
+            "selection": {
+                "title": "Applikazzjoni tat-terminal",
+                "automatic": "Awtomatiku",
+                "resolved": "Bħalissa qed jintuża {{terminal}}.",
+                "unavailable": "L-ebda terminal appoġġjat mhu disponibbli.",
+                "unavailableSelection": "{{terminal}} m'għadux disponibbli. Erġa' skennja jew agħżel terminal ieħor."
+            },
+            "errors": {
+                "load": "Ma setgħux jitgħabbew is-settings tat-terminal.",
+                "save": "Ma setgħux jiġu salvati s-settings tat-terminal.",
+                "invalidConfiguration": "Is-settings tat-terminal inħolqu minn verżjoni aktar ġdida ta' Godot Launcher. Aġġorna qabel tibdilhom."
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Git huwa sistema ta' kontroll tal-verżjoni distribwita għall-ġestjoni ta' tibdil tal-kodiċi u kollaborazzjoni.",

@@ -23,7 +23,9 @@ type InstallationCacheEntry = ToolResolution & {
 @Injectable()
 export class ToolInstallationCache {
     private readonly entries = new Map<ToolId, InstallationCacheEntry>();
+    private readonly generations = new Map<ToolId, number>();
     private readonly inFlight = new Map<string, Promise<ToolResolution>>();
+    private readonly persistenceFlights = new Map<ToolId, Promise<void>>();
 
     /**
      * Creates the installation cache.
@@ -47,6 +49,7 @@ export class ToolInstallationCache {
         toolId: ToolId,
         settings: ToolSettings,
     ): Promise<ToolResolution> {
+        const generation = this.getGeneration(toolId);
         const settingsFingerprint = this.createSettingsFingerprint(settings);
         const current = this.getCurrent(toolId, settingsFingerprint);
         if (current) {
@@ -55,15 +58,36 @@ export class ToolInstallationCache {
 
         const persisted =
             await this.settingsStore.getDetectedInstallation(toolId);
+        const resolution =
+            !persisted || persisted.settingsFingerprint !== settingsFingerprint
+                ? {
+                      installation: null,
+                      status: 'unchecked' as const,
+                      checkedAt: null,
+                  }
+                : this.toResolution({
+                      settingsFingerprint,
+                      installation: persisted.installation,
+                      status: persisted.installation
+                          ? 'unchecked'
+                          : this.hasExecutionOverride(settings)
+                            ? 'invalid'
+                            : 'missing',
+                      checkedAt: persisted.checkedAt,
+                  });
+
+        if (generation !== this.getGeneration(toolId)) {
+            return this.getSnapshot(
+                toolId,
+                await this.settingsStore.get(toolId),
+            );
+        }
+
         if (
             !persisted ||
             persisted.settingsFingerprint !== settingsFingerprint
         ) {
-            return {
-                installation: null,
-                status: 'unchecked',
-                checkedAt: null,
-            };
+            return resolution;
         }
 
         const entry: InstallationCacheEntry = {
@@ -77,7 +101,7 @@ export class ToolInstallationCache {
             checkedAt: persisted.checkedAt,
         };
         this.entries.set(toolId, entry);
-        return this.toResolution(entry);
+        return resolution;
     }
 
     /**
@@ -129,6 +153,7 @@ export class ToolInstallationCache {
      */
     invalidate(toolId: ToolId): void {
         this.entries.delete(toolId);
+        this.generations.set(toolId, this.getGeneration(toolId) + 1);
     }
 
     /**
@@ -144,14 +169,21 @@ export class ToolInstallationCache {
         settings: ToolSettings,
         mode: ResolutionMode,
     ): Promise<ToolResolution> {
+        const generation = this.getGeneration(toolId);
         const settingsFingerprint = this.createSettingsFingerprint(settings);
-        return this.runSingleFlight(
+        const resolution = await this.runSingleFlight(
             toolId,
             settingsFingerprint,
             mode,
+            generation,
             async () => {
                 if (mode === 'rescan') {
-                    return this.discover(toolId, settings, settingsFingerprint);
+                    return this.discover(
+                        toolId,
+                        settings,
+                        settingsFingerprint,
+                        generation,
+                    );
                 }
 
                 const snapshot = await this.getSnapshot(toolId, settings);
@@ -177,6 +209,7 @@ export class ToolInstallationCache {
                             settingsFingerprint,
                             validated,
                             'available',
+                            generation,
                         );
                     }
                     if (this.hasExecutionOverride(settings)) {
@@ -185,6 +218,7 @@ export class ToolInstallationCache {
                             settingsFingerprint,
                             null,
                             'invalid',
+                            generation,
                         );
                     }
                 }
@@ -197,9 +231,19 @@ export class ToolInstallationCache {
                     return snapshot;
                 }
 
-                return this.discover(toolId, settings, settingsFingerprint);
+                return this.discover(
+                    toolId,
+                    settings,
+                    settingsFingerprint,
+                    generation,
+                );
             },
         );
+        if (generation === this.getGeneration(toolId)) {
+            return resolution;
+        }
+
+        return this.resolve(toolId, await this.settingsStore.get(toolId), mode);
     }
 
     /**
@@ -208,12 +252,14 @@ export class ToolInstallationCache {
      * @param toolId - Stable tool ID to discover.
      * @param settings - Settings used by provider discovery.
      * @param settingsFingerprint - Fingerprint of settings used for discovery.
+     * @param generation - Cache generation that owns the discovery result.
      * @returns The detected installation state.
      */
     private async discover(
         toolId: ToolId,
         settings: ToolSettings,
         settingsFingerprint: string,
+        generation: number,
     ): Promise<ToolResolution> {
         const integration = this.registry.get(toolId);
         const detected = await integration.detectInstallation(settings);
@@ -226,7 +272,13 @@ export class ToolInstallationCache {
               ? 'invalid'
               : 'missing';
 
-        return this.store(toolId, settingsFingerprint, validated, status);
+        return this.store(
+            toolId,
+            settingsFingerprint,
+            validated,
+            status,
+            generation,
+        );
     }
 
     /**
@@ -236,6 +288,7 @@ export class ToolInstallationCache {
      * @param settingsFingerprint - Fingerprint of the settings used.
      * @param installation - Valid installation or null.
      * @param status - Status derived from validation.
+     * @param generation - Cache generation that owns the stored resolution.
      * @returns The stored resolution.
      */
     private async store(
@@ -243,6 +296,7 @@ export class ToolInstallationCache {
         settingsFingerprint: string,
         installation: ToolInstallation | null,
         status: 'available' | 'invalid' | 'missing',
+        generation: number,
     ): Promise<ToolResolution> {
         const checkedAt = Date.now();
         const entry: InstallationCacheEntry = {
@@ -251,14 +305,59 @@ export class ToolInstallationCache {
             status,
             checkedAt,
         };
+        if (generation !== this.getGeneration(toolId)) {
+            return this.toResolution(entry);
+        }
+
         this.entries.set(toolId, entry);
-        await this.settingsStore.setDetectedInstallation(
+        await this.persist(
             toolId,
             installation,
             checkedAt,
             settingsFingerprint,
+            generation,
         );
         return this.toResolution(entry);
+    }
+
+    /**
+     * Serializes persisted snapshots so an older generation cannot finish
+     * writing after the newer generation's snapshot.
+     *
+     * @param toolId - Stable tool ID whose snapshot is being persisted.
+     * @param installation - Valid installation, or null for a negative scan.
+     * @param checkedAt - Time at which resolution completed.
+     * @param settingsFingerprint - Fingerprint of settings used for resolution.
+     * @param generation - Cache generation that owns this persistence request.
+     */
+    private async persist(
+        toolId: ToolId,
+        installation: ToolInstallation | null,
+        checkedAt: number,
+        settingsFingerprint: string,
+        generation: number,
+    ): Promise<void> {
+        const previous = this.persistenceFlights.get(toolId);
+        const persistence = (previous ?? Promise.resolve())
+            .catch(() => undefined)
+            .then(async () => {
+                if (generation !== this.getGeneration(toolId)) return;
+                await this.settingsStore.setDetectedInstallation(
+                    toolId,
+                    installation,
+                    checkedAt,
+                    settingsFingerprint,
+                );
+            });
+        this.persistenceFlights.set(toolId, persistence);
+
+        try {
+            await persistence;
+        } finally {
+            if (this.persistenceFlights.get(toolId) === persistence) {
+                this.persistenceFlights.delete(toolId);
+            }
+        }
     }
 
     /**
@@ -298,6 +397,16 @@ export class ToolInstallationCache {
     }
 
     /**
+     * Returns the current invalidation generation for one tool.
+     *
+     * @param toolId - Stable tool ID whose generation is needed.
+     * @returns Current cache generation, starting at zero.
+     */
+    private getGeneration(toolId: ToolId): number {
+        return this.generations.get(toolId) ?? 0;
+    }
+
+    /**
      * Builds a deterministic fingerprint for installation-affecting settings.
      *
      * @param settings - Tool settings to fingerprint.
@@ -329,6 +438,7 @@ export class ToolInstallationCache {
      * @param toolId - Stable tool ID being resolved.
      * @param settingsFingerprint - Current settings fingerprint.
      * @param mode - Resolution mode used to separate forced rescans.
+     * @param generation - Cache generation used to separate invalidated scans.
      * @param operation - Resolution operation to run once.
      * @returns The shared resolution promise.
      */
@@ -336,9 +446,10 @@ export class ToolInstallationCache {
         toolId: ToolId,
         settingsFingerprint: string,
         mode: ResolutionMode,
+        generation: number,
         operation: () => Promise<ToolResolution>,
     ): Promise<ToolResolution> {
-        const flightKey = `${toolId}\0${settingsFingerprint}\0${mode}`;
+        const flightKey = `${toolId}\0${settingsFingerprint}\0${mode}\0${generation}`;
         const existing = this.inFlight.get(flightKey);
         if (existing) {
             return existing;

@@ -28,6 +28,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     getDownloadableProjectEditor,
     onInstallRequiredProjectEditor,
     onLaunchProject,
+    onOpenTerminal,
     onProjectFoldersOptions,
     onTogglePinned,
     onProjectSettings,
@@ -70,10 +71,10 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     const actions = (
         <ProjectActions
             project={project}
-            reorderHandle={reorderHandle}
             onInstallRequiredProjectEditor={onInstallRequiredProjectEditor}
             onTogglePinned={onTogglePinned}
             onProjectFoldersOptions={onProjectFoldersOptions}
+            onOpenTerminal={onOpenTerminal}
             onProjectSettings={onProjectSettings}
             onProjectMoreOptions={onProjectMoreOptions}
             t={t}
@@ -119,13 +120,14 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
         <li
             ref={pinnedItemRef}
             tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`relative overflow-hidden rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
+            className={`group/project relative rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
             data-project-view={viewMode}
             data-project-path={project.path}
             data-project-section={sectionKey}
         >
+            {reorderHandle}
             {busyProjects.includes(project.path) && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center bg-base-100">
+                <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-base-100">
                     <div className="loading loading-bars" />
                 </div>
             )}

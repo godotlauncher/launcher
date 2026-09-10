@@ -15,6 +15,7 @@
         "pinProject": "固定项目",
         "unpinProject": "取消固定项目",
         "openProjectFolder": "打开项目文件夹",
+        "openTerminal": "在此打开终端",
         "openInGitHub": "在 GitHub 中打开",
         "launchEditor": "在 Godot 中编辑",
         "projectSettings": "项目设置",

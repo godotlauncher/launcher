@@ -169,6 +169,23 @@
             "path": "Ścieżka wykonywalna",
             "version": "Wersja"
         },
+        "terminal": {
+            "drawer": { "title": "Ustawienia terminala" },
+            "loading": "Wczytywanie ustawień terminala...",
+            "enabled": "Włącz terminal dla folderów projektów",
+            "selection": {
+                "title": "Aplikacja terminala",
+                "automatic": "Automatycznie",
+                "resolved": "Obecnie używany jest {{terminal}}.",
+                "unavailable": "Brak dostępnego obsługiwanego terminala.",
+                "unavailableSelection": "{{terminal}} nie jest już dostępny. Przeskanuj ponownie lub wybierz inny terminal."
+            },
+            "errors": {
+                "load": "Nie można wczytać ustawień terminala.",
+                "save": "Nie można zapisać ustawień terminala.",
+                "invalidConfiguration": "Ustawienia terminala utworzono w nowszej wersji Godot Launcher. Zaktualizuj program przed ich zmianą."
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Git to rozproszony system kontroli wersji do zarządzania zmianami w kodzie i współpracy.",

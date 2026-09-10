@@ -176,6 +176,23 @@
             "path": "Executable path",
             "version": "Version"
         },
+        "terminal": {
+            "drawer": { "title": "Terminal settings" },
+            "loading": "Loading terminal settings...",
+            "enabled": "Enable terminal for project folders",
+            "selection": {
+                "title": "Terminal application",
+                "automatic": "Automatic",
+                "resolved": "Currently using {{terminal}}.",
+                "unavailable": "No supported terminal is currently available.",
+                "unavailableSelection": "{{terminal}} is no longer available. Rescan or choose another terminal."
+            },
+            "errors": {
+                "load": "Unable to load terminal settings.",
+                "save": "Unable to save terminal settings.",
+                "invalidConfiguration": "Terminal settings were created by a newer version of Godot Launcher. Update Godot Launcher before changing them."
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Git is a distributed version control system for managing code changes and collaboration.",

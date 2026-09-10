@@ -169,6 +169,23 @@
             "path": "可執行路徑",
             "version": "版本"
         },
+        "terminal": {
+            "drawer": { "title": "終端機設定" },
+            "loading": "正在載入終端機設定...",
+            "enabled": "為專案資料夾啟用終端機",
+            "selection": {
+                "title": "終端機應用程式",
+                "automatic": "自動",
+                "resolved": "目前使用 {{terminal}}。",
+                "unavailable": "沒有可用的受支援終端機。",
+                "unavailableSelection": "{{terminal}} 已無法使用。請重新掃描或選擇其他終端機。"
+            },
+            "errors": {
+                "load": "無法載入終端機設定。",
+                "save": "無法儲存終端機設定。",
+                "invalidConfiguration": "終端機設定由較新版本的 Godot Launcher 建立。請在修改前更新。"
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Git 是分散式版本控制系統，用於管理程式碼變更與協作。",

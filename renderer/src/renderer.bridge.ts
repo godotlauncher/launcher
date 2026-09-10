@@ -17,6 +17,7 @@ export const gitBridge = rendererBridge.git;
 export const gitLfsBridge = rendererBridge.gitLfs;
 export const projectsBridge = rendererBridge.projects;
 export const toolIntegrationBridge = rendererBridge.toolIntegration;
+export const terminalBridge = rendererBridge.terminal;
 
 const appEvents = createRendererEvents();
 const appEventCallbacks = new Map<

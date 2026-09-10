@@ -169,6 +169,23 @@
             "path": "Yürütülebilir yol",
             "version": "Sürüm"
         },
+        "terminal": {
+            "drawer": { "title": "Terminal ayarları" },
+            "loading": "Terminal ayarları yükleniyor...",
+            "enabled": "Proje klasörleri için terminali etkinleştir",
+            "selection": {
+                "title": "Terminal uygulaması",
+                "automatic": "Otomatik",
+                "resolved": "Şu anda {{terminal}} kullanılıyor.",
+                "unavailable": "Desteklenen terminal yok.",
+                "unavailableSelection": "{{terminal}} artık kullanılamıyor. Yeniden tara veya başka bir terminal seç."
+            },
+            "errors": {
+                "load": "Terminal ayarları yüklenemedi.",
+                "save": "Terminal ayarları kaydedilemedi.",
+                "invalidConfiguration": "Terminal ayarları Godot Launcher'ın daha yeni bir sürümünde oluşturuldu. Değiştirmeden önce güncelleyin."
+            }
+        },
         "git": {
             "title": "Git",
             "description": "Git, kod değişikliklerini yönetmek ve işbirliği yapmak için dağıtık bir sürüm kontrol sistemidir.",

@@ -5,6 +5,17 @@
         "openProject": "Iftaħ {{project}} f’Godot",
         "saveFailed": "Ma setgħetx tiġi ssejvjata d-dehra tal-proġetti. Erġa’ pprova."
     },
+    "terminal": {
+        "errors": {
+            "missing-project": "Dan il-proġett m'għadux disponibbli.",
+            "missing-directory": "Il-folder tal-proġett m'għadux disponibbli.",
+            "disabled": "It-terminal huwa diżattivat. Ippermettih f'Settings > Għodod > Terminal.",
+            "invalid-configuration": "Is-settings tat-terminal jeħtieġu attenzjoni. Iftaħ Settings > Għodod > Terminal.",
+            "unavailable": "It-terminal magħżul ma nstabx. Agħżel wieħed f'Settings > Għodod > Terminal.",
+            "unsupported-directory": "It-terminal magħżul ma jistax jiftaħ dan il-folder tal-proġett.",
+            "launch-failed": "Godot Launcher ma setax jiftaħ it-terminal magħżul. Erġa' pprova jew agħżel ieħor."
+        }
+    },
     "title": "Proġetti",
     "emptyState": {
         "welcome": {

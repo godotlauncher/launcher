@@ -231,6 +231,21 @@ describe('ToolIntegrationService', () => {
         expect(settingsStore.update).not.toHaveBeenCalled();
     });
 
+    it.each([true, false])(
+        'rejects terminal executable overrides even when enabled is %s',
+        async (enabled) => {
+            const { service, settingsStore, integration } = createService();
+            await expect(
+                service.updateSettings('terminal', {
+                    enabled,
+                    executablePathOverride: '/arbitrary/terminal',
+                }),
+            ).rejects.toThrow('Terminal does not support executable overrides');
+            expect(settingsStore.update).not.toHaveBeenCalled();
+            expect(integration.detectInstallation).not.toHaveBeenCalled();
+        },
+    );
+
     it('invalidates and rescans after saving settings', async () => {
         const { service, settingsStore, installationCache } = createService();
         const updatedSettings: ToolSettings = {

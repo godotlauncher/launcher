@@ -33,6 +33,7 @@ import { ToolsSettingsPanel } from './settings/components/tools-settings-panel.c
 import { UpdatesSettingsPanel } from './settings/components/updates-settings-panel.component';
 import { CodeEditorSettingsDrawer } from './sub-views/code-editor-settings-drawer.subview';
 import { GitToolSettingsDrawer } from './sub-views/git-tool-settings-drawer.subview';
+import { TerminalToolSettingsDrawer } from './sub-views/terminal-tool-settings-drawer.subview';
 import { ToolInstallationSettingsDrawer } from './sub-views/tool-installation-settings-drawer.subview';
 
 type SettingsViewProps = {
@@ -69,7 +70,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         setDefaultIntegration,
         validateIntegrationPath,
     } = useCodeEditorIntegrations();
-    const { listIntegrations, rescanIntegration } = useToolIntegrations();
+    const { listIntegrations, refreshIntegration, rescanIntegration } =
+        useToolIntegrations();
     const {
         listIntegrations: listAppIntegrations,
         refresh: refreshAppIntegration,
@@ -852,6 +854,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     }
                 }}
                 onRescan={rescanToolById}
+            />
+            <TerminalToolSettingsDrawer
+                open={selectedToolId === 'terminal'}
+                onOpenChange={(drawerOpen) => {
+                    if (!drawerOpen) setSelectedToolId(null);
+                }}
+                onSummaryChanged={async () => {
+                    replaceToolIntegration(
+                        await refreshIntegration('terminal'),
+                    );
+                }}
             />
             {githubConnectionDialog && (
                 <GitHubConnectionDialog
