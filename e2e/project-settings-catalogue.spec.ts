@@ -229,6 +229,127 @@ test('offers the matching missing editor from the catalogue', async () => {
     ]);
 });
 
+test('retains staged settings across tabs and discards them when closed', async () => {
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: [project], installedReleases: [installedRelease],
+        availableReleases: [catalogueRelease], availablePrereleases: [],
+    });
+    await stubCatalogueEditorSave();
+    await electronApp.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('projects.getProjectGodotName');
+        ipcMain.handle('projects.getProjectGodotName', async (_event, selected) => new Promise((resolve) => {
+            (globalThis as typeof globalThis & { __finishSettingsName?: () => void }).__finishSettingsName =
+                () => resolve({ success: true, data: selected.name });
+        }));
+    });
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+    await expect.poll(() => electronApp.evaluate(() => Boolean(
+        (globalThis as typeof globalThis & { __finishSettingsName?: () => void }).__finishSettingsName,
+    ))).toBe(true);
+    await electronApp.evaluate(({ BrowserWindow }, selected) => {
+        for (const window of BrowserWindow.getAllWindows()) {
+            const contents = window.webContents as typeof window.webContents & { __e2eFixtureProjects?: ProjectDetails[] };
+            contents.__e2eFixtureProjects = [selected];
+            contents.send('projects-updated', [selected]);
+        }
+    }, project);
+    await drawer.locator('#projectEditName').fill('Unsaved draft');
+    await electronApp.evaluate(() => {
+        (globalThis as typeof globalThis & { __finishSettingsName?: () => void }).__finishSettingsName?.();
+    });
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeEnabled();
+    await drawer.getByTestId('tabProjectSettings_launch').click();
+    const windowed = drawer.getByRole('checkbox');
+    await windowed.setChecked(!Boolean(project.open_windowed));
+    await drawer.getByTestId('tabProjectSettings_codeEditor').click();
+    await drawer.getByTestId('tabProjectSettings_project').click();
+    await expect(drawer.locator('#projectEditName')).toHaveValue('Unsaved draft');
+    await drawer.getByTestId('tabProjectSettings_launch').click();
+    await expect(windowed).toBeChecked({ checked: !Boolean(project.open_windowed) });
+    await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(drawer).not.toBeVisible();
+    await electronApp.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('projects.getProjectGodotName');
+        ipcMain.handle('projects.getProjectGodotName', async (_event, selected) => ({ success: true, data: selected.name }));
+    });
+    await page.getByTestId('btnProjectSettings').click();
+    await expect(drawer.locator('#projectEditName')).toHaveValue(project.name);
+    await drawer.getByTestId('tabProjectSettings_launch').click();
+    await expect(windowed).toBeChecked({ checked: Boolean(project.open_windowed) });
+    await expect.poll(readSettingsEvents).toEqual([]);
+    await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+});
+
+test('retains a Git identity draft across tabs and saves it independently', async () => {
+    const gitProject = { ...project, withGit: true };
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: [gitProject], installedReleases: [installedRelease],
+        availableReleases: [catalogueRelease], availablePrereleases: [],
+    });
+    await stubCatalogueEditorSave({ initialProject: gitProject });
+    await electronApp.evaluate(({ ipcMain }, projectPath) => {
+        let identity = {
+            status: 'available', canUpdate: true,
+            repository: { root: projectPath, isProjectRoot: true, kind: 'standard' },
+            name: { value: 'Original identity', source: 'repository' },
+            email: { value: 'original@example.invalid', source: 'repository' },
+        };
+        const state = globalThis as typeof globalThis & {
+            __settingsIdentityReads?: number;
+            __finishStaleSettingsIdentity?: () => void;
+        };
+        state.__settingsIdentityReads = 0;
+        ipcMain.removeHandler('projects.getProjectGitIdentity');
+        ipcMain.handle('projects.getProjectGitIdentity', async () => {
+            state.__settingsIdentityReads = (state.__settingsIdentityReads ?? 0) + 1;
+            if (state.__settingsIdentityReads === 1) {
+                return new Promise((resolve) => {
+                    state.__finishStaleSettingsIdentity = () => resolve({
+                        success: true,
+                        data: { ...identity, name: { value: 'Stale response', source: 'repository' } },
+                    });
+                });
+            }
+            return { success: true, data: identity };
+        });
+        ipcMain.removeHandler('projects.setProjectGitIdentity');
+        ipcMain.handle('projects.setProjectGitIdentity', async (_event, _project, next) => {
+            identity = { ...identity, name: { value: next.name, source: 'repository' }, email: { value: next.email, source: 'repository' } };
+            return { success: true, data: identity };
+        });
+    }, gitProject.path);
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+    await drawer.getByTestId('tabProjectSettings_sourceControl').click();
+    await expect.poll(() => electronApp.evaluate(() =>
+        (globalThis as typeof globalThis & { __settingsIdentityReads?: number }).__settingsIdentityReads ?? 0,
+    )).toBeGreaterThanOrEqual(1);
+    await drawer.getByTestId('tabProjectSettings_project').click();
+    await drawer.getByTestId('tabProjectSettings_sourceControl').click();
+    const sourceControl = drawer.locator('section').filter({ hasText: 'Original identity' });
+    await expect(sourceControl).toBeVisible();
+    await electronApp.evaluate(() => {
+        (globalThis as typeof globalThis & { __finishStaleSettingsIdentity?: () => void }).__finishStaleSettingsIdentity?.();
+    });
+    await expect(drawer.getByText('Stale response', { exact: true })).not.toBeVisible();
+    await sourceControl.getByRole('button', { name: 'Update', exact: true }).click();
+    await drawer.locator('#projectGitIdentityName').fill('Saved identity');
+    await drawer.locator('#projectGitIdentityEmail').fill('saved@example.invalid');
+    await drawer.getByTestId('tabProjectSettings_project').click();
+    await drawer.getByTestId('tabProjectSettings_sourceControl').click();
+    await expect(drawer.locator('#projectGitIdentityName')).toHaveValue('Saved identity');
+    await expect(drawer.locator('#projectGitIdentityEmail')).toHaveValue('saved@example.invalid');
+    await drawer.getByRole('button', { name: 'Save identity' }).click();
+    await expect(drawer.locator('#projectGitIdentityName')).not.toBeVisible();
+    await expect(drawer.getByText('Saved identity', { exact: true })).toBeVisible();
+    await expect(drawer.getByText('saved@example.invalid', { exact: true })).toBeVisible();
+    await expect.poll(readSettingsEvents).toEqual([]);
+    await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+});
+
 /**
  * Replaces project saves and installation with a delayed, stateful fixture flow.
  *
