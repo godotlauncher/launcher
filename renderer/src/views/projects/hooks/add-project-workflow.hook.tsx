@@ -6,6 +6,7 @@ import type {
     InstalledRelease,
     InstallReleaseResult,
     ProjectDetails,
+    ProjectEditorSelectionExpectation,
     ReleaseSummary,
 } from '@shared/contracts';
 import logger from 'electron-log';
@@ -66,6 +67,7 @@ type AddProjectWorkflowArgs = {
     setProjectEditor: (
         project: ProjectDetails,
         release: InstalledRelease,
+        expectedEditor?: ProjectEditorSelectionExpectation,
     ) => Promise<ChangeProjectEditorResult>;
     showRecoveredCodeEditorConfigWarning: (recoveredFiles?: string[]) => void;
 };
@@ -190,6 +192,7 @@ export function useAddProjectWorkflow({
                 const changeResult = await setProjectEditor(
                     addedProject,
                     installResult.release,
+                    { version: release.version, mono },
                 );
 
                 if (!changeResult.success) {

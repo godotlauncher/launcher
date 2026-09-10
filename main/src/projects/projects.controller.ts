@@ -13,6 +13,8 @@ import type {
     InstalledRelease,
     LaunchProjectOptions,
     ProjectDetails,
+    ProjectEditorSelection,
+    ProjectEditorSelectionExpectation,
     ProjectPublicationRecoveryAction,
     ProjectsBridge,
     RemoteProjectImportRequest,
@@ -305,11 +307,18 @@ export class ProjectsController implements ProjectsBridge {
      * Changes the Godot editor assigned to a project.
      *
      * @param project - Project to update.
-     * @param release - Godot editor to assign.
+     * @param selection - Installed editor or official editor selection to assign.
+     * @param expectedEditor - Optional current selection required for repair.
      */
     @ProjectsHandler('setProjectEditor')
-    setProjectEditor(project: ProjectDetails, release: InstalledRelease) {
-        return this.projects.setProjectEditor(project, release);
+    setProjectEditor(
+        project: ProjectDetails,
+        selection: ProjectEditorSelection,
+        expectedEditor?: ProjectEditorSelectionExpectation,
+    ) {
+        return expectedEditor
+            ? this.projects.setProjectEditor(project, selection, expectedEditor)
+            : this.projects.setProjectEditor(project, selection);
     }
 
     /**

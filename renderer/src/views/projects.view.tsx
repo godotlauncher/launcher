@@ -1,7 +1,7 @@
 import type {
     CodeEditorId,
-    InstalledRelease,
     ProjectDetails,
+    ProjectEditorSelection,
     ReleaseSummary,
 } from '@shared/contracts';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -334,9 +334,14 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         }
     };
 
+    /**
+     * Saves the selected editor and returns its canonical project state.
+     * @param project - Project being edited.
+     * @param release - Installed editor or official catalogue selection.
+     */
     const onSetProjectEditorFromSettings = async (
         project: ProjectDetails,
-        release: InstalledRelease,
+        release: ProjectEditorSelection,
     ): Promise<ProjectDetails> => {
         setBusyProjects([...busyProjects, project.path]);
 
@@ -346,16 +351,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 throw new Error(result.error || t('messages.setEditorError'));
             }
 
-            return (
-                result.projects?.find(
-                    (updatedProject) => updatedProject.path === project.path,
-                ) ?? {
-                    ...project,
-                    release,
-                    version: release.version,
-                    version_number: release.version_number,
-                }
+            const updatedProject = result.projects?.find(
+                (candidate) => candidate.path === project.path,
             );
+            if (!updatedProject) {
+                throw new Error(t('messages.setEditorError'));
+            }
+            return updatedProject;
         } finally {
             setBusyProjects((prevValues) =>
                 prevValues.filter((p) => p !== project.path),

@@ -8,6 +8,7 @@ import type {
     EditorChannel,
     EditorFlavor,
     InstalledRelease,
+    ReleaseSummary,
 } from '../releases/index.js';
 
 export type LaunchPath = string;
@@ -347,6 +348,20 @@ export type ChangeProjectEditorResult = BackendResult & {
     projects?: ProjectDetails[];
     recoveredCodeEditorConfigFiles?: string[];
 };
+
+/** An installed editor or an official editor selected before installation. */
+export type ProjectEditorSelection =
+    | InstalledRelease
+    | {
+          release: ReleaseSummary;
+          mono: boolean;
+      };
+
+/** Identifies the selection that an install completion is allowed to repair. */
+export type ProjectEditorSelectionExpectation = Pick<
+    InstalledRelease,
+    'version' | 'mono'
+>;
 
 export type SetProjectCodeEditorResult = ProjectDetails & {
     recoveredCodeEditorConfigFiles?: string[];

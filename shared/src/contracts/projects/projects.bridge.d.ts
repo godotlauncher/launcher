@@ -20,6 +20,8 @@ import type {
     ListConnectedRepositoriesResult,
     ListCreateProjectPublicationTargetsResult,
     ProjectDetails,
+    ProjectEditorSelection,
+    ProjectEditorSelectionExpectation,
     ProjectGitHubLink,
     ProjectGitIdentityResult,
     ProjectImportInspection,
@@ -156,7 +158,8 @@ export type ProjectsBridge = {
     /** Changes the Godot editor assigned to a project. */
     setProjectEditor(
         project: ProjectDetails,
-        release: InstalledRelease,
+        selection: ProjectEditorSelection,
+        expectedEditor?: ProjectEditorSelectionExpectation,
     ): Promise<ChangeProjectEditorResult>;
 
     /** Changes whether a project opens in windowed mode. */

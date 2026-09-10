@@ -74,6 +74,13 @@ export class EditorProjectRepairAdapter {
         newRelease: InstalledRelease,
     ): Promise<void> {
         const projects = await this.listProjects();
+        const expectedEditor =
+            previousRelease.source === 'custom'
+                ? undefined
+                : {
+                      version: previousRelease.version,
+                      mono: previousRelease.mono,
+                  };
         for (const project of projects.filter((candidate) =>
             projectUsesEditor(candidate, previousRelease),
         )) {
@@ -82,6 +89,7 @@ export class EditorProjectRepairAdapter {
                 newRelease,
                 this.codeEditorIntegrationService,
                 this.projectsStore,
+                expectedEditor,
             );
             if (!result.success) {
                 logger.warn(
