@@ -219,6 +219,7 @@ function InstallsRoute() {
  * @returns The route-controlled Settings view or its default redirect.
  */
 function SettingsRoute() {
+    const location = useLocation();
     const navigate = useNavigate();
     const { tab } = useParams();
     const handleActiveTabChange = useCallback(
@@ -236,6 +237,13 @@ function SettingsRoute() {
         <SettingsView
             activeTab={tab}
             onActiveTabChange={handleActiveTabChange}
+            terminalSettingsOpen={
+                tab === 'tools' &&
+                new URLSearchParams(location.search).get('terminal') === 'true'
+            }
+            onTerminalSettingsClose={() =>
+                navigate(appRoutePaths.settingsTab('tools'), { replace: true })
+            }
         />
     );
 }

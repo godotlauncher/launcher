@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Ma setgħux jitgħabbew is-settings tat-terminal.",
                 "save": "Ma setgħux jiġu salvati s-settings tat-terminal.",
-                "invalidConfiguration": "Is-settings tat-terminal inħolqu minn verżjoni aktar ġdida ta' Godot Launcher. Aġġorna qabel tibdilhom."
+                "invalidConfiguration": "Is-settings tat-terminal issejvjati jużaw format mhux appoġġjat. Irrisettjahom biex tuża l-għażla awtomatika tat-terminal."
+            },
+            "reset": {
+                "button": "Irrisettja s-settings tat-terminal",
+                "title": "Irrisettja s-settings tat-terminal?",
+                "message": "Dan ineħħi l-għażliet tat-terminal issejvjati u s-settings personalizzati tat-terminal għas-sistemi operattivi kollha. Is-settings tal-għodod l-oħra ma jinbidlux.",
+                "confirm": "Irrisettja s-settings"
             }
         },
         "git": {

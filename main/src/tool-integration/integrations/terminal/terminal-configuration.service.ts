@@ -40,6 +40,14 @@ export class TerminalConfigurationService {
             };
         });
     }
+
+    /** Restores the provider-owned configuration to automatic selection. */
+    async reset(): Promise<void> {
+        await this.store.updateConfiguration('terminal', () => ({
+            version: 1,
+            preferences: {},
+        }));
+    }
 }
 
 /**

@@ -10,11 +10,12 @@
             "missing-project": "Bu proje artık kullanılamıyor.",
             "missing-directory": "Proje klasörü artık kullanılamıyor.",
             "disabled": "Terminal devre dışı. Ayarlar > Araçlar > Terminal bölümünden etkinleştirin.",
-            "invalid-configuration": "Terminal ayarları ilgi gerektiriyor. Ayarlar > Araçlar > Terminal bölümünü açın.",
+            "invalid-configuration": "Kayıtlı terminal ayarları Godot Launcher'ın bu sürümüyle uyumlu değil.",
             "unavailable": "Seçilen terminal bulunamadı. Ayarlar > Araçlar > Terminal bölümünden seçin.",
             "unsupported-directory": "Seçilen terminal bu proje klasörünü açamaz.",
             "launch-failed": "Godot Launcher seçilen terminali açamadı. Yeniden deneyin veya başka bir terminal seçin."
-        }
+        },
+        "openSettings": "Terminal ayarlarını aç"
     },
     "title": "Projeler",
     "emptyState": {

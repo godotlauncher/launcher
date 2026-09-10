@@ -10,11 +10,12 @@
             "missing-project": "此项目已不可用。",
             "missing-directory": "项目文件夹已不可用。",
             "disabled": "终端已禁用。请在设置 > 工具 > 终端中启用。",
-            "invalid-configuration": "终端设置需要处理。请打开设置 > 工具 > 终端。",
+            "invalid-configuration": "保存的终端设置与此版本的 Godot Launcher 不兼容。",
             "unavailable": "未找到所选终端。请在设置 > 工具 > 终端中选择。",
             "unsupported-directory": "所选终端无法打开此项目文件夹。",
             "launch-failed": "Godot Launcher 无法打开所选终端。请重试或选择其他终端。"
-        }
+        },
+        "openSettings": "打开终端设置"
     },
     "title": "项目",
     "emptyState": {

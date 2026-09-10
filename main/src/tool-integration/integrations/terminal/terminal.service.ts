@@ -55,6 +55,12 @@ export class TerminalService {
         return this.catalogue.get();
     }
 
+    /** Restores automatic terminal selection and refreshes terminal state. */
+    async resetConfiguration(): Promise<TerminalSummary> {
+        await this.configuration.reset();
+        return this.rescan();
+    }
+
     /**
      * Saves a compiled target identifier for this operating system.
      * @param selection - Automatic or a target supported on this platform.

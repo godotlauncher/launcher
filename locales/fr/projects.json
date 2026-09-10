@@ -10,11 +10,12 @@
             "missing-project": "Ce projet n'est plus disponible.",
             "missing-directory": "Le dossier du projet n'est plus disponible.",
             "disabled": "Le terminal est désactivé. Activez-le dans Paramètres > Outils > Terminal.",
-            "invalid-configuration": "Les paramètres du terminal requièrent votre attention. Ouvrez Paramètres > Outils > Terminal.",
+            "invalid-configuration": "Les paramètres du terminal enregistrés sont incompatibles avec cette version de Godot Launcher.",
             "unavailable": "Le terminal sélectionné est introuvable. Choisissez-en un dans Paramètres > Outils > Terminal.",
             "unsupported-directory": "Le terminal sélectionné ne peut pas ouvrir ce dossier de projet.",
             "launch-failed": "Godot Launcher n'a pas pu ouvrir le terminal sélectionné. Réessayez ou choisissez-en un autre."
-        }
+        },
+        "openSettings": "Ouvrir les paramètres du terminal"
     },
     "title": "Projets",
     "emptyState": {

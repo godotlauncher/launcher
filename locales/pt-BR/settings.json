@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Não foi possível carregar as configurações do terminal.",
                 "save": "Não foi possível salvar as configurações do terminal.",
-                "invalidConfiguration": "As configurações foram criadas por uma versão mais recente do Godot Launcher. Atualize antes de alterá-las."
+                "invalidConfiguration": "As configurações de terminal salvas usam um formato não compatível. Redefina-as para usar a seleção automática do terminal."
+            },
+            "reset": {
+                "button": "Redefinir configurações do terminal",
+                "title": "Redefinir configurações do terminal?",
+                "message": "Isso remove as escolhas de terminal salvas e as configurações personalizadas do terminal para todos os sistemas operacionais. As outras configurações de ferramentas não serão alteradas.",
+                "confirm": "Redefinir configurações"
             }
         },
         "git": {

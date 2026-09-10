@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Impossible de charger les paramètres du terminal.",
                 "save": "Impossible d'enregistrer les paramètres du terminal.",
-                "invalidConfiguration": "Ces paramètres viennent d'une version plus récente de Godot Launcher. Mettez-le à jour avant de les modifier."
+                "invalidConfiguration": "Les paramètres du terminal enregistrés utilisent un format non pris en charge. Réinitialisez-les pour utiliser la sélection automatique du terminal."
+            },
+            "reset": {
+                "button": "Réinitialiser les paramètres du terminal",
+                "title": "Réinitialiser les paramètres du terminal ?",
+                "message": "Cela supprime les choix de terminal enregistrés et les paramètres personnalisés du terminal pour tous les systèmes d'exploitation. Les autres paramètres des outils ne seront pas modifiés.",
+                "confirm": "Réinitialiser les paramètres"
             }
         },
         "git": {

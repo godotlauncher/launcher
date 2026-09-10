@@ -10,11 +10,12 @@
             "missing-project": "このプロジェクトは利用できなくなりました。",
             "missing-directory": "プロジェクトフォルダーは利用できなくなりました。",
             "disabled": "ターミナルは無効です。設定 > ツール > ターミナルで有効にしてください。",
-            "invalid-configuration": "ターミナル設定を確認してください。設定 > ツール > ターミナルを開いてください。",
+            "invalid-configuration": "保存されたターミナル設定は、このバージョンの Godot Launcher と互換性がありません。",
             "unavailable": "選択したターミナルが見つかりません。設定 > ツール > ターミナルで選択してください。",
             "unsupported-directory": "選択したターミナルではこのプロジェクトフォルダーを開けません。",
             "launch-failed": "Godot Launcher は選択したターミナルを開けませんでした。再試行するか別のターミナルを選択してください。"
-        }
+        },
+        "openSettings": "ターミナル設定を開く"
     },
     "title": "プロジェクト",
     "emptyState": {

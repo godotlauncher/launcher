@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Nie można wczytać ustawień terminala.",
                 "save": "Nie można zapisać ustawień terminala.",
-                "invalidConfiguration": "Ustawienia terminala utworzono w nowszej wersji Godot Launcher. Zaktualizuj program przed ich zmianą."
+                "invalidConfiguration": "Zapisane ustawienia terminala używają nieobsługiwanego formatu. Zresetuj je, aby używać automatycznego wyboru terminala."
+            },
+            "reset": {
+                "button": "Zresetuj ustawienia terminala",
+                "title": "Zresetować ustawienia terminala?",
+                "message": "Spowoduje to usunięcie zapisanych wyborów terminala i niestandardowych ustawień terminala dla wszystkich systemów operacyjnych. Pozostałe ustawienia narzędzi nie zostaną zmienione.",
+                "confirm": "Zresetuj ustawienia"
             }
         },
         "git": {

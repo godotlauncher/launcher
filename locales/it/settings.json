@@ -183,7 +183,13 @@
             "errors": {
                 "load": "Impossibile caricare le impostazioni del terminale.",
                 "save": "Impossibile salvare le impostazioni del terminale.",
-                "invalidConfiguration": "Le impostazioni del terminale provengono da una versione più recente di Godot Launcher. Aggiorna prima di modificarle."
+                "invalidConfiguration": "Le impostazioni del terminale salvate usano un formato non supportato. Reimpostale per usare la selezione automatica del terminale."
+            },
+            "reset": {
+                "button": "Reimposta impostazioni del terminale",
+                "title": "Reimpostare le impostazioni del terminale?",
+                "message": "Questa operazione rimuove le scelte del terminale salvate e le impostazioni personalizzate del terminale per tutti i sistemi operativi. Le altre impostazioni degli strumenti non cambieranno.",
+                "confirm": "Reimposta impostazioni"
             }
         },
         "git": {

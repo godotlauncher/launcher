@@ -22,7 +22,7 @@ function setup() {
         resolvedTargetId: 'macos-terminal',
     };
     const catalogue = { get: vi.fn(async () => summary), invalidate: vi.fn() };
-    const configuration = { select: vi.fn() };
+    const configuration = { select: vi.fn(), reset: vi.fn() };
     const adapters = { launch: vi.fn(async () => ({ success: true })) };
     const projects = { list: vi.fn(async () => [{ path: '/stored/project' }]) };
     const store = { get: vi.fn(async () => ({ enabled: true })) };
@@ -119,5 +119,30 @@ describe('TerminalService', () => {
         expect(catalogue.invalidate).toHaveBeenCalled();
         expect(cache.invalidate).toHaveBeenCalledWith('terminal');
         expect(tools.rescan).toHaveBeenCalledWith('terminal');
+    });
+    it('resets preferences then refreshes the terminal summary', async () => {
+        const { service, configuration, catalogue, cache, tools, summary } =
+            setup();
+
+        await expect(service.resetConfiguration()).resolves.toEqual(summary);
+
+        expect(configuration.reset).toHaveBeenCalledOnce();
+        expect(catalogue.invalidate).toHaveBeenCalledOnce();
+        expect(cache.invalidate).toHaveBeenCalledWith('terminal');
+        expect(tools.rescan).toHaveBeenCalledWith('terminal');
+    });
+    it('propagates configuration reset errors without refreshing terminal state', async () => {
+        const { service, configuration, catalogue, cache, tools } = setup();
+        configuration.reset.mockRejectedValueOnce(
+            new Error('Storage unavailable'),
+        );
+
+        await expect(service.resetConfiguration()).rejects.toThrow(
+            'Storage unavailable',
+        );
+
+        expect(catalogue.invalidate).not.toHaveBeenCalled();
+        expect(cache.invalidate).not.toHaveBeenCalled();
+        expect(tools.rescan).not.toHaveBeenCalled();
     });
 });

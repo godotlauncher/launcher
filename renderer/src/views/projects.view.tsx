@@ -6,6 +6,8 @@ import type {
 } from '@shared/contracts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+import { appRoutePaths } from '../app.routes';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
@@ -114,6 +116,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     );
 
     const { addAlert, addCustomConfirm } = useAlerts();
+    const navigate = useNavigate();
 
     const { preferences, updatePreferences } = usePreferences();
     const projectViewMode: ProjectViewMode =
@@ -535,11 +538,53 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                             project.path,
                                         );
                                     if (!result.success) {
+                                        if (
+                                            result.reason ===
+                                            'invalid-configuration'
+                                        ) {
+                                            addCustomConfirm(
+                                                t('common:warning'),
+                                                t(
+                                                    'terminal.errors.invalid-configuration',
+                                                ),
+                                                [
+                                                    {
+                                                        isCancel: true,
+                                                        typeClass: 'btn-ghost',
+                                                        text: t(
+                                                            'common:buttons.ok',
+                                                        ),
+                                                    },
+                                                    {
+                                                        typeClass:
+                                                            'btn-primary',
+                                                        text: t(
+                                                            'terminal.openSettings',
+                                                        ),
+                                                        onClick: () => {
+                                                            navigate(
+                                                                `${appRoutePaths.settingsTab('tools')}?terminal=true`,
+                                                            );
+                                                            return true;
+                                                        },
+                                                    },
+                                                ],
+                                                undefined,
+                                                'warning',
+                                            );
+                                            return;
+                                        }
+                                        const tone =
+                                            result.reason === 'launch-failed'
+                                                ? 'error'
+                                                : 'warning';
                                         addAlert(
-                                            t('common:error'),
+                                            t(`common:${tone}`),
                                             t(
                                                 `terminal.errors.${result.reason}`,
                                             ),
+                                            undefined,
+                                            tone,
                                         );
                                     }
                                 })
