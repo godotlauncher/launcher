@@ -222,6 +222,7 @@ suite('prefs.util', (_test) => {
                 post_launch_action: 'close_to_tray',
                 first_run: true,
                 windows_enable_symlinks: false,
+                linux_credential_storage: 'automatic',
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
                 language: 'system',
@@ -267,6 +268,7 @@ suite('prefs.util', (_test) => {
                 post_launch_action: 'close_to_tray',
                 first_run: true,
                 windows_enable_symlinks: false,
+                linux_credential_storage: 'automatic',
                 receive_beta_updates: false,
                 skipped_app_update_version: undefined,
                 language: 'system',
@@ -299,13 +301,36 @@ suite('prefs.util', (_test) => {
         },
     );
 
+    it.each([undefined, 'unsupported', null])(
+        'normalises saved Linux credential storage %s to Automatic',
+        async (storedCredentialStorage) => {
+            fsMock.existsSync.mockReturnValueOnce(true);
+            fsPromisesMock.readFile.mockResolvedValueOnce(
+                JSON.stringify({
+                    linux_credential_storage: storedCredentialStorage,
+                }),
+            );
+
+            const prefs = await readPrefsFromDisk(
+                '/home/user/.godot/prefs.json',
+                await getDefaultPrefs(),
+            );
+
+            expect(prefs.linux_credential_storage).toBe('automatic');
+        },
+    );
+
     it('should read prefs from disk', async () => {
         fsMock.existsSync.mockReturnValueOnce(true);
         fsPromisesMock.readFile.mockResolvedValueOnce(JSON.stringify({ a: 1 }));
 
         const prefsPath = '/home/user/.godot/prefs.json';
         const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
-        expect(prefs).toEqual({ a: 1, projects_view_mode: 'cards' });
+        expect(prefs).toEqual({
+            a: 1,
+            projects_view_mode: 'cards',
+            linux_credential_storage: 'automatic',
+        });
     });
 
     it('should expose stored prefs separately from default-merged prefs', async () => {
@@ -336,7 +361,11 @@ suite('prefs.util', (_test) => {
         const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
 
         expect(fsMock.existsSync).toBeCalledWith(prefsPath);
-        expect(prefs).toEqual({ a: 1, projects_view_mode: 'cards' });
+        expect(prefs).toEqual({
+            a: 1,
+            projects_view_mode: 'cards',
+            linux_credential_storage: 'automatic',
+        });
     });
 
     it('should read default prefs from an empty file without a parse error dialog', async () => {
@@ -347,7 +376,11 @@ suite('prefs.util', (_test) => {
             a: 1,
         });
 
-        expect(prefs).toEqual({ a: 1, projects_view_mode: 'cards' });
+        expect(prefs).toEqual({
+            a: 1,
+            projects_view_mode: 'cards',
+            linux_credential_storage: 'automatic',
+        });
         expect(dialog.showMessageBox).not.toHaveBeenCalled();
     });
 

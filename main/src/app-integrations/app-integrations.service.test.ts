@@ -82,6 +82,11 @@ describe('AppIntegrationsService', () => {
     let records: Map<string, AppIntegrationConnectionRecord>;
     let ciphertexts: Map<string, string>;
     let provider: AppIntegrationProvider;
+    let secureStorage: {
+        decrypt: ReturnType<typeof vi.fn>;
+        encrypt: ReturnType<typeof vi.fn>;
+        isAvailable: ReturnType<typeof vi.fn>;
+    };
     let service: AppIntegrationsService;
 
     beforeEach(() => {
@@ -145,7 +150,7 @@ describe('AppIntegrationsService', () => {
                 ciphertexts.delete(connectionId);
             }),
         } as unknown as AppIntegrationSecretsStore;
-        const secureStorage = {
+        secureStorage = {
             isAvailable: vi.fn(async () => true),
             encrypt: vi.fn(async (value: string) => `encrypted:${value}`),
             decrypt: vi.fn(async (value: string) =>
@@ -465,6 +470,25 @@ describe('AppIntegrationsService', () => {
             }),
         );
         expect(ciphertexts.size).toBe(1);
+    });
+
+    it('preserves encrypted credentials and metadata when decryption fails', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        if (!record) {
+            throw new Error('Test connection was not persisted');
+        }
+        const previousRecord = structuredClone(record);
+        const previousCiphertext = ciphertexts.get(record.id);
+        secureStorage.decrypt.mockRejectedValueOnce(new Error('key changed'));
+
+        const integrations = await service.list();
+
+        expect(integrations[0]?.connections[0]?.state).toBe(
+            'reauthorisation-required',
+        );
+        expect(records.get(record.id)).toEqual(previousRecord);
+        expect(ciphertexts.get(record.id)).toBe(previousCiphertext);
     });
 
     it('leases refreshed credentials only through the main-process callback', async () => {
@@ -826,6 +850,58 @@ describe('AppIntegrationsService', () => {
             service.reconnect('github', record.id),
         ).resolves.toMatchObject({ ok: false, reason: 'account-mismatch' });
         expect(records.get(record.id)).toEqual(record);
+        expect(ciphertexts.get(record.id)).toBe(previousCiphertext);
+    });
+
+    it('preserves a targeted connection when reauthorisation fails', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        if (!record) {
+            throw new Error('Test connection was not persisted');
+        }
+        const previousRecord = structuredClone(record);
+        const previousCiphertext = ciphertexts.get(record.id);
+        vi.mocked(provider.connect).mockRejectedValueOnce(
+            new AppIntegrationProviderError('network-error'),
+        );
+
+        await expect(
+            service.reconnect('github', record.id),
+        ).resolves.toMatchObject({
+            ok: false,
+            reason: 'network-error',
+        });
+        expect(records.get(record.id)).toEqual(previousRecord);
+        expect(ciphertexts.get(record.id)).toBe(previousCiphertext);
+    });
+
+    it('preserves a targeted connection when reauthorisation is cancelled', async () => {
+        await connectFirstOption();
+        const record = [...records.values()][0];
+        if (!record) {
+            throw new Error('Test connection was not persisted');
+        }
+        const previousRecord = structuredClone(record);
+        const previousCiphertext = ciphertexts.get(record.id);
+        provider.connect = vi.fn(
+            (signal) =>
+                new Promise((_, reject) => {
+                    signal.addEventListener('abort', () =>
+                        reject(new AppIntegrationProviderError('cancelled')),
+                    );
+                }),
+        );
+
+        const reconnecting = service.reconnect('github', record.id);
+        await vi.waitFor(() => expect(provider.connect).toHaveBeenCalledOnce());
+        await expect(service.cancel('github')).resolves.toMatchObject({
+            ok: true,
+        });
+        await expect(reconnecting).resolves.toMatchObject({
+            ok: false,
+            reason: 'cancelled',
+        });
+        expect(records.get(record.id)).toEqual(previousRecord);
         expect(ciphertexts.get(record.id)).toBe(previousCiphertext);
     });
 

@@ -1,4 +1,7 @@
-import type { UserPreferences } from '../preferences/index.js';
+import type {
+    LinuxCredentialStorageStatus,
+    UserPreferences,
+} from '../preferences/index.js';
 import type {
     AvailableReleasesResult,
     CreateCustomEngineManifestResult,
@@ -39,6 +42,7 @@ export type OnboardingRecommendedLocations = {
 
 export type AppBridge = {
     getUserPreferences(): Promise<UserPreferences>;
+    getCredentialStorageStatus(): Promise<LinuxCredentialStorageStatus | null>;
     getOnboardingRecommendedLocations(): Promise<OnboardingRecommendedLocations>;
     setUserPreferences(prefs: UserPreferences): Promise<UserPreferences>;
     setAutoStart(

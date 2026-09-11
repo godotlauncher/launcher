@@ -335,4 +335,15 @@ describe('userPreferences migration', () => {
             prefs,
         );
     });
+
+    it('rejects invalid Linux credential-storage preferences without writing', async () => {
+        const prefs = createPrefs({
+            linux_credential_storage: 'unsupported' as never,
+        });
+
+        await expect(setUserPreferences(prefs)).rejects.toThrow(
+            'Invalid Linux credential-storage preference',
+        );
+        expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
+    });
 });

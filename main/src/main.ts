@@ -6,6 +6,7 @@ import { app, Menu } from 'electron';
 import logger from 'electron-log/main.js';
 import { AppModule } from './app.module.js';
 import { configuration, setCurrentAppConfig } from './config/index.js';
+import { configureLinuxCredentialStorage } from './linux-credential-storage.utils.js';
 import { getAppIconPath, getUIPath } from './pathResolver.js';
 import {
     closeSplashscreen,
@@ -19,6 +20,11 @@ const appConfig = configuration({
     appPath: app.getAppPath(),
 });
 setCurrentAppConfig(appConfig);
+const credentialStorageSelection = configureLinuxCredentialStorage({
+    commandLine: app.commandLine,
+    platform: process.platform,
+    prefsPath: appConfig.paths.prefsPath,
+});
 
 if (appConfig.isDev) {
     const devLogPath = path.join(
@@ -42,6 +48,11 @@ logger.info(`Platform: ${process.platform}, Arch: ${process.arch}`);
 logger.info(`isDev: ${appConfig.isDev}`);
 logger.info(`App path: ${app.getAppPath()}`);
 logger.info(`Debug flags: ${appConfig.debugMode}`);
+if (credentialStorageSelection?.requestedBackend === 'gnome-libsecret') {
+    logger.info(
+        `Secret Service requested via --password-store=gnome-libsecret (source: ${credentialStorageSelection.selectionSource})`,
+    );
+}
 if (process.platform === 'linux') {
     logger.info(`sandbox disabled: ${appConfig.disableSandbox}`);
 }

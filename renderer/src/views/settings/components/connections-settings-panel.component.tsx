@@ -19,6 +19,7 @@ import { Drawer } from '../../../components/ui/drawer/drawer.component';
 import { StatusBadge } from '../../../components/ui/status-badge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { useTheme } from '../../../hooks/theme.hook';
+import { CredentialStorageControl } from './credential-storage-control.component';
 import { SettingsPanelSection } from './settings-panel-section.component';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -141,6 +142,8 @@ export const ConnectionsSettingsPanel: React.FC<
                     ))}
                 </div>
             )}
+
+            <CredentialStorageControl active={active} t={t} />
 
             <GitHubConnectionsDrawer
                 open={Boolean(managedIntegration?.connections.length)}
