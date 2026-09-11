@@ -1,4 +1,5 @@
 import type { UserPreferences } from '@shared/contracts';
+import { isLinuxCredentialStoragePreference } from '../linux-credential-storage.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
 import {
     getDefaultPrefs,
@@ -79,9 +80,21 @@ export async function getUserPreferences(): Promise<UserPreferences> {
     return migrated.value;
 }
 
+/**
+ * Validates and persists user preferences.
+ *
+ * @param prefs - Complete renderer-safe preference values to persist.
+ * @returns The saved preference values.
+ */
 export async function setUserPreferences(
     prefs: UserPreferences,
 ): Promise<UserPreferences> {
+    if (
+        prefs.linux_credential_storage !== undefined &&
+        !isLinuxCredentialStoragePreference(prefs.linux_credential_storage)
+    ) {
+        throw new Error('Invalid Linux credential-storage preference');
+    }
     const { prefsPath } = getDefaultDirs();
 
     await writePrefsToDisk(prefsPath, prefs);

@@ -1,5 +1,15 @@
 import type { CodeEditorId } from '../codeEditorIntegration/index.js';
 
+export type LinuxCredentialStoragePreference = 'automatic' | 'gnome-libsecret';
+
+export type LinuxCredentialStorageStatus = {
+    startupPreference: LinuxCredentialStoragePreference;
+    selectionSource: 'automatic' | 'preference' | 'command-line';
+    requestedBackend: string | null;
+    activeBackend: string;
+    available: boolean;
+};
+
 export type CodeEditorDetectedInstallationPreferences = {
     path: string | null;
     version: string | null;
@@ -35,6 +45,7 @@ export type UserPreferences = {
     code_editor_integrations?: Partial<
         Record<CodeEditorId, CodeEditorIntegrationPreferences>
     >;
+    linux_credential_storage?: LinuxCredentialStoragePreference;
     language?: string;
     skipped_app_update_version?: string;
 };

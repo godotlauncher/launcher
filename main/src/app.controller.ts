@@ -10,9 +10,10 @@ import type {
     AppOpenDialogProperty,
     CheckForUpdatesOptions,
     CustomEngineManifest,
+    LinuxCredentialStorageStatus,
     UserPreferences,
 } from '@shared/contracts';
-import { app, shell } from 'electron';
+import { app, safeStorage, shell } from 'electron';
 import semver from 'semver';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppLifecycleService } from './app-lifecycle.service.js';
@@ -43,6 +44,7 @@ import {
 } from './commands/userPreferences.js';
 import { getCurrentAppConfig } from './config/index.js';
 import { refreshMenu } from './helpers/menu.helper.js';
+import { getLinuxCredentialStorageStatus } from './linux-credential-storage.utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from './services/tray-availability.service.js';
 import { closeSplashscreen } from './splashscreen/splashscreen.js';
@@ -72,6 +74,21 @@ export class AppController implements AppBridge {
     @AppHandler('getUserPreferences')
     getUserPreferences() {
         return getUserPreferences();
+    }
+
+    /**
+     * Returns the active Linux credential-storage status after Electron readiness.
+     *
+     * @returns The Linux status, or null on other platforms.
+     */
+    @AppHandler('getCredentialStorageStatus')
+    async getCredentialStorageStatus(): Promise<LinuxCredentialStorageStatus | null> {
+        if (!app.isReady()) {
+            throw new Error(
+                'Credential storage status is unavailable before Electron is ready',
+            );
+        }
+        return getLinuxCredentialStorageStatus(safeStorage);
     }
 
     @AppHandler('getOnboardingRecommendedLocations')

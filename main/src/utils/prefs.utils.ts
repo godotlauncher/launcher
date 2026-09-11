@@ -10,6 +10,7 @@ import {
     setUserPreferences,
 } from '../commands/userPreferences.js';
 import { t } from '../i18n/index.js';
+import { isLinuxCredentialStoragePreference } from '../linux-credential-storage.utils.js';
 import { getMainWindow } from '../mainWindow.js';
 import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
@@ -49,7 +50,7 @@ function clonePrefs<T>(prefs: T): T {
 }
 
 /**
- * Merges saved preferences and normalises the optional project presentation.
+ * Merges saved preferences and normalises optional project and credential-storage preferences.
  * @param defaultPrefs - Defaults for missing preferences.
  * @param prefs - Saved preference values.
  */
@@ -65,6 +66,11 @@ function mergeWithDefaults(
         ...runtimePrefs,
         projects_view_mode:
             runtimePrefs.projects_view_mode === 'list' ? 'list' : 'cards',
+        linux_credential_storage: isLinuxCredentialStoragePreference(
+            runtimePrefs.linux_credential_storage,
+        )
+            ? runtimePrefs.linux_credential_storage
+            : 'automatic',
     };
 }
 
@@ -152,6 +158,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         confirm_project_remove: true,
         first_run: true,
         windows_enable_symlinks: false,
+        linux_credential_storage: 'automatic',
         language: 'system', // Default to system language detection
     };
 }

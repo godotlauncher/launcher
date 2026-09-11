@@ -177,7 +177,9 @@
             "version": "Version"
         },
         "terminal": {
-            "drawer": { "title": "Terminal settings" },
+            "drawer": {
+                "title": "Terminal settings"
+            },
             "loading": "Loading terminal settings...",
             "enabled": "Enable terminal for project folders",
             "selection": {
@@ -329,6 +331,43 @@
             "failureDetail": "The connection could not be removed. Your local credential was kept. Try again.",
             "revokeAction": "Revoke and disconnect",
             "localOnlyAction": "Disconnect this device"
+        },
+        "credentialStorage": {
+            "configure": "Configure storage",
+            "restartFailedTitle": "Could not restart Godot Launcher",
+            "restartFailed": "Your choice is saved. Quit Godot Launcher completely and reopen it to apply the saved choice.",
+            "restartNow": "Restart now",
+            "notNow": "Not now",
+            "linuxOnly": "Linux only",
+            "title": "Credential storage",
+            "description": "Choose how Godot Launcher accesses secure credential storage on Linux. Secret Service requires a compatible keyring running in your desktop session.",
+            "savedChoice": "Saved choice",
+            "automatic": "Automatic",
+            "secretService": "Secret Service",
+            "warning": "Changing this choice may require reconnecting GitHub. Existing credentials will be kept.",
+            "save": "Save choice",
+            "saving": "Saving...",
+            "saveError": "Could not save the choice. Your previous saved choice is unchanged. Try again.",
+            "restart": "Fully quit Godot Launcher, including its system tray process, and open it again to apply the saved choice.",
+            "restartPending": "The saved choice differs from the choice used at startup. A full restart is required.",
+            "override": "A launch flag controls credential storage for this session ({{backend}}). Remove the flag before restarting if you want to use the saved choice.",
+            "sessionChoice": "Choice at startup: {{choice}}",
+            "activeBackend": "Active storage backend: {{backend}}",
+            "available": "Secure storage is available.",
+            "unavailable": "Secure storage is unavailable. Check that a compatible keyring service is running and accessible, then fully restart Godot Launcher.",
+            "selectionFailed": "Secret Service was requested but is not the active backend. Check that a compatible Secret Service keyring is running, then fully restart Godot Launcher.",
+            "statusError": "Could not read the current storage status.",
+            "loading": "Reading storage status...",
+            "summary": "Choose secure credential storage for Linux.",
+            "confirmTitle": "Change credential storage?",
+            "confirmChange": "Save {{choice}} as your credential storage choice?",
+            "savedTitle": "Credential storage choice saved",
+            "failedTitle": "Could not save credential storage",
+            "details": "Storage details",
+            "pendingShort": "Restart required",
+            "overrideShort": "Launch flag override",
+            "unavailableShort": "Secure storage is unavailable.",
+            "savedCurrent": "The saved choice matches the choice used at startup. No restart is needed for this change."
         }
     },
     "updates": {
