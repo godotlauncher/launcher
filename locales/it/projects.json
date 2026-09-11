@@ -301,7 +301,7 @@
             "title": "Rivedi le importazioni",
             "description": "Scegli un nome in Godot Launcher o salta il progetto. I nomi Godot e le cartelle restano invariati.",
             "label": "Nome in Godot Launcher",
-            "name": "Questo nome o la sua cartella delle impostazioni è già in uso. Scegli un altro nome o salta il progetto.",
+            "name": "Questo nome del progetto è già in uso. Scegli un altro nome o salta il progetto.",
             "folder": "Questa cartella è già registrata o selezionata. Salta questa voce.",
             "invalid": "Inserisci un nome valido. Salta i file di progetto illeggibili.",
             "skip": "Salta questo progetto",

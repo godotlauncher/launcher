@@ -301,7 +301,7 @@
             "title": "Proje içe aktarımlarını incele",
             "description": "Bir Godot Launcher adı seçin veya projeyi atlayın. Godot proje adları ve klasörler değişmez.",
             "label": "Godot Launcher adı",
-            "name": "Bu ad veya ayar klasörü zaten kullanılıyor. Başka bir ad seçin veya atlayın.",
+            "name": "Bu proje adı zaten kullanılıyor. Farklı bir ad seçin veya bu projeyi atlayın.",
             "folder": "Bu klasör zaten kayıtlı veya seçili. Bu girdiyi atlayın.",
             "invalid": "Geçerli bir ad girin. Okunamayan proje dosyalarını atlayın.",
             "skip": "Bu projeyi atla",

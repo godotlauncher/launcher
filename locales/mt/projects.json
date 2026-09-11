@@ -301,7 +301,7 @@
             "title": "Irrevedi l-importazzjonijiet",
             "description": "Agħżel isem f’Godot Launcher jew aqbeż il-proġett. L-ismijiet ta’ Godot u l-fowlders jibqgħu l-istess.",
             "label": "Isem f’Godot Launcher",
-            "name": "Dan l-isem jew il-fowlder tas-settings tiegħu diġà qed jintuża. Agħżel isem ieħor jew aqbeż.",
+            "name": "Dan l-isem tal-proġett diġà qed jintuża. Agħżel isem differenti jew aqbeż dan il-proġett.",
             "folder": "Dan il-fowlder diġà huwa rreġistrat jew magħżul. Aqbeż din l-entrata.",
             "invalid": "Daħħal isem validu. Aqbeż fajls tal-proġett li ma jistgħux jinqraw.",
             "skip": "Aqbeż dan il-proġett",

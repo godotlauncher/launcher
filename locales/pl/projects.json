@@ -301,7 +301,7 @@
             "title": "Sprawdź import projektów",
             "description": "Wybierz nazwę w Launcherze lub pomiń projekt. Nazwy Godot i foldery pozostaną bez zmian.",
             "label": "Nazwa w Launcherze",
-            "name": "Ta nazwa lub jej folder ustawień jest już używany. Wybierz inną nazwę lub pomiń projekt.",
+            "name": "Ta nazwa projektu jest już używana. Wybierz inną nazwę lub pomiń ten projekt.",
             "folder": "Ten folder jest już zarejestrowany lub wybrany. Pomiń ten wpis.",
             "invalid": "Wpisz poprawną nazwę. Pomiń nieczytelne pliki projektów.",
             "skip": "Pomiń ten projekt",

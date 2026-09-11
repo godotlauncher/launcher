@@ -301,7 +301,7 @@
             "title": "Vérifier les imports",
             "description": "Choisissez un nom dans Godot Launcher ou ignorez le projet. Les noms Godot et les dossiers restent inchangés.",
             "label": "Nom dans Godot Launcher",
-            "name": "Ce nom ou son dossier de paramètres est déjà utilisé. Choisissez un autre nom ou ignorez le projet.",
+            "name": "Ce nom de projet est déjà utilisé. Choisissez un autre nom ou ignorez le projet.",
             "folder": "Ce dossier est déjà enregistré ou sélectionné. Ignorez cette entrée.",
             "invalid": "Saisissez un nom valide. Ignorez les fichiers de projet illisibles.",
             "skip": "Ignorer ce projet",

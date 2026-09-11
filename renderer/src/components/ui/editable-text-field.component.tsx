@@ -7,6 +7,7 @@ export type EditableTextFieldProps = {
     draft: string;
     editing: boolean;
     ariaLabel: string;
+    ariaDescribedBy?: string;
     editLabel: string;
     saveLabel: string;
     cancelLabel: string;
@@ -32,6 +33,7 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
     draft,
     editing,
     ariaLabel,
+    ariaDescribedBy,
     editLabel,
     saveLabel,
     cancelLabel,
@@ -54,6 +56,7 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
                         invalid && 'input-error',
                     )}
                     aria-label={ariaLabel}
+                    aria-describedby={ariaDescribedBy}
                     aria-invalid={invalid}
                     maxLength={maxLength}
                     value={draft}
@@ -103,6 +106,7 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
                     className="btn btn-sm btn-ghost btn-square shrink-0"
                     disabled={disabled}
                     aria-label={editLabel}
+                    aria-describedby={ariaDescribedBy}
                     onClick={onEdit}
                 >
                     <Pencil size={16} aria-hidden="true" />

@@ -7,7 +7,7 @@ import {
     FolderCheck,
     TriangleAlert,
 } from 'lucide-react';
-import type { ReactNode, RefObject } from 'react';
+import { type ReactNode, type RefObject, useId } from 'react';
 import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import { EditableTextField } from '../../../components/ui/editable-text-field.component';
 import { SelectField } from '../../../components/ui/select-field.component';
@@ -63,6 +63,7 @@ export function ProjectImportReviewList({
     onCancel,
     onEditorChange,
 }: ProjectImportReviewListProps) {
+    const descriptionId = useId();
     return (
         <ul className="flex flex-col gap-2 p-1 text-base">
             {selectAll && (
@@ -83,6 +84,9 @@ export function ProjectImportReviewList({
             )}
             {items.map((item) => {
                 const { row } = item;
+                const hasNameConflict =
+                    item.selected && item.conflict === 'name';
+                const conflictId = `${descriptionId}-${encodeURIComponent(item.id)}`;
                 const action = row.editorActions.find(
                     (candidate) => candidate.id === item.editorActionId,
                 );
@@ -134,6 +138,9 @@ export function ProjectImportReviewList({
                                 draft={draft}
                                 editing={editingId === item.id}
                                 ariaLabel={t('addProject.conflicts.label')}
+                                ariaDescribedBy={
+                                    hasNameConflict ? conflictId : undefined
+                                }
                                 editLabel={`${t('addProject.conflicts.edit')}: ${item.name}`}
                                 saveLabel={t('common:buttons.ok')}
                                 cancelLabel={t('common:buttons.cancel')}
@@ -151,6 +158,15 @@ export function ProjectImportReviewList({
                                 onSave={() => onSave(item.id)}
                                 onCancel={onCancel}
                             />
+                            {hasNameConflict && (
+                                <p
+                                    id={conflictId}
+                                    role="alert"
+                                    className="w-full max-w-[36ch] break-words pl-3 text-sm text-error"
+                                >
+                                    {t('addProject.conflicts.name')}
+                                </p>
+                            )}
                             <CopyBadge
                                 value={item.path}
                                 label={t('common:buttons.copyPath')}
@@ -273,9 +289,11 @@ export function ProjectImportReviewList({
                         >
                             <StatusIcon size={18} aria-hidden="true" />
                         </Tooltip>
-                        <span role="status" className="sr-only">
-                            {statusLabel}
-                        </span>
+                        {!hasNameConflict && (
+                            <span role="status" className="sr-only">
+                                {statusLabel}
+                            </span>
+                        )}
                     </li>
                 );
             })}
