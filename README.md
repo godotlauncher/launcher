@@ -1,12 +1,11 @@
 # Godot Launcher
 
-**Godot Launcher** is an open-source companion app for Godot Engine. It manages official releases and custom Godot builds, initializes Git, configures Visual Studio Code or VSCodium for each project, and keeps project settings isolated. Open projects from the system tray and receive notifications when a new launcher version is available.
+Godot Launcher is a free, open-source desktop app for managing Godot versions and projects on Windows, macOS and Linux. It keeps Godot editor settings separate for each project and helps you set up Git and a code editor.
 
-Spend less time configuring your environment and more time creating amazing games.
+<a id="how-to-get-godot-launcher"></a>
+<a id="documentation"></a>
 
-✅ **Free, Open Source, and Community-Driven.**\
-✅ **Cross-platform support, available on Windows, macOS, and Linux.**\
-✅ **Designed for modern Godot workflows, focusing on v4.0 and later.**
+[Download](https://godotlauncher.org/download) | [Documentation](https://docs.godotlauncher.org) | [Release notes](https://github.com/godotlauncher/launcher/releases)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/animations/create-project/create-project-anim_dark.gif">
@@ -14,115 +13,67 @@ Spend less time configuring your environment and more time creating amazing game
   <img alt="Creating a Godot project with Git and a code editor" src="docs/animations/create-project/create-project-anim_light.gif">
 </picture>
 
-## How to Get Godot Launcher
-
-The best way to get the latest installer is from [the Godot Launcher website](https://godotlauncher.org/download).
-
 ## Features
 
-### **Quick Project Setup with Git and Code Editors**
+<a id="quick-project-setup-with-git-and-code-editors"></a>
+<a id="project-setup-with-git-and-code-editors"></a>
+<a id="effortless-godot-version-management"></a>
+<a id="godot-version-management"></a>
+<a id="custom-editor-support"></a>
+<a id="per-project-editor-settings"></a>
+<a id="quick-edit-from-system-tray"></a>
+<a id="automatic-updates"></a>
+<a id="cross-platform-availability"></a>
 
-- **Instant Git Initialization:** Start a new project with Git automatically initialized, complete with an initial commit.
-- **Visual Studio Code and VSCodium:** Detect either editor, choose a default for new projects, and select an editor per project. Godot Launcher configures the project for the selected editor while preserving unrelated settings. See [Code Editor Settings](https://docs.godotlauncher.org/settings/code-editors/) for setup details.
+- **Godot versions and custom builds.** Install stable or pre-release versions, register custom builds, and choose an editor for each project. Generate custom editor manifests in the app. Godot Launcher focuses on Godot 4.0 and later.
+- **GitHub projects.** Connect GitHub to browse and import repositories you can access, including private repositories. Publish a new project to a private GitHub repository during creation, or clone a public HTTPS Git repository without connecting an account.
+- **Git setup.** Initialise a repository with an optional initial commit and Git LFS configuration. Manage your Git identity and save a separate identity preset for new projects.
+- **Code editors.** Configure Visual Studio Code or VSCodium as your default or choose one per project, while preserving unrelated settings. See [Code Editor Settings](https://docs.godotlauncher.org/settings/code-editors/).
+- **Per-project settings.** Keep separate Godot editor preferences for each project. Import and export settings to reuse them or share them with teammates.
+- **Project access.** Switch between Cards and a compact List view, pin and reorder projects, and open a project's folder in a supported terminal. Open recent projects from the system tray where available.
+- **Launcher updates.** Check for new releases and receive update notifications. Download an update, then restart to install it.
 
-### **Effortless Godot Version Management**
+<a id="community"></a>
 
-- **Install and Switch Versions:** Seamlessly download and manage multiple Godot Editor versions. Experiment with the latest pre-releases or fall back to stable editions in seconds.
-- **Fast Prototyping:** Quickly spin up new ideas using different editor builds. Testing features and previews is a breeze.
-- **Modern Godot Support:** The launcher focuses on the most commonly used versions of Godot. Since Godot 3.x adoption is steadily decreasing, custom configurations for it have not been included yet.
+## Support
 
-### **Custom Editor Support**
+For questions and discussion, join the [Godot Launcher Discord server](https://discord.gg/Ju9jkFJGvz). For bugs and feature requests, check the [open issues](https://github.com/godotlauncher/launcher/issues) and [closed issues](https://github.com/godotlauncher/launcher/issues?q=is%3Aissue%20state%3Aclosed) before opening a new report.
 
-- **Register Custom Builds:** Add locally compiled Godot editors or team-distributed builds alongside official releases.
-- **Create Manifests in the App:** Generate the custom editor manifest from Godot Launcher instead of writing `godotlauncher-editor-manifest.json` by hand.
-- **Use Custom Editors Per Project:** Select registered custom editors for projects like any other installed editor.
+Report security vulnerabilities through the [security policy](SECURITY.md).
 
-### **Per-Project Editor Settings**
+<a id="versioning"></a>
 
-- **Isolated Configuration:** Each project maintains its own editor preferences, so you never have to worry about conflicting settings across multiple projects.
-- **Easy Import/Export:** Share your editor configurations with teammates or import settings that make sense for different workflows.
-
-### **Quick Edit from System Tray**
-
-- **Seamless Workflow:** Minimize the launcher to your system tray to keep it out of your way while you work.
-- **Instant Access:** Jump back into any project with a single click—no need to relaunch or sift through folders.
-
-### **Automatic Updates**
-
-- **Stay Current:** Receive notifications whenever a new version of the launcher is available.
-- **One-Click Upgrade:** Simply restart the launcher to apply the update.
-
-### **Cross-Platform Availability**
-
-- **Windows, Mac, and Linux:** You can use the same streamlined workflow on any machine.
-
-
-### **Free and Open Source**
-
-- **Forever Free:** Godot Launcher is—and always will be—free for everyone.
-- **Community-Driven:** Contribute code, suggest features, or report issues. Join a passionate community dedicated to making Godot development smoother for all.
-
-## Community
-
-Join our **[Godot Launcher Discord server](https://discord.gg/Ju9jkFJGvz)** to connect with other users and contributors. Ask questions, share feedback, and stay updated on new releases.
-
-If you’re interested in contributing to Godot Launcher, see the [Contributing](#contributing) section below.
-
-## Versioning
-
-Godot Launcher follows [Semantic Versioning](https://semver.org/) for all releases. Versions are tagged in Git and listed in `package.json` using the `vMAJOR.MINOR.PATCH` format.
-
-- **MAJOR**: breaking changes or updates that require manual migration.
-- **MINOR**: backward-compatible improvements and new features.
-- **PATCH**: backward-compatible bug fixes and maintenance updates.
-
-Pre-release builds include suffixes like `-beta.1` or `-rc.1`. Document noteworthy changes in `CHANGELOG.md` before cutting a release so downstream users can track what changed.
+Releases follow [Semantic Versioning](https://semver.org/), with suffixes such as `-beta.1` for pre-release builds. The [changelog](CHANGELOG.md) records changes between releases.
 
 ## Contributing
 
-> [!IMPORTANT]\
-> Before opening a new bug report or feature request, please check the [open issues](https://github.com/godotlauncher/launcher/issues) and [closed issues](https://github.com/godotlauncher/launcher/issues?q=is%3Aissue%20state%3Aclosed) first to see if it has already been reported.
+See the [contribution guide](CONTRIBUTING.md) for pull request guidance, the [translation guide](CONTRIBUTING_TRANSLATIONS.md) to help with languages, or the [documentation repository](https://github.com/godotlauncher/launcher-docs) to improve the docs.
 
-We warmly welcome contributions from the community! For detailed guidelines on submitting pull requests, best practices, and more, please see our [contribution guide](CONTRIBUTING.md).
+AI-assisted contributions are welcome. Contributors remain responsible for understanding, reviewing and testing everything they submit. See the [AI-Assisted Contributions Policy](AI_POLICY.md) for the full requirements.
 
-For responsible AI-assisted development and contribution standards, read our [AI-Assisted Contributions Policy](AI_POLICY.md).
+<a id="feature-proposals"></a>
 
-### **Feature Proposals**
+For a major change or new feature, [open a feature request](https://github.com/godotlauncher/launcher/issues/new?template=feature_request.yaml) to discuss the proposal before starting work.
 
-For major changes or new features, please open an issue and clearly mark the title as a proposal [here](https://github.com/godotlauncher/launcher/issues).
+### Local Development
 
-### **Local Development**
+Fork and clone this repository. Install Node.js **24.15.0 or later** and the npm version declared in [package.json](package.json), then run these commands from the cloned directory:
 
-1. **Fork & Clone** this repository to your local machine.
-2. Ensure you have **Node.js >=24** installed.
-3. Install dependencies with `npm ci`.
-4. Launch the app with `npm run dev`.
+```sh
+npm ci
+npm run dev
+```
 
-Use `npm ci` for normal development and CI-like installs. It installs from
-`package-lock.json` without rewriting it, which avoids platform-only lockfile
-churn from optional native dependencies on Windows, macOS, and Linux. Use
-`npm install` only when intentionally adding, removing, or updating
-dependencies. If `npm install` changes only `package-lock.json` and
-`package.json` did not change, do not include that lockfile change in your PR.
+This starts the Electron app. See the contribution guide for [dependency and lockfile guidance](CONTRIBUTING.md#local-development-and-dependencies) and [testing instructions](CONTRIBUTING.md#testing-your-changes).
 
-Once you have everything running, feel free to open pull requests with your improvements, fixes, or new features.
-
-**We appreciate all contributions!**
-
-## Documentation
-
-Visit the **[official Godot Launcher documentation](https://docs.godotlauncher.org)** for detailed guides, FAQs, and troubleshooting. This documentation is also open-source and maintained by the community in its own [GitHub repository](https://github.com/godotlauncher/launcher-docs).
+<a id="free-and-open-source"></a>
 
 ## License
 
-Godot Launcher is licensed under the [MIT License](./LICENSE.txt). A copy of the license is provided in the repository for your convenience. By contributing to or using this project, you agree to the terms stated therein.
-
-This project also includes third-party assets and libraries, which are licensed under their respective terms. For details, please refer to [`COPYRIGHT.txt`](./COPYRIGHT.txt).
+Godot Launcher is released under the [MIT License](LICENSE.txt). Third-party assets and libraries have their own licence terms; see [COPYRIGHT.txt](COPYRIGHT.txt).
 
 ## Code Signing Policy
 
-Windows releases signed by SignPath.
+Windows releases are signed through SignPath. Free code signing is provided by [SignPath.io](https://signpath.io/), with a certificate from the [SignPath Foundation](https://signpath.org/).
 
-Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
-
-macOS builds are signed with a Developer ID Application certificate issued to Mario DEBONO and notarized by Apple.
+macOS builds are signed with a Developer ID Application certificate issued to Mario DEBONO and notarised by Apple.
