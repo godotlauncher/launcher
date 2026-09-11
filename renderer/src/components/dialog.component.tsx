@@ -142,7 +142,7 @@ export const Dialog: React.FC<DialogProps> = ({
             ref={dialogRef}
             data-testid={testId}
             aria-labelledby={titleId}
-            className="modal z-60 select-none p-4"
+            className="modal z-60 select-none p-4 open:bg-black/65"
         >
             <section
                 className={`modal-box w-full max-h-[85vh] flex flex-col overflow-hidden p-0 ${widthClassName} ${panelClassName}`}

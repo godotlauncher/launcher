@@ -10,6 +10,8 @@ let page: Page;
 let fixtureHome: string;
 let projectFile: string;
 
+const nameConflictMessage = 'This project name is already in use. Choose a different name or skip this project.';
+
 test.describe.configure({ mode: 'serial' });
 
 test.beforeAll(async () => {
@@ -95,6 +97,8 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await expect(dialog.getByRole('listitem')).toHaveCount(4);
     await expect(dialog.getByRole('button', { name: 'Copy path', exact: true })).toHaveCount(4);
     await expect(dialog.getByRole('img', { name: 'Name conflict', exact: true })).toHaveCount(3);
+    await expect(dialog.getByRole('alert')).toHaveText(Array(3).fill(nameConflictMessage));
+    await expect(dialog.getByRole('button', { name: 'Edit name: Original', exact: true }).nth(1)).toHaveAccessibleDescription(nameConflictMessage);
     await expect(dialog.getByRole('button', { name: 'Add projects', exact: true })).toBeDisabled();
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
@@ -111,6 +115,7 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await dialog.screenshot({ path: path.resolve('.internal-docs/import-conflicts/combined-review.png') });
     await dialog.getByRole('checkbox').nth(3).uncheck();
     await dialog.getByRole('checkbox').nth(2).uncheck();
+    await expect(dialog.getByRole('alert')).toHaveText([nameConflictMessage]);
     await dialog.locator('button[aria-haspopup="listbox"]').nth(1).click();
     await dialog.screenshot({ path: path.resolve('.internal-docs/import-conflicts/resolution-menu.png') });
     await page.getByRole('option', { name: 'Add With Missing Editor', exact: true }).click();
@@ -121,6 +126,7 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await dialog.getByRole('button', { name: 'Edit name: Original', exact: true }).nth(1).click();
     const name = dialog.getByLabel('Name in Godot Launcher', { exact: true });
     await expect(name).toBeFocused();
+    await expect(name).toHaveAccessibleDescription(nameConflictMessage);
     await name.fill('Cancelled edit');
     await name.press('Escape');
     await expect(dialog).toBeVisible();
@@ -130,6 +136,7 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await name.press('Enter');
     await expect(dialog.getByRole('button', { name: 'Add projects', exact: true })).toBeDisabled();
     await dialog.getByRole('button', { name: 'Edit name:', exact: true }).click();
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
     await name.fill('Launcher copy');
     await dialog.screenshot({ path: path.resolve('.internal-docs/import-conflicts/compact-edit.png') });
     await name.press('Enter');
@@ -152,59 +159,83 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await cdp.detach();
 });
 
-test('keeps remote name choices and successful imports when retrying a stale conflict', async () => {
-    await prepareAppWithStubbedData(page, app);
-    await app.evaluate(({ ipcMain }, { root, baseProject }) => {
-        const state = globalThis as typeof globalThis & { remoteImportCalls?: { filePath: string; options: { name: string } }[] };
-        state.remoteImportCalls = [];
-        const handlers: Record<string, (...args: unknown[]) => unknown> = {
-            'projects.inspectPublicGitSource': () => ({ ok: true, canonicalUrl: 'https://example.invalid/repo.git', suggestedDirectoryName: 'repo' }),
-            'projects.inspectProjectImports': (paths) => (paths as string[]).map((projectFilePath) => ({ projectFilePath, name: 'Same' })),
-            'projects.importRemoteProject': () => ({ ok: true, jobId: 'fixture-clone', repositoryPath: root, hasSubmodules: false, projects: [
-                { name: 'Same', relativePath: 'one/project.godot', projectFilePath: `${root}/one/project.godot`, detectedEditor: null },
-                { name: 'Same', relativePath: 'two/project.godot', projectFilePath: `${root}/two/project.godot`, detectedEditor: null },
-            ] }),
-            'git.getIdentitySettings': () => ({ globalIdentity: { name: 'Fixture', email: 'fixture@example.invalid' }, projectPreset: null }),
-            'projects.resolveRemoteProjectClone': () => ({ ok: true }),
-            'projects.addProject': (filePath, options) => {
-                state.remoteImportCalls?.push({ filePath: filePath as string, options: options as { name: string } });
-                const newProject = { ...baseProject, name: (options as { name: string }).name, path: (filePath as string).replace(/[/\\]project\.godot$/, '') };
-                return state.remoteImportCalls?.length === 2 ? { success: false, importConflict: 'name', error: 'Name changed during registration' } : { success: true, projects: [newProject], newProject };
-            },
-        };
-        for (const [channel, handler] of Object.entries(handlers)) {
-            ipcMain.removeHandler(channel);
-            ipcMain.handle(channel, (_event, ...args) => ({ success: true, data: handler(...args) }));
+for (const source of ['public-git-url', 'github'] as const) {
+    test(`keeps ${source} name choices and successful imports when retrying a stale conflict`, async () => {
+        await prepareAppWithStubbedData(page, app);
+        await app.evaluate(({ ipcMain }, { root, baseProject }) => {
+            const state = globalThis as typeof globalThis & { remoteImportCalls?: { filePath: string; options: { name: string } }[] };
+            state.remoteImportCalls = [];
+            const handlers: Record<string, (...args: unknown[]) => unknown> = {
+                'projects.listConnectedRepositories': () => ({ ok: true, page: { repositories: [{ repositoryRef: 'fixture-repo', owner: 'fixture', name: 'repo', visibility: 'public', cloneUrl: 'https://example.invalid/repo.git', defaultBranch: 'main' }], nextCursor: null } }),
+                'projects.inspectPublicGitSource': () => ({ ok: true, canonicalUrl: 'https://example.invalid/repo.git', suggestedDirectoryName: 'repo' }),
+                'projects.inspectProjectImports': (paths) => (paths as string[]).map((projectFilePath) => ({
+                    projectFilePath, name: 'Same',
+                    editorRequest: { kind: 'stable-base', channel: 'official', flavor: 'gdscript', base_version: '4.8' },
+                    editorResolution: {
+                        requested: { kind: 'stable-base', channel: 'official', flavor: 'gdscript', base_version: '4.8' },
+                        choices: [{ id: 'installed:official:4.8-beta2:standard', version: '4.8-beta2', source: 'official', flavor: 'gdscript', prerelease: true, installed: true, recommended: true }],
+                    },
+                })),
+                'projects.importRemoteProject': () => ({ ok: true, jobId: 'fixture-clone', repositoryPath: root, hasSubmodules: false, projects: [
+                    { name: 'Same', relativePath: 'one/project.godot', projectFilePath: `${root}/one/project.godot`, detectedEditor: null },
+                    { name: 'Same', relativePath: 'two/project.godot', projectFilePath: `${root}/two/project.godot`, detectedEditor: null },
+                ] }),
+                'git.getIdentitySettings': () => ({ globalIdentity: { name: 'Fixture', email: 'fixture@example.invalid' }, projectPreset: null }),
+                'projects.resolveRemoteProjectClone': () => ({ ok: true }),
+                'projects.addProject': (filePath, options) => {
+                    state.remoteImportCalls?.push({ filePath: filePath as string, options: options as { name: string } });
+                    const newProject = { ...baseProject, name: (options as { name: string }).name, path: (filePath as string).replace(/[/\\]project\.godot$/, '') };
+                    return state.remoteImportCalls?.length === 2 ? { success: false, importConflict: 'name', error: 'Name changed during registration' } : { success: true, projects: [newProject], newProject };
+                },
+            };
+            for (const [channel, handler] of Object.entries(handlers)) {
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, (_event, ...args) => ({ success: true, data: handler(...args) }));
+            }
+        }, { root: fixtureHome, baseProject: SAMPLE_PROJECTS[0] });
+        await page.getByTestId('btnProjects').click();
+        await page.getByTestId('btnProjectAdd').click();
+        if (source === 'public-git-url') {
+            await page.getByTestId('btnAddProjectPublicGit').click();
+            await page.getByTestId('inputPublicGitRepositoryUrl').fill('https://example.invalid/repo.git');
+        } else {
+            await page.getByTestId('btnAddProjectGitHub').click();
+            await page.getByRole('button', { name: 'fixture/repo' }).click();
         }
-    }, { root: fixtureHome, baseProject: SAMPLE_PROJECTS[0] });
-    await page.getByTestId('btnProjects').click();
-    await page.getByTestId('btnProjectAdd').click();
-    await page.getByTestId('btnAddProjectPublicGit').click();
-    await page.getByTestId('inputPublicGitRepositoryUrl').fill('https://example.invalid/repo.git');
-    await page.getByTestId('btnContinueRemoteProjectImport').click();
-    await page.getByTestId('btnCloneRemoteProjectRepository').click();
-    const name = page.getByLabel('Name in Godot Launcher', { exact: true });
-    await expect(page.getByRole('button', { name: 'Edit name: Same', exact: true })).toHaveCount(2);
-    await expect(page.getByTestId('btnAddDiscoveredProjects')).toBeDisabled();
-    await page.getByRole('button', { name: 'Edit name: Same', exact: true }).first().click();
-    await name.fill('Remote copy one');
-    await name.press('Enter');
-    await page.getByRole('button', { name: 'Edit name: Same', exact: true }).click();
-    await name.fill('Remote copy two');
-    await name.press('Enter');
-    await page.screenshot({ path: path.resolve('.internal-docs/import-conflicts/remote-review.png') });
-    await page.getByTestId('btnAddDiscoveredProjects').click();
-    await expect.poll(async () => app.evaluate(() => (globalThis as typeof globalThis & { remoteImportCalls: unknown[] }).remoteImportCalls.length)).toBe(2);
-    await page.getByRole('button', { name: 'Edit name: Remote copy two', exact: true }).click();
-    await expect(name).toHaveValue('Remote copy two');
-    await name.fill('Remote retry');
-    await name.press('Enter');
-    await page.getByTestId('btnAddDiscoveredProjects').click();
-    await expect.poll(async () => app.evaluate(() => (globalThis as typeof globalThis & { remoteImportCalls: unknown[] }).remoteImportCalls)).toEqual([
-        { filePath: `${fixtureHome}/one/project.godot`, options: { name: 'Remote copy one' } },
-        { filePath: `${fixtureHome}/two/project.godot`, options: { name: 'Remote copy two' } },
-        { filePath: `${fixtureHome}/two/project.godot`, options: { name: 'Remote retry' } },
-    ]);
-    await expect(page.getByText('Remote copy one', { exact: true })).toBeVisible();
-    await page.getByTestId('btnCompleteRemoteProjectImport').click();
-});
+        await page.getByTestId('btnContinueRemoteProjectImport').click();
+        await page.getByTestId('btnCloneRemoteProjectRepository').click();
+        const name = page.getByLabel('Name in Godot Launcher', { exact: true });
+        await expect(page.getByRole('button', { name: 'Edit name: Same', exact: true })).toHaveCount(2);
+        await expect(page.getByTestId('btnAddDiscoveredProjects')).toBeDisabled();
+        await expect(page.getByRole('alert')).toHaveText([nameConflictMessage]);
+        await page.screenshot({ path: path.resolve(`.internal-docs/import-conflicts/${source}-name-conflict.png`) });
+        const include = page.getByRole('checkbox', { name: 'Include project: Same', exact: true }).last();
+        await include.uncheck();
+        await expect(page.getByRole('alert')).toHaveCount(0);
+        await expect(page.getByTestId('btnAddDiscoveredProjects')).toBeEnabled();
+        await include.check();
+        await expect(page.getByRole('alert')).toHaveText([nameConflictMessage]);
+        await page.getByRole('button', { name: 'Edit name: Same', exact: true }).first().click();
+        await name.fill('Remote copy one');
+        await name.press('Enter');
+        await page.getByRole('button', { name: 'Edit name: Same', exact: true }).click();
+        await name.fill('Remote copy two');
+        await name.press('Enter');
+        await page.screenshot({ path: path.resolve('.internal-docs/import-conflicts/remote-review.png') });
+        await page.getByTestId('btnAddDiscoveredProjects').click();
+        await expect.poll(async () => app.evaluate(() => (globalThis as typeof globalThis & { remoteImportCalls: unknown[] }).remoteImportCalls.length)).toBe(2);
+        await page.getByRole('button', { name: 'Edit name: Remote copy two', exact: true }).click();
+        await expect(name).toHaveValue('Remote copy two');
+        await name.fill('Remote retry');
+        await name.press('Enter');
+        await page.getByTestId('btnAddDiscoveredProjects').click();
+        await expect.poll(async () => app.evaluate(() => (globalThis as typeof globalThis & { remoteImportCalls: unknown[] }).remoteImportCalls)).toEqual([
+            { filePath: `${fixtureHome}/one/project.godot`, options: { name: 'Remote copy one', resolution: 'use_selected', editorChoiceId: 'installed:official:4.8-beta2:standard' } },
+            { filePath: `${fixtureHome}/two/project.godot`, options: { name: 'Remote copy two', resolution: 'use_selected', editorChoiceId: 'installed:official:4.8-beta2:standard' } },
+            { filePath: `${fixtureHome}/two/project.godot`, options: { name: 'Remote retry', resolution: 'use_selected', editorChoiceId: 'installed:official:4.8-beta2:standard' } },
+        ]);
+        await expect(page.getByText('Remote copy one', { exact: true })).toBeVisible();
+        await page.getByTestId('btnCompleteRemoteProjectImport').click();
+    });
+
+}

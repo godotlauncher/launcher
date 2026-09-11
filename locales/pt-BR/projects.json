@@ -301,7 +301,7 @@
             "title": "Revisar importações",
             "description": "Escolha um nome no Godot Launcher ou pule o projeto. Os nomes do Godot e as pastas permanecem inalterados.",
             "label": "Nome no Godot Launcher",
-            "name": "Este nome ou sua pasta de configurações já está em uso. Escolha outro nome ou pule o projeto.",
+            "name": "Este nome de projeto já está em uso. Escolha outro nome ou pule este projeto.",
             "folder": "Esta pasta já está registrada ou selecionada. Pule esta entrada.",
             "invalid": "Digite um nome válido. Pule arquivos de projeto ilegíveis.",
             "skip": "Pular este projeto",

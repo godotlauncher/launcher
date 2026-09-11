@@ -301,7 +301,7 @@
             "title": "Rever importações",
             "description": "Escolha um nome no Godot Launcher ou ignore o projeto. Os nomes do Godot e as pastas permanecem inalterados.",
             "label": "Nome no Godot Launcher",
-            "name": "Este nome ou a sua pasta de definições já está em uso. Escolha outro nome ou ignore o projeto.",
+            "name": "Este nome de projeto já está em uso. Escolha outro nome ou ignore este projeto.",
             "folder": "Esta pasta já está registada ou selecionada. Ignore esta entrada.",
             "invalid": "Introduza um nome válido. Ignore ficheiros de projeto ilegíveis.",
             "skip": "Ignorar este projeto",

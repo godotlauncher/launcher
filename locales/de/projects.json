@@ -301,7 +301,7 @@
             "title": "Projektimporte prüfen",
             "description": "Wähle einen Godot Launcher-Namen oder überspringe ein Projekt. Godot-Projektnamen und Ordner bleiben unverändert.",
             "label": "Godot Launcher-Name",
-            "name": "Dieser Name oder sein Einstellungsordner wird bereits verwendet. Wähle einen anderen Namen oder überspringe das Projekt.",
+            "name": "Dieser Projektname wird bereits verwendet. Wähle einen anderen Namen oder überspringe das Projekt.",
             "folder": "Dieser Ordner ist bereits registriert oder ausgewählt. Überspringe diesen Eintrag.",
             "invalid": "Gib einen gültigen Namen ein. Nicht lesbare Projektdateien müssen übersprungen werden.",
             "skip": "Dieses Projekt überspringen",

@@ -301,7 +301,7 @@
             "title": "Revisar importaciones",
             "description": "Elige un nombre en Godot Launcher u omite el proyecto. Los nombres de Godot y las carpetas no cambian.",
             "label": "Nombre en Godot Launcher",
-            "name": "Este nombre o su carpeta de ajustes ya está en uso. Elige otro nombre u omite el proyecto.",
+            "name": "Este nombre de proyecto ya está en uso. Elige otro nombre u omite el proyecto.",
             "folder": "Esta carpeta ya está registrada o seleccionada. Omite esta entrada.",
             "invalid": "Introduce un nombre válido. Omite los archivos de proyecto que no se puedan leer.",
             "skip": "Omitir este proyecto",

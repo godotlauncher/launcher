@@ -301,7 +301,7 @@
             "title": "Review project imports",
             "description": "Choose a display name in Godot Launcher or skip a project. Godot project names and folders stay unchanged.",
             "label": "Name in Godot Launcher",
-            "name": "This name or its settings folder is already in use. Choose another name or skip.",
+            "name": "This project name is already in use. Choose a different name or skip this project.",
             "folder": "This folder is already registered or selected. Skip this entry.",
             "invalid": "Enter a valid name. Unreadable project files must be skipped.",
             "skip": "Skip this project",
