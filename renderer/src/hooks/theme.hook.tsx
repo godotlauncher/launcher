@@ -53,7 +53,7 @@ export const resolveTheme = (
 ): ResolvedTheme => (theme === 'auto' ? systemTheme : theme);
 
 /**
- * Subscribes to operating-system theme changes.
+ * Subscribes to operating-system theme changes and reports the current value.
  *
  * @param onSystemThemeChange - Receives the newly resolved system theme.
  * @returns A function that removes the subscription.
@@ -67,6 +67,7 @@ export const subscribeToSystemThemeChanges = (
     };
 
     mediaQuery.addEventListener('change', handleChange);
+    handleChange();
     return () => mediaQuery.removeEventListener('change', handleChange);
 };
 

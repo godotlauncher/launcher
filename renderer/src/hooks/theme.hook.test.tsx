@@ -46,4 +46,16 @@ describe('theme handling', () => {
             listener,
         );
     });
+
+    it('refreshes the system theme when Automatic is selected again', () => {
+        const onSystemThemeChange = vi.fn();
+        const cleanup = subscribeToSystemThemeChanges(onSystemThemeChange);
+        expect(onSystemThemeChange).toHaveBeenLastCalledWith('light');
+        cleanup();
+
+        mediaQuery.matches = true;
+        const unsubscribe = subscribeToSystemThemeChanges(onSystemThemeChange);
+        expect(onSystemThemeChange).toHaveBeenLastCalledWith('dark');
+        unsubscribe();
+    });
 });
