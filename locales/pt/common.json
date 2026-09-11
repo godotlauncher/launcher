@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "A preparar tudo...",
         "navigation": {
+            "exportTemplates": "Modelos de exportação",
+            "projectTemplates": "Modelos de projeto",
+            "assets": "Recursos",
+            "addons": "Complementos",
+            "notAvailableYet": "Ainda não disponível",
             "projects": "Projetos",
             "installs": "Instalações",
             "help": "Ajuda",

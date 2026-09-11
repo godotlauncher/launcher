@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "Her şey hazırlanıyor...",
         "navigation": {
+            "exportTemplates": "Dışa Aktarma Şablonları",
+            "projectTemplates": "Proje Şablonları",
+            "assets": "Varlıklar",
+            "addons": "Eklentiler",
+            "notAvailableYet": "Henüz kullanılamıyor",
             "projects": "Projeler",
             "installs": "Kurulumlar",
             "help": "Yardım",

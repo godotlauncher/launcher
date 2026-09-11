@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "准备中...",
         "navigation": {
+            "exportTemplates": "导出模板",
+            "projectTemplates": "项目模板",
+            "assets": "资源",
+            "addons": "插件",
+            "notAvailableYet": "暂不可用",
             "projects": "项目",
             "installs": "安装",
             "help": "帮助",

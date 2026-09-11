@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "Préparation en cours...",
         "navigation": {
+            "exportTemplates": "Modèles d’exportation",
+            "projectTemplates": "Modèles de projets",
+            "assets": "Ressources",
+            "addons": "Extensions",
+            "notAvailableYet": "Pas encore disponible",
             "projects": "Projets",
             "installs": "Installations",
             "help": "Aide",

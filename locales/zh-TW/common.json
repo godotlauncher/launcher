@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "正在準備中…",
         "navigation": {
+            "exportTemplates": "匯出範本",
+            "projectTemplates": "專案範本",
+            "assets": "資源",
+            "addons": "外掛",
+            "notAvailableYet": "尚未開放使用",
             "projects": "專案",
             "installs": "安裝",
             "help": "說明",

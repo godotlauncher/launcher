@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "Qed nippreparaw kollox...",
         "navigation": {
+            "exportTemplates": "Mudelli ta’ esportazzjoni",
+            "projectTemplates": "Mudelli ta’ proġetti",
+            "assets": "Riżorsi",
+            "addons": "Estensjonijiet",
+            "notAvailableYet": "Għadu mhux disponibbli",
             "projects": "Proġetti",
             "installs": "Installazzjonijiet",
             "help": "Għajnuna",

@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "Подготовка...",
         "navigation": {
+            "exportTemplates": "Шаблоны экспорта",
+            "projectTemplates": "Шаблоны проектов",
+            "assets": "Ресурсы",
+            "addons": "Дополнения",
+            "notAvailableYet": "Пока недоступно",
             "projects": "Проекты",
             "installs": "Установки",
             "help": "Помощь",

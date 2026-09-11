@@ -1,10 +1,14 @@
 import clsx from 'clsx';
 import {
+    Blocks,
     Cable,
     CircleHelp,
     ExternalLink,
+    FileOutput,
     HardDrive,
+    Images,
     Package,
+    Puzzle,
     Settings,
 } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
@@ -33,6 +37,7 @@ import rocketBlack from './assets/icons/godot-launcher-black.svg';
 import rocketWhite from './assets/icons/godot-launcher-white.svg';
 import { AppUpdateBanner } from './components/app-update-banner.component';
 import { MenuDivider } from './components/ui/menu-divider.component';
+import { Tooltip } from './components/ui/tooltip.component';
 import { useApp } from './hooks/app.hook';
 import { useAppNavigation } from './hooks/app-navigation.hook';
 import { usePreferences } from './hooks/preferences.hook';
@@ -296,6 +301,45 @@ function MainLayout() {
                         </NavLink>
                     </li>
                 </ul>
+                {[
+                    [
+                        { key: 'exportTemplates', icon: FileOutput },
+                        { key: 'projectTemplates', icon: Blocks },
+                    ],
+                    [
+                        { key: 'assets', icon: Images },
+                        { key: 'addons', icon: Puzzle },
+                    ],
+                ].map((group) => (
+                    <div key={group[0].key}>
+                        <MenuDivider />
+                        <ul className="menu w-full gap-2 text-base">
+                            {group.map(({ key, icon: Icon }) => (
+                                <li key={key}>
+                                    <Tooltip
+                                        tip={t(
+                                            'app.navigation.notAvailableYet',
+                                        )}
+                                        delay={1000}
+                                        className="p-0! hover:bg-transparent!"
+                                    >
+                                        <button
+                                            type="button"
+                                            aria-disabled="true"
+                                            className="flex w-full cursor-default items-center gap-2 rounded-field px-3 py-1.5 text-left text-base-content/50"
+                                        >
+                                            <Icon
+                                                className="size-5 shrink-0"
+                                                aria-hidden="true"
+                                            />
+                                            {t(`app.navigation.${key}`)}
+                                        </button>
+                                    </Tooltip>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
                 <div className="flex flex-1"></div>
                 <AppUpdateBanner
                     updateAvailable={updateAvailable}

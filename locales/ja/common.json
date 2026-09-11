@@ -26,6 +26,11 @@
     "app": {
         "loadingMessage": "準備中...",
         "navigation": {
+            "exportTemplates": "エクスポートテンプレート",
+            "projectTemplates": "プロジェクトテンプレート",
+            "assets": "アセット",
+            "addons": "アドオン",
+            "notAvailableYet": "まだ利用できません",
             "projects": "プロジェクト",
             "installs": "インストール",
             "help": "ヘルプ",
