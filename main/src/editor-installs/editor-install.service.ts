@@ -14,6 +14,8 @@ import type {
     ReleaseSummary,
 } from '@shared/contracts';
 import logger from 'electron-log';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ArchivesService } from '../archives/archives.service.js';
 import { getUserPreferences } from '../commands/userPreferences.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { EditorCatalogService } from '../editor-catalog/editor-catalog.service.js';
@@ -22,7 +24,6 @@ import {
     isSafePathSegment,
     resolveArchiveIntegrity,
 } from '../utils/archive-integrity.util.js';
-import { extractEditorArchive } from '../utils/editor-archive-extraction.adapter.js';
 import {
     EditorInstallValidationError,
     validateExtractedEditor,
@@ -86,12 +87,14 @@ export class EditorInstallService {
      * @param editorCatalog - Official editor catalogue source.
      * @param projectRepair - Temporary project repair boundary.
      * @param progressService - Non-fatal progress publisher.
+     * @param archives - Shared archive extraction boundary.
      */
     constructor(
         private readonly installedEditors: InstalledEditorService,
         private readonly editorCatalog: EditorCatalogService,
         private readonly projectRepair: EditorProjectRepairAdapter,
         private readonly progressService: EditorInstallProgressService,
+        private readonly archives: ArchivesService,
     ) {}
 
     /**
@@ -537,7 +540,12 @@ export class EditorInstallService {
         }
     }
 
-    /** Extracts one archive and resolves its platform-specific editor paths. */
+    /** Extracts one archive and resolves its platform-specific editor paths.
+     * @param job - Install identity and edition.
+     * @param asset - Selected platform archive.
+     * @param archivePath - Downloaded archive path.
+     * @param rootReleasePath - Empty destination for this installation.
+     */
     private async extractAndValidate(
         job: InstallJob,
         asset: AssetSummary,
@@ -547,7 +555,13 @@ export class EditorInstallService {
         if (path.extname(asset.name) !== '.zip') {
             throw new Error(t('installEditor:errors.unsupportedFileExtension'));
         }
-        await extractEditorArchive(archivePath, rootReleasePath);
+        try {
+            await this.archives.extractZip(archivePath, rootReleasePath);
+        } catch (error) {
+            throw new Error(t('installEditor:errors.unsafeArchive'), {
+                cause: error,
+            });
+        }
 
         let releasePath = rootReleasePath;
         let editorPath: string;

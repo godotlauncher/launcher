@@ -1,16 +1,14 @@
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { extractEditorArchive } from './editor-archive-extraction.adapter.js';
+import { afterEach, describe, expect, it } from 'vitest';
+import { ArchivesService } from './archives.service.js';
+
+const service = new ArchivesService();
 
 const temporaryDirectories: string[] = [];
 
-vi.mock('../i18n/index.js', () => ({
-    t: (key: string) => key,
-}));
-
-describe('editor archive extraction adapter', () => {
+describe('native archive extraction', () => {
     afterEach(async () => {
         await Promise.all(
             temporaryDirectories.splice(0).map((directory) =>
@@ -38,7 +36,7 @@ describe('editor archive extraction adapter', () => {
         );
         await fs.promises.mkdir(destinationPath);
 
-        await extractEditorArchive(archivePath, destinationPath);
+        await service.extractZip(archivePath, destinationPath);
 
         await expect(
             fs.promises.readFile(path.join(destinationPath, 'Godot'), 'utf8'),
@@ -63,8 +61,8 @@ describe('editor archive extraction adapter', () => {
         await fs.promises.mkdir(destinationPath);
 
         await expect(
-            extractEditorArchive(archivePath, destinationPath),
-        ).rejects.toThrow('installEditor:errors.unsafeArchive');
+            service.extractZip(archivePath, destinationPath),
+        ).rejects.toMatchObject({ code: 'unsafe' });
         await expect(fs.promises.lstat(outsidePath)).rejects.toMatchObject({
             code: 'ENOENT',
         });
@@ -91,8 +89,8 @@ describe('editor archive extraction adapter', () => {
         );
 
         await expect(
-            extractEditorArchive(archivePath, destinationPath),
-        ).rejects.toThrow('installEditor:errors.unsafeArchive');
+            service.extractZip(archivePath, destinationPath),
+        ).rejects.toMatchObject({ code: 'unsafe' });
     });
 });
 

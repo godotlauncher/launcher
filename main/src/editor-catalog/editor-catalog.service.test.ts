@@ -345,12 +345,14 @@ function createCatalogWithRelease(
     const catalog = createEmptyEditorCatalog();
     catalog.providers[release.providerId] = {
         integrityMetadataRefreshed: true,
+        templateMetadataRefreshed: true,
         lastFetchedAt: Date.now(),
         lastPublishedAt: release.publishedAt,
         releases: [release],
     };
     for (const provider of Object.values(catalog.providers)) {
         provider.integrityMetadataRefreshed = true;
+        provider.templateMetadataRefreshed = true;
         provider.lastFetchedAt ??= Date.now();
     }
     return catalog;

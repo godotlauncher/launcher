@@ -8,6 +8,7 @@ import type { AppEventMap, BridgeNamespaces } from '@shared/contracts';
 
 const rendererBridge = createRendererBridge<BridgeNamespaces>();
 
+export const exportTemplatesBridge = rendererBridge.exportTemplates;
 export const appBridge = rendererBridge.app;
 export const appIntegrationsBridge = rendererBridge.appIntegrations;
 export const codeEditorIntegrationBridge = rendererBridge.codeEditorIntegration;

@@ -44,6 +44,8 @@ import { usePreferences } from './hooks/preferences.hook';
 import { useRelease } from './hooks/release.hook';
 import { useTheme } from './hooks/theme.hook';
 import { useSplashscreenHandoff } from './splashscreen/splashscreen-handoff.hook';
+import { useTemplateActivity } from './views/export-templates/hooks/template-jobs.hook';
+import { ExportTemplatesView } from './views/export-templates.view';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
 import { OnboardingView } from './views/onboarding.view';
@@ -117,6 +119,10 @@ function MainAppRoutes() {
                 element={<CompletedOnboardingRoute />}
             />
             <Route path={appRoutePaths.root} element={<MainLayout />}>
+                <Route
+                    path={routeSegment(appRoutePaths.exportTemplates)}
+                    element={<ExportTemplatesView />}
+                />
                 <Route index element={<DefaultRoute />} />
                 <Route
                     path={routeSegment(appRoutePaths.projects)}
@@ -259,6 +265,7 @@ function SettingsRoute() {
  * @returns The primary application layout.
  */
 function MainLayout() {
+    const templatesActive = useTemplateActivity();
     const { t } = useTranslation('common');
     const location = useLocation();
     const { currentView, openExternalLink } = useAppNavigation();
@@ -316,25 +323,55 @@ function MainLayout() {
                         <ul className="menu w-full gap-2 text-base">
                             {group.map(({ key, icon: Icon }) => (
                                 <li key={key}>
-                                    <Tooltip
-                                        tip={t(
-                                            'app.navigation.notAvailableYet',
-                                        )}
-                                        delay={1000}
-                                        className="p-0! hover:bg-transparent!"
-                                    >
-                                        <button
-                                            type="button"
-                                            aria-disabled="true"
-                                            className="flex w-full cursor-default items-center gap-2 rounded-field px-3 py-1.5 text-left text-base-content/50"
+                                    {key === 'exportTemplates' ? (
+                                        <NavLink
+                                            to={appRoutePaths.exportTemplates}
+                                            data-testid="btnExportTemplates"
+                                            className={viewClassName(
+                                                'exportTemplates',
+                                            )}
                                         >
-                                            <Icon
-                                                className="size-5 shrink-0"
-                                                aria-hidden="true"
-                                            />
-                                            {t(`app.navigation.${key}`)}
-                                        </button>
-                                    </Tooltip>
+                                            <Icon className="size-5" />
+                                            {t(
+                                                'app.navigation.exportTemplates',
+                                            )}
+                                            {templatesActive && (
+                                                <Tooltip
+                                                    tip={t(
+                                                        'exportTemplates:updatesInProgress',
+                                                    )}
+                                                >
+                                                    <span
+                                                        role="status"
+                                                        aria-label={t(
+                                                            'exportTemplates:updatesInProgress',
+                                                        )}
+                                                        className="loading loading-spinner loading-xs"
+                                                    />
+                                                </Tooltip>
+                                            )}
+                                        </NavLink>
+                                    ) : (
+                                        <Tooltip
+                                            tip={t(
+                                                'app.navigation.notAvailableYet',
+                                            )}
+                                            delay={1000}
+                                            className="p-0! hover:bg-transparent!"
+                                        >
+                                            <button
+                                                type="button"
+                                                aria-disabled="true"
+                                                className="flex w-full cursor-default items-center gap-2 rounded-field px-3 py-1.5 text-left text-base-content/50"
+                                            >
+                                                <Icon
+                                                    className="size-5 shrink-0"
+                                                    aria-hidden="true"
+                                                />
+                                                {t(`app.navigation.${key}`)}
+                                            </button>
+                                        </Tooltip>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -426,7 +463,7 @@ function MainLayout() {
                 <div className="flex flex-col"></div>
             </div>
 
-            <div className="flex flex-1 flex-row bg-base-200 p-2">
+            <div className="flex min-w-0 flex-1 flex-row bg-base-200 p-2">
                 <Outlet />
             </div>
         </div>

@@ -1,5 +1,6 @@
 import { Module } from '@mariodebono/di';
 import { ConfigService } from '@mariodebono/di-config';
+import { ArchivesModule } from '../archives/archives.module.js';
 import { CodeEditorIntegrationModule } from '../codeEditorIntegration/codeEditorIntegration.module.js';
 import type { AppConfig } from '../config/index.js';
 import { EditorCatalogModule } from '../editor-catalog/editor-catalog.module.js';
@@ -15,6 +16,7 @@ import { InstalledEditorStore } from './installed-editor.store.js';
 
 @Module({
     imports: [
+        ArchivesModule,
         JsonStoreModule,
         EditorCatalogModule,
         CodeEditorIntegrationModule,

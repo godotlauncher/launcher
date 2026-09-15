@@ -15,6 +15,7 @@ export type GithubEditorAsset = {
     name: string;
     browserDownloadUrl: string;
     digest: string | null;
+    size?: number;
 };
 
 /** GitHub release fields used by the catalog mapper. */
@@ -31,6 +32,7 @@ export type GithubEditorRelease = {
 /** Cached data for one catalog provider. */
 export type EditorCatalogProviderState = {
     integrityMetadataRefreshed?: boolean;
+    templateMetadataRefreshed?: boolean;
     lastFetchedAt: number | null;
     lastPublishedAt: string | null;
     releases: EditorCatalogRelease[];

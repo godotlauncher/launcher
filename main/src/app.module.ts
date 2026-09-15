@@ -23,6 +23,7 @@ import {
 } from './constants.js';
 import { EditorCatalogModule } from './editor-catalog/editor-catalog.module.js';
 import { EditorInstallsModule } from './editor-installs/editor-installs.module.js';
+import { ExportTemplatesModule } from './export-templates/export-templates.module.js';
 import {
     DEFAULT_LOCALE,
     I18N_NAMESPACES,
@@ -64,6 +65,7 @@ import { ToolIntegrationModule } from './tool-integration/tool-integration.modul
             }),
         }),
         EditorInstallsModule,
+        ExportTemplatesModule,
         I18nModule.forRootAsync({
             useFactory: () =>
                 ({

@@ -21,6 +21,7 @@ export const I18N_NAMESPACES = [
     'common',
     'projects',
     'installs',
+    'exportTemplates',
     'settings',
     'help',
     'createProject',

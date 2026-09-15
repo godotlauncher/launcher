@@ -11,12 +11,14 @@ describe('editor catalog schema', () => {
             providers: {
                 'official-stable': {
                     integrityMetadataRefreshed: false,
+                    templateMetadataRefreshed: false,
                     lastFetchedAt: null,
                     lastPublishedAt: null,
                     releases: [],
                 },
                 'official-prerelease': {
                     integrityMetadataRefreshed: false,
+                    templateMetadataRefreshed: false,
                     lastFetchedAt: null,
                     lastPublishedAt: null,
                     releases: [],

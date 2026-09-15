@@ -26,6 +26,7 @@ const GithubReleaseSchema = z.object({
             name: z.string(),
             browser_download_url: z.url(),
             digest: z.string().nullable().optional(),
+            size: z.number().int().nonnegative().optional(),
         }),
     ),
 });
@@ -137,6 +138,7 @@ function toGithubEditorRelease(
             name: asset.name,
             browserDownloadUrl: asset.browser_download_url,
             digest: asset.digest ?? null,
+            size: asset.size,
         })),
     };
 }

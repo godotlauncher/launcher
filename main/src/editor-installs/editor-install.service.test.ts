@@ -23,11 +23,6 @@ const integrityMocks = vi.hoisted(() => ({
 }));
 vi.mock('../utils/archive-integrity.util.js', () => integrityMocks);
 
-const extractionMocks = vi.hoisted(() => ({
-    extractEditorArchive: vi.fn(),
-}));
-vi.mock('../utils/editor-archive-extraction.adapter.js', () => extractionMocks);
-
 const validationMocks = vi.hoisted(() => ({
     validateExtractedEditor: vi.fn(),
 }));
@@ -69,6 +64,7 @@ describe('EditorInstallService', () => {
         repairAfterReinstall: vi.fn(),
     };
     const progressService = { publish: vi.fn() };
+    const archives = { extractZip: vi.fn() };
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -79,7 +75,7 @@ describe('EditorInstallService', () => {
             algorithm: 'sha256',
             digest: 'a'.repeat(64),
         });
-        extractionMocks.extractEditorArchive.mockResolvedValue(undefined);
+        archives.extractZip.mockResolvedValue(undefined);
         validationMocks.validateExtractedEditor.mockResolvedValue(undefined);
         preferencesMocks.getUserPreferences.mockResolvedValue({
             install_location: '/installs',
@@ -143,7 +139,7 @@ describe('EditorInstallService', () => {
             mono: false,
         });
         expect(releaseReservation).not.toHaveBeenCalled();
-        expect(extractionMocks.extractEditorArchive).not.toHaveBeenCalled();
+        expect(archives.extractZip).not.toHaveBeenCalled();
 
         download.reject(new Error('download failed'));
         await expect(result).resolves.toMatchObject({ success: false });
@@ -312,11 +308,28 @@ describe('EditorInstallService', () => {
         ).toMatchObject({ canCancel: false });
     });
 
+    it('preserves the editor error and cleans up when archive extraction fails', async () => {
+        archives.extractZip.mockRejectedValueOnce(new Error('unsafe archive'));
+        const service = createService();
+        await expect(
+            service.installEditor(
+                createRelease('4.3-stable'),
+                false,
+                'installs',
+            ),
+        ).resolves.toMatchObject({
+            success: false,
+            error: 'installEditor:errors.unsafeArchive',
+        });
+        expect(archives.extractZip).toHaveBeenCalledOnce();
+        expect(validationMocks.validateExtractedEditor).not.toHaveBeenCalled();
+        expect(installedEditors.addInstalledEditor).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).toHaveBeenCalled();
+    });
+
     it('closes cancellation before extraction begins', async () => {
         const extraction = deferred<void>();
-        extractionMocks.extractEditorArchive.mockReturnValue(
-            extraction.promise,
-        );
+        archives.extractZip.mockReturnValue(extraction.promise);
         const service = createService();
         const result = service.installEditor(
             createRelease('4.3-stable'),
@@ -382,6 +395,7 @@ describe('EditorInstallService', () => {
             editorCatalog as never,
             projectRepair as never,
             progressService as never,
+            archives as never,
         );
     }
 

@@ -64,7 +64,7 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
                     <button
                         type="button"
                         data-testid="btnAddCustomEngineMenu"
-                        className="btn btn-ghost text-base"
+                        className="btn btn-ghost bg-base-content/5 text-base"
                         aria-haspopup="dialog"
                         aria-expanded={customEditorMenuOpen}
                         onClick={onOpenCustomEditorMenu}

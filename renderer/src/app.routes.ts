@@ -1,4 +1,9 @@
-export type View = 'projects' | 'installs' | 'settings' | 'help';
+export type View =
+    | 'projects'
+    | 'exportTemplates'
+    | 'installs'
+    | 'settings'
+    | 'help';
 
 export const settingsTabs = [
     'projects',
@@ -20,6 +25,7 @@ export const appRoutePaths = {
     projects: '/projects',
     projectNew: '/projects/new',
     installs: '/installs',
+    exportTemplates: '/export-templates',
     installEditor: '/installs/install',
     settings: '/settings',
     settingsTab: (tab: SettingsTab) => `/settings/${tab}`,
@@ -30,11 +36,14 @@ export const appRoutePaths = {
 export const appViewRoutes: Record<View, string> = {
     projects: appRoutePaths.projects,
     installs: appRoutePaths.installs,
+    exportTemplates: appRoutePaths.exportTemplates,
     settings: appRoutePaths.settingsTab(defaultSettingsTab),
     help: appRoutePaths.help,
 };
 
 export function getViewFromPathname(pathname: string): View {
+    if (pathname.startsWith(appRoutePaths.exportTemplates))
+        return 'exportTemplates';
     if (pathname.startsWith(appRoutePaths.installs)) {
         return 'installs';
     }

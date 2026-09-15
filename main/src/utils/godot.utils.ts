@@ -10,6 +10,7 @@ import type {
 } from '@shared/contracts';
 import logger from 'electron-log';
 import mst from 'mustache';
+import { connectProjectTemplates } from '../export-templates/template-runtime.util.js';
 import {
     removeProjectEditorDarwin,
     setProjectEditorReleaseDarwin,
@@ -167,6 +168,7 @@ export async function SetProjectEditorRelease(
     release: InstalledRelease,
     previousRelease?: InstalledRelease,
 ): Promise<LaunchPath> {
+    await connectProjectTemplates(projectEditorPath, release);
     const scFilePath = path.resolve(projectEditorPath, '._sc_');
 
     if (!fs.existsSync(projectEditorPath)) {

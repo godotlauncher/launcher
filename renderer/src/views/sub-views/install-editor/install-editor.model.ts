@@ -1,13 +1,18 @@
-import type { ReleaseSummary } from '@shared/contracts';
+type InstallEditorRelease = {
+    version: string;
+    name?: string;
+    tag?: string;
+    version_number?: number;
+};
 
 export type InstallEditorShow = 'latest' | 'all';
 export type InstallEditorChannel = 'stable' | 'prerelease';
 
-type GetInstallEditorRowsOptions = {
+type GetInstallEditorRowsOptions<T extends InstallEditorRelease> = {
     show: InstallEditorShow;
     channel: InstallEditorChannel;
-    availableReleases: ReleaseSummary[];
-    availablePrereleases: ReleaseSummary[];
+    availableReleases: T[];
+    availablePrereleases: T[];
     search: string;
 };
 
@@ -47,13 +52,13 @@ export function getInstallEditorRefreshCooldownSeconds(
  * @param options - The current filters and available releases.
  * @returns The releases to show in the drawer.
  */
-export function getInstallEditorRows({
+export function getInstallEditorRows<T extends InstallEditorRelease>({
     show,
     channel,
     availableReleases,
     availablePrereleases,
     search,
-}: GetInstallEditorRowsOptions): ReleaseSummary[] {
+}: GetInstallEditorRowsOptions<T>): T[] {
     if (show === 'latest') {
         return getLatestInstallEditorRows(
             channel,
@@ -86,11 +91,11 @@ export function getInstallEditorRows({
  * @param availablePrereleases - Prereleases in newest-first order.
  * @returns Up to four stable releases or one eligible prerelease.
  */
-export function getLatestInstallEditorRows(
+export function getLatestInstallEditorRows<T extends InstallEditorRelease>(
     channel: InstallEditorChannel,
-    availableReleases: ReleaseSummary[],
-    availablePrereleases: ReleaseSummary[],
-): ReleaseSummary[] {
+    availableReleases: T[],
+    availablePrereleases: T[],
+): T[] {
     if (channel === 'stable') {
         return [...availableReleases]
             .sort(compareInstallEditorReleases)
@@ -116,7 +121,7 @@ export function getLatestInstallEditorRows(
  * @param release - The release to read.
  * @returns The major and minor version, or the complete version as fallback.
  */
-function getReleaseBaseVersion(release: ReleaseSummary): string {
+function getReleaseBaseVersion(release: InstallEditorRelease): string {
     const match = release.version.match(/^v?(\d+)\.(\d+)/i);
     return match ? `${match[1]}.${match[2]}` : release.version;
 }
@@ -129,8 +134,8 @@ function getReleaseBaseVersion(release: ReleaseSummary): string {
  * @returns A negative value when the first release should come first.
  */
 function compareInstallEditorReleases(
-    first: ReleaseSummary,
-    second: ReleaseSummary,
+    first: InstallEditorRelease,
+    second: InstallEditorRelease,
 ): number {
     const firstParts = getInstallEditorVersionParts(first);
     const secondParts = getInstallEditorVersionParts(second);
@@ -158,7 +163,7 @@ function compareInstallEditorReleases(
  * @returns Numeric values used to sort the release.
  */
 function getInstallEditorVersionParts(
-    release: ReleaseSummary,
+    release: InstallEditorRelease,
 ): InstallEditorVersionParts {
     const match = release.version.match(
         /^v?(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-z]+)(\d+)?)?/i,
@@ -166,7 +171,7 @@ function getInstallEditorVersionParts(
     const channel = match?.[4]?.toLowerCase() ?? 'stable';
 
     return {
-        major: Number(match?.[1] ?? release.version_number),
+        major: Number(match?.[1] ?? release.version_number ?? 0),
         minor: Number(match?.[2] ?? 0),
         patch: Number(match?.[3] ?? 0),
         channelRank: installEditorChannelRanks[channel] ?? 0,
