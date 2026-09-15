@@ -5,7 +5,10 @@ import {
     connectEmptyTemplateFolder,
     templateConnectionStatus,
 } from './template-files.util.js';
-import { connectProjectTemplates } from './template-runtime.util.js';
+import {
+    connectProjectTemplates,
+    rememberSeparateTemplateDirectory,
+} from './template-runtime.util.js';
 
 vi.mock('node:fs', () => ({ promises: { unlink: vi.fn(), mkdir: vi.fn() } }));
 vi.mock('electron-log', () => ({ default: { warn: vi.fn() } }));
@@ -22,6 +25,37 @@ vi.mock('./template-files.util.js', () => ({
 beforeEach(() => vi.resetAllMocks());
 
 describe('project template connection', () => {
+    it.each([
+        { folder: 'empty', status: 'local' },
+        { folder: 'missing', status: 'missing' },
+    ] as const)(
+        'does not mutate a $folder custom template folder when templates stay separate',
+        async ({ status }) => {
+            vi.mocked(templateConnectionStatus).mockResolvedValue(status);
+
+            await connectProjectTemplates(
+                path.resolve('editor'),
+                { source: 'custom' },
+                'separate',
+            );
+
+            expect(templateConnectionStatus).not.toHaveBeenCalled();
+            expect(fs.promises.unlink).not.toHaveBeenCalled();
+            expect(fs.promises.mkdir).not.toHaveBeenCalled();
+            expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
+        },
+    );
+
+    it('does not attach an official editor when templates stay separate', async () => {
+        await connectProjectTemplates(
+            path.resolve('editor'),
+            { source: 'official' },
+            'separate',
+        );
+
+        expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
+    });
+
     it('keeps an official editor usable when its link cannot be created', async () => {
         vi.mocked(connectEmptyTemplateFolder).mockRejectedValue(
             new Error('permission'),
@@ -67,4 +101,11 @@ describe('project template connection', () => {
             }),
         ).rejects.toThrow('permission');
     });
+});
+
+it('ignores a late automatic connection using a project snapshot from before opt-out', async () => {
+    const editor = path.resolve('late-snapshot-editor');
+    rememberSeparateTemplateDirectory(editor);
+    await connectProjectTemplates(editor, { source: 'official' });
+    expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
 });

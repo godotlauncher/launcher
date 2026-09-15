@@ -8,15 +8,20 @@ import { resolveArchiveIntegrity } from '../utils/archive-integrity.util.js';
 import { downloadReleaseAsset } from '../utils/releases.utils.js';
 import { ExportTemplatesService } from './export-templates.service.js';
 import type { TemplateArchiveAdapter } from './template-archive.adapter.js';
+import { assessProjectTemplates } from './template-assessment.util.js';
 import {
     extractTemplateRange,
     openTemplateRange,
 } from './template-range.adapter.js';
 
 const extractTemplateArchive = vi.fn();
+vi.mock('./template-assessment.util.js', () => ({
+    assessProjectTemplates: vi.fn(),
+}));
 
 import {
     readTemplateTree,
+    setTemplatesMutating,
     templateConnectionStatus,
     templateFingerprint,
     templateLstat,
@@ -55,6 +60,7 @@ vi.mock('./template-archive.adapter.js', () => ({
 }));
 vi.mock('./template-runtime.util.js', () => ({
     getSharedTemplateRoot: () => path.resolve('fixture-shared'),
+    rememberSeparateTemplateDirectory: vi.fn(),
 }));
 vi.mock('./template-files.util.js', async (load) => ({
     ...(await load<typeof import('./template-files.util.js')>()),
@@ -72,6 +78,7 @@ vi.mock('./template-transaction.util.js', async (load) => ({
     recoverTemplateTransaction: vi.fn(),
 }));
 const list = vi.fn();
+const updateProjects = vi.fn();
 const getReleaseById = vi.fn();
 const getCatalog = vi.fn();
 const release = {
@@ -92,6 +99,7 @@ const release = {
 let service: ExportTemplatesService;
 beforeEach(() => {
     vi.resetAllMocks();
+    setTemplatesMutating(false);
     vi.mocked(fs.promises.realpath).mockResolvedValue(
         path.resolve('fixture-shared'),
     );
@@ -109,7 +117,7 @@ beforeEach(() => {
     list.mockResolvedValue([]);
     service = new ExportTemplatesService(
         { getReleaseById, getCatalog } as unknown as EditorCatalogService,
-        { list } as unknown as ProjectsStore,
+        { list, update: updateProjects } as unknown as ProjectsStore,
         {
             extract: extractTemplateArchive,
         } as unknown as TemplateArchiveAdapter,
@@ -671,5 +679,124 @@ describe('partial template saves', () => {
         await vi.waitFor(async () =>
             expect((await service.getJobs())[1].stage).toBe('complete'),
         );
+    });
+});
+
+describe('project migration assessment and preference', () => {
+    const project = {
+        path: path.resolve('assessment-game'),
+        name: 'Assessment game',
+        launch_path: path.resolve('assessment-editor', 'Godot'),
+        release: { source: 'official', version: '4.4-stable' },
+    } as ProjectDetails;
+    beforeEach(() => {
+        list.mockResolvedValue([project]);
+        vi.mocked(assessProjectTemplates).mockImplementation(async (item) => ({
+            projectPath: item.path,
+            name: item.name,
+            mode: item.exportTemplateMode,
+            state:
+                item.exportTemplateMode === 'separate' ? 'separate' : 'ready',
+            reason:
+                item.exportTemplateMode === 'separate'
+                    ? 'kept-separate'
+                    : 'empty',
+            pending: item.exportTemplateMode !== 'separate',
+            compared: false,
+            provenance: 'unverified',
+            setIds: [],
+            metadata: [],
+            unexpected: [],
+        }));
+        vi.mocked(templateConnectionStatus).mockResolvedValue('local');
+        updateProjects.mockImplementation(async (mutator) => {
+            const projects = await mutator(await list());
+            list.mockResolvedValue(projects);
+            return projects;
+        });
+    });
+    it('discovers without hashes, then compares only an explicitly selected registered project', async () => {
+        expect(await service.getMigrationAssessment()).toMatchObject({
+            pendingCount: 1,
+        });
+        expect(assessProjectTemplates).toHaveBeenLastCalledWith(
+            project,
+            path.resolve('fixture-shared'),
+        );
+        await service.inspectProjectTemplates(project.path);
+        expect(assessProjectTemplates).toHaveBeenLastCalledWith(
+            project,
+            path.resolve('fixture-shared'),
+            true,
+        );
+        await expect(
+            service.inspectProjectTemplates('unregistered'),
+        ).rejects.toThrow('errors.connection');
+        expect(updateProjects).not.toHaveBeenCalled();
+    });
+    it('persists separation without touching templates and excludes it from pending', async () => {
+        const other = { ...project, path: path.resolve('other-project') };
+        list.mockResolvedValue([project, other]);
+        await expect(
+            service.keepProjectTemplatesSeparate(project.path),
+        ).resolves.toMatchObject({ state: 'separate', pending: false });
+        expect(await list()).toEqual([
+            { ...project, exportTemplateMode: 'separate' },
+            other,
+        ]);
+        expect(await service.getMigrationAssessment()).toMatchObject({
+            pendingCount: 1,
+        });
+        expect(fs.promises.mkdir).not.toHaveBeenCalled();
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
+    });
+    it('does not silently detach a shared project or accept an arbitrary path', async () => {
+        vi.mocked(templateConnectionStatus).mockResolvedValue('shared');
+        await expect(
+            service.keepProjectTemplatesSeparate(project.path),
+        ).rejects.toThrow('errors.connection');
+        await expect(
+            service.keepProjectTemplatesSeparate('arbitrary'),
+        ).rejects.toThrow('errors.connection');
+        expect(updateProjects).not.toHaveBeenCalled();
+    });
+    it('refuses changing management during a commit and does not hash while busy', async () => {
+        setTemplatesMutating(true);
+        try {
+            await expect(
+                service.keepProjectTemplatesSeparate(project.path),
+            ).rejects.toThrow('errors.busy');
+            expect(
+                await service.inspectProjectTemplates(project.path),
+            ).toMatchObject({ state: 'busy', compared: false });
+            expect(assessProjectTemplates).toHaveBeenLastCalledWith(
+                project,
+                path.resolve('fixture-shared'),
+                false,
+            );
+        } finally {
+            setTemplatesMutating(false);
+        }
+        expect(updateProjects).not.toHaveBeenCalled();
+    });
+    it('rechecks project paths inside the store update before saving the preference', async () => {
+        updateProjects.mockImplementation(async (mutator) =>
+            mutator([
+                { ...project, launch_path: path.resolve('moved', 'Godot') },
+            ]),
+        );
+        await expect(
+            service.keepProjectTemplatesSeparate(project.path),
+        ).rejects.toThrow('errors.changed');
+    });
+    it('does not reconnect an opted-out project through the old manual migration path', async () => {
+        list.mockResolvedValue([
+            { ...project, exportTemplateMode: 'separate' },
+        ]);
+        await expect(service.prepareMigration(project.path)).rejects.toThrow(
+            'errors.connection',
+        );
+        expect(await service.getJobs()).toEqual([]);
     });
 });

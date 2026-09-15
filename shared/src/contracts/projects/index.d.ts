@@ -233,6 +233,11 @@ export type ProjectDetails = {
     launch_path: string;
     config_version: 4 | 5;
     codeEditorId: CodeEditorId | null;
+    /**
+     * Controls whether this project's export templates are automatically shared.
+     * Undefined preserves the existing automatic behaviour.
+     */
+    exportTemplateMode?: 'shared' | 'separate';
     withGit: boolean;
     valid: boolean;
     invalid_reason?: ProjectInvalidReason;

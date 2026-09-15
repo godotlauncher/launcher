@@ -727,6 +727,7 @@ export class ProjectsService {
                 projectEditorPath,
                 release,
                 currentProject.release,
+                currentProject.exportTemplateMode,
             );
             const editorSettingsFilename = config.editorConfigFilename(
                 release.version_number,
@@ -1198,6 +1199,7 @@ export class ProjectsService {
         await connectProjectTemplates(
             path.dirname(project.launch_path),
             project.release,
+            project.exportTemplateMode,
         );
         if (areTemplatesMutating())
             throw new Error(t('exportTemplates:errors.busy'));

@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { Readable } from 'node:stream';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+    areTemplateConnectionsActive,
     connectEmptyTemplateFolder,
     isTemplateIdentity,
     readTemplateTree,
@@ -26,6 +27,17 @@ vi.mock('node:fs', () => ({
 }));
 const stat = (directory: boolean, link = false) =>
     ({ isDirectory: () => directory, isSymbolicLink: () => link }) as fs.Stats;
+
+/** Creates a promise whose settlement is controlled by the test. */
+function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+    return { promise, resolve, reject };
+}
 
 beforeEach(() => {
     vi.resetAllMocks();
@@ -110,6 +122,40 @@ describe('Godot template storage', () => {
             path.join(editor, 'editor_data', 'export_templates'),
             process.platform === 'win32' ? 'junction' : 'dir',
         );
+    });
+    it('tracks an automatic connection until its deferred filesystem work succeeds', async () => {
+        const lstat = deferred<fs.Stats>();
+        vi.mocked(fs.promises.lstat)
+            .mockImplementationOnce(() => lstat.promise)
+            .mockRejectedValue({ code: 'ENOENT' });
+
+        const connecting = connectEmptyTemplateFolder(
+            path.resolve('project'),
+            {},
+            path.resolve('shared'),
+        );
+        expect(areTemplateConnectionsActive()).toBe(true);
+
+        lstat.resolve(stat(true));
+        await connecting;
+
+        expect(areTemplateConnectionsActive()).toBe(false);
+    });
+    it('clears the automatic connection count when linking fails', async () => {
+        vi.mocked(fs.promises.lstat).mockRejectedValue({ code: 'ENOENT' });
+        vi.mocked(fs.promises.symlink).mockRejectedValue(
+            new Error('permission'),
+        );
+
+        await expect(
+            connectEmptyTemplateFolder(
+                path.resolve('project'),
+                {},
+                path.resolve('shared'),
+            ),
+        ).rejects.toThrow('permission');
+
+        expect(areTemplateConnectionsActive()).toBe(false);
     });
     it('restores an empty local folder when link creation fails', async () => {
         vi.mocked(fs.promises.lstat)

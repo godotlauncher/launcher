@@ -14,6 +14,7 @@ export type TemplateFile = {
     mode: number;
 };
 let mutationActive = false;
+let templateConnectionsActive = 0;
 
 /** Reports whether a shared-template commit is in progress. */
 export function areTemplatesMutating(): boolean {
@@ -24,6 +25,11 @@ export function areTemplatesMutating(): boolean {
  */
 export function setTemplatesMutating(active: boolean): void {
     mutationActive = active;
+}
+
+/** Reports whether an automatic project template connection is in progress. */
+export function areTemplateConnectionsActive(): boolean {
+    return templateConnectionsActive > 0;
 }
 
 /** Resolves Godot's per-user template root.
@@ -240,35 +246,41 @@ export async function connectEmptyTemplateFolder(
     root = resolveTemplateRoot(),
 ): Promise<void> {
     if (release.source === 'custom' || mutationActive) return;
-    const data = path.join(editorDirectory, 'editor_data');
-    const local = path.join(data, 'export_templates');
-    const parent = await templateLstat(data);
-    if (parent && (!parent.isDirectory() || parent.isSymbolicLink())) return;
-    if (await isSharedTemplateLink(local, root)) {
-        await fs.promises.mkdir(root, { recursive: true });
-        return;
-    }
-    const stat = await templateLstat(local);
-    if (
-        stat &&
-        (!stat.isDirectory() ||
-            stat.isSymbolicLink() ||
-            (await fs.promises.readdir(local)).length)
-    )
-        return;
-    await fs.promises.mkdir(root, { recursive: true });
-    await fs.promises.mkdir(data, { recursive: true });
-    if (stat) await fs.promises.rmdir(local);
+    templateConnectionsActive += 1;
     try {
-        await fs.promises.symlink(
-            path.resolve(root),
-            local,
-            process.platform === 'win32' ? 'junction' : 'dir',
-        );
-    } catch (error) {
-        if (stat && !(await templateLstat(local)))
-            await fs.promises.mkdir(local);
-        throw error;
+        const data = path.join(editorDirectory, 'editor_data');
+        const local = path.join(data, 'export_templates');
+        const parent = await templateLstat(data);
+        if (parent && (!parent.isDirectory() || parent.isSymbolicLink()))
+            return;
+        if (await isSharedTemplateLink(local, root)) {
+            await fs.promises.mkdir(root, { recursive: true });
+            return;
+        }
+        const stat = await templateLstat(local);
+        if (
+            stat &&
+            (!stat.isDirectory() ||
+                stat.isSymbolicLink() ||
+                (await fs.promises.readdir(local)).length)
+        )
+            return;
+        await fs.promises.mkdir(root, { recursive: true });
+        await fs.promises.mkdir(data, { recursive: true });
+        if (stat) await fs.promises.rmdir(local);
+        try {
+            await fs.promises.symlink(
+                path.resolve(root),
+                local,
+                process.platform === 'win32' ? 'junction' : 'dir',
+            );
+        } catch (error) {
+            if (stat && !(await templateLstat(local)))
+                await fs.promises.mkdir(local);
+            throw error;
+        }
+    } finally {
+        templateConnectionsActive -= 1;
     }
 }
 

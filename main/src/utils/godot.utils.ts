@@ -163,12 +163,26 @@ export async function removeProjectEditor(
     }
 }
 
+/**
+ * Configures one project's editor launch path and templates for a release.
+ *
+ * @param projectEditorPath - Project editor configuration directory.
+ * @param release - Editor release to configure.
+ * @param previousRelease - Previously configured editor release.
+ * @param exportTemplateMode - Project template preference.
+ * @returns The configured editor launch path.
+ */
 export async function SetProjectEditorRelease(
     projectEditorPath: string,
     release: InstalledRelease,
     previousRelease?: InstalledRelease,
+    exportTemplateMode?: ProjectDetails['exportTemplateMode'],
 ): Promise<LaunchPath> {
-    await connectProjectTemplates(projectEditorPath, release);
+    await connectProjectTemplates(
+        projectEditorPath,
+        release,
+        exportTemplateMode,
+    );
     const scFilePath = path.resolve(projectEditorPath, '._sc_');
 
     if (!fs.existsSync(projectEditorPath)) {

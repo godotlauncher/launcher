@@ -14,6 +14,25 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
      * @param service - Template operations.
      */
     constructor(private readonly service: ExportTemplatesService) {}
+    /** Lists project migration candidates without hashing their files. */
+    @Handler('getMigrationAssessment')
+    getMigrationAssessment() {
+        return this.service.getMigrationAssessment();
+    }
+    /** Compares the selected project's local and shared files without changing them.
+     * @param projectPath - Registered project identity.
+     */
+    @Handler('inspectProjectTemplates')
+    inspectProjectTemplates(projectPath: string) {
+        return this.service.inspectProjectTemplates(projectPath);
+    }
+    /** Remembers that a local project must not be connected automatically.
+     * @param projectPath - Registered project identity.
+     */
+    @Handler('keepProjectTemplatesSeparate')
+    keepProjectTemplatesSeparate(projectPath: string) {
+        return this.service.keepProjectTemplatesSeparate(projectPath);
+    }
     /** Delegates getInventory to the template service.
      */
     @Handler('getInventory')

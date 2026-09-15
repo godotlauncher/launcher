@@ -1,3 +1,10 @@
+import type {
+    TemplateMigrationAssessment,
+    TemplateProjectAssessment,
+} from './template-assessment.types.js';
+
+export type * from './template-assessment.types.js';
+
 /** An official, platform-independent template package. */
 export type ExportTemplateAsset = {
     id: string;
@@ -24,6 +31,7 @@ export type TemplateConnection = {
     projectPath: string;
     name: string;
     status: 'shared' | 'local' | 'missing' | 'foreign' | 'error';
+    mode?: 'shared' | 'separate';
 };
 /** A differing file requiring a deliberate replacement decision. */
 export type TemplateConflict = {
@@ -80,6 +88,13 @@ export type TemplatePackage = {
 };
 /** Template requests exposed by the Electron preload bridge. */
 export type ExportTemplatesBridge = {
+    getMigrationAssessment(): Promise<TemplateMigrationAssessment>;
+    inspectProjectTemplates(
+        projectPath: string,
+    ): Promise<TemplateProjectAssessment>;
+    keepProjectTemplatesSeparate(
+        projectPath: string,
+    ): Promise<TemplateProjectAssessment>;
     getInventory(): Promise<ExportTemplateInventory>;
     getJob(): Promise<TemplateJob | null>;
     getJobs(): Promise<TemplateJob[]>;

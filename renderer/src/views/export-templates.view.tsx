@@ -275,7 +275,9 @@ export function ExportTemplatesView() {
                         ))}
                     </div>
                     {!!inventory?.connections.some(
-                        (connection) => connection.status !== 'shared',
+                        (connection) =>
+                            connection.status !== 'shared' &&
+                            connection.mode !== 'separate',
                     ) && (
                         <section className="mt-4 space-y-3">
                             <h2 className="text-lg font-semibold">
@@ -287,7 +289,8 @@ export function ExportTemplatesView() {
                             {inventory.connections
                                 .filter(
                                     (connection) =>
-                                        connection.status !== 'shared',
+                                        connection.status !== 'shared' &&
+                                        connection.mode !== 'separate',
                                 )
                                 .map((connection) => (
                                     <div

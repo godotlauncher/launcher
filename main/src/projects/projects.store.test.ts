@@ -51,6 +51,48 @@ describe('ProjectsStore', () => {
         expect(project.pinned_order).toBeUndefined();
     });
 
+    it('preserves supported template preferences and clears invalid stored values', async () => {
+        await fs.writeFile(
+            projectsPath,
+            JSON.stringify([
+                {
+                    ...createProject('/projects/separate', null),
+                    exportTemplateMode: 'separate',
+                },
+                {
+                    ...createProject('/projects/legacy', null),
+                    exportTemplateMode: 'legacy',
+                },
+            ]),
+            'utf-8',
+        );
+
+        const projects = await store.list();
+        expect(
+            projects.find((project) => project.path === '/projects/separate')
+                ?.exportTemplateMode,
+        ).toBe('separate');
+        expect(
+            projects.find((project) => project.path === '/projects/legacy')
+                ?.exportTemplateMode,
+        ).toBeUndefined();
+
+        await store.replace(projects);
+        const stored = JSON.parse(await fs.readFile(projectsPath, 'utf-8'));
+        expect(
+            stored.find(
+                (project: ProjectDetails) =>
+                    project.path === '/projects/separate',
+            ).exportTemplateMode,
+        ).toBe('separate');
+        expect(
+            stored.find(
+                (project: ProjectDetails) =>
+                    project.path === '/projects/legacy',
+            ),
+        ).not.toHaveProperty('exportTemplateMode');
+    });
+
     it('preserves ascending last-opened order and Date values', async () => {
         await store.replace([
             createProject(

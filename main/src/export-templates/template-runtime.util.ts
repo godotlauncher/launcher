@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { InstalledRelease } from '@shared/contracts';
+import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
 import { getCurrentAppConfig } from '../config/current-app-config.js';
 import {
@@ -8,6 +8,26 @@ import {
     resolveTemplateRoot,
     templateConnectionStatus,
 } from './template-files.util.js';
+
+// Protects late automatic work holding project snapshots from before a saved opt-out.
+const separateDirectories = new Set<string>();
+
+/** Remembers a successfully persisted opt-out for in-flight project snapshots.
+ * @param editorDirectory - Editor environment whose preference was saved.
+ */
+export function rememberSeparateTemplateDirectory(
+    editorDirectory: string,
+): void {
+    separateDirectories.add(templateDirectoryKey(editorDirectory));
+}
+
+/** Normalises an editor environment key for the host filesystem.
+ * @param editorDirectory - Editor directory to identify.
+ */
+function templateDirectoryKey(editorDirectory: string): string {
+    const resolved = path.resolve(editorDirectory);
+    return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+}
 
 /** Resolves production storage or the isolated development fixture root. */
 export function getSharedTemplateRoot(): string {
@@ -19,11 +39,19 @@ export function getSharedTemplateRoot(): string {
 /** Connects an empty official editor environment without making launch depend on links.
  * @param editorDirectory - Project editor directory.
  * @param release - Selected editor.
+ * @param exportTemplateMode - Project template preference.
  */
 export async function connectProjectTemplates(
     editorDirectory: string,
     release: Pick<InstalledRelease, 'source'>,
+    exportTemplateMode?: ProjectDetails['exportTemplateMode'],
 ): Promise<void> {
+    if (
+        exportTemplateMode === 'separate' ||
+        separateDirectories.has(templateDirectoryKey(editorDirectory))
+    )
+        return;
+
     try {
         if (release.source === 'custom') {
             const local = path.join(

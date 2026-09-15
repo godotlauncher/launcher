@@ -727,6 +727,39 @@ test('connects an unchanged merge without replacing shared files and keeps the r
 
 });
 
+test('assesses templates through preload and remembers separate management without moving files', async () => {
+    const existing = await fs.lstat(local).catch(() => null);
+    if (existing?.isSymbolicLink()) await fs.unlink(local);
+    const localSet = path.join(local, '4.4.stable');
+    const sharedSet = path.join(root, '4.4.stable');
+    await fs.mkdir(localSet, { recursive: true });
+    await fs.mkdir(sharedSet, { recursive: true });
+    await fs.writeFile(path.join(localSet, 'linux_release.x86_64'), 'private build');
+    await fs.writeFile(path.join(sharedSet, 'linux_release.x86_64'), 'shared build');
+    const result = await page.evaluate(async (projectPath) => {
+        const bridge = window.__di_electron__!;
+        const before = await bridge.invoke('exportTemplates.getMigrationAssessment');
+        const inspected = await bridge.invoke('exportTemplates.inspectProjectTemplates', projectPath);
+        const saved = await bridge.invoke('exportTemplates.keepProjectTemplatesSeparate', projectPath);
+        const after = await bridge.invoke('exportTemplates.getMigrationAssessment');
+        return { before, inspected, saved, after };
+    }, path.join(home, 'project'));
+    expect(result.before).toMatchObject({ success: true, data: { pendingCount: 1 } });
+    expect(result.inspected).toMatchObject({
+        success: true,
+        data: { compared: true, provenance: 'unverified', files: expect.arrayContaining([
+            expect.objectContaining({ path: '4.4.stable/linux_release.x86_64', state: 'different' }),
+        ]) },
+    });
+    expect(result.saved).toMatchObject({ success: true, data: { state: 'separate', pending: false } });
+    expect(result.after).toMatchObject({ success: true, data: { pendingCount: 0 } });
+    const stored = JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'projects.json'), 'utf8'));
+    expect(stored[0].exportTemplateMode).toBe('separate');
+    expect((await fs.lstat(local)).isSymbolicLink()).toBe(false);
+    expect(await fs.readFile(path.join(localSet, 'linux_release.x86_64'), 'utf8')).toBe('private build');
+    expect(await fs.readFile(path.join(sharedSet, 'linux_release.x86_64'), 'utf8')).toBe('shared build');
+});
+
 /** Replaces the native file dialog while exercising the real import bridge.
  * @param filename - Fixture archive selected by the user.
  */

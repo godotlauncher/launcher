@@ -7,7 +7,9 @@ import type {
     ExportTemplateSet,
     ProjectDetails,
     TemplateJob,
+    TemplateMigrationAssessment,
     TemplatePackage,
+    TemplateProjectAssessment,
     TemplateReview,
 } from '@shared/contracts';
 import { dialog, shell } from 'electron';
@@ -20,7 +22,10 @@ import { resolveArchiveIntegrity } from '../utils/archive-integrity.util.js';
 import { downloadReleaseAsset } from '../utils/releases.utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TemplateArchiveAdapter } from './template-archive.adapter.js';
+import { assessProjectTemplates } from './template-assessment.util.js';
 import {
+    areTemplateConnectionsActive,
+    areTemplatesMutating,
     checkTemplateCapacity,
     connectEmptyTemplateFolder,
     isTemplateIdentity,
@@ -37,7 +42,10 @@ import {
     openTemplateRange,
     type TemplateRangeIndex,
 } from './template-range.adapter.js';
-import { getSharedTemplateRoot } from './template-runtime.util.js';
+import {
+    getSharedTemplateRoot,
+    rememberSeparateTemplateDirectory,
+} from './template-runtime.util.js';
 import {
     commitTemplateTransaction,
     type PreparedTemplateSet,
@@ -98,6 +106,155 @@ export class ExportTemplatesService {
         private readonly projects: ProjectsStore,
         private readonly templateArchives: TemplateArchiveAdapter,
     ) {}
+
+    /** Lists migration candidates using metadata only, without network requests. */
+    async getMigrationAssessment(): Promise<TemplateMigrationAssessment> {
+        const projects = await this.projects.list();
+        const recoveryIds = await this.recoveries();
+        const assessments: TemplateProjectAssessment[] = [];
+        for (const project of projects) {
+            const assessment = await assessProjectTemplates(
+                project,
+                getSharedTemplateRoot(),
+            );
+            assessments.push(
+                this.migrationAvailability(assessment, recoveryIds),
+            );
+        }
+        return {
+            projects: assessments,
+            pendingCount: assessments.filter((item) => item.pending).length,
+            recoveryIds,
+        };
+    }
+
+    /** Compares one registered project without changing templates or preferences.
+     * @param projectPath - Canonical project identity from the UI.
+     */
+    async inspectProjectTemplates(
+        projectPath: string,
+    ): Promise<TemplateProjectAssessment> {
+        const project = await this.assessmentProject(projectPath);
+        const recoveryIds = await this.recoveries();
+        const busy = this.templatesBusy() || recoveryIds.length > 0;
+        const assessment = await assessProjectTemplates(
+            project,
+            getSharedTemplateRoot(),
+            !busy,
+        );
+        return this.migrationAvailability(assessment, recoveryIds);
+    }
+
+    /** Persists local management without detaching links or moving any files.
+     * @param projectPath - Canonical project identity from the UI.
+     */
+    async keepProjectTemplatesSeparate(
+        projectPath: string,
+    ): Promise<TemplateProjectAssessment> {
+        if (this.templatesBusy())
+            throw new Error('exportTemplates:errors.busy');
+        this.starting = true;
+        setTemplatesMutating(true);
+        try {
+            if ((await this.recoveries()).length)
+                throw new Error('exportTemplates:errors.recovery');
+            const project = await this.assessmentProject(projectPath);
+            const status = project.launch_path
+                ? await templateConnectionStatus(
+                      this.local(project),
+                      getSharedTemplateRoot(),
+                  )
+                : 'error';
+            if (!['local', 'missing'].includes(status))
+                throw new Error('exportTemplates:errors.connection');
+            if (project.exportTemplateMode !== 'separate') {
+                await this.projects.update(async (projects) => {
+                    const current = projects.find(
+                        (item) => item.path === project.path,
+                    );
+                    if (!current || current.launch_path !== project.launch_path)
+                        throw new Error('exportTemplates:errors.changed');
+                    const currentStatus = await templateConnectionStatus(
+                        this.local(current),
+                        getSharedTemplateRoot(),
+                    );
+                    if (!['local', 'missing'].includes(currentStatus))
+                        throw new Error('exportTemplates:errors.changed');
+                    return projects.map((item) =>
+                        item.path === current.path
+                            ? {
+                                  ...item,
+                                  exportTemplateMode: 'separate' as const,
+                              }
+                            : item,
+                    );
+                });
+            }
+            rememberSeparateTemplateDirectory(
+                path.dirname(project.launch_path),
+            );
+            return await assessProjectTemplates(
+                { ...project, exportTemplateMode: 'separate' },
+                getSharedTemplateRoot(),
+            );
+        } finally {
+            this.starting = false;
+            setTemplatesMutating(false);
+            void this.pump();
+        }
+    }
+
+    /** Reads a project for assessment, including custom and unavailable editors.
+     * @param projectPath - Exact registered identity; arbitrary paths are rejected.
+     */
+    private async assessmentProject(
+        projectPath: string,
+    ): Promise<ProjectDetails> {
+        if (typeof projectPath !== 'string')
+            throw new Error('exportTemplates:errors.connection');
+        const project = (await this.projects.list()).find(
+            (item) => item.path === projectPath,
+        );
+        if (!project) throw new Error('exportTemplates:errors.connection');
+        return project;
+    }
+
+    /** Reports whether file operations currently prevent changing project management. */
+    private templatesBusy(): boolean {
+        return (
+            this.starting ||
+            areTemplatesMutating() ||
+            areTemplateConnectionsActive() ||
+            [...this.tasks.values()].some(({ job }) => !TERMINAL.has(job.stage))
+        );
+    }
+
+    /** Adds queue and recovery constraints to an otherwise read-only assessment.
+     * @param assessment - Filesystem assessment.
+     * @param recoveryIds - Pending recovery operations.
+     */
+    private migrationAvailability(
+        assessment: TemplateProjectAssessment,
+        recoveryIds: string[],
+    ): TemplateProjectAssessment {
+        if (
+            !assessment.pending ||
+            !['ready', 'needs-review'].includes(assessment.state)
+        )
+            return assessment;
+        if (recoveryIds.length || this.templatesBusy()) {
+            return {
+                ...assessment,
+                state: recoveryIds.length ? 'recovery' : 'busy',
+                reason: recoveryIds.length
+                    ? 'interrupted-operation'
+                    : 'active-operation',
+                compared: false,
+                files: undefined,
+            };
+        }
+        return assessment;
+    }
 
     /** Returns process-local progress without rescanning large templates. */
     async getJob(): Promise<TemplateJob | null> {
@@ -334,6 +491,7 @@ export class ExportTemplatesService {
             result.connections.push({
                 projectPath: project.path,
                 name: project.name,
+                mode: project.exportTemplateMode,
                 status: await templateConnectionStatus(
                     this.local(project),
                     root,
@@ -1135,6 +1293,7 @@ export class ExportTemplatesService {
             (candidate) =>
                 candidate.path === projectPath &&
                 candidate.release.source !== 'custom' &&
+                candidate.exportTemplateMode !== 'separate' &&
                 candidate.launch_path,
         );
         if (!project) throw new Error('exportTemplates:errors.connection');

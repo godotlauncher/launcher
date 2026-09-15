@@ -30,7 +30,7 @@ export type ProjectsSnapshot = {
 export function fromStoredProject(
     storedProject: StoredProjectDetails,
 ): ProjectDetails {
-    const { withVSCode, ...project } = storedProject;
+    const { withVSCode, exportTemplateMode, ...project } = storedProject;
 
     return {
         ...project,
@@ -45,6 +45,7 @@ export function fromStoredProject(
                 : withVSCode
                   ? 'vscode'
                   : null,
+        exportTemplateMode: normalizeExportTemplateMode(exportTemplateMode),
         last_opened: toDate(storedProject.last_opened),
     };
 }
@@ -58,6 +59,9 @@ export function fromStoredProject(
 export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
     return {
         ...project,
+        exportTemplateMode: normalizeExportTemplateMode(
+            project.exportTemplateMode,
+        ),
         pinned_order: project.pinned
             ? normalizePinnedOrder(project.pinned_order)
             : undefined,
@@ -242,6 +246,18 @@ function normalizePinnedOrder(value: number | undefined): number | undefined {
     return Number.isInteger(value) && value !== undefined && value >= 0
         ? value
         : undefined;
+}
+
+/**
+ * Normalises the optional export-template preference from stored project data.
+ *
+ * @param value - Stored template preference.
+ * @returns A supported preference, or undefined for automatic behaviour.
+ */
+function normalizeExportTemplateMode(
+    value: unknown,
+): ProjectDetails['exportTemplateMode'] {
+    return value === 'shared' || value === 'separate' ? value : undefined;
 }
 
 /**
