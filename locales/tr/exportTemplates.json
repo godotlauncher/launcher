@@ -112,5 +112,88 @@
     "manage": "Şablonları yönet",
     "removeTemplates": "Şablonları kaldır",
     "sizeUnavailable": "Boyut kullanılamıyor",
-    "updatesInProgress": "Şablonlar güncelleniyor..."
+    "updatesInProgress": "Şablonlar güncelleniyor...",
+    "migration": {
+        "title": "Dışa aktarma şablonlarını taşı",
+        "header": "Projeleri taşı ({{number}})",
+        "later": "Daha sonra",
+        "close": "Kapat",
+        "start": "Projeleri incele",
+        "introduction": "Yinelenen dosyaları tutmamak için dışa aktarma şablonlarını projeler arasında paylaşın.",
+        "offerDetail": "Hiçbir şeyi değiştirmeden önce her projeyi inceleyin. Özel veya şifreleme derlemesi şablonlarını ayrı tutabilirsiniz. Hazır olduğunuzda Dışa Aktarma Şablonları'ndan Daha sonra'yı seçerek geri dönebilirsiniz.",
+        "pending": "{{number}} proje için hâlâ karar gerekiyor.",
+        "explanation": "Bir proje seçin, hangi şablonları kullanacağına karar verin, ardından değişiklikleri inceleyin. Bağlı diğer projeler aynı ortak dosyaları kullanır.",
+        "projects": "İncelenecek projeler",
+        "noProjects": "İncelenecek kayıtlı proje yok.",
+        "selectProject": "Şablonlarını ve seçeneklerini görmek için bir proje seçin.",
+        "inspecting": "Bu proje ortak şablonlarla karşılaştırılıyor...",
+        "unverified": "Mevcut dosyalar doğrulanmadı. İçeriklerin eşleşmesi, bir şablonun resmî olduğunu veya şifrelemeyi desteklediğini kanıtlamaz. Paylaşmak istemiyorsanız özel veya şifreleme derlemesi şablonlarını ayrı tutun.",
+        "comparison": "Dosyaları karşılaştır",
+        "projectFiles": "Proje",
+        "keepSeparate": "Ayrı tut",
+        "reviewChanges": "Değişiklikleri incele",
+        "background": "Bu pencereyi kapattığınızda gönderilen çalışma sürer. Hazırlanan değişiklikleri incelemek veya ilerlemeyi denetlemek için yeniden açın.",
+        "useSharedReview": "Bu proje ortak koleksiyonu kullanacak. Ortak dosyalar eklenmeyecek veya değiştirilmeyecek. Yalnızca yerelde bulunan dosyalar bu proje için artık kullanılamayacak; farklı yerel dosyalar taşıma başarıyla tamamlandıktan sonra ortak kopyalarla değiştirilecek.",
+        "shareReview": "Paylaştığınız dosyalar, bu sürümü ve türü kullanan bağlı diğer projelerde kullanılabilir olur. Doğrulanmamış her eklemeyi ve değiştirmeyi inceleyin. Yerel dosyalar taşıma başarıyla tamamlanana kadar korunur.",
+        "localOnlyReview": "Bu dosyalar yalnızca bu projede bulunur. Her birini paylaşmayı seçin. Eklemeyeceğiniz dosyalar taşımadan sonra bu proje için artık kullanılamaz.",
+        "shareFile": "Proje dosyasını paylaş",
+        "omitFile": "Dosyayı ekleme",
+        "metadataReview": "Geçişi geri yükleyebilmek için özgün şablonlar saklanır. Siz açıkça kaldırana kadar disk alanı kullanırlar.",
+        "choices": {
+            "separate": "Bu projenin şablonlarını ayrı tut",
+            "use-shared": "Ortak şablonları kullan",
+            "share-project": "Bu projenin şablonlarını paylaş"
+        },
+        "details": {
+            "separate": "Özel veya şifreleme derlemeleri için önerilir. Dosyaları burada bırakın ve bu seçimi hatırlayın.",
+            "use-shared": "Dosyalarını eklemeden veya değiştirmeden mevcut ortak koleksiyonu kullanın. Bu projenin kullanmayı bırakacağı yerel şablonları inceleyin.",
+            "share-project": "Seçilen proje dosyalarını ortak koleksiyonla birleştirin. Değiştirmeler, aynı sürümü ve türü kullanan bağlı diğer projeleri etkiler."
+        },
+        "reasons": {
+            "connected": "Ortak şablonları kullanıyor",
+            "kept-separate": "Ayrı tutuldu",
+            "empty": "Birleştirilecek yerel şablon dosyası yok",
+            "identical": "Yerel dosyalar ortak kopyalarla eşleşiyor",
+            "unverified-files": "Yerel dosyaların incelenmesi gerekiyor",
+            "custom-editor": "Özel düzenleyici: şablonlarını ayrı tutun",
+            "foreign-link": "Mevcut bağlantı veya dosya; elle inceleyin",
+            "unexpected-content": "Tanınmayan içerik: ayrı tutun veya klasörü inceleyin",
+            "metadata-present": "Şablon dosyalarının yanında sistem meta verileri var",
+            "missing-project": "Proje kullanılamıyor; erişilebilir olduğunda yeniden deneyin",
+            "missing-editor": "Düzenleyici ortamı kullanılamıyor; erişilebilir olduğunda yeniden deneyin",
+            "unreadable": "Klasör kullanılamıyor; izinleri kontrol edip yeniden deneyin",
+            "preference-mismatch": "Ayrı olarak işaretlenmiş ancak hâlâ bağlı; klasörü inceleyin",
+            "active-operation": "Başka bir şablon işlemi sürüyor",
+            "interrupted-operation": "Taşımadan önce kesintiye uğrayan işlemi kurtarın"
+        },
+        "files": {
+            "identical": "Aynı içerik",
+            "local-only": "Yalnızca bu projede",
+            "shared-only": "Yalnızca ortak şablonlarda",
+            "different": "Farklı içerik",
+            "checking": "İçerik denetleniyor"
+        },
+        "recommended": "Önerilen",
+        "otherOptions": "Diğer seçenekler",
+        "backups": "Saklanan asıllar",
+        "backupNotice": "Geçişi geri yükleyebilmek için özgün şablonlar saklanır. Siz açıkça kaldırana kadar disk alanı kullanırlar.",
+        "restore": "Önceki şablonları geri yükle",
+        "discard": "Saklanan asılları kaldır",
+        "restoreDetail": "Projenin özgün şablonlarını geri yükleyip ayrı tutun. Bu geçişte değiştirilen paylaşılan dosyalar da geri yüklenir. Dosyalar geçişten sonra değiştiyse geri yükleme durur.",
+        "discardDetail": "Bu özgün şablonlar kalıcı olarak kaldırılsın mı? Bu geçiş artık geri yüklenemez. Mevcut şablonlar değişmez.",
+        "affected": "Diğer bağlı projeler",
+        "noAffected": "Yok",
+        "status": {
+            "review": "İnceleme gerekli",
+            "unavailable": "İlgilenilmesi gerekiyor",
+            "ready": "Bağlanmaya hazır",
+            "separate": "Ayrı tutuluyor",
+            "shared": "Paylaşılan"
+        },
+        "edition": {
+            "standard": "Standart",
+            "dotnet": ".NET",
+            "custom": "Özel"
+        }
+    }
 }

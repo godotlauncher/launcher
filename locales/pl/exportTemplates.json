@@ -112,5 +112,88 @@
     "manage": "Zarządzaj szablonami",
     "removeTemplates": "Usuń szablony",
     "sizeUnavailable": "Rozmiar niedostępny",
-    "updatesInProgress": "Aktualizowanie szablonów..."
+    "updatesInProgress": "Aktualizowanie szablonów...",
+    "migration": {
+        "title": "Migracja szablonów eksportu",
+        "header": "Migracja projektów ({{number}})",
+        "later": "Później",
+        "close": "Zamknij",
+        "start": "Przejrzyj projekty",
+        "introduction": "Udostępniaj szablony eksportu między projektami, aby nie przechowywać zduplikowanych plików.",
+        "offerDetail": "Sprawdź każdy projekt, zanim cokolwiek zmienisz. Możesz zachować oddzielne szablony niestandardowych kompilacji lub kompilacji z szyfrowaniem. Wybierz Później, aby wrócić z Szablonów eksportu, gdy będziesz gotowy.",
+        "pending": "{{number}} projektów nadal wymaga decyzji.",
+        "explanation": "Wybierz projekt, zdecyduj, których szablonów ma używać, a następnie sprawdź zmiany. Inne podłączone projekty używają tych samych współdzielonych plików.",
+        "projects": "Projekty do sprawdzenia",
+        "noProjects": "Brak zarejestrowanych projektów do sprawdzenia.",
+        "selectProject": "Wybierz projekt, aby zobaczyć jego szablony i opcje.",
+        "inspecting": "Porównywanie tego projektu ze współdzielonymi szablonami...",
+        "unverified": "Istniejące pliki nie są zweryfikowane. Zgodna zawartość nie dowodzi, że szablon jest oficjalny ani że obsługuje szyfrowanie. Zachowaj oddzielne szablony niestandardowych kompilacji lub kompilacji z szyfrowaniem, chyba że chcesz je udostępnić.",
+        "comparison": "Porównaj pliki",
+        "projectFiles": "Projekt",
+        "keepSeparate": "Zachowaj oddzielnie",
+        "reviewChanges": "Sprawdź zmiany",
+        "background": "Wysłana praca trwa po zamknięciu tego okna. Otwórz je ponownie, aby sprawdzić przygotowane zmiany lub postęp.",
+        "useSharedReview": "Ten projekt będzie używać współdzielonej kolekcji. Żadne współdzielone pliki nie zostaną dodane ani zastąpione. Pliki tylko lokalne przestaną być dostępne dla tego projektu, a różniące się pliki lokalne zostaną zastąpione współdzielonymi kopiami po pomyślnej migracji.",
+        "shareReview": "Udostępnione pliki staną się dostępne dla innych podłączonych projektów używających tej wersji i edycji. Sprawdź każde niezweryfikowane dodanie i zastąpienie. Pliki lokalne zostaną zachowane do pomyślnego zakończenia migracji.",
+        "localOnlyReview": "Te pliki istnieją tylko w tym projekcie. Wybierz, czy udostępnić każdy z nich. Pliki, których nie dodasz, przestaną być dostępne dla tego projektu po migracji.",
+        "shareFile": "Udostępnij plik projektu",
+        "omitFile": "Nie dodawaj pliku",
+        "metadataReview": "Oryginalne szablony zostaną zachowane, aby umożliwić przywrócenie migracji. Zajmują miejsce do czasu ich wyraźnego usunięcia.",
+        "choices": {
+            "separate": "Zachowaj szablony tego projektu oddzielnie",
+            "use-shared": "Użyj współdzielonych szablonów",
+            "share-project": "Udostępnij szablony tego projektu"
+        },
+        "details": {
+            "separate": "Zalecane dla niestandardowych kompilacji lub kompilacji z szyfrowaniem. Pozostaw pliki tutaj i zapamiętaj ten wybór.",
+            "use-shared": "Użyj istniejącej współdzielonej kolekcji bez dodawania ani zastępowania jej plików. Sprawdź, których lokalnych szablonów ten projekt przestanie używać.",
+            "share-project": "Scal wybrane pliki projektu ze współdzieloną kolekcją. Zastąpienia wpłyną na inne podłączone projekty używające tej samej wersji i edycji."
+        },
+        "reasons": {
+            "connected": "Używa współdzielonych szablonów",
+            "kept-separate": "Zachowano oddzielnie",
+            "empty": "Brak lokalnych plików szablonów do scalenia",
+            "identical": "Lokalne pliki odpowiadają współdzielonym kopiom",
+            "unverified-files": "Lokalne pliki wymagają sprawdzenia",
+            "custom-editor": "Niestandardowy edytor: zachowaj jego szablony oddzielnie",
+            "foreign-link": "Istniejący link lub plik: sprawdź ręcznie",
+            "unexpected-content": "Nierozpoznana zawartość: zachowaj oddzielnie lub sprawdź folder",
+            "metadata-present": "Metadane systemowe są obecne obok plików szablonów",
+            "missing-project": "Projekt niedostępny: ponów próbę, gdy będzie dostępny",
+            "missing-editor": "Środowisko edytora niedostępne: ponów próbę, gdy będzie dostępne",
+            "unreadable": "Folder niedostępny: sprawdź uprawnienia i ponów próbę",
+            "preference-mismatch": "Oznaczono jako oddzielny, ale nadal jest podłączony: sprawdź folder",
+            "active-operation": "Trwa inna operacja na szablonach",
+            "interrupted-operation": "Odzyskaj przerwaną operację przed migracją"
+        },
+        "files": {
+            "identical": "Identyczna zawartość",
+            "local-only": "Tylko w tym projekcie",
+            "shared-only": "Tylko we współdzielonych szablonach",
+            "different": "Różna zawartość",
+            "checking": "Sprawdzanie zawartości"
+        },
+        "recommended": "Zalecane",
+        "otherOptions": "Inne opcje",
+        "backups": "Zachowane oryginały",
+        "backupNotice": "Oryginalne szablony zostaną zachowane, aby umożliwić przywrócenie migracji. Zajmują miejsce do czasu ich wyraźnego usunięcia.",
+        "restore": "Przywróć poprzednie szablony",
+        "discard": "Usuń zachowane oryginały",
+        "restoreDetail": "Przywróć oryginalne szablony projektu i zachowaj je osobno. Przywrócone zostaną też pliki współdzielone zmienione przez tę migrację. Przywracanie zostanie zatrzymane, jeśli pliki zmieniły się później.",
+        "discardDetail": "Trwale usunąć te oryginalne szablony? Przywrócenie tej migracji nie będzie już możliwe. Obecne szablony nie zmienią się.",
+        "affected": "Inne połączone projekty",
+        "noAffected": "Brak",
+        "status": {
+            "review": "Wymaga przeglądu",
+            "unavailable": "Wymaga uwagi",
+            "ready": "Gotowy do połączenia",
+            "separate": "Osobno",
+            "shared": "Współdzielone"
+        },
+        "edition": {
+            "standard": "Standard",
+            "dotnet": ".NET",
+            "custom": "Niestandardowy"
+        }
+    }
 }

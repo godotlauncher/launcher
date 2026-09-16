@@ -112,5 +112,88 @@
     "manage": "Gestisci modelli",
     "removeTemplates": "Rimuovi modelli",
     "sizeUnavailable": "Dimensione non disponibile",
-    "updatesInProgress": "Aggiornamento dei modelli in corso..."
+    "updatesInProgress": "Aggiornamento dei modelli in corso...",
+    "migration": {
+        "title": "Migra modelli di esportazione",
+        "header": "Migra progetti ({{number}})",
+        "later": "Più tardi",
+        "close": "Chiudi",
+        "start": "Esamina progetti",
+        "introduction": "Condividi i modelli di esportazione tra progetti per evitare di mantenere file duplicati.",
+        "offerDetail": "Esamina ogni progetto prima di modificare qualcosa. Puoi mantenere separati i modelli per build personalizzate o con crittografia. Scegli Più tardi per tornare da Modelli di esportazione quando sei pronto.",
+        "pending": "{{number}} progetti necessitano ancora di una decisione.",
+        "explanation": "Scegli un progetto, decidi quali modelli deve usare, quindi esamina le modifiche. Gli altri progetti connessi usano gli stessi file condivisi.",
+        "projects": "Progetti da esaminare",
+        "noProjects": "Nessun progetto registrato da esaminare.",
+        "selectProject": "Seleziona un progetto per vedere i relativi modelli e opzioni.",
+        "inspecting": "Confronto di questo progetto con i modelli condivisi...",
+        "unverified": "I file esistenti non sono verificati. I contenuti corrispondenti non dimostrano che un modello sia ufficiale o supporti la crittografia. Mantieni separati i modelli per build personalizzate o con crittografia, a meno che tu non intenda condividerli.",
+        "comparison": "Confronta file",
+        "projectFiles": "Progetto",
+        "keepSeparate": "Mantieni separati",
+        "reviewChanges": "Esamina modifiche",
+        "background": "Il lavoro inviato continua quando chiudi questa finestra. Riaprila per esaminare le modifiche preparate o controllare l'avanzamento.",
+        "useSharedReview": "Questo progetto userà la raccolta condivisa. Nessun file condiviso verrà aggiunto o sostituito. I file solo locali non saranno più disponibili per questo progetto e i file locali diversi saranno sostituiti dalle copie condivise dopo una migrazione riuscita.",
+        "shareReview": "I file che condividi diventano disponibili ad altri progetti connessi che usano questa versione ed edizione. Esamina ogni aggiunta e sostituzione non verificata. I file locali vengono conservati finché la migrazione non riesce.",
+        "localOnlyReview": "Questi file esistono solo in questo progetto. Scegli se condividere ciascuno di essi. I file che non aggiungi non saranno più disponibili per questo progetto dopo la migrazione.",
+        "shareFile": "Condividi file del progetto",
+        "omitFile": "Non aggiungere file",
+        "metadataReview": "I modelli originali saranno conservati per ripristinare la migrazione. Occuperanno spazio fino alla loro rimozione esplicita.",
+        "choices": {
+            "separate": "Mantieni separati i modelli di questo progetto",
+            "use-shared": "Usa i modelli condivisi",
+            "share-project": "Condividi i modelli di questo progetto"
+        },
+        "details": {
+            "separate": "Consigliato per build personalizzate o con crittografia. Lascia qui i file e ricorda questa scelta.",
+            "use-shared": "Usa la raccolta condivisa esistente senza aggiungere o sostituire i suoi file. Esamina quali modelli locali questo progetto smetterà di usare.",
+            "share-project": "Unisci i file del progetto selezionati nella raccolta condivisa. Le sostituzioni interessano altri progetti connessi che usano la stessa versione ed edizione."
+        },
+        "reasons": {
+            "connected": "Usa modelli condivisi",
+            "kept-separate": "Mantenuto separato",
+            "empty": "Nessun file di modello locale da unire",
+            "identical": "I file locali corrispondono alle copie condivise",
+            "unverified-files": "I file locali richiedono esame",
+            "custom-editor": "Editor personalizzato: mantieni separati i suoi modelli",
+            "foreign-link": "Collegamento o file esistente: ispeziona manualmente",
+            "unexpected-content": "Contenuti non riconosciuti: mantieni separato o ispeziona la cartella",
+            "metadata-present": "Sono presenti metadati di sistema accanto ai file di modello",
+            "missing-project": "Progetto non disponibile: riprova quando accessibile",
+            "missing-editor": "Ambiente dell'editor non disponibile: riprova quando accessibile",
+            "unreadable": "Cartella non disponibile: controlla i permessi e riprova",
+            "preference-mismatch": "Contrassegnato separato ma ancora connesso: ispeziona la cartella",
+            "active-operation": "È in corso un'altra operazione sui modelli",
+            "interrupted-operation": "Recupera l'operazione interrotta prima di migrare"
+        },
+        "files": {
+            "identical": "Contenuti identici",
+            "local-only": "Solo in questo progetto",
+            "shared-only": "Solo nei modelli condivisi",
+            "different": "Contenuti diversi",
+            "checking": "Verifica dei contenuti"
+        },
+        "recommended": "Consigliato",
+        "otherOptions": "Altre opzioni",
+        "backups": "Originali conservati",
+        "backupNotice": "I modelli originali saranno conservati per ripristinare la migrazione. Occuperanno spazio fino alla loro rimozione esplicita.",
+        "restore": "Ripristina modelli precedenti",
+        "discard": "Rimuovi originali conservati",
+        "restoreDetail": "Ripristina i modelli originali del progetto e mantienili separati. Saranno ripristinati anche i file condivisi modificati da questa migrazione. Il ripristino si interrompe se i file sono cambiati in seguito.",
+        "discardDetail": "Rimuovere definitivamente questi modelli originali? Non sarà più possibile ripristinare questa migrazione. I modelli attuali rimarranno invariati.",
+        "affected": "Altri progetti collegati",
+        "noAffected": "Nessuno",
+        "status": {
+            "review": "Da esaminare",
+            "unavailable": "Richiede attenzione",
+            "ready": "Pronto al collegamento",
+            "separate": "Separato",
+            "shared": "Condiviso"
+        },
+        "edition": {
+            "standard": "Standard",
+            "dotnet": ".NET",
+            "custom": "Personalizzato"
+        }
+    }
 }

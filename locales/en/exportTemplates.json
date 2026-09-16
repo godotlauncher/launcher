@@ -112,5 +112,88 @@
     "manage": "Manage templates",
     "removeTemplates": "Remove templates",
     "sizeUnavailable": "Size unavailable",
-    "updatesInProgress": "Template updates in progress..."
+    "updatesInProgress": "Template updates in progress...",
+    "migration": {
+        "title": "Migrate export templates",
+        "header": "Migrate projects ({{number}})",
+        "later": "Later",
+        "close": "Close",
+        "start": "Review projects",
+        "recommended": "Recommended",
+        "otherOptions": "Other options",
+        "backups": "Retained originals",
+        "backupNotice": "Original templates will be retained so this migration can be restored. They use disk space until you explicitly remove them.",
+        "restore": "Restore previous templates",
+        "discard": "Remove retained originals",
+        "restoreDetail": "Restore this project's original templates and keep them separate. Shared files changed by this migration will also be restored. Restoration stops if affected files have changed since migration.",
+        "discardDetail": "Permanently remove these original templates? You will no longer be able to restore this migration. Current project and shared templates will not change.",
+        "affected": "Other connected projects",
+        "noAffected": "None",
+        "status": {
+            "review": "Needs review",
+            "unavailable": "Needs attention",
+            "ready": "Ready to connect",
+            "separate": "Kept separate",
+            "shared": "Shared"
+        },
+        "edition": {
+            "standard": "Standard",
+            "dotnet": ".NET",
+            "custom": "Custom"
+        },
+        "introduction": "Share export templates between projects to avoid keeping duplicate files.",
+        "offerDetail": "Review each project before changing anything. You can keep custom or encryption-build templates separate. Choose Later to return from Export Templates whenever you are ready.",
+        "pending": "{{number}} projects still need a decision.",
+        "explanation": "Choose a project, decide which templates it should use, then review the changes. Other connected projects use the same shared files.",
+        "projects": "Projects to review",
+        "noProjects": "No registered projects to review.",
+        "selectProject": "Select a project to see its templates and options.",
+        "inspecting": "Comparing this project with the shared templates...",
+        "unverified": "Existing files are unverified. Matching contents do not prove that a template is official or supports encryption. Keep custom or encryption-build templates separate unless you intend to share them.",
+        "comparison": "Compare files",
+        "projectFiles": "Project",
+        "keepSeparate": "Keep separate",
+        "reviewChanges": "Review changes",
+        "background": "Submitted work continues when you close this window. Reopen it to review prepared changes or check progress.",
+        "useSharedReview": "This project will use the shared collection. No shared files will be added or replaced. Local-only files will no longer be available to this project, and differing local files will be replaced by the shared copies after migration succeeds.",
+        "shareReview": "Files you share become available to other connected projects using this version and edition. Review every unverified addition and replacement. Local files are preserved until migration succeeds.",
+        "localOnlyReview": "These files exist only in this project. Choose whether to share each one. Files you do not add will no longer be available to this project after migration.",
+        "shareFile": "Share project file",
+        "omitFile": "Do not add file",
+        "metadataReview": "These system metadata entries will be kept with the retained originals after migration.",
+        "choices": {
+            "separate": "Keep this project's templates separate",
+            "use-shared": "Use the shared templates",
+            "share-project": "Share this project's templates"
+        },
+        "details": {
+            "separate": "Recommended for custom or encryption builds. Leave files here and remember this choice.",
+            "use-shared": "Use the existing shared collection without adding or replacing its files. Review which local templates this project will stop using.",
+            "share-project": "Merge selected project files into the shared collection. Replacements affect other connected projects using the same version and edition."
+        },
+        "reasons": {
+            "connected": "Uses shared templates",
+            "kept-separate": "Kept separate",
+            "empty": "No local template files to merge",
+            "identical": "Local files match shared copies",
+            "unverified-files": "Local files need review",
+            "custom-editor": "Custom editor: templates stay separate",
+            "foreign-link": "Existing link or file: inspect manually",
+            "unexpected-content": "Unrecognised contents: keep separate or inspect the folder",
+            "metadata-present": "System metadata is present alongside template files",
+            "missing-project": "Project unavailable: retry when accessible",
+            "missing-editor": "Editor environment unavailable: retry when accessible",
+            "unreadable": "Folder unavailable: check permissions and retry",
+            "preference-mismatch": "Marked separate but still connected: inspect the folder",
+            "active-operation": "Another template operation is in progress",
+            "interrupted-operation": "Recover the interrupted operation before migrating"
+        },
+        "files": {
+            "checking": "Checking contents",
+            "identical": "Identical contents",
+            "local-only": "Only in this project",
+            "shared-only": "Only in shared templates",
+            "different": "Different contents"
+        }
+    }
 }

@@ -3,6 +3,7 @@ import {
     Download,
     FileOutput,
     FolderOpen,
+    FolderSync,
     RefreshCw,
     Upload,
 } from 'lucide-react';
@@ -18,6 +19,7 @@ import { TemplateDownloadDrawer } from './export-templates/components/template-d
 import { TemplateRemoveDialog } from './export-templates/components/template-remove-dialog.component';
 import { TemplateSetRow } from './export-templates/components/template-set-row.component';
 import { useExportTemplates } from './export-templates/hooks/export-templates.hook';
+import { useTemplateMigration } from './export-templates/hooks/template-migration.hook';
 import { formatTemplateBytes } from './export-templates/template-format.util';
 import { getTemplateRowJobs } from './export-templates/template-jobs.model';
 
@@ -32,6 +34,7 @@ export function ExportTemplatesView() {
     ]);
     const { inventory, jobs, error, pending, loading, busy, refresh, run } =
         useExportTemplates();
+    const migration = useTemplateMigration();
     const [search, setSearch] = useState('');
     const [downloadOpen, setDownloadOpen] = useState(false);
     const [manageSet, setManageSet] = useState<ExportTemplateSet | null>(null);
@@ -110,6 +113,38 @@ export function ExportTemplatesView() {
                         )}
                     </div>
                     <div className="flex flex-wrap gap-2">
+                        {migration.assessment?.pendingCount ||
+                        migration.assessment?.backups?.length ||
+                        jobs.some(
+                            (job) =>
+                                job.projectPath &&
+                                !['complete', 'cancelled', 'error'].includes(
+                                    job.stage,
+                                ),
+                        ) ? (
+                            <button
+                                type="button"
+                                className="btn btn-ghost bg-base-content/5"
+                                onClick={migration.open}
+                            >
+                                <FolderSync
+                                    className="size-4"
+                                    aria-hidden="true"
+                                />
+                                {t(
+                                    migration.assessment?.pendingCount
+                                        ? 'migration.header'
+                                        : migration.assessment?.backups?.length
+                                          ? 'migration.backups'
+                                          : 'migration.header',
+                                    {
+                                        number:
+                                            migration.assessment
+                                                ?.pendingCount ?? 0,
+                                    },
+                                )}
+                            </button>
+                        ) : null}
                         <button
                             type="button"
                             className="btn btn-ghost bg-base-content/5"
@@ -184,6 +219,7 @@ export function ExportTemplatesView() {
                             disabled={loading || busy}
                             onClick={() => {
                                 void refresh();
+                                void migration.refresh();
                             }}
                         >
                             <RefreshCw className="size-4" />
@@ -274,60 +310,6 @@ export function ExportTemplatesView() {
                             </EditorVersionGroup>
                         ))}
                     </div>
-                    {!!inventory?.connections.some(
-                        (connection) =>
-                            connection.status !== 'shared' &&
-                            connection.mode !== 'separate',
-                    ) && (
-                        <section className="mt-4 space-y-3">
-                            <h2 className="text-lg font-semibold">
-                                {t('connectProjects')}
-                            </h2>
-                            <p className="text-base-content/70">
-                                {t('connectDetail')}
-                            </p>
-                            {inventory.connections
-                                .filter(
-                                    (connection) =>
-                                        connection.status !== 'shared' &&
-                                        connection.mode !== 'separate',
-                                )
-                                .map((connection) => (
-                                    <div
-                                        key={connection.projectPath}
-                                        className="flex items-center justify-between gap-3 rounded-field bg-base-200 p-3"
-                                    >
-                                        <div>
-                                            <p>{connection.name}</p>
-                                            <p className="text-sm text-base-content/65">
-                                                {t(
-                                                    `connections.${connection.status}`,
-                                                )}
-                                            </p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="btn btn-sm"
-                                            disabled={
-                                                pending ||
-                                                connection.status ===
-                                                    'foreign' ||
-                                                !!inventory.recoveries.length
-                                            }
-                                            onClick={() =>
-                                                void run({
-                                                    type: 'migrate',
-                                                    projectPath:
-                                                        connection.projectPath,
-                                                })
-                                            }
-                                        >
-                                            {t('connect')}
-                                        </button>
-                                    </div>
-                                ))}
-                        </section>
-                    )}
                 </div>
             </div>
             <TemplateDownloadDrawer

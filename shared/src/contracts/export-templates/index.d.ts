@@ -1,5 +1,6 @@
 import type {
     TemplateMigrationAssessment,
+    TemplateMigrationFile,
     TemplateProjectAssessment,
 } from './template-assessment.types.js';
 
@@ -39,6 +40,8 @@ export type TemplateConflict = {
     sharedBytes: number;
     incomingBytes: number;
 };
+/** Project-level behaviour selected before preparing a migration review. */
+export type TemplateMigrationChoice = 'share-project' | 'use-shared';
 /** Prepared operation, held in main until the user confirms or cancels. */
 export type TemplateReview = {
     sets: string[];
@@ -47,10 +50,21 @@ export type TemplateReview = {
     identicalFiles: number;
     conflicts: TemplateConflict[];
     projectName?: string;
+    migrationChoice?: TemplateMigrationChoice;
+    /** Complete content comparison for a project migration. */
+    files?: TemplateMigrationFile[];
+    /** Local housekeeping entries removed only after a successful connection. */
+    metadata?: string[];
+    /** Differing project files which need an explicit apply decision. */
+    requiredDecisions?: string[];
+    affectedProjects?: string[];
+    retainsBackup?: boolean;
 };
 /** Process-local preparation and commit status. */
 export type TemplateJob = {
     id: string;
+    /** Stable registered project identity for migration progress. */
+    projectPath?: string;
     setIds?: string[];
     kind?: 'update' | 'remove' | 'import' | 'migrate' | 'download' | 'recover';
     stage:
@@ -91,7 +105,11 @@ export type ExportTemplatesBridge = {
     getMigrationAssessment(): Promise<TemplateMigrationAssessment>;
     inspectProjectTemplates(
         projectPath: string,
+        contents?: boolean,
     ): Promise<TemplateProjectAssessment>;
+    cancelTemplateInspection(): Promise<void>;
+    restoreMigration(backupId: string): Promise<void>;
+    discardMigrationBackup(backupId: string): Promise<void>;
     keepProjectTemplatesSeparate(
         projectPath: string,
     ): Promise<TemplateProjectAssessment>;
@@ -104,7 +122,10 @@ export type ExportTemplatesBridge = {
     savePackage(token: string, selected: string[]): Promise<void>;
     download(releaseId: string, assetId: string): Promise<void>;
     importArchive(): Promise<void>;
-    prepareMigration(projectPath: string): Promise<void>;
+    prepareMigration(
+        projectPath: string,
+        choice?: TemplateMigrationChoice,
+    ): Promise<void>;
     apply(
         jobId: string,
         decisions: Record<string, 'shared' | 'incoming'>,

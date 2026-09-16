@@ -112,5 +112,88 @@
     "manage": "Gerenciar modelos",
     "removeTemplates": "Remover modelos",
     "sizeUnavailable": "Tamanho indisponível",
-    "updatesInProgress": "Atualizando modelos..."
+    "updatesInProgress": "Atualizando modelos...",
+    "migration": {
+        "title": "Migrar modelos de exportação",
+        "header": "Migrar projetos ({{number}})",
+        "later": "Mais tarde",
+        "close": "Fechar",
+        "start": "Revisar projetos",
+        "introduction": "Compartilhe modelos de exportação entre projetos para não manter arquivos duplicados.",
+        "offerDetail": "Revise cada projeto antes de alterar qualquer coisa. Você pode manter separados os modelos de compilações personalizadas ou com criptografia. Escolha Mais tarde para voltar a partir de Modelos de exportação quando estiver pronto.",
+        "pending": "{{number}} projetos ainda precisam de uma decisão.",
+        "explanation": "Escolha um projeto, decida quais modelos ele deve usar e revise as alterações. Outros projetos conectados usam os mesmos arquivos compartilhados.",
+        "projects": "Projetos para revisar",
+        "noProjects": "Não há projetos registrados para revisar.",
+        "selectProject": "Selecione um projeto para ver seus modelos e opções.",
+        "inspecting": "Comparando este projeto com os modelos compartilhados...",
+        "unverified": "Os arquivos existentes não foram verificados. Conteúdos idênticos não comprovam que um modelo seja oficial ou tenha suporte a criptografia. Mantenha separados os modelos de compilações personalizadas ou com criptografia, a menos que pretenda compartilhá-los.",
+        "comparison": "Comparar arquivos",
+        "projectFiles": "Projeto",
+        "keepSeparate": "Manter separados",
+        "reviewChanges": "Revisar alterações",
+        "background": "O trabalho enviado continua quando você fecha esta janela. Reabra-a para revisar as alterações preparadas ou verificar o progresso.",
+        "useSharedReview": "Este projeto usará a coleção compartilhada. Nenhum arquivo compartilhado será adicionado ou substituído. Arquivos somente locais deixarão de estar disponíveis para este projeto, e arquivos locais diferentes serão substituídos pelas cópias compartilhadas após a migração ser concluída.",
+        "shareReview": "Os arquivos que você compartilhar ficarão disponíveis para outros projetos conectados que usam esta versão e edição. Revise cada adição e substituição não verificada. Os arquivos locais serão preservados até a migração ser concluída.",
+        "localOnlyReview": "Estes arquivos existem somente neste projeto. Escolha se deseja compartilhar cada um. Os arquivos que você não adicionar deixarão de estar disponíveis para este projeto após a migração.",
+        "shareFile": "Compartilhar arquivo do projeto",
+        "omitFile": "Não adicionar arquivo",
+        "metadataReview": "Os modelos originais serão preservados para restaurar a migração. Ocupam espaço até você removê-los explicitamente.",
+        "choices": {
+            "separate": "Manter os modelos deste projeto separados",
+            "use-shared": "Usar os modelos compartilhados",
+            "share-project": "Compartilhar os modelos deste projeto"
+        },
+        "details": {
+            "separate": "Recomendado para compilações personalizadas ou com criptografia. Deixe os arquivos aqui e lembre-se desta escolha.",
+            "use-shared": "Use a coleção compartilhada existente sem adicionar ou substituir seus arquivos. Revise quais modelos locais este projeto deixará de usar.",
+            "share-project": "Mescle os arquivos selecionados do projeto na coleção compartilhada. As substituições afetam outros projetos conectados que usam a mesma versão e edição."
+        },
+        "reasons": {
+            "connected": "Usa modelos compartilhados",
+            "kept-separate": "Mantido separado",
+            "empty": "Não há arquivos de modelo locais para mesclar",
+            "identical": "Os arquivos locais correspondem às cópias compartilhadas",
+            "unverified-files": "Os arquivos locais precisam de revisão",
+            "custom-editor": "Editor personalizado: mantenha seus modelos separados",
+            "foreign-link": "Link ou arquivo existente: inspecione manualmente",
+            "unexpected-content": "Conteúdo não reconhecido: mantenha separado ou inspecione a pasta",
+            "metadata-present": "Há metadados do sistema junto aos arquivos de modelo",
+            "missing-project": "Projeto indisponível: tente novamente quando estiver acessível",
+            "missing-editor": "Ambiente do editor indisponível: tente novamente quando estiver acessível",
+            "unreadable": "Pasta indisponível: verifique as permissões e tente novamente",
+            "preference-mismatch": "Marcado como separado, mas ainda conectado: inspecione a pasta",
+            "active-operation": "Outra operação de modelos está em andamento",
+            "interrupted-operation": "Recupere a operação interrompida antes de migrar"
+        },
+        "files": {
+            "identical": "Conteúdos idênticos",
+            "local-only": "Somente neste projeto",
+            "shared-only": "Somente nos modelos compartilhados",
+            "different": "Conteúdos diferentes",
+            "checking": "Verificando conteúdo"
+        },
+        "recommended": "Recomendado",
+        "otherOptions": "Outras opções",
+        "backups": "Originais preservados",
+        "backupNotice": "Os modelos originais serão preservados para restaurar a migração. Ocupam espaço até você removê-los explicitamente.",
+        "restore": "Restaurar modelos anteriores",
+        "discard": "Remover originais preservados",
+        "restoreDetail": "Restaurar os modelos originais do projeto e mantê-los separados. Os arquivos compartilhados alterados por esta migração também serão restaurados. A restauração para se os arquivos tiverem sido alterados depois.",
+        "discardDetail": "Remover permanentemente estes modelos originais? Você não poderá mais restaurar esta migração. Os modelos atuais não serão alterados.",
+        "affected": "Outros projetos conectados",
+        "noAffected": "Nenhum",
+        "status": {
+            "review": "Requer revisão",
+            "unavailable": "Requer atenção",
+            "ready": "Pronto para conectar",
+            "separate": "Separado",
+            "shared": "Compartilhado"
+        },
+        "edition": {
+            "standard": "Padrão",
+            "dotnet": ".NET",
+            "custom": "Personalizado"
+        }
+    }
 }

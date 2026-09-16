@@ -31,6 +31,9 @@ const journalSchema = z.object({
         .string()
         .regex(/^[a-f0-9]{64}$/)
         .optional(),
+    retainBackup: z.boolean().optional(),
+    discardBackup: z.boolean().optional(),
+    backupBytes: z.number().nonnegative().optional(),
     sets: z.array(
         z.object({
             id: z.string().refine(isTemplateIdentity),
@@ -120,6 +123,7 @@ async function writeJournal(
  * @param sets - Reviewed source and destination manifests.
  * @param decisions - Explicit decisions for each differing relative path.
  * @param signal - Optional cancellation before installed files are changed.
+ * @param requiredDecisions - Local-only files which must be explicitly shared or omitted.
  */
 export async function stageTemplateSets(
     root: string,
@@ -127,6 +131,7 @@ export async function stageTemplateSets(
     sets: PreparedTemplateSet[],
     decisions: Record<string, 'shared' | 'incoming'>,
     signal?: AbortSignal,
+    requiredDecisions: ReadonlySet<string> = new Set(),
 ): Promise<TemplateJournal['sets']> {
     const result: TemplateJournal['sets'] = [];
     for (const set of sets) {
@@ -149,9 +154,20 @@ export async function stageTemplateSets(
         );
         for (const file of set.incoming) {
             const existing = combined.get(file.relative);
-            if (existing?.file.hash === file.hash) continue;
-            if (existing && existing.file.hash !== file.hash) {
-                const decision = decisions[`${set.id}/${file.relative}`];
+            const key = `${set.id}/${file.relative}`;
+            if (
+                existing?.file.hash === file.hash &&
+                (!requiredDecisions.has(key) ||
+                    existing.file.mode === file.mode)
+            )
+                continue;
+            if (existing) {
+                const decision = decisions[key];
+                if (decision !== 'shared' && decision !== 'incoming')
+                    throw new Error('exportTemplates:errors.decision');
+                if (decision === 'shared') continue;
+            } else if (requiredDecisions.has(key)) {
+                const decision = decisions[key];
                 if (decision !== 'shared' && decision !== 'incoming')
                     throw new Error('exportTemplates:errors.decision');
                 if (decision === 'shared') continue;
@@ -178,8 +194,8 @@ export async function stageTemplateSets(
             continue;
         }
         // Keep unchanged sets in the journal for the final pre-commit check.
-        if (set.existed && before === after) {
-            result.push({ id: set.id, existed: true, before, after });
+        if (before === after) {
+            result.push({ id: set.id, existed: set.existed, before, after });
             continue;
         }
         await checkTemplateCapacity(
@@ -263,7 +279,7 @@ export async function commitTemplateTransaction(
         await fs.promises.mkdir(path.join(work, 'old'), { recursive: true });
         await writeJournal(work, journal);
         for (const set of journal.sets) {
-            if (set.existed && set.before === set.after) continue;
+            if (set.before === set.after) continue;
             const target = templateChild(root, set.id);
             if (set.existed)
                 await fs.promises.rename(
@@ -323,6 +339,8 @@ export async function recoverTemplateTransaction(
     }
     if (Boolean(journal.projectPath) !== Boolean(local))
         throw new Error('exportTemplates:errors.recovery');
+    // Completed migrations keep originals until the user restores or removes them.
+    if (journal.phase === 'complete' && journal.retainBackup) return;
     const localBackup = local
         ? `${local}.launcher-${path.basename(work)}`
         : undefined;
@@ -340,7 +358,7 @@ export async function recoverTemplateTransaction(
             (await templateConnectionStatus(local, linkRoot)) === 'local' &&
             (await fs.promises.readdir(local)).length === 0;
         if (journal.phase === 'complete') {
-            if (!connected) {
+            if (!connected && !journal.discardBackup) {
                 if (!detachedEmpty)
                     throw new Error('exportTemplates:errors.changed');
                 // A custom editor detaches the link. Keep its empty folder, but
@@ -408,4 +426,105 @@ export async function recoverTemplateTransaction(
         }
     }
     await fs.promises.rm(work, { recursive: true });
+}
+
+/** Restores retained originals only while both the backups and installed result are unchanged.
+ * @param root - Canonical shared collection.
+ * @param work - Retained migration directory.
+ * @param linkRoot - Conventional shared link destination.
+ * @param beforeRestore - Persists separate mode after checks and before restoring files.
+ */
+export async function restoreTemplateMigration(
+    root: string,
+    work: string,
+    linkRoot: string,
+    beforeRestore: () => Promise<void>,
+): Promise<void> {
+    const journal = await readTemplateJournal(work);
+    if (
+        !journal.retainBackup ||
+        journal.phase !== 'complete' ||
+        !journal.localPath
+    )
+        throw new Error('exportTemplates:errors.recovery');
+    await validateLocalRecoveryPath(journal.localPath, root);
+    const backup = `${journal.localPath}.launcher-${path.basename(work)}`;
+    if (
+        !(await isSharedTemplateLink(journal.localPath, linkRoot)) ||
+        templateFingerprint(await readTemplateTree(backup, true)) !==
+            journal.sourceHash
+    )
+        throw new Error('exportTemplates:errors.changed');
+    // Check every destination before the first destructive operation.
+    for (const set of journal.sets) {
+        if (set.before === set.after) continue;
+        const target = templateChild(root, set.id);
+        if (
+            templateFingerprint(await readTemplateTree(target, true)) !==
+            set.after
+        )
+            throw new Error('exportTemplates:errors.changed');
+        if (
+            set.existed &&
+            templateFingerprint(
+                await readTemplateTree(
+                    templateChild(path.join(work, 'old'), set.id),
+                    true,
+                ),
+            ) !== set.before
+        )
+            throw new Error('exportTemplates:errors.changed');
+    }
+    await beforeRestore();
+    await writeJournal(work, {
+        ...journal,
+        retainBackup: false,
+        phase: 'committing',
+        sets: journal.sets.filter((set) => set.before !== set.after),
+    });
+    await recoverTemplateTransaction(root, work, journal.localPath, linkRoot);
+}
+
+/** Explicitly removes retained originals without changing the current shared templates.
+ * @param root - Canonical shared collection.
+ * @param work - Retained migration directory.
+ * @param linkRoot - Conventional shared link destination.
+ */
+export async function discardTemplateMigration(
+    root: string,
+    work: string,
+    linkRoot: string,
+): Promise<void> {
+    const journal = await readTemplateJournal(work);
+    if (
+        !journal.retainBackup ||
+        journal.phase !== 'complete' ||
+        !journal.localPath
+    )
+        throw new Error('exportTemplates:errors.recovery');
+    await validateLocalRecoveryPath(journal.localPath, root);
+    const backup = `${journal.localPath}.launcher-${path.basename(work)}`;
+    if (
+        templateFingerprint(await readTemplateTree(backup, true)) !==
+        journal.sourceHash
+    )
+        throw new Error('exportTemplates:errors.changed');
+    for (const set of journal.sets) {
+        if (set.before === set.after || !set.existed) continue;
+        if (
+            templateFingerprint(
+                await readTemplateTree(
+                    templateChild(path.join(work, 'old'), set.id),
+                    true,
+                ),
+            ) !== set.before
+        )
+            throw new Error('exportTemplates:errors.changed');
+    }
+    await writeJournal(work, {
+        ...journal,
+        retainBackup: false,
+        discardBackup: true,
+    });
+    await recoverTemplateTransaction(root, work, journal.localPath, linkRoot);
 }

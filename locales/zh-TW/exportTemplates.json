@@ -112,5 +112,88 @@
     "manage": "管理範本",
     "removeTemplates": "移除範本",
     "sizeUnavailable": "大小無法取得",
-    "updatesInProgress": "正在更新範本..."
+    "updatesInProgress": "正在更新範本...",
+    "migration": {
+        "title": "移轉匯出範本",
+        "header": "移轉專案 ({{number}})",
+        "later": "稍後",
+        "close": "關閉",
+        "start": "檢查專案",
+        "introduction": "在專案之間共用匯出範本，避免保留重複的檔案。",
+        "offerDetail": "變更任何內容前，請檢查每個專案。您可以讓自訂或加密建置的範本維持獨立。準備好時，隨時可從匯出範本選擇「稍後」返回。",
+        "pending": "仍有 {{number}} 個專案需要決定。",
+        "explanation": "選擇一個專案，決定它應使用哪些範本，然後檢查變更。其他已連接的專案會使用相同的共用檔案。",
+        "projects": "待檢查的專案",
+        "noProjects": "沒有已登錄的專案需要檢查。",
+        "selectProject": "選擇一個專案以查看其範本和選項。",
+        "inspecting": "正在將此專案與共用範本比較...",
+        "unverified": "現有檔案未經驗證。內容相符並不能證明範本為官方範本或支援加密。除非您打算共用它們，否則請讓自訂或加密建置的範本維持獨立。",
+        "comparison": "比較檔案",
+        "projectFiles": "專案",
+        "keepSeparate": "維持獨立",
+        "reviewChanges": "檢查變更",
+        "background": "關閉此視窗後，已提交的工作會繼續進行。重新開啟此視窗可檢查已準備好的變更或查看進度。",
+        "useSharedReview": "此專案將使用共用集合。不會新增或替換共用檔案。僅限本機的檔案將無法再供此專案使用，不同的本機檔案會在移轉成功後由共用副本替換。",
+        "shareReview": "您共用的檔案將可供使用此版本和類型的其他已連接專案使用。請檢查每項未驗證的新增和替換。移轉成功前會保留本機檔案。",
+        "localOnlyReview": "這些檔案僅存在於此專案中。選擇是否共用每個檔案。未新增的檔案在移轉後將無法再供此專案使用。",
+        "shareFile": "共用專案檔案",
+        "omitFile": "不新增檔案",
+        "metadataReview": "將保留原始範本以便還原此次遷移。在您明確刪除之前，它們會佔用磁碟空間。",
+        "choices": {
+            "separate": "讓此專案的範本維持獨立",
+            "use-shared": "使用共用範本",
+            "share-project": "共用此專案的範本"
+        },
+        "details": {
+            "separate": "建議用於自訂或加密建置。將檔案留在此處，並記住此選擇。",
+            "use-shared": "使用現有共用集合，不新增或替換其中的檔案。檢查此專案將停止使用哪些本機範本。",
+            "share-project": "將選定的專案檔案合併到共用集合中。替換會影響使用相同版本和類型的其他已連接專案。"
+        },
+        "reasons": {
+            "connected": "正在使用共用範本",
+            "kept-separate": "維持獨立",
+            "empty": "沒有要合併的本機範本檔案",
+            "identical": "本機檔案與共用副本相同",
+            "unverified-files": "本機檔案需要檢查",
+            "custom-editor": "自訂編輯器：請讓其範本維持獨立",
+            "foreign-link": "已有連結或檔案，請手動檢查",
+            "unexpected-content": "無法辨識的內容：請維持獨立或檢查資料夾",
+            "metadata-present": "範本檔案旁存在系統中繼資料",
+            "missing-project": "專案無法使用，請在可存取後重試",
+            "missing-editor": "編輯器環境無法使用，請在可存取後重試",
+            "unreadable": "資料夾無法使用，請檢查權限後重試",
+            "preference-mismatch": "標記為獨立但仍處於連接狀態，請檢查資料夾",
+            "active-operation": "另一個範本操作正在進行",
+            "interrupted-operation": "請先還原中斷的操作，再進行移轉"
+        },
+        "files": {
+            "identical": "內容相同",
+            "local-only": "僅此專案中存在",
+            "shared-only": "僅共用範本中存在",
+            "different": "內容不同",
+            "checking": "正在檢查內容"
+        },
+        "recommended": "建議",
+        "otherOptions": "其他選項",
+        "backups": "保留的原始檔案",
+        "backupNotice": "將保留原始範本以便還原此次遷移。在您明確刪除之前，它們會佔用磁碟空間。",
+        "restore": "還原先前的範本",
+        "discard": "刪除保留的原始檔案",
+        "restoreDetail": "還原此專案的原始範本並保持獨立。此次遷移變更的共用檔案也將還原。如果相關檔案在遷移後發生變化，還原將停止。",
+        "discardDetail": "永久刪除這些原始範本？您將無法還原此次遷移。目前的範本不會變更。",
+        "affected": "其他已連線專案",
+        "noAffected": "無",
+        "status": {
+            "review": "需要檢查",
+            "unavailable": "需要處理",
+            "ready": "可以連線",
+            "separate": "保持獨立",
+            "shared": "共用"
+        },
+        "edition": {
+            "standard": "標準",
+            "dotnet": ".NET",
+            "custom": "自訂"
+        }
+    }
 }

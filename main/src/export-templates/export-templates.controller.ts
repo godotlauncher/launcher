@@ -2,7 +2,10 @@ import {
     BridgeController,
     createIpcHandleTyped,
 } from '@mariodebono/di-electron';
-import type { ExportTemplatesBridge } from '@shared/contracts';
+import type {
+    ExportTemplatesBridge,
+    TemplateMigrationChoice,
+} from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ExportTemplatesService } from './export-templates.service.js';
 
@@ -21,10 +24,30 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     }
     /** Compares the selected project's local and shared files without changing them.
      * @param projectPath - Registered project identity.
+     * @param contents - Whether to compare contents after listing metadata.
      */
     @Handler('inspectProjectTemplates')
-    inspectProjectTemplates(projectPath: string) {
-        return this.service.inspectProjectTemplates(projectPath);
+    inspectProjectTemplates(projectPath: string, contents = true) {
+        return this.service.inspectProjectTemplates(projectPath, contents);
+    }
+    /** Stops an obsolete advisory comparison. */
+    @Handler('cancelTemplateInspection')
+    cancelTemplateInspection() {
+        return this.service.cancelTemplateInspection();
+    }
+    /** Restores retained project and shared originals.
+     * @param backupId - Retained migration identity.
+     */
+    @Handler('restoreMigration')
+    restoreMigration(backupId: string) {
+        return this.service.restoreMigration(backupId);
+    }
+    /** Permanently removes retained originals after confirmation.
+     * @param backupId - Retained migration identity.
+     */
+    @Handler('discardMigrationBackup')
+    discardMigrationBackup(backupId: string) {
+        return this.service.discardMigrationBackup(backupId);
     }
     /** Remembers that a local project must not be connected automatically.
      * @param projectPath - Registered project identity.
@@ -96,10 +119,11 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     }
     /** Delegates prepareMigration to the template service.
      * @param projectPath - Requested operation input.
+     * @param choice - Whether reviewed project files should join shared storage.
      */
     @Handler('prepareMigration')
-    prepareMigration(projectPath: string) {
-        return this.service.prepareMigration(projectPath);
+    prepareMigration(projectPath: string, choice?: TemplateMigrationChoice) {
+        return this.service.prepareMigration(projectPath, choice);
     }
     /** Delegates apply to the template service.
      * @param jobId - Requested operation input.

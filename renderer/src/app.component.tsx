@@ -45,6 +45,7 @@ import { useRelease } from './hooks/release.hook';
 import { useTheme } from './hooks/theme.hook';
 import { useSplashscreenHandoff } from './splashscreen/splashscreen-handoff.hook';
 import { useTemplateActivity } from './views/export-templates/hooks/template-jobs.hook';
+import { TemplateMigrationProvider } from './views/export-templates/hooks/template-migration.hook';
 import { ExportTemplatesView } from './views/export-templates.view';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
@@ -79,7 +80,11 @@ function App() {
         return <WelcomeRoutes />;
     }
 
-    return <MainAppRoutes />;
+    return (
+        <TemplateMigrationProvider>
+            <MainAppRoutes />
+        </TemplateMigrationProvider>
+    );
 }
 
 function LoadingView() {

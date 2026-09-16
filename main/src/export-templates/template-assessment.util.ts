@@ -5,9 +5,9 @@ import type {
     TemplateMigrationFile,
     TemplateProjectAssessment,
 } from '@shared/contracts';
+import { compareTemplateTrees } from './template-comparison.util.js';
 import {
     isTemplateIdentity,
-    readTemplateTree,
     templateChild,
     templateConnectionStatus,
     templateLstat,
@@ -40,16 +40,25 @@ export function isTemplateHousekeeping(name: string): boolean {
 /** Assesses a registered environment without creating folders, links or downloading files.
  * @param project - Canonical stored project.
  * @param root - Shared template root.
- * @param compare - Whether to hash the selected project's files for an advisory comparison.
+ * @param compare - Metadata listing or advisory content comparison for the selected project.
+ * @param signal - Cancels an obsolete comparison.
  */
 export async function assessProjectTemplates(
     project: ProjectDetails,
     root: string,
-    compare = false,
+    compare: boolean | 'metadata' = false,
+    signal?: AbortSignal,
 ): Promise<TemplateProjectAssessment> {
     const result: TemplateProjectAssessment = {
         projectPath: project.path,
         name: project.name,
+        version: project.release.version,
+        edition:
+            project.release.source === 'custom'
+                ? 'custom'
+                : project.release.mono
+                  ? 'dotnet'
+                  : 'standard',
         mode: project.exportTemplateMode,
         state: 'unavailable',
         reason: 'unreadable',
@@ -84,7 +93,7 @@ export async function assessProjectTemplates(
             return result;
         }
         if (project.release.source === 'custom') {
-            result.state = 'blocked';
+            result.state = 'separate';
             result.reason = 'custom-editor';
             return result;
         }
@@ -160,42 +169,20 @@ export async function assessProjectTemplates(
             : root;
         const files: TemplateMigrationFile[] = [];
         for (const id of result.setIds) {
-            const incoming = await readTemplateTree(
+            const comparison = await compareTemplateTrees(
                 templateChild(local, id),
-                true,
-            );
-            const shared = await readTemplateTree(
                 templateChild(sharedRoot, id),
-                true,
+                compare === true,
+                signal,
             );
-            const localByName = new Map(
-                incoming.map((file) => [file.relative, file]),
+            files.push(
+                ...comparison.map((file) => ({
+                    ...file,
+                    path: `${id}/${file.path}`,
+                })),
             );
-            const sharedByName = new Map(
-                shared.map((file) => [file.relative, file]),
-            );
-            for (const name of [
-                ...new Set([...localByName.keys(), ...sharedByName.keys()]),
-            ].sort()) {
-                const left = localByName.get(name);
-                const right = sharedByName.get(name);
-                files.push({
-                    path: `${id}/${name}`,
-                    state: !left
-                        ? 'shared-only'
-                        : !right
-                          ? 'local-only'
-                          : left.size === right.size &&
-                              left.hash === right.hash &&
-                              left.mode === right.mode
-                            ? 'identical'
-                            : 'different',
-                    localBytes: left?.size,
-                    sharedBytes: right?.size,
-                });
-            }
         }
-        result.compared = true;
+        result.compared = compare === true;
         result.files = files;
         if (
             !result.metadata.length &&
@@ -208,6 +195,7 @@ export async function assessProjectTemplates(
             result.reason = 'identical';
         }
     } catch {
+        signal?.throwIfAborted();
         result.state = 'unavailable';
         result.reason = 'unreadable';
         result.compared = false;

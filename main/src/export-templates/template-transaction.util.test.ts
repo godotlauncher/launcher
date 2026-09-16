@@ -11,8 +11,10 @@ import {
 } from './template-files.util.js';
 import {
     commitTemplateTransaction,
+    discardTemplateMigration,
     type PreparedTemplateSet,
     recoverTemplateTransaction,
+    restoreTemplateMigration,
     stageTemplateSets,
 } from './template-transaction.util.js';
 
@@ -143,6 +145,114 @@ describe('template merge staging', () => {
         expect(fs.promises.copyFile).not.toHaveBeenCalled();
     });
 
+    it('requires an explicit migration choice before adding a local-only file', async () => {
+        set.before = [];
+        set.existed = false;
+        vi.mocked(templateLstat).mockResolvedValue(undefined);
+        vi.mocked(readTemplateTree).mockImplementation(async (directory) =>
+            directory === set.source ? set.incoming : [],
+        );
+        const key = `${set.id}/${file.relative}`;
+        await expect(
+            stageTemplateSets(root, work, [set], {}, undefined, new Set([key])),
+        ).rejects.toThrow('decision');
+
+        const omitted = await stageTemplateSets(
+            root,
+            work,
+            [set],
+            { [key]: 'shared' },
+            undefined,
+            new Set([key]),
+        );
+        expect(omitted).toEqual([
+            {
+                id: set.id,
+                existed: false,
+                before: templateFingerprint([]),
+                after: templateFingerprint([]),
+            },
+        ]);
+        expect(fs.promises.copyFile).not.toHaveBeenCalled();
+    });
+
+    it('requires an explicit migration choice for a permission-only difference', async () => {
+        set.incoming = [{ ...file, mode: 0o755 }];
+        const key = `${set.id}/${file.relative}`;
+        vi.mocked(readTemplateTree).mockImplementation(async (directory) =>
+            directory === set.source ? set.incoming : set.before,
+        );
+
+        await expect(
+            stageTemplateSets(root, work, [set], {}, undefined, new Set([key])),
+        ).rejects.toThrow('decision');
+    });
+
+    it('validates an absent unchanged set without looking for staged files', async () => {
+        const empty = templateFingerprint([]);
+        let persisted = '';
+        vi.mocked(templateLstat).mockResolvedValue(undefined);
+        vi.mocked(readTemplateTree).mockResolvedValue([]);
+        vi.mocked(fs.promises.open).mockResolvedValue({
+            writeFile: vi.fn(async (contents: string) => {
+                persisted = contents;
+            }),
+            sync: vi.fn(),
+            close: vi.fn(),
+        } as unknown as fs.promises.FileHandle);
+        vi.mocked(fs.promises.lstat).mockResolvedValue({
+            isFile: () => true,
+            isSymbolicLink: () => false,
+            size: 100,
+        } as fs.Stats);
+        vi.mocked(fs.promises.readFile).mockImplementation(
+            async () => persisted,
+        );
+
+        await commitTemplateTransaction(root, work, {
+            version: 2,
+            phase: 'committing',
+            sets: [
+                {
+                    id: set.id,
+                    existed: false,
+                    before: empty,
+                    after: empty,
+                },
+            ],
+        });
+
+        expect(fs.promises.rename).not.toHaveBeenCalledWith(
+            path.join(work, 'new', set.id),
+            path.join(root, set.id),
+        );
+    });
+
+    it('rejects a newly appeared set after an absent use-shared review', async () => {
+        const empty = templateFingerprint([]);
+        vi.mocked(templateLstat).mockImplementation(async (filename) =>
+            filename === path.join(root, set.id)
+                ? ({ isDirectory: () => true } as fs.Stats)
+                : undefined,
+        );
+
+        await expect(
+            commitTemplateTransaction(root, work, {
+                version: 2,
+                phase: 'committing',
+                sets: [
+                    {
+                        id: set.id,
+                        existed: false,
+                        before: empty,
+                        after: empty,
+                    },
+                ],
+            }),
+        ).rejects.toThrow('changed');
+        expect(fs.promises.open).not.toHaveBeenCalled();
+    });
+
     it('commits an unchanged set with permission-aware recovery metadata', async () => {
         const entries = await stageTemplateSets(root, work, [set], {});
         let persisted = '';
@@ -241,6 +351,123 @@ describe('template merge staging', () => {
             path.join(work, 'new', set.id, file.relative),
             0o644,
         );
+    });
+});
+
+describe('retained migration originals', () => {
+    const local = path.resolve('project', 'editor_data', 'export_templates');
+    const backup = `${local}.launcher-${path.basename(work)}`;
+    const changed = { ...file, hash: 'changed' };
+    let saved: string;
+    const rememberSeparate = vi.fn();
+    beforeEach(() => {
+        rememberSeparate.mockReset();
+        saved = JSON.stringify({
+            version: 2,
+            phase: 'complete',
+            retainBackup: true,
+            projectPath: path.resolve('project'),
+            localPath: local,
+            sourceHash: templateFingerprint([file]),
+            backupBytes: 20,
+            sets: [
+                {
+                    id: '4.4.stable',
+                    existed: true,
+                    before: templateFingerprint([file]),
+                    after: templateFingerprint([changed]),
+                },
+            ],
+        });
+        vi.mocked(fs.promises.lstat).mockResolvedValue({
+            isFile: () => true,
+            isSymbolicLink: () => false,
+            size: 100,
+        } as fs.Stats);
+        vi.mocked(fs.promises.readFile).mockImplementation(async () => saved);
+        vi.mocked(fs.promises.open).mockResolvedValue({
+            writeFile: vi.fn(async (text: string) => {
+                saved = text;
+            }),
+            sync: vi.fn(),
+            close: vi.fn(),
+        } as unknown as fs.promises.FileHandle);
+        vi.mocked(isSharedTemplateLink).mockResolvedValue(true);
+        vi.mocked(readTemplateTree).mockImplementation(async (name) =>
+            name === path.join(root, '4.4.stable') ? [changed] : [file],
+        );
+    });
+    it('keeps successful migration originals without rereading contents during recovery discovery', async () => {
+        await recoverTemplateTransaction(root, work, local);
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+        expect(readTemplateTree).not.toHaveBeenCalled();
+    });
+    it('restores project and shared originals after persisting a recoverable rollback', async () => {
+        await restoreTemplateMigration(root, work, root, rememberSeparate);
+        expect(rememberSeparate).toHaveBeenCalledOnce();
+        expect(JSON.parse(saved)).toMatchObject({
+            phase: 'committing',
+            retainBackup: false,
+        });
+        expect(fs.promises.rename).toHaveBeenCalledWith(backup, local);
+        expect(fs.promises.rename).toHaveBeenCalledWith(
+            path.join(work, 'old', '4.4.stable'),
+            path.join(root, '4.4.stable'),
+        );
+        expect(fs.promises.rm).toHaveBeenCalledWith(work, { recursive: true });
+    });
+    it('leaves subsequently added files in sets untouched by the migration', async () => {
+        const journal = JSON.parse(saved);
+        journal.sets.push({
+            id: '4.5.stable',
+            existed: false,
+            before: templateFingerprint([]),
+            after: templateFingerprint([]),
+        });
+        saved = JSON.stringify(journal);
+        await restoreTemplateMigration(root, work, root, rememberSeparate);
+        expect(fs.promises.rm).not.toHaveBeenCalledWith(
+            path.join(root, '4.5.stable'),
+            expect.anything(),
+        );
+        expect(
+            JSON.parse(saved).sets.map((entry: { id: string }) => entry.id),
+        ).toEqual(['4.4.stable']);
+    });
+    it('refuses changed shared contents before detaching the project or updating its preference', async () => {
+        vi.mocked(readTemplateTree).mockImplementation(async (name) =>
+            name === path.join(root, '4.4.stable')
+                ? [{ ...file, hash: 'newer' }]
+                : [file],
+        );
+        await expect(
+            restoreTemplateMigration(root, work, root, rememberSeparate),
+        ).rejects.toThrow('errors.changed');
+        expect(rememberSeparate).not.toHaveBeenCalled();
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        expect(fs.promises.unlink).not.toHaveBeenCalled();
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+    });
+    it('refuses modified originals rather than destroying newer files', async () => {
+        vi.mocked(readTemplateTree).mockResolvedValue([changed]);
+        await expect(
+            discardTemplateMigration(root, work, root),
+        ).rejects.toThrow('errors.changed');
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+    });
+    it('explicit cleanup removes only backups, keeping current shared files', async () => {
+        // Cleanup remains available after the project has been detached or restored.
+        vi.mocked(isSharedTemplateLink).mockResolvedValue(false);
+        await discardTemplateMigration(root, work, root);
+        expect(fs.promises.rm).toHaveBeenCalledWith(backup, {
+            recursive: true,
+        });
+        expect(fs.promises.rm).toHaveBeenCalledWith(work, { recursive: true });
+        expect(fs.promises.rm).not.toHaveBeenCalledWith(
+            path.join(root, '4.4.stable'),
+            expect.anything(),
+        );
+        expect(fs.promises.unlink).not.toHaveBeenCalled();
     });
 });
 

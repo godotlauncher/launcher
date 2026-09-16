@@ -32,7 +32,12 @@ export type TemplateMigrationReason =
 /** Comparison identifies equality, never whether a binary supports encryption. */
 export type TemplateMigrationFile = {
     path: string;
-    state: 'identical' | 'local-only' | 'shared-only' | 'different';
+    state:
+        | 'identical'
+        | 'local-only'
+        | 'shared-only'
+        | 'different'
+        | 'checking';
     localBytes?: number;
     sharedBytes?: number;
 };
@@ -41,6 +46,8 @@ export type TemplateMigrationFile = {
 export type TemplateProjectAssessment = {
     projectPath: string;
     name: string;
+    version?: string;
+    edition?: 'standard' | 'dotnet' | 'custom';
     mode?: 'shared' | 'separate';
     connection?: TemplateConnection['status'];
     state: TemplateMigrationState;
@@ -62,4 +69,14 @@ export type TemplateMigrationAssessment = {
     projects: TemplateProjectAssessment[];
     pendingCount: number;
     recoveryIds: string[];
+    backups?: TemplateMigrationBackup[];
+};
+
+/** Retained originals from a completed migration. */
+export type TemplateMigrationBackup = {
+    id: string;
+    projectPath: string;
+    projectName: string;
+    sizeBytes: number;
+    sets: string[];
 };

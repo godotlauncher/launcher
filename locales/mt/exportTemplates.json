@@ -112,5 +112,88 @@
     "manage": "Immaniġġja l-mudelli",
     "removeTemplates": "Neħħi l-mudelli",
     "sizeUnavailable": "Daqs mhux disponibbli",
-    "updatesInProgress": "Aġġornamenti tal-mudelli għaddejjin..."
+    "updatesInProgress": "Aġġornamenti tal-mudelli għaddejjin...",
+    "migration": {
+        "title": "Emigra l-mudelli tal-esportazzjoni",
+        "header": "Emigra proġetti ({{number}})",
+        "later": "Aktar tard",
+        "close": "Agħlaq",
+        "start": "Irrevedi l-proġetti",
+        "introduction": "Aqsam il-mudelli tal-esportazzjoni bejn il-proġetti biex tevita li żżomm fajls duplikati.",
+        "offerDetail": "Irrevedi kull proġett qabel tibdel xi ħaġa. Tista' żżomm separati mudelli għal builds personalizzati jew b'encryption. Agħżel Aktar tard biex terġa' lura minn Mudelli tal-esportazzjoni meta tkun lest.",
+        "pending": "{{number}} proġetti għad għandhom bżonn deċiżjoni.",
+        "explanation": "Agħżel proġett, iddeċiedi liema mudelli għandu juża, imbagħad irrevedi l-bidliet. Proġetti oħra konnessi jużaw l-istess fajls kondiviżi.",
+        "projects": "Proġetti biex jiġu riveduti",
+        "noProjects": "M'hemm l-ebda proġett irreġistrat x'jiġi rivedut.",
+        "selectProject": "Agħżel proġett biex tara l-mudelli u l-għażliet tiegħu.",
+        "inspecting": "Qed jitqabbel dan il-proġett mal-mudelli kondiviżi...",
+        "unverified": "Il-fajls eżistenti mhumiex ivverifikati. Kontenut li jaqbel ma jipprovax li mudell huwa uffiċjali jew jappoġġja l-encryption. Żomm separati mudelli għal builds personalizzati jew b'encryption sakemm ma tridx taqsamhom.",
+        "comparison": "Qabbel il-fajls",
+        "projectFiles": "Proġett",
+        "keepSeparate": "Żomm separati",
+        "reviewChanges": "Irrevedi l-bidliet",
+        "background": "Ix-xogħol sottomess ikompli meta tagħlaq din it-tieqa. Erġa' iftaħha biex tirrevedi l-bidliet imħejjija jew tiċċekkja l-progress.",
+        "useSharedReview": "Dan il-proġett se juża l-kollezzjoni kondiviża. L-ebda fajl kondiviż mhu se jiżdied jew jinbidel. Fajls lokali biss ma jibqgħux disponibbli għal dan il-proġett, u fajls lokali differenti jinbidlu bil-kopji kondiviżi wara li l-emigrazzjoni tirnexxi.",
+        "shareReview": "Il-fajls li taqsam isiru disponibbli għal proġetti oħra konnessi li jużaw din il-verżjoni u l-edizzjoni. Irrevedi kull żieda u sostituzzjoni mhux ivverifikata. Il-fajls lokali jinżammu sakemm l-emigrazzjoni tirnexxi.",
+        "localOnlyReview": "Dawn il-fajls jeżistu biss f'dan il-proġett. Agħżel jekk taqsamx kull wieħed. Fajls li ma żżidx ma jibqgħux disponibbli għal dan il-proġett wara l-emigrazzjoni.",
+        "shareFile": "Aqsam fajl tal-proġett",
+        "omitFile": "Iżżidx fajl",
+        "metadataReview": "Il-mudelli oriġinali jinżammu biex tkun tista' tirrestawra l-migrazzjoni. Jużaw spazju sakemm tneħħihom espliċitament.",
+        "choices": {
+            "separate": "Żomm il-mudelli ta' dan il-proġett separati",
+            "use-shared": "Uża l-mudelli kondiviżi",
+            "share-project": "Aqsam il-mudelli ta' dan il-proġett"
+        },
+        "details": {
+            "separate": "Rakkomandat għal builds personalizzati jew b'encryption. Ħalli l-fajls hawn u ftakar din l-għażla.",
+            "use-shared": "Uża l-kollezzjoni kondiviża eżistenti mingħajr ma żżid jew tibdel il-fajls tagħha. Irrevedi liema mudelli lokali dan il-proġett se jieqaf juża.",
+            "share-project": "Għaqqad fajls magħżula tal-proġett fil-kollezzjoni kondiviża. Is-sostituzzjonijiet jaffettwaw proġetti oħra konnessi li jużaw l-istess verżjoni u edizzjoni."
+        },
+        "reasons": {
+            "connected": "Juża mudelli kondiviżi",
+            "kept-separate": "Miżmum separat",
+            "empty": "M'hemm l-ebda fajl tal-mudell lokali x'jingħaqad",
+            "identical": "Il-fajls lokali jaqblu mal-kopji kondiviżi",
+            "unverified-files": "Il-fajls lokali jeħtieġu reviżjoni",
+            "custom-editor": "Editur personalizzat: żomm il-mudelli tiegħu separati",
+            "foreign-link": "Link jew fajl eżistenti: spezzjona manwalment",
+            "unexpected-content": "Kontenut mhux rikonoxxut: żomm separat jew spezzjona l-folder",
+            "metadata-present": "Il-metadata tas-sistema tinsab maġenb il-fajls tal-mudell",
+            "missing-project": "Proġett mhux disponibbli: erġa' pprova meta jkun aċċessibbli",
+            "missing-editor": "Ambjent tal-editur mhux disponibbli: erġa' pprova meta jkun aċċessibbli",
+            "unreadable": "Folder mhux disponibbli: iċċekkja l-permessi u erġa' pprova",
+            "preference-mismatch": "Immarkat separat iżda għadu konness: spezzjona l-folder",
+            "active-operation": "Operazzjoni oħra tal-mudelli għaddejja",
+            "interrupted-operation": "Irkupra l-operazzjoni interrotta qabel temigra"
+        },
+        "files": {
+            "identical": "Kontenut identiku",
+            "local-only": "Biss f'dan il-proġett",
+            "shared-only": "Biss fil-mudelli kondiviżi",
+            "different": "Kontenut differenti",
+            "checking": "Qed jiġi ċċekkjat il-kontenut"
+        },
+        "recommended": "Rakkomandat",
+        "otherOptions": "Għażliet oħra",
+        "backups": "Oriġinali miżmuma",
+        "backupNotice": "Il-mudelli oriġinali jinżammu biex tkun tista' tirrestawra l-migrazzjoni. Jużaw spazju sakemm tneħħihom espliċitament.",
+        "restore": "Irrestawra l-mudelli preċedenti",
+        "discard": "Neħħi l-oriġinali miżmuma",
+        "restoreDetail": "Irrestawra l-mudelli oriġinali tal-proġett u żommhom separati. Il-fajls kondiviżi mibdula b'din il-migrazzjoni jiġu rrestawrati wkoll. Ir-restawr jieqaf jekk il-fajls ikunu nbidlu wara l-migrazzjoni.",
+        "discardDetail": "Tneħħi dawn il-mudelli oriġinali b'mod permanenti? Ma tkunx tista' tirrestawra din il-migrazzjoni. Il-mudelli attwali ma jinbidlux.",
+        "affected": "Proġetti oħra konnessi",
+        "noAffected": "Xejn",
+        "status": {
+            "review": "Jeħtieġ reviżjoni",
+            "unavailable": "Jeħtieġ attenzjoni",
+            "ready": "Lest għall-konnessjoni",
+            "separate": "Miżmum separat",
+            "shared": "Kondiviż"
+        },
+        "edition": {
+            "standard": "Standard",
+            "dotnet": ".NET",
+            "custom": "Personalizzat"
+        }
+    }
 }

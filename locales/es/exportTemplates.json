@@ -112,5 +112,88 @@
     "manage": "Gestionar plantillas",
     "removeTemplates": "Eliminar plantillas",
     "sizeUnavailable": "Tamaño no disponible",
-    "updatesInProgress": "Actualizando plantillas..."
+    "updatesInProgress": "Actualizando plantillas...",
+    "migration": {
+        "title": "Migrar plantillas de exportación",
+        "header": "Migrar proyectos ({{number}})",
+        "later": "Más tarde",
+        "close": "Cerrar",
+        "start": "Revisar proyectos",
+        "introduction": "Comparta plantillas de exportación entre proyectos para evitar mantener archivos duplicados.",
+        "offerDetail": "Revise cada proyecto antes de cambiar nada. Puede mantener separadas las plantillas de compilaciones personalizadas o con cifrado. Elija Más tarde para volver desde Plantillas de exportación cuando esté listo.",
+        "pending": "{{number}} proyectos aún necesitan una decisión.",
+        "explanation": "Elija un proyecto, decida qué plantillas debe usar y revise después los cambios. Los demás proyectos conectados usan los mismos archivos compartidos.",
+        "projects": "Proyectos para revisar",
+        "noProjects": "No hay proyectos registrados para revisar.",
+        "selectProject": "Seleccione un proyecto para ver sus plantillas y opciones.",
+        "inspecting": "Comparando este proyecto con las plantillas compartidas...",
+        "unverified": "Los archivos existentes no están verificados. Que el contenido coincida no demuestra que una plantilla sea oficial ni que admita cifrado. Mantenga separadas las plantillas de compilaciones personalizadas o con cifrado a menos que quiera compartirlas.",
+        "comparison": "Comparar archivos",
+        "projectFiles": "Proyecto",
+        "keepSeparate": "Mantener separados",
+        "reviewChanges": "Revisar cambios",
+        "background": "El trabajo enviado continúa al cerrar esta ventana. Ábrala de nuevo para revisar los cambios preparados o comprobar el progreso.",
+        "useSharedReview": "Este proyecto usará la colección compartida. No se añadirán ni reemplazarán archivos compartidos. Los archivos solo locales dejarán de estar disponibles para este proyecto, y los archivos locales distintos se reemplazarán por las copias compartidas tras una migración correcta.",
+        "shareReview": "Los archivos que comparta estarán disponibles para otros proyectos conectados que usen esta versión y edición. Revise cada adición y reemplazo sin verificar. Los archivos locales se conservan hasta que la migración tenga éxito.",
+        "localOnlyReview": "Estos archivos solo existen en este proyecto. Decida si quiere compartir cada uno. Los archivos que no añada dejarán de estar disponibles para este proyecto después de la migración.",
+        "shareFile": "Compartir archivo del proyecto",
+        "omitFile": "No añadir archivo",
+        "metadataReview": "Las plantillas originales se conservarán para restaurar la migración. Ocuparán espacio hasta que las elimines explícitamente.",
+        "choices": {
+            "separate": "Mantener separadas las plantillas de este proyecto",
+            "use-shared": "Usar las plantillas compartidas",
+            "share-project": "Compartir las plantillas de este proyecto"
+        },
+        "details": {
+            "separate": "Recomendado para compilaciones personalizadas o con cifrado. Deje los archivos aquí y recuerde esta elección.",
+            "use-shared": "Use la colección compartida existente sin añadir ni reemplazar sus archivos. Revise qué plantillas locales dejará de usar este proyecto.",
+            "share-project": "Combine archivos seleccionados del proyecto en la colección compartida. Los reemplazos afectan a otros proyectos conectados que usan la misma versión y edición."
+        },
+        "reasons": {
+            "connected": "Usa plantillas compartidas",
+            "kept-separate": "Se mantiene separado",
+            "empty": "No hay archivos de plantilla locales que combinar",
+            "identical": "Los archivos locales coinciden con las copias compartidas",
+            "unverified-files": "Los archivos locales necesitan revisión",
+            "custom-editor": "Editor personalizado: mantenga separadas sus plantillas",
+            "foreign-link": "Enlace o archivo existente: inspecciónelo manualmente",
+            "unexpected-content": "Contenido no reconocido: manténgalo separado o inspeccione la carpeta",
+            "metadata-present": "Hay metadatos del sistema junto a los archivos de plantilla",
+            "missing-project": "Proyecto no disponible: inténtelo de nuevo cuando sea accesible",
+            "missing-editor": "Entorno del editor no disponible: inténtelo de nuevo cuando sea accesible",
+            "unreadable": "Carpeta no disponible: compruebe los permisos e inténtelo de nuevo",
+            "preference-mismatch": "Marcado como separado, pero sigue conectado: inspeccione la carpeta",
+            "active-operation": "Hay otra operación de plantillas en curso",
+            "interrupted-operation": "Recupere la operación interrumpida antes de migrar"
+        },
+        "files": {
+            "identical": "Contenido idéntico",
+            "local-only": "Solo en este proyecto",
+            "shared-only": "Solo en plantillas compartidas",
+            "different": "Contenido diferente",
+            "checking": "Comprobando contenido"
+        },
+        "recommended": "Recomendado",
+        "otherOptions": "Otras opciones",
+        "backups": "Originales conservados",
+        "backupNotice": "Las plantillas originales se conservarán para restaurar la migración. Ocuparán espacio hasta que las elimines explícitamente.",
+        "restore": "Restaurar plantillas anteriores",
+        "discard": "Eliminar originales conservados",
+        "restoreDetail": "Restaurar las plantillas originales del proyecto y mantenerlas separadas. También se restaurarán los archivos compartidos modificados por esta migración. La restauración se detendrá si los archivos han cambiado después.",
+        "discardDetail": "¿Eliminar estas plantillas originales permanentemente? Ya no podrás restaurar esta migración. Las plantillas actuales no cambiarán.",
+        "affected": "Otros proyectos conectados",
+        "noAffected": "Ninguno",
+        "status": {
+            "review": "Requiere revisión",
+            "unavailable": "Requiere atención",
+            "ready": "Listo para conectar",
+            "separate": "Separado",
+            "shared": "Compartido"
+        },
+        "edition": {
+            "standard": "Estándar",
+            "dotnet": ".NET",
+            "custom": "Personalizado"
+        }
+    }
 }

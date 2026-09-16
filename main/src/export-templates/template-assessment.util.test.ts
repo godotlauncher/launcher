@@ -3,6 +3,12 @@ import * as path from 'node:path';
 import type { ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { assessProjectTemplates } from './template-assessment.util.js';
+import { compareTemplateTrees } from './template-comparison.util.js';
+
+vi.mock('./template-comparison.util.js', () => ({
+    compareTemplateTrees: vi.fn(),
+}));
+
 import {
     readTemplateTree,
     templateConnectionStatus,
@@ -49,6 +55,7 @@ beforeEach(() => {
     vi.mocked(fs.promises.readdir).mockResolvedValue([] as never);
     vi.mocked(fs.promises.realpath).mockResolvedValue(root);
     vi.mocked(readTemplateTree).mockResolvedValue([]);
+    vi.mocked(compareTemplateTrees).mockResolvedValue([]);
 });
 
 describe('project template assessment', () => {
@@ -104,7 +111,7 @@ describe('project template assessment', () => {
                 root,
             ),
         ).toMatchObject({
-            state: 'blocked',
+            state: 'separate',
             reason: 'custom-editor',
             pending: false,
         });
@@ -160,17 +167,22 @@ describe('project template assessment', () => {
         vi.mocked(fs.promises.readdir).mockResolvedValue([
             '4.4.stable',
         ] as never);
-        vi.mocked(readTemplateTree)
-            .mockResolvedValueOnce([
-                { relative: 'equal', size: 5, hash: 'same', mode: 0o644 },
-                { relative: 'different', size: 5, hash: 'custom', mode: 0o644 },
-                { relative: 'local', size: 7, hash: 'custom', mode: 0o644 },
-            ])
-            .mockResolvedValueOnce([
-                { relative: 'equal', size: 5, hash: 'same', mode: 0o644 },
-                { relative: 'different', size: 5, hash: 'other', mode: 0o644 },
-                { relative: 'shared', size: 8, hash: 'other', mode: 0o644 },
-            ]);
+        vi.mocked(compareTemplateTrees).mockResolvedValue([
+            {
+                path: 'different',
+                state: 'different',
+                localBytes: 5,
+                sharedBytes: 5,
+            },
+            {
+                path: 'equal',
+                state: 'identical',
+                localBytes: 5,
+                sharedBytes: 5,
+            },
+            { path: 'local', state: 'local-only', localBytes: 7 },
+            { path: 'shared', state: 'shared-only', sharedBytes: 8 },
+        ]);
         const assessment = await assessProjectTemplates(project, root, true);
         expect(assessment).toMatchObject({
             state: 'needs-review',
@@ -190,8 +202,13 @@ describe('project template assessment', () => {
         vi.mocked(fs.promises.readdir).mockResolvedValue([
             '4.4.stable',
         ] as never);
-        vi.mocked(readTemplateTree).mockResolvedValue([
-            { relative: 'custom', size: 5, hash: 'same', mode: 0o644 },
+        vi.mocked(compareTemplateTrees).mockResolvedValue([
+            {
+                path: 'custom',
+                state: 'identical',
+                localBytes: 5,
+                sharedBytes: 5,
+            },
         ]);
         expect(await assessProjectTemplates(project, root, true)).toMatchObject(
             {
@@ -206,7 +223,7 @@ describe('project template assessment', () => {
         vi.mocked(fs.promises.readdir).mockResolvedValue([
             '4.4.stable',
         ] as never);
-        vi.mocked(readTemplateTree).mockRejectedValue(
+        vi.mocked(compareTemplateTrees).mockRejectedValue(
             new Error('changed during read'),
         );
         expect(await assessProjectTemplates(project, root, true)).toMatchObject(

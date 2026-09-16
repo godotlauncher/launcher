@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { TemplateAction } from '../hooks/export-templates.hook';
 import { isTemplateJobFinished } from '../hooks/export-templates.hook';
+import { useTemplateMigration } from '../hooks/template-migration.hook';
 import { formatTemplateBytes } from '../template-format.util';
 import { TemplatePlatformBadges } from './template-platform-badges.component';
 import { TemplateReviewPanel } from './template-review.component';
@@ -35,6 +36,7 @@ export function TemplateSetRow({
     onRemove,
     run,
 }: Props) {
+    const migration = useTemplateMigration();
     const { t, i18n } = useTranslation('exportTemplates');
     const active = !!job && !isTemplateJobFinished(job);
     const showJob = job && !['complete', 'cancelled'].includes(job.stage);
@@ -191,7 +193,16 @@ export function TemplateSetRow({
                             {job.stage === 'review' &&
                                 job.review &&
                                 (!job.setIds?.length ||
-                                    job.setIds[0] === set.id) && (
+                                    job.setIds[0] === set.id) &&
+                                (job.projectPath ? (
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-primary"
+                                        onClick={migration.open}
+                                    >
+                                        {t('review')}
+                                    </button>
+                                ) : (
                                     <TemplateReviewPanel
                                         review={job.review}
                                         pending={pending}
@@ -203,7 +214,7 @@ export function TemplateSetRow({
                                             })
                                         }
                                     />
-                                )}
+                                ))}
                         </div>
                     )}
                 {!!recoveryIds.length && (

@@ -8,6 +8,9 @@ import type {
     ProjectDetails,
     TemplateJob,
     TemplateMigrationAssessment,
+    TemplateMigrationBackup,
+    TemplateMigrationChoice,
+    TemplateMigrationFile,
     TemplatePackage,
     TemplateProjectAssessment,
     TemplateReview,
@@ -22,7 +25,10 @@ import { resolveArchiveIntegrity } from '../utils/archive-integrity.util.js';
 import { downloadReleaseAsset } from '../utils/releases.utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TemplateArchiveAdapter } from './template-archive.adapter.js';
-import { assessProjectTemplates } from './template-assessment.util.js';
+import {
+    assessProjectTemplates,
+    isTemplateHousekeeping,
+} from './template-assessment.util.js';
 import {
     areTemplateConnectionsActive,
     areTemplatesMutating,
@@ -48,9 +54,11 @@ import {
 } from './template-runtime.util.js';
 import {
     commitTemplateTransaction,
+    discardTemplateMigration,
     type PreparedTemplateSet,
     readTemplateJournal,
     recoverTemplateTransaction,
+    restoreTemplateMigration,
     stageTemplateSets,
     type TemplateJournal,
 } from './template-transaction.util.js';
@@ -70,6 +78,14 @@ type Work = {
     sets: PreparedTemplateSet[];
     project?: ProjectDetails;
     sourceHash?: string;
+    migrationChoice?: TemplateMigrationChoice;
+    metadata?: string[];
+    requiredDecisions?: Set<string>;
+    migrationSetIds?: string[];
+    emptyConnectionStatus?: 'local' | 'missing';
+    affectedProjects?: string[];
+    affectedProjectPaths?: string[];
+    sourceBytes?: number;
 };
 
 /** Owns inventory and explicitly requested template operations. */
@@ -78,6 +94,7 @@ export class ExportTemplatesService {
     private job: TemplateJob | null = null;
     private work?: Work;
     private starting = false;
+    private inspection?: AbortController;
     private tasks = new Map<
         string,
         { job: TemplateJob; action: () => Promise<void> }
@@ -125,24 +142,171 @@ export class ExportTemplatesService {
             projects: assessments,
             pendingCount: assessments.filter((item) => item.pending).length,
             recoveryIds,
+            backups: await this.migrationBackups(),
         };
     }
 
     /** Compares one registered project without changing templates or preferences.
      * @param projectPath - Canonical project identity from the UI.
+     * @param contents - Whether to verify matching contents after the metadata listing.
      */
     async inspectProjectTemplates(
         projectPath: string,
+        contents = true,
     ): Promise<TemplateProjectAssessment> {
+        this.inspection?.abort();
+        const inspection = new AbortController();
+        this.inspection = inspection;
         const project = await this.assessmentProject(projectPath);
         const recoveryIds = await this.recoveries();
         const busy = this.templatesBusy() || recoveryIds.length > 0;
         const assessment = await assessProjectTemplates(
             project,
             getSharedTemplateRoot(),
-            !busy,
+            busy ? false : contents ? true : 'metadata',
+            inspection.signal,
         );
         return this.migrationAvailability(assessment, recoveryIds);
+    }
+
+    /** Stops advisory file reads when the selected project or dialog changes. */
+    async cancelTemplateInspection(): Promise<void> {
+        this.inspection?.abort();
+    }
+
+    /** Lists completed migrations without reading template contents. */
+    private async migrationBackups(): Promise<TemplateMigrationBackup[]> {
+        if (!(await templateLstat(getSharedTemplateRoot()))) return [];
+        const root = await fs.promises.realpath(getSharedTemplateRoot());
+        const parent = this.workParent(root);
+        const stat = await templateLstat(parent);
+        if (!stat) return [];
+        if (!stat.isDirectory() || stat.isSymbolicLink())
+            throw new Error('exportTemplates:errors.unsafe');
+        const projects = await this.projects.list();
+        const backups: TemplateMigrationBackup[] = [];
+        for (const id of await fs.promises.readdir(parent)) {
+            if (!OPERATION_ID.test(id)) continue;
+            const directory = path.join(parent, id);
+            const entry = await templateLstat(directory);
+            if (!entry?.isDirectory() || entry.isSymbolicLink()) continue;
+            try {
+                const journal = await readTemplateJournal(directory);
+                if (
+                    journal.phase === 'complete' &&
+                    journal.retainBackup &&
+                    journal.projectPath
+                ) {
+                    backups.push({
+                        id,
+                        projectPath: journal.projectPath,
+                        projectName:
+                            projects.find(
+                                (project) =>
+                                    project.path === journal.projectPath,
+                            )?.name ?? path.basename(journal.projectPath),
+                        sizeBytes: journal.backupBytes ?? 0,
+                        sets: journal.sets
+                            .filter((set) => set.before !== set.after)
+                            .map((set) => set.id),
+                    });
+                }
+            } catch {
+                /* Invalid journals remain available through recovery. */
+            }
+        }
+        return backups;
+    }
+
+    /** Restores a completed migration and keeps the project separate afterwards.
+     * @param backupId - Main-owned retained migration identity.
+     */
+    async restoreMigration(backupId: string): Promise<void> {
+        await this.finishMigrationBackup(backupId, true);
+    }
+
+    /** Removes originals only after explicit cleanup confirmation.
+     * @param backupId - Main-owned retained migration identity.
+     */
+    async discardMigrationBackup(backupId: string): Promise<void> {
+        await this.finishMigrationBackup(backupId, false);
+    }
+
+    /** Serialises restore and cleanup with all template mutations.
+     * @param backupId - Retained migration identity.
+     * @param restore - Restore originals instead of permanently removing them.
+     */
+    private async finishMigrationBackup(
+        backupId: string,
+        restore: boolean,
+    ): Promise<void> {
+        if (this.templatesBusy())
+            throw new Error('exportTemplates:errors.busy');
+        this.starting = true;
+        setTemplatesMutating(true);
+        this.inspection?.abort();
+        try {
+            if ((await this.recoveries()).length)
+                throw new Error('exportTemplates:errors.recovery');
+            if (
+                !OPERATION_ID.test(backupId) ||
+                !(await this.migrationBackups()).some(
+                    (backup) => backup.id === backupId,
+                )
+            )
+                throw new Error('exportTemplates:errors.changed');
+            const root = await fs.promises.realpath(getSharedTemplateRoot());
+            const directory = path.join(this.workParent(root), backupId);
+            if (restore) {
+                const journal = await readTemplateJournal(directory);
+                await restoreTemplateMigration(
+                    root,
+                    directory,
+                    getSharedTemplateRoot(),
+                    async () => {
+                        await this.projects.update(async (projects) => {
+                            const project = projects.find(
+                                (item) => item.path === journal.projectPath,
+                            );
+                            if (
+                                !project ||
+                                !journal.localPath ||
+                                path.join(
+                                    await fs.promises.realpath(
+                                        path.dirname(this.local(project)),
+                                    ),
+                                    'export_templates',
+                                ) !== journal.localPath
+                            )
+                                throw new Error(
+                                    'exportTemplates:errors.changed',
+                                );
+                            rememberSeparateTemplateDirectory(
+                                path.dirname(project.launch_path),
+                            );
+                            return projects.map((item) =>
+                                item.path === project.path
+                                    ? {
+                                          ...item,
+                                          exportTemplateMode:
+                                              'separate' as const,
+                                      }
+                                    : item,
+                            );
+                        });
+                    },
+                );
+            } else {
+                await discardTemplateMigration(
+                    root,
+                    directory,
+                    getSharedTemplateRoot(),
+                );
+            }
+        } finally {
+            this.starting = false;
+            setTemplatesMutating(false);
+        }
     }
 
     /** Persists local management without detaching links or moving any files.
@@ -275,13 +439,24 @@ export class ExportTemplatesService {
         setIds: string[],
         kind: NonNullable<TemplateJob['kind']>,
         action: () => Promise<void>,
+        projectPath?: string,
     ): void {
         if (
             this.waiting.length >= 64 ||
             [...this.tasks.values()].some(
                 ({ job }) =>
                     !TERMINAL.has(job.stage) &&
-                    job.setIds?.some((id) => setIds.includes(id)),
+                    ((projectPath &&
+                        job.kind === 'migrate' &&
+                        job.projectPath === projectPath) ||
+                        (job.setIds?.some((id) => setIds.includes(id)) &&
+                            !(
+                                kind === 'migrate' &&
+                                job.kind === 'migrate' &&
+                                projectPath &&
+                                job.projectPath &&
+                                job.projectPath !== projectPath
+                            ))),
             )
         )
             throw new Error('exportTemplates:errors.busy');
@@ -295,7 +470,7 @@ export class ExportTemplatesService {
         }
         const id = randomUUID();
         this.tasks.set(id, {
-            job: { id, setIds, kind, stage: 'queued' },
+            job: { id, setIds, kind, stage: 'queued', projectPath },
             action,
         });
         this.waiting.push(id);
@@ -354,6 +529,7 @@ export class ExportTemplatesService {
             task.job.setIds ?? [],
             task.job.kind ?? 'update',
             task.action,
+            task.job.projectPath,
         );
     }
 
@@ -445,13 +621,22 @@ export class ExportTemplatesService {
             );
     }
 
-    /** Queues a project's connection or merge.
+    /** Queues a project's reviewed connection or merge.
      * @param projectPath - Registered project identity.
+     * @param choice - Whether project files should be merged into shared storage.
      */
-    async prepareMigration(projectPath: string): Promise<void> {
+    async prepareMigration(
+        projectPath: string,
+        choice: TemplateMigrationChoice = 'share-project',
+    ): Promise<void> {
+        if (!['share-project', 'use-shared'].includes(choice))
+            throw new Error('exportTemplates:errors.connection');
         const project = await this.project(projectPath);
-        this.enqueue([this.identity(project)], 'migrate', () =>
-            this.executeMigration(projectPath),
+        this.enqueue(
+            [this.identity(project)],
+            'migrate',
+            () => this.executeMigration(projectPath, choice),
+            project.path,
         );
     }
 
@@ -506,6 +691,11 @@ export class ExportTemplatesService {
                     .reverse()) {
                     try {
                         if (!isTemplateIdentity(id)) {
+                            const total = await sumTemplateFiles(
+                                path.join(actual, id),
+                            );
+                            result.totalBytes += total.bytes;
+                            result.sizeIncomplete ||= total.incomplete;
                             continue;
                         }
                         const files = await readTemplateTree(
@@ -532,6 +722,7 @@ export class ExportTemplatesService {
                             (sum, file) => sum + file.size,
                             0,
                         );
+                        result.totalBytes += sizeBytes;
                         result.sets.push({
                             id,
                             version: id.replace(/\.mono$/, ''),
@@ -548,14 +739,15 @@ export class ExportTemplatesService {
                         });
                     } catch {
                         result.issues.push(id);
+                        const total = await sumTemplateFiles(
+                            path.join(actual, id),
+                        );
+                        result.totalBytes += total.bytes;
+                        result.sizeIncomplete ||= total.incomplete;
                     }
                 }
             }
-            const total = await sumTemplateFiles(
-                await fs.promises.realpath(root).catch(() => root),
-            );
-            result.totalBytes = total.bytes;
-            result.sizeIncomplete = total.incomplete;
+            result.sizeIncomplete ??= false;
             result.recoveries = await this.recoveries();
             result.recoverySets = {};
             for (const id of result.recoveries) {
@@ -881,10 +1073,14 @@ export class ExportTemplatesService {
         });
     }
 
-    /** Prepares the safe merge of a stored project's local templates.
+    /** Prepares a reviewed switch from one stored project's local templates.
      * @param projectPath - Exact project identity from the inventory.
+     * @param choice - Whether local files should be offered to shared storage.
      */
-    private async executeMigration(projectPath: string): Promise<void> {
+    private async executeMigration(
+        projectPath: string,
+        choice: TemplateMigrationChoice,
+    ): Promise<void> {
         const work = await this.begin();
         void this.run(work, async () => {
             const project = await this.project(projectPath);
@@ -893,40 +1089,74 @@ export class ExportTemplatesService {
                 local,
                 getSharedTemplateRoot(),
             );
-            if (
-                status === 'shared' ||
-                status === 'missing' ||
-                (status === 'local' &&
-                    !(await fs.promises.readdir(local)).length)
-            ) {
-                await connectEmptyTemplateFolder(
-                    path.dirname(project.launch_path),
-                    project.release,
-                    getSharedTemplateRoot(),
-                );
-                return;
-            }
-            if (status !== 'local')
+            if (status === 'shared') return;
+            if (status !== 'local' && status !== 'missing')
                 throw new Error('exportTemplates:errors.connection');
             work.project = project;
-            for (const id of await fs.promises.readdir(local)) {
+            work.migrationChoice = choice;
+            work.metadata = [];
+            work.migrationSetIds = [this.identity(project)];
+            const projects = await this.projects.list();
+            work.affectedProjects = [];
+            work.affectedProjectPaths = [];
+            for (const candidate of projects) {
+                if (
+                    candidate.path !== project.path &&
+                    candidate.launch_path &&
+                    (await templateConnectionStatus(
+                        this.local(candidate),
+                        getSharedTemplateRoot(),
+                    )) === 'shared'
+                ) {
+                    work.affectedProjects.push(candidate.name);
+                    work.affectedProjectPaths.push(candidate.path);
+                }
+            }
+            const entries =
+                status === 'missing' ? [] : await fs.promises.readdir(local);
+            if (!entries.length) {
+                work.emptyConnectionStatus = status;
+                work.sourceHash = templateFingerprint([]);
+                this.review(work);
+                return;
+            }
+            for (const id of entries) {
+                if (isTemplateHousekeeping(id)) {
+                    work.metadata.push(id);
+                    continue;
+                }
                 if (!isTemplateIdentity(id))
                     throw new Error('exportTemplates:errors.identity');
                 await this.addSet(work, id, templateChild(local, id));
             }
-            work.sourceHash = templateFingerprint(
-                work.sets.flatMap((set) =>
+            const localFiles = await readTemplateTree(
+                local,
+                true,
+                work.signal.signal,
+            );
+            work.sourceHash = templateFingerprint(localFiles);
+            work.sourceBytes = localFiles.reduce(
+                (sum, file) => sum + file.size,
+                0,
+            );
+            const reviewedFiles = [
+                ...localFiles.filter((file) =>
+                    isTemplateHousekeeping(file.relative.split('/')[0]),
+                ),
+                ...work.sets.flatMap((set) =>
                     set.incoming.map((file) => ({
                         ...file,
                         relative: `${set.id}/${file.relative}`,
                     })),
                 ),
-            );
+            ];
+            if (templateFingerprint(reviewedFiles) !== work.sourceHash)
+                throw new Error('exportTemplates:errors.changed');
             this.review(work);
         });
     }
 
-    /** Applies a prepared review after the UI's explicit close-editors confirmation.
+    /** Applies a prepared operation after the UI's explicit review confirmation.
      * @param jobId - Exact prepared job.
      * @param decisions - Choices for all differing files.
      */
@@ -939,28 +1169,110 @@ export class ExportTemplatesService {
             throw new Error('exportTemplates:errors.busy');
         this.update(work, { stage: 'preparing' });
         void this.run(work, async () => {
-            const sets = await stageTemplateSets(
-                work.root,
-                work.directory,
-                work.sets,
-                decisions,
-                work.signal.signal,
-            );
             const project = work.project
                 ? await this.project(work.project.path)
                 : undefined;
+            if (work.migrationChoice === 'share-project') {
+                const connected: string[] = [];
+                for (const candidate of await this.projects.list()) {
+                    if (
+                        candidate.path !== project?.path &&
+                        candidate.launch_path &&
+                        (await templateConnectionStatus(
+                            this.local(candidate),
+                            getSharedTemplateRoot(),
+                        )) === 'shared'
+                    )
+                        connected.push(candidate.path);
+                }
+                if (
+                    JSON.stringify(connected.sort()) !==
+                    JSON.stringify(
+                        [...(work.affectedProjectPaths ?? [])].sort(),
+                    )
+                )
+                    throw new Error('exportTemplates:errors.changed');
+            }
             if (
                 project &&
                 work.project &&
                 this.local(project) !== this.local(work.project)
             )
                 throw new Error('exportTemplates:errors.changed');
+            if (project && work.emptyConnectionStatus) {
+                const local = this.local(project);
+                const status = await templateConnectionStatus(
+                    local,
+                    getSharedTemplateRoot(),
+                );
+                if (
+                    status !== work.emptyConnectionStatus ||
+                    (status === 'local' &&
+                        (await fs.promises.readdir(local)).length)
+                )
+                    throw new Error('exportTemplates:errors.changed');
+                await this.assertRoot(work);
+                work.signal.signal.throwIfAborted();
+                this.update(work, { stage: 'applying' });
+                await connectEmptyTemplateFolder(
+                    path.dirname(project.launch_path),
+                    project.release,
+                    getSharedTemplateRoot(),
+                );
+                if (
+                    (await templateConnectionStatus(
+                        local,
+                        getSharedTemplateRoot(),
+                    )) !== 'shared'
+                )
+                    throw new Error('exportTemplates:errors.changed');
+                return;
+            }
+            const sets =
+                work.migrationChoice === 'use-shared'
+                    ? work.sets.map((set) => {
+                          const before = templateFingerprint(set.before);
+                          return {
+                              id: set.id,
+                              existed: set.existed,
+                              before,
+                              after: before,
+                          };
+                      })
+                    : await stageTemplateSets(
+                          work.root,
+                          work.directory,
+                          work.sets,
+                          decisions,
+                          work.signal.signal,
+                          work.requiredDecisions,
+                      );
             const journal: TemplateJournal = {
                 version: 2,
                 phase: 'committing',
                 sets,
                 projectPath: project?.path,
                 sourceHash: work.sourceHash,
+                retainBackup:
+                    !!work.migrationChoice &&
+                    (!!work.metadata?.length ||
+                        !!this.job?.review?.files?.some((file) =>
+                            ['different', 'local-only'].includes(file.state),
+                        )),
+                backupBytes:
+                    (work.sourceBytes ?? 0) +
+                    work.sets.reduce(
+                        (sum, set) =>
+                            sum +
+                            (sets.find((item) => item.id === set.id)?.before !==
+                            sets.find((item) => item.id === set.id)?.after
+                                ? set.before.reduce(
+                                      (bytes, file) => bytes + file.size,
+                                      0,
+                                  )
+                                : 0),
+                        0,
+                    ),
             };
             await this.assertRoot(work);
             work.signal.signal.throwIfAborted();
@@ -1118,6 +1430,7 @@ export class ExportTemplatesService {
         if (this.starting || (this.job && !TERMINAL.has(this.job.stage)))
             throw new Error('exportTemplates:errors.busy');
         this.starting = true;
+        this.inspection?.abort();
         try {
             if ((await this.recoveries()).length)
                 throw new Error('exportTemplates:errors.recovery');
@@ -1233,29 +1546,86 @@ export class ExportTemplatesService {
      */
     private review(work: Work): void {
         const review: TemplateReview = {
-            sets: work.sets.map((set) => set.id),
+            sets:
+                work.migrationChoice && !work.sets.length
+                    ? (work.migrationSetIds ?? [])
+                    : work.sets.map((set) => set.id),
             sizeBytes: 0,
             addedFiles: 0,
             identicalFiles: 0,
             conflicts: [],
             projectName: work.project?.name,
+            migrationChoice: work.migrationChoice,
+            metadata: work.metadata,
+            affectedProjects: work.affectedProjects,
         };
+        const migrationFiles: TemplateMigrationFile[] = [];
+        const requiredDecisions = new Set<string>();
         for (const set of work.sets) {
             const before = new Map(
                 set.before.map((file) => [file.relative, file]),
             );
+            const incoming = new Map(
+                set.incoming.map((file) => [file.relative, file]),
+            );
             for (const file of set.incoming) {
                 review.sizeBytes += file.size;
                 const old = before.get(file.relative);
-                if (!old) review.addedFiles++;
-                else if (old.hash === file.hash) review.identicalFiles++;
-                else
+                if (!old) {
+                    review.addedFiles++;
+                } else if (
+                    old.hash === file.hash &&
+                    (!work.migrationChoice || old.mode === file.mode)
+                )
+                    review.identicalFiles++;
+                else {
                     review.conflicts.push({
                         path: `${set.id}/${file.relative}`,
                         sharedBytes: old.size,
                         incomingBytes: file.size,
                     });
+                }
             }
+            if (work.migrationChoice) {
+                for (const name of [
+                    ...new Set([...before.keys(), ...incoming.keys()]),
+                ].sort()) {
+                    const local = incoming.get(name);
+                    const shared = before.get(name);
+                    const migrationFile: TemplateMigrationFile = {
+                        path: `${set.id}/${name}`,
+                        state: !local
+                            ? 'shared-only'
+                            : !shared
+                              ? 'local-only'
+                              : local.size === shared.size &&
+                                  local.hash === shared.hash &&
+                                  local.mode === shared.mode
+                                ? 'identical'
+                                : 'different',
+                        localBytes: local?.size,
+                        sharedBytes: shared?.size,
+                    };
+                    migrationFiles.push(migrationFile);
+                    if (
+                        work.migrationChoice === 'share-project' &&
+                        ['local-only', 'different'].includes(
+                            migrationFile.state,
+                        )
+                    )
+                        requiredDecisions.add(migrationFile.path);
+                }
+            }
+        }
+        if (work.migrationChoice) {
+            work.requiredDecisions = requiredDecisions;
+            review.files = migrationFiles;
+            review.requiredDecisions = [...requiredDecisions].sort();
+            review.retainsBackup =
+                !!work.metadata?.length ||
+                migrationFiles.some((file) =>
+                    ['local-only', 'different'].includes(file.state),
+                );
         }
         this.update(work, { stage: 'review', review, setIds: review.sets });
     }
@@ -1275,6 +1645,13 @@ export class ExportTemplatesService {
             const directory = path.join(parent, id);
             const dirStat = await fs.promises.lstat(directory);
             if (!dirStat.isDirectory() || dirStat.isSymbolicLink()) continue;
+            try {
+                const journal = await readTemplateJournal(directory);
+                if (journal.phase === 'complete' && journal.retainBackup)
+                    continue;
+            } catch {
+                /* Unreadable and incomplete operations still need recovery. */
+            }
             if (
                 id !== this.job?.id ||
                 TERMINAL.has(this.job.stage) ||
