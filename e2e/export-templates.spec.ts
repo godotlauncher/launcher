@@ -337,6 +337,7 @@ test('imports a real archive, merges conflicts, links a project and removes only
             'templates/web_release.zip': 'web template',
         }),
     );
+    if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
     await fs.mkdir(path.join(local, '4.4.stable'), { recursive: true });
     if (process.platform !== 'win32')
         await fs.chmod(path.join(root, '4.4.stable', 'version.txt'), 0o600);
@@ -353,17 +354,11 @@ test('imports a real archive, merges conflicts, links a project and removes only
         'linux template',
     );
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-    await openMigrationReview();
-    await expect(
-        page.getByRole('status').filter({ hasText: 'Ready for review' }).first(),
-    ).toBeVisible();
-    await expect(page.getByRole('combobox')).toHaveCount(process.platform === 'win32' ? 2 : 3);
-    await expect(apply).toBeDisabled();
-    for (const select of await page.getByRole('combobox').all()) await select.selectOption('incoming');
-    if (process.platform !== 'win32') await page.getByLabel(/4\.4\.stable\/version\.txt/).selectOption('shared');
+    await openMigrationChoices();
+    await expect(page.getByTestId('templateMigrationModal').getByRole('combobox')).toHaveCount(1);
     await apply.click();
     await waitForTemplateStage('complete');
-    await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Done', exact: true }).click();
     expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
     if (process.platform !== 'win32')
         expect((await fs.stat(path.join(root, '4.4.stable', 'version.txt'))).mode & 0o777).toBe(0o600);
@@ -372,7 +367,7 @@ test('imports a real archive, merges conflicts, links a project and removes only
             path.join(root, '4.4.stable', 'windows_release_x86_64.exe'),
             'utf8',
         ),
-    ).toBe('project custom bytes');
+    ).toBe('shared bytes');
     expect(
         await fs.readFile(
             path.join(root, '4.4.stable', 'web_release.zip'),
@@ -381,7 +376,7 @@ test('imports a real archive, merges conflicts, links a project and removes only
     ).toBe('web template');
     const localEntries = await fs.readdir(path.join(home, 'editor', 'editor_data'));
     expect(localEntries).toContain('export_templates');
-    expect(localEntries.some(name => name.startsWith('export_templates.launcher-'))).toBe(true);
+    expect(localEntries.some(name => name.startsWith('export_templates.launcher-'))).toBe(false);
     await page.screenshot({ path: test.info().outputPath('export-templates.png') });
     await page
         .getByRole('button', { name: 'Remove 4.4.stable', exact: true })
@@ -598,8 +593,7 @@ test('restores both collections when the final project link cannot be created', 
     await fs.mkdir(path.join(root, id), {recursive: true});
     await fs.writeFile(path.join(root, id, 'web_release.zip'), 'existing web template');
     await page.getByRole('button', {name:'Refresh', exact:true}).click();
-    await openMigrationReview();
-    await expect(page.getByRole('status').filter({ hasText: 'Ready for review' }).first()).toBeVisible();
+    await openMigrationChoices();
     await app.evaluate(async (_electron, target) => {
         const {promises} = process.getBuiltinModule('node:fs');
         const state = globalThis as typeof globalThis & {templateSymlink?: typeof promises.symlink};
@@ -610,10 +604,9 @@ test('restores both collections when the final project link cannot be created', 
         };
     }, await fs.realpath(local));
     try {
-        for (const select of await page.getByRole('combobox').all()) await select.selectOption('incoming');
         await page.getByRole('button', {name:'Apply changes'}).click();
         await waitForTemplateStage('error');
-        await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Close', exact: true }).click();
+        await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Finish later', exact: true }).click();
         expect((await fs.lstat(local)).isDirectory()).toBe(true);
         expect(await fs.readFile(path.join(local, id, 'linux_release.x86_64'), 'utf8')).toBe('local template');
         expect(await fs.readdir(path.join(root, id))).toEqual(['web_release.zip']);
@@ -636,19 +629,15 @@ test('connects an unchanged merge without replacing shared files and keeps the r
     await fs.writeFile(path.join(root, id, 'linux_release.x86_64'), 'shared template');
     const before = await fs.stat(path.join(root, id));
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-    await openMigrationReview();
-    await expect(page.getByRole('status').filter({ hasText: 'Ready for review' }).first()).toBeVisible();
-    await page.getByRole('combobox').selectOption('shared');
+    await openMigrationChoices();
     await page.getByRole('button', { name: 'Apply changes' }).click();
     await waitForTemplateStage('complete');
-    await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Done', exact: true }).click();
     expect((await fs.stat(path.join(root, id))).ino).toBe(before.ino);
     expect(await fs.readFile(path.join(root, id, 'linux_release.x86_64'), 'utf8')).toBe('shared template');
     expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
     const newEntries = (await fs.readdir(path.dirname(local))).filter(name => !originalEntries.includes(name));
-    expect(newEntries).toHaveLength(1);
-    expect(newEntries[0]).toMatch(/^export_templates\.launcher-/);
-    expect(await fs.readFile(path.join(path.dirname(local), newEntries[0], id, 'linux_release.x86_64'), 'utf8')).toBe('local template');
+    expect(newEntries).toHaveLength(0);
 
     const search = page.getByRole('textbox', { name: 'Search installed versions' });
     await search.fill('no-such-version');
@@ -833,13 +822,9 @@ async function waitForTemplateStage(stage: string): Promise<void> {
     })).toBe(stage);
 }
 
-/** Opens the migration modal and requests a project-file review. */
-async function openMigrationReview(): Promise<void> {
+/** Opens the migration modal and selects the missing-files policy. */
+async function openMigrationChoices(): Promise<void> {
     await page.getByRole('button', { name: /Migrate projects/ }).click();
     const modal = page.getByTestId('templateMigrationModal');
-    await modal.getByRole('button', { name: /Template migration/ }).click();
-    await modal.getByText('Other options', { exact: true }).click();
-    await modal.getByRole('radio', { name: /Share this project's templates/ }).check();
-    await modal.getByRole('button', { name: 'Review changes', exact: true }).click();
-    await expect(modal.getByRole('region', { name: 'Review template changes' })).toBeVisible();
+    await modal.getByRole('combobox', { name: 'Template migration: Choose an option', exact: true }).selectOption('share-project');
 }

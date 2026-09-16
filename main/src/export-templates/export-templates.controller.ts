@@ -17,6 +17,11 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
      * @param service - Template operations.
      */
     constructor(private readonly service: ExportTemplatesService) {}
+    /** Connects empty official project environments automatically. */
+    @Handler('connectEmptyProjects')
+    connectEmptyProjects() {
+        return this.service.connectEmptyProjects();
+    }
     /** Lists project migration candidates without hashing their files. */
     @Handler('getMigrationAssessment')
     getMigrationAssessment() {
@@ -34,20 +39,6 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     @Handler('cancelTemplateInspection')
     cancelTemplateInspection() {
         return this.service.cancelTemplateInspection();
-    }
-    /** Restores retained project and shared originals.
-     * @param backupId - Retained migration identity.
-     */
-    @Handler('restoreMigration')
-    restoreMigration(backupId: string) {
-        return this.service.restoreMigration(backupId);
-    }
-    /** Permanently removes retained originals after confirmation.
-     * @param backupId - Retained migration identity.
-     */
-    @Handler('discardMigrationBackup')
-    discardMigrationBackup(backupId: string) {
-        return this.service.discardMigrationBackup(backupId);
     }
     /** Remembers that a local project must not be connected automatically.
      * @param projectPath - Registered project identity.

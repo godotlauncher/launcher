@@ -118,9 +118,11 @@
         "header": "Emigra proġetti ({{number}})",
         "later": "Aktar tard",
         "close": "Agħlaq",
+        "done": "Lest",
+        "finishLater": "Kompli aktar tard",
         "start": "Irrevedi l-proġetti",
         "introduction": "Aqsam il-mudelli tal-esportazzjoni bejn il-proġetti biex tevita li żżomm fajls duplikati.",
-        "offerDetail": "Irrevedi kull proġett qabel tibdel xi ħaġa. Tista' żżomm separati mudelli għal builds personalizzati jew b'encryption. Agħżel Aktar tard biex terġa' lura minn Mudelli tal-esportazzjoni meta tkun lest.",
+        "offerDetail": "Agħżel x’jiġri mill-mudelli eżistenti. Proġetti mingħajr mudelli lokali jitqabbdu awtomatikament. Tista’ terġa’ lura mill-Mudelli ta’ esportazzjoni.",
         "pending": "{{number}} proġetti għad għandhom bżonn deċiżjoni.",
         "explanation": "Agħżel proġett, iddeċiedi liema mudelli għandu juża, imbagħad irrevedi l-bidliet. Proġetti oħra konnessi jużaw l-istess fajls kondiviżi.",
         "projects": "Proġetti biex jiġu riveduti",
@@ -132,22 +134,16 @@
         "projectFiles": "Proġett",
         "keepSeparate": "Żomm separati",
         "reviewChanges": "Irrevedi l-bidliet",
-        "background": "Ix-xogħol sottomess ikompli meta tagħlaq din it-tieqa. Erġa' iftaħha biex tirrevedi l-bidliet imħejjija jew tiċċekkja l-progress.",
-        "useSharedReview": "Dan il-proġett se juża l-kollezzjoni kondiviża. L-ebda fajl kondiviż mhu se jiżdied jew jinbidel. Fajls lokali biss ma jibqgħux disponibbli għal dan il-proġett, u fajls lokali differenti jinbidlu bil-kopji kondiviżi wara li l-emigrazzjoni tirnexxi.",
-        "shareReview": "Il-fajls li taqsam isiru disponibbli għal proġetti oħra konnessi li jużaw din il-verżjoni u l-edizzjoni. Irrevedi kull żieda u sostituzzjoni mhux ivverifikata. Il-fajls lokali jinżammu sakemm l-emigrazzjoni tirnexxi.",
-        "localOnlyReview": "Dawn il-fajls jeżistu biss f'dan il-proġett. Agħżel jekk taqsamx kull wieħed. Fajls li ma żżidx ma jibqgħux disponibbli għal dan il-proġett wara l-emigrazzjoni.",
-        "shareFile": "Aqsam fajl tal-proġett",
-        "omitFile": "Iżżidx fajl",
-        "metadataReview": "Il-mudelli oriġinali jinżammu biex tkun tista' tirrestawra l-migrazzjoni. Jużaw spazju sakemm tneħħihom espliċitament.",
+        "background": "L-operazzjonijiet mibdija jkomplu meta tagħlaq din it-tieqa.",
         "choices": {
-            "separate": "Żomm il-mudelli ta' dan il-proġett separati",
-            "use-shared": "Uża l-mudelli kondiviżi",
-            "share-project": "Aqsam il-mudelli ta' dan il-proġett"
+            "share-project": "Aqleb għal mudelli ta’ esportazzjoni kondiviżi",
+            "separate": "Żomm il-mudelli ta’ esportazzjoni ta’ dan il-proġett separati",
+            "use-shared": "Ħassar il-mudelli ta’ esportazzjoni lokali u uża dawk kondiviżi"
         },
         "details": {
-            "separate": "Rakkomandat għal builds personalizzati jew b'encryption. Ħalli l-fajls hawn u ftakar din l-għażla.",
-            "use-shared": "Uża l-kollezzjoni kondiviża eżistenti mingħajr ma żżid jew tibdel il-fajls tagħha. Irrevedi liema mudelli lokali dan il-proġett se jieqaf juża.",
-            "share-project": "Għaqqad fajls magħżula tal-proġett fil-kollezzjoni kondiviża. Is-sostituzzjonijiet jaffettwaw proġetti oħra konnessi li jużaw l-istess verżjoni u edizzjoni."
+            "share-project": "Żid il-fajls neqsin ta’ mudelli ta’ esportazzjoni ta’ dan il-proġett fil-folder tal-mudelli ta’ esportazzjoni kondiviżi. Il-fajls kondiviżi eżistenti ta’ esportazzjoni ma jinbidlux. Il-proġett imbagħad juża l-mudelli kondiviżi u jitħassru dawk lokali.",
+            "use-shared": "Ħassar il-mudelli ta’ esportazzjoni lokali ta’ dan il-proġett mingħajr ma żżidhom fil-folder tal-mudelli ta’ esportazzjoni kondiviżi. Il-proġett imbagħad juża dawk kondiviżi, anki jekk għad m’hemmx għall-verżjoni tiegħu ta’ Godot.",
+            "separate": "Kompli uża l-mudelli ta’ esportazzjoni lokali ta’ dan il-proġett. Xejn ma jiġi kkupjat fil-folder tal-mudelli ta’ esportazzjoni kondiviżi u proġetti oħra ma jinbidlux."
         },
         "reasons": {
             "connected": "Juża mudelli kondiviżi",
@@ -175,12 +171,6 @@
         },
         "recommended": "Rakkomandat",
         "otherOptions": "Għażliet oħra",
-        "backups": "Oriġinali miżmuma",
-        "backupNotice": "Il-mudelli oriġinali jinżammu biex tkun tista' tirrestawra l-migrazzjoni. Jużaw spazju sakemm tneħħihom espliċitament.",
-        "restore": "Irrestawra l-mudelli preċedenti",
-        "discard": "Neħħi l-oriġinali miżmuma",
-        "restoreDetail": "Irrestawra l-mudelli oriġinali tal-proġett u żommhom separati. Il-fajls kondiviżi mibdula b'din il-migrazzjoni jiġu rrestawrati wkoll. Ir-restawr jieqaf jekk il-fajls ikunu nbidlu wara l-migrazzjoni.",
-        "discardDetail": "Tneħħi dawn il-mudelli oriġinali b'mod permanenti? Ma tkunx tista' tirrestawra din il-migrazzjoni. Il-mudelli attwali ma jinbidlux.",
         "affected": "Proġetti oħra konnessi",
         "noAffected": "Xejn",
         "status": {
@@ -194,6 +184,9 @@
             "standard": "Standard",
             "dotnet": ".NET",
             "custom": "Personalizzat"
-        }
+        },
+        "projectColumn": "Proġett",
+        "actionColumn": "Azzjoni",
+        "permanentDeletion": "Il-mudelli ta’ esportazzjoni lokali jitħassru b’mod permanenti. Ma jinżamm ebda backup."
     }
 }

@@ -118,15 +118,11 @@
         "header": "Migrate projects ({{number}})",
         "later": "Later",
         "close": "Close",
+        "done": "Done",
+        "finishLater": "Finish later",
         "start": "Review projects",
         "recommended": "Recommended",
         "otherOptions": "Other options",
-        "backups": "Retained originals",
-        "backupNotice": "Original templates will be retained so this migration can be restored. They use disk space until you explicitly remove them.",
-        "restore": "Restore previous templates",
-        "discard": "Remove retained originals",
-        "restoreDetail": "Restore this project's original templates and keep them separate. Shared files changed by this migration will also be restored. Restoration stops if affected files have changed since migration.",
-        "discardDetail": "Permanently remove these original templates? You will no longer be able to restore this migration. Current project and shared templates will not change.",
         "affected": "Other connected projects",
         "noAffected": "None",
         "status": {
@@ -142,7 +138,7 @@
             "custom": "Custom"
         },
         "introduction": "Share export templates between projects to avoid keeping duplicate files.",
-        "offerDetail": "Review each project before changing anything. You can keep custom or encryption-build templates separate. Choose Later to return from Export Templates whenever you are ready.",
+        "offerDetail": "Choose what to do with existing project templates. Projects without local templates connect automatically. You can return later from Export Templates.",
         "pending": "{{number}} projects still need a decision.",
         "explanation": "Choose a project, decide which templates it should use, then review the changes. Other connected projects use the same shared files.",
         "projects": "Projects to review",
@@ -154,22 +150,16 @@
         "projectFiles": "Project",
         "keepSeparate": "Keep separate",
         "reviewChanges": "Review changes",
-        "background": "Submitted work continues when you close this window. Reopen it to review prepared changes or check progress.",
-        "useSharedReview": "This project will use the shared collection. No shared files will be added or replaced. Local-only files will no longer be available to this project, and differing local files will be replaced by the shared copies after migration succeeds.",
-        "shareReview": "Files you share become available to other connected projects using this version and edition. Review every unverified addition and replacement. Local files are preserved until migration succeeds.",
-        "localOnlyReview": "These files exist only in this project. Choose whether to share each one. Files you do not add will no longer be available to this project after migration.",
-        "shareFile": "Share project file",
-        "omitFile": "Do not add file",
-        "metadataReview": "These system metadata entries will be kept with the retained originals after migration.",
+        "background": "Submitted work continues when you close this window.",
         "choices": {
-            "separate": "Keep this project's templates separate",
-            "use-shared": "Use the shared templates",
-            "share-project": "Share this project's templates"
+            "share-project": "Switch to shared export templates",
+            "separate": "Keep this project's export templates separate",
+            "use-shared": "Delete local export templates and use shared"
         },
         "details": {
-            "separate": "Recommended for custom or encryption builds. Leave files here and remember this choice.",
-            "use-shared": "Use the existing shared collection without adding or replacing its files. Review which local templates this project will stop using.",
-            "share-project": "Merge selected project files into the shared collection. Replacements affect other connected projects using the same version and edition."
+            "share-project": "Add this project's missing export template files to the shared export templates folder. Existing shared export template files stay unchanged. This project then uses shared export templates; its local export templates are deleted.",
+            "use-shared": "Delete this project's local export templates without adding them to the shared export templates folder. This project then uses shared export templates, even if none are installed for its Godot version yet.",
+            "separate": "Keep using this project's local export templates. Nothing is copied to the shared export templates folder, and other projects are unaffected."
         },
         "reasons": {
             "connected": "Uses shared templates",
@@ -194,6 +184,9 @@
             "local-only": "Only in this project",
             "shared-only": "Only in shared templates",
             "different": "Different contents"
-        }
+        },
+        "projectColumn": "Project",
+        "actionColumn": "Action",
+        "permanentDeletion": "Local export templates are deleted permanently. No backup is kept."
     }
 }

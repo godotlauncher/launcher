@@ -1,6 +1,5 @@
 import type {
     TemplateMigrationAssessment,
-    TemplateMigrationFile,
     TemplateProjectAssessment,
 } from './template-assessment.types.js';
 
@@ -50,15 +49,6 @@ export type TemplateReview = {
     identicalFiles: number;
     conflicts: TemplateConflict[];
     projectName?: string;
-    migrationChoice?: TemplateMigrationChoice;
-    /** Complete content comparison for a project migration. */
-    files?: TemplateMigrationFile[];
-    /** Local housekeeping entries removed only after a successful connection. */
-    metadata?: string[];
-    /** Differing project files which need an explicit apply decision. */
-    requiredDecisions?: string[];
-    affectedProjects?: string[];
-    retainsBackup?: boolean;
 };
 /** Process-local preparation and commit status. */
 export type TemplateJob = {
@@ -102,14 +92,13 @@ export type TemplatePackage = {
 };
 /** Template requests exposed by the Electron preload bridge. */
 export type ExportTemplatesBridge = {
+    connectEmptyProjects(): Promise<void>;
     getMigrationAssessment(): Promise<TemplateMigrationAssessment>;
     inspectProjectTemplates(
         projectPath: string,
         contents?: boolean,
     ): Promise<TemplateProjectAssessment>;
     cancelTemplateInspection(): Promise<void>;
-    restoreMigration(backupId: string): Promise<void>;
-    discardMigrationBackup(backupId: string): Promise<void>;
     keepProjectTemplatesSeparate(
         projectPath: string,
     ): Promise<TemplateProjectAssessment>;

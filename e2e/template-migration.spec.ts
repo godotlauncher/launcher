@@ -71,14 +71,14 @@ test.afterAll(async () => { await app?.close(); if (home) await fs.rm(home, { re
 test('postpones the upgrade offer without changing projects and remembers it across restart', async () => {
     const modal = page.getByTestId('templateMigrationModal');
     await expect(modal).toBeVisible();
-    await expect(modal.getByText('3 projects still need a decision.')).toBeVisible();
+    await expect(modal.getByText('2 projects still need a decision.')).toBeVisible();
     await page.screenshot({
         path: test.info().outputPath('migration-first-run-offer.png'),
     });
     await expect(modal.getByRole('checkbox')).toHaveCount(0);
     await modal.getByRole('button', { name: 'Review projects', exact: true }).click();
     await expect(modal.getByRole('heading', { name: 'Migrate export templates', exact: true })).toBeFocused();
-    await modal.getByRole('button', { name: 'Close', exact: true }).click();
+    await modal.getByRole('button', { name: 'Finish later', exact: true }).click();
     await page.evaluate(async () => {
         const bridge = window.__di_electron__!;
         const result = await bridge.invoke('app.getUserPreferences') as { data: Record<string, unknown> };
@@ -96,126 +96,96 @@ test('postpones the upgrade offer without changing projects and remembers it acr
     await app.close();
     await launch();
     await page.getByTestId('btnExportTemplates').click();
-    await expect(page.getByRole('button', { name: 'Migrate projects (3)' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Migrate projects (2)' })).toBeVisible();
     await expect(page.getByTestId('templateMigrationModal')).toBeHidden();
 });
 
-test('keeps a project separate and reviews an empty project before connecting it', async () => {
-    await page.getByRole('button', { name: 'Migrate projects (3)' }).click();
+test('automatically connects an empty project and lists only unresolved projects with independent dropdown choices', async () => {
+    expect((await fs.lstat(local(1))).isSymbolicLink()).toBe(true);
+    await page.getByRole('button', { name: 'Migrate projects (2)' }).click();
     const modal = page.getByTestId('templateMigrationModal');
-    await modal.getByRole('button', { name: /Private templates/ }).click();
-    await expect(modal.getByRole('radio', { name: /Keep this project's templates separate/ })).toBeChecked();
-    await page.screenshot({
-        path: test.info().outputPath('migration-project-options.png'),
-    });
+    const privateRow = modal.getByRole('listitem', { name: 'Private templates', exact: true });
+    await expect(modal.getByRole('combobox')).toHaveCount(2);
+    await expect(modal.getByRole('listitem', { name: 'Empty templates', exact: true })).toHaveCount(0);
+    await expect(privateRow.getByRole('button', { name: 'Apply changes' })).toBeDisabled();
+    await modal.getByRole('combobox', { name: 'Files to share: Choose an option', exact: true }).selectOption('share-project');
+    await page.screenshot({ path: test.info().outputPath('migration-project-options.png') });
     const previousViewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }));
     await page.setViewportSize({ width: 720, height: 600 });
+    await expect.poll(() => modal.locator('section').first().evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
     await page.screenshot({ path: test.info().outputPath('migration-compact.png') });
-    const bounds = await modal.boundingBox();
-    expect(bounds).not.toBeNull();
-    expect(bounds!.x).toBeGreaterThanOrEqual(0);
-    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(720);
     await page.setViewportSize(previousViewport);
-    await modal.getByRole('radio', { name: /Keep this project's templates separate/ }).check();
-    await modal.getByRole('button', { name: 'Keep separate', exact: true }).click();
-    await expect(modal.getByText('Kept separate', { exact: true }).first()).toBeVisible();
+    await privateRow.getByRole('combobox').selectOption('separate');
+    await privateRow.getByRole('button', { name: 'Apply changes', exact: true }).click();
+    await expect(privateRow).toHaveCount(0);
+    await expect(modal.getByRole('combobox', { name: 'Files to share: Choose an option', exact: true })).toHaveValue('share-project');
     expect((await fs.lstat(local(0))).isSymbolicLink()).toBe(false);
-    await modal.getByRole('button', { name: /Empty templates/ }).click();
-    await modal.getByRole('radio', { name: /Use the shared templates/ }).check();
-    await modal.getByRole('button', { name: 'Review changes', exact: true }).click();
-    await expect(modal.getByRole('region', { name: 'Review template changes' })).toBeVisible();
-    expect(await fs.lstat(local(1)).catch(() => null)).toBeNull();
-    await page.screenshot({ path: test.info().outputPath('migration-review.png') });
-    await modal.getByRole('button', { name: 'Apply changes', exact: true }).click();
-    await expect.poll(async () => (await fs.lstat(local(1)).catch(() => null))?.isSymbolicLink()).toBe(true);
-    await modal.getByRole('button', { name: 'Close', exact: true }).click();
+    await modal.getByRole('button', { name: 'Finish later', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Migrate projects (1)' })).toBeVisible();
 });
 
-test('reopens queued review and requires explicit decisions for unverified additions and conflicts', async () => {
+test('adds missing files while preserving existing shared files without a conflict review', async () => {
     await page.getByRole('button', { name: 'Migrate projects (1)' }).click();
     const modal = page.getByTestId('templateMigrationModal');
-    await modal.getByRole('button', { name: /Files to share/ }).click();
-    await modal.getByText('Other options', { exact: true }).click();
-    await modal.getByRole('radio', { name: /Share this project's templates/ }).check();
-    await modal.getByRole('button', { name: 'Review changes', exact: true }).click();
-    const review = modal.getByRole('region', { name: 'Review template changes' });
-    await expect(review).toBeVisible();
-    await expect(review.getByRole('button', { name: 'Apply changes' })).toBeDisabled();
-    await page.screenshot({
-        path: test.info().outputPath('migration-file-review.png'),
-    });
-    await modal.getByRole('button', { name: 'Close', exact: true }).click();
-    await page.getByTestId('btnProjects').click();
-    await page.getByTestId('btnExportTemplates').click();
-    await page.getByRole('button', { name: 'Migrate projects (1)' }).click();
-    await modal.getByRole('button', { name: /Files to share/ }).click();
-    await expect(review).toBeVisible();
-    await expect(review.getByRole('combobox')).toHaveCount(2);
-    await review.getByRole('combobox').nth(0).selectOption('shared');
-    await expect(review.getByRole('button', { name: 'Apply changes' })).toBeDisabled();
-    await review.getByRole('combobox').nth(1).selectOption('incoming');
-    await review.getByRole('button', { name: 'Apply changes' }).click();
+    await modal.getByRole('combobox', { name: 'Files to share: Choose an option', exact: true }).selectOption('share-project');
+    await expect(modal.getByRole('combobox')).toHaveCount(1);
+    await page.screenshot({ path: test.info().outputPath('migration-add-to-shared.png') });
+    await modal.getByRole('button', { name: 'Apply changes', exact: true }).click();
     await expect.poll(async () => (await fs.lstat(local(2))).isSymbolicLink()).toBe(true);
     expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared template');
     expect(await fs.readFile(path.join(root, '4.4.stable', 'web_release.zip'), 'utf8')).toBe('project web template');
     expect(await fs.readFile(path.join(local(0), '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('private build 0');
-    await modal.getByRole('button', { name: 'Close', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'Retained originals', exact: true })).toBeVisible();
-});
-
-test('restores retained originals after restart and refuses overwriting later shared changes', async () => {
+    await expect(modal.getByRole('button', { name: 'Done', exact: true })).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Refresh', exact: true })).toHaveCount(0);
+    await modal.getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Retained originals', exact: true })).toHaveCount(0);
+    const entries = await fs.readdir(path.dirname(local(2)));
+    expect(entries.some(name => name.startsWith('export_templates.launcher-'))).toBe(false);
     await app.close();
     await launch();
-    await page.getByTestId('btnExportTemplates').click();
-    await page.getByRole('button', { name: 'Retained originals', exact: true }).click();
-    const modal = page.getByTestId('templateMigrationModal');
-    await modal.getByText('Retained originals (1)', { exact: true }).click();
-    await modal.getByRole('button', { name: 'Restore previous templates', exact: true }).click();
-    const changedFile = path.join(root, '4.4.stable', 'web_release.zip');
-    await fs.writeFile(changedFile, 'later user change');
-    await modal.getByRole('button', { name: 'Restore previous templates', exact: true }).click();
-    await expect(modal.getByRole('alert')).toBeVisible();
-    expect((await fs.lstat(local(2))).isSymbolicLink()).toBe(true);
-    expect(await fs.readFile(changedFile, 'utf8')).toBe('later user change');
-    await fs.writeFile(changedFile, 'project web template');
-    await modal.getByRole('button', { name: 'Restore previous templates', exact: true }).click();
-    await expect.poll(async () => (await fs.lstat(local(2))).isSymbolicLink()).toBe(false);
-    expect(await fs.readFile(path.join(local(2), '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('private build 2');
-    expect(await fs.readFile(path.join(local(2), '4.4.stable', 'web_release.zip'), 'utf8')).toBe('project web template');
-    expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared template');
-    expect(await fs.stat(changedFile).catch(() => null)).toBeNull();
-    const projects = JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'projects.json'), 'utf8'));
-    expect(projects[2].exportTemplateMode).toBe('separate');
-    await modal.getByRole('button', { name: 'Close', exact: true }).click();
-});
-
-test('requires explicit confirmation before removing retained originals', async () => {
-    await app.close();
-    const projectFile = path.join(home, '.gd-launcher', 'projects.json');
-    const projects = JSON.parse(await fs.readFile(projectFile, 'utf8'));
-    delete projects[2].exportTemplateMode;
-    await fs.writeFile(projectFile, JSON.stringify(projects));
-    await launch();
-    await page.getByTestId('btnExportTemplates').click();
-    await page.getByRole('button', { name: 'Migrate projects (1)', exact: true }).click();
-    const modal = page.getByTestId('templateMigrationModal');
-    await modal.getByRole('button', { name: /Files to share/ }).click();
-    await modal.getByRole('radio', { name: /Use the shared templates/ }).check();
-    await modal.getByRole('button', { name: 'Review changes', exact: true }).click();
-    await modal.getByRole('button', { name: 'Apply changes', exact: true }).click();
-    await expect.poll(async () => (await fs.lstat(local(2))).isSymbolicLink()).toBe(true);
-    await modal.getByText('Retained originals (1)', { exact: true }).click();
-    await modal.getByRole('button', { name: 'Remove retained originals', exact: true }).click();
-    const parent = path.dirname(local(2));
-    const backup = (await fs.readdir(parent)).find(name => name.startsWith('export_templates.launcher-'));
-    expect(backup).toBeTruthy();
-    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
-    expect(await fs.stat(path.join(parent, backup!))).toBeTruthy();
-    await modal.getByRole('button', { name: 'Remove retained originals', exact: true }).click();
-    await expect(modal.getByText(/Permanently remove these original templates/)).toBeVisible();
-    await modal.getByRole('button', { name: 'Remove retained originals', exact: true }).click();
-    await expect.poll(async () => fs.stat(path.join(parent, backup!)).catch(() => null)).toBeNull();
     expect((await fs.lstat(local(2))).isSymbolicLink()).toBe(true);
     expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared template');
 });
+
+ test('keeps the connection when the shared version has no templates', async () => {
+    await fs.rm(path.join(root, '4.4.stable'), { recursive: true });
+    await app.close();
+    await launch();
+    expect((await fs.lstat(local(1))).isSymbolicLink()).toBe(true);
+    expect(await fs.stat(path.join(local(1), '4.4.stable')).catch(() => null)).toBeNull();
+    expect(await fs.readdir(root)).toEqual([]);
+});
+
+for (const sharedExists of [true, false]) {
+    test(`deletes local export templates and connects without merging (shared installed: ${sharedExists})`, async () => {
+        await app.close();
+        await fs.unlink(local(2));
+        await fs.mkdir(path.join(local(2), '4.4.stable'), { recursive: true });
+        await fs.writeFile(path.join(local(2), '4.4.stable', 'web_release.zip'), 'discarded local web');
+        await fs.writeFile(path.join(local(2), '4.4.stable', 'linux_release.x86_64'), 'discarded local linux');
+        const sharedSet = path.join(root, '4.4.stable');
+        await fs.rm(sharedSet, { recursive: true, force: true });
+        if (sharedExists) {
+            await fs.mkdir(sharedSet);
+            await fs.writeFile(path.join(sharedSet, 'web_release.zip'), 'existing shared web');
+        }
+        await launch();
+        await page.getByTestId('btnExportTemplates').click();
+        await page.getByRole('button', { name: 'Migrate projects (1)' }).click();
+        const modal = page.getByTestId('templateMigrationModal');
+        await modal.getByRole('combobox', { name: 'Files to share: Choose an option', exact: true }).selectOption('use-shared');
+        await expect(modal.getByText(/Delete this project's local export templates without adding/)).toBeVisible();
+        await modal.getByRole('button', { name: 'Apply changes', exact: true }).click();
+        await expect.poll(async () => page.evaluate(async () => {
+            const result = await window.__di_electron__!.invoke('exportTemplates.getJobs') as { data: { stage: string }[] };
+            return result.data.at(-1)?.stage;
+        })).toBe('complete');
+        expect((await fs.lstat(local(2))).isSymbolicLink()).toBe(true);
+        expect((await fs.readdir(path.dirname(local(2)))).some(name => name.startsWith('export_templates.launcher-'))).toBe(false);
+        if (sharedExists) {
+            expect(await fs.readdir(sharedSet)).toEqual(['web_release.zip']);
+            expect(await fs.readFile(path.join(sharedSet, 'web_release.zip'), 'utf8')).toBe('existing shared web');
+        } else expect(await fs.stat(sharedSet).catch(() => null)).toBeNull();
+        expect(await fs.readFile(path.join(local(0), '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('private build 0');
+    });
+}

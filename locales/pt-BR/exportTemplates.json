@@ -118,9 +118,11 @@
         "header": "Migrar projetos ({{number}})",
         "later": "Mais tarde",
         "close": "Fechar",
+        "done": "Concluído",
+        "finishLater": "Concluir mais tarde",
         "start": "Revisar projetos",
         "introduction": "Compartilhe modelos de exportação entre projetos para não manter arquivos duplicados.",
-        "offerDetail": "Revise cada projeto antes de alterar qualquer coisa. Você pode manter separados os modelos de compilações personalizadas ou com criptografia. Escolha Mais tarde para voltar a partir de Modelos de exportação quando estiver pronto.",
+        "offerDetail": "Escolha o que fazer com os modelos existentes. Projetos sem modelos locais são conectados automaticamente. Você pode voltar pelos Modelos de exportação.",
         "pending": "{{number}} projetos ainda precisam de uma decisão.",
         "explanation": "Escolha um projeto, decida quais modelos ele deve usar e revise as alterações. Outros projetos conectados usam os mesmos arquivos compartilhados.",
         "projects": "Projetos para revisar",
@@ -132,22 +134,16 @@
         "projectFiles": "Projeto",
         "keepSeparate": "Manter separados",
         "reviewChanges": "Revisar alterações",
-        "background": "O trabalho enviado continua quando você fecha esta janela. Reabra-a para revisar as alterações preparadas ou verificar o progresso.",
-        "useSharedReview": "Este projeto usará a coleção compartilhada. Nenhum arquivo compartilhado será adicionado ou substituído. Arquivos somente locais deixarão de estar disponíveis para este projeto, e arquivos locais diferentes serão substituídos pelas cópias compartilhadas após a migração ser concluída.",
-        "shareReview": "Os arquivos que você compartilhar ficarão disponíveis para outros projetos conectados que usam esta versão e edição. Revise cada adição e substituição não verificada. Os arquivos locais serão preservados até a migração ser concluída.",
-        "localOnlyReview": "Estes arquivos existem somente neste projeto. Escolha se deseja compartilhar cada um. Os arquivos que você não adicionar deixarão de estar disponíveis para este projeto após a migração.",
-        "shareFile": "Compartilhar arquivo do projeto",
-        "omitFile": "Não adicionar arquivo",
-        "metadataReview": "Os modelos originais serão preservados para restaurar a migração. Ocupam espaço até você removê-los explicitamente.",
+        "background": "As operações iniciadas continuam ao fechar esta janela.",
         "choices": {
-            "separate": "Manter os modelos deste projeto separados",
-            "use-shared": "Usar os modelos compartilhados",
-            "share-project": "Compartilhar os modelos deste projeto"
+            "share-project": "Mudar para modelos de exportação compartilhados",
+            "separate": "Manter separados os modelos de exportação deste projeto",
+            "use-shared": "Excluir modelos de exportação locais e usar os compartilhados"
         },
         "details": {
-            "separate": "Recomendado para compilações personalizadas ou com criptografia. Deixe os arquivos aqui e lembre-se desta escolha.",
-            "use-shared": "Use a coleção compartilhada existente sem adicionar ou substituir seus arquivos. Revise quais modelos locais este projeto deixará de usar.",
-            "share-project": "Mescle os arquivos selecionados do projeto na coleção compartilhada. As substituições afetam outros projetos conectados que usam a mesma versão e edição."
+            "share-project": "Adicionar os arquivos de exportação ausentes à pasta de modelos de exportação compartilhados. Os arquivos de exportação compartilhados existentes não mudam. O projeto passa a usar modelos compartilhados e seus modelos locais são excluídos.",
+            "use-shared": "Excluir os modelos de exportação locais deste projeto sem adicioná-los à pasta de modelos de exportação compartilhados. O projeto passa a usar modelos compartilhados, mesmo que ainda não existam para sua versão do Godot.",
+            "separate": "Continuar usando os modelos de exportação locais deste projeto. Nada é copiado para a pasta de modelos de exportação compartilhados e os outros projetos não mudam."
         },
         "reasons": {
             "connected": "Usa modelos compartilhados",
@@ -175,12 +171,6 @@
         },
         "recommended": "Recomendado",
         "otherOptions": "Outras opções",
-        "backups": "Originais preservados",
-        "backupNotice": "Os modelos originais serão preservados para restaurar a migração. Ocupam espaço até você removê-los explicitamente.",
-        "restore": "Restaurar modelos anteriores",
-        "discard": "Remover originais preservados",
-        "restoreDetail": "Restaurar os modelos originais do projeto e mantê-los separados. Os arquivos compartilhados alterados por esta migração também serão restaurados. A restauração para se os arquivos tiverem sido alterados depois.",
-        "discardDetail": "Remover permanentemente estes modelos originais? Você não poderá mais restaurar esta migração. Os modelos atuais não serão alterados.",
         "affected": "Outros projetos conectados",
         "noAffected": "Nenhum",
         "status": {
@@ -194,6 +184,9 @@
             "standard": "Padrão",
             "dotnet": ".NET",
             "custom": "Personalizado"
-        }
+        },
+        "projectColumn": "Projeto",
+        "actionColumn": "Ação",
+        "permanentDeletion": "Os modelos de exportação locais são excluídos permanentemente. Nenhum backup é mantido."
     }
 }

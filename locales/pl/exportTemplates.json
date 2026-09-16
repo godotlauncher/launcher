@@ -118,9 +118,11 @@
         "header": "Migracja projektów ({{number}})",
         "later": "Później",
         "close": "Zamknij",
+        "done": "Gotowe",
+        "finishLater": "Dokończ później",
         "start": "Przejrzyj projekty",
         "introduction": "Udostępniaj szablony eksportu między projektami, aby nie przechowywać zduplikowanych plików.",
-        "offerDetail": "Sprawdź każdy projekt, zanim cokolwiek zmienisz. Możesz zachować oddzielne szablony niestandardowych kompilacji lub kompilacji z szyfrowaniem. Wybierz Później, aby wrócić z Szablonów eksportu, gdy będziesz gotowy.",
+        "offerDetail": "Wybierz, co zrobić z istniejącymi szablonami. Projekty bez lokalnych szablonów łączą się automatycznie. Możesz wrócić przez Szablony eksportu.",
         "pending": "{{number}} projektów nadal wymaga decyzji.",
         "explanation": "Wybierz projekt, zdecyduj, których szablonów ma używać, a następnie sprawdź zmiany. Inne podłączone projekty używają tych samych współdzielonych plików.",
         "projects": "Projekty do sprawdzenia",
@@ -132,22 +134,16 @@
         "projectFiles": "Projekt",
         "keepSeparate": "Zachowaj oddzielnie",
         "reviewChanges": "Sprawdź zmiany",
-        "background": "Wysłana praca trwa po zamknięciu tego okna. Otwórz je ponownie, aby sprawdzić przygotowane zmiany lub postęp.",
-        "useSharedReview": "Ten projekt będzie używać współdzielonej kolekcji. Żadne współdzielone pliki nie zostaną dodane ani zastąpione. Pliki tylko lokalne przestaną być dostępne dla tego projektu, a różniące się pliki lokalne zostaną zastąpione współdzielonymi kopiami po pomyślnej migracji.",
-        "shareReview": "Udostępnione pliki staną się dostępne dla innych podłączonych projektów używających tej wersji i edycji. Sprawdź każde niezweryfikowane dodanie i zastąpienie. Pliki lokalne zostaną zachowane do pomyślnego zakończenia migracji.",
-        "localOnlyReview": "Te pliki istnieją tylko w tym projekcie. Wybierz, czy udostępnić każdy z nich. Pliki, których nie dodasz, przestaną być dostępne dla tego projektu po migracji.",
-        "shareFile": "Udostępnij plik projektu",
-        "omitFile": "Nie dodawaj pliku",
-        "metadataReview": "Oryginalne szablony zostaną zachowane, aby umożliwić przywrócenie migracji. Zajmują miejsce do czasu ich wyraźnego usunięcia.",
+        "background": "Rozpoczęte operacje będą kontynuowane po zamknięciu okna.",
         "choices": {
-            "separate": "Zachowaj szablony tego projektu oddzielnie",
-            "use-shared": "Użyj współdzielonych szablonów",
-            "share-project": "Udostępnij szablony tego projektu"
+            "share-project": "Przełącz na współdzielone szablony eksportu",
+            "separate": "Zachowaj oddzielne szablony eksportu tego projektu",
+            "use-shared": "Usuń lokalne szablony eksportu i używaj współdzielonych"
         },
         "details": {
-            "separate": "Zalecane dla niestandardowych kompilacji lub kompilacji z szyfrowaniem. Pozostaw pliki tutaj i zapamiętaj ten wybór.",
-            "use-shared": "Użyj istniejącej współdzielonej kolekcji bez dodawania ani zastępowania jej plików. Sprawdź, których lokalnych szablonów ten projekt przestanie używać.",
-            "share-project": "Scal wybrane pliki projektu ze współdzieloną kolekcją. Zastąpienia wpłyną na inne podłączone projekty używające tej samej wersji i edycji."
+            "share-project": "Dodaj brakujące pliki szablonów eksportu tego projektu do folderu współdzielonych szablonów eksportu. Istniejące wspólne pliki eksportu nie zmienią się. Projekt zacznie używać wspólnych szablonów, a lokalne zostaną usunięte.",
+            "use-shared": "Usuń lokalne szablony eksportu tego projektu bez dodawania ich do folderu współdzielonych szablonów eksportu. Projekt zacznie używać wspólnych szablonów, nawet jeśli nie są jeszcze zainstalowane dla jego wersji Godot.",
+            "separate": "Nadal używaj lokalnych szablonów eksportu tego projektu. Nic nie jest kopiowane do folderu współdzielonych szablonów eksportu. Inne projekty pozostają bez zmian."
         },
         "reasons": {
             "connected": "Używa współdzielonych szablonów",
@@ -175,12 +171,6 @@
         },
         "recommended": "Zalecane",
         "otherOptions": "Inne opcje",
-        "backups": "Zachowane oryginały",
-        "backupNotice": "Oryginalne szablony zostaną zachowane, aby umożliwić przywrócenie migracji. Zajmują miejsce do czasu ich wyraźnego usunięcia.",
-        "restore": "Przywróć poprzednie szablony",
-        "discard": "Usuń zachowane oryginały",
-        "restoreDetail": "Przywróć oryginalne szablony projektu i zachowaj je osobno. Przywrócone zostaną też pliki współdzielone zmienione przez tę migrację. Przywracanie zostanie zatrzymane, jeśli pliki zmieniły się później.",
-        "discardDetail": "Trwale usunąć te oryginalne szablony? Przywrócenie tej migracji nie będzie już możliwe. Obecne szablony nie zmienią się.",
         "affected": "Inne połączone projekty",
         "noAffected": "Brak",
         "status": {
@@ -194,6 +184,9 @@
             "standard": "Standard",
             "dotnet": ".NET",
             "custom": "Niestandardowy"
-        }
+        },
+        "projectColumn": "Projekt",
+        "actionColumn": "Działanie",
+        "permanentDeletion": "Lokalne szablony eksportu zostaną trwale usunięte. Kopia zapasowa nie będzie zachowana."
     }
 }

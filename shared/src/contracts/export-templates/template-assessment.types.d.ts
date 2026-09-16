@@ -69,14 +69,4 @@ export type TemplateMigrationAssessment = {
     projects: TemplateProjectAssessment[];
     pendingCount: number;
     recoveryIds: string[];
-    backups?: TemplateMigrationBackup[];
-};
-
-/** Retained originals from a completed migration. */
-export type TemplateMigrationBackup = {
-    id: string;
-    projectPath: string;
-    projectName: string;
-    sizeBytes: number;
-    sets: string[];
 };

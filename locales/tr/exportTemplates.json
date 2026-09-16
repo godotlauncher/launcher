@@ -118,9 +118,11 @@
         "header": "Projeleri taşı ({{number}})",
         "later": "Daha sonra",
         "close": "Kapat",
+        "done": "Bitti",
+        "finishLater": "Daha sonra tamamla",
         "start": "Projeleri incele",
         "introduction": "Yinelenen dosyaları tutmamak için dışa aktarma şablonlarını projeler arasında paylaşın.",
-        "offerDetail": "Hiçbir şeyi değiştirmeden önce her projeyi inceleyin. Özel veya şifreleme derlemesi şablonlarını ayrı tutabilirsiniz. Hazır olduğunuzda Dışa Aktarma Şablonları'ndan Daha sonra'yı seçerek geri dönebilirsiniz.",
+        "offerDetail": "Mevcut şablonlarla ne yapılacağını seçin. Yerel şablonu olmayan projeler otomatik bağlanır. Dışa Aktarma Şablonlarından geri dönebilirsiniz.",
         "pending": "{{number}} proje için hâlâ karar gerekiyor.",
         "explanation": "Bir proje seçin, hangi şablonları kullanacağına karar verin, ardından değişiklikleri inceleyin. Bağlı diğer projeler aynı ortak dosyaları kullanır.",
         "projects": "İncelenecek projeler",
@@ -132,22 +134,16 @@
         "projectFiles": "Proje",
         "keepSeparate": "Ayrı tut",
         "reviewChanges": "Değişiklikleri incele",
-        "background": "Bu pencereyi kapattığınızda gönderilen çalışma sürer. Hazırlanan değişiklikleri incelemek veya ilerlemeyi denetlemek için yeniden açın.",
-        "useSharedReview": "Bu proje ortak koleksiyonu kullanacak. Ortak dosyalar eklenmeyecek veya değiştirilmeyecek. Yalnızca yerelde bulunan dosyalar bu proje için artık kullanılamayacak; farklı yerel dosyalar taşıma başarıyla tamamlandıktan sonra ortak kopyalarla değiştirilecek.",
-        "shareReview": "Paylaştığınız dosyalar, bu sürümü ve türü kullanan bağlı diğer projelerde kullanılabilir olur. Doğrulanmamış her eklemeyi ve değiştirmeyi inceleyin. Yerel dosyalar taşıma başarıyla tamamlanana kadar korunur.",
-        "localOnlyReview": "Bu dosyalar yalnızca bu projede bulunur. Her birini paylaşmayı seçin. Eklemeyeceğiniz dosyalar taşımadan sonra bu proje için artık kullanılamaz.",
-        "shareFile": "Proje dosyasını paylaş",
-        "omitFile": "Dosyayı ekleme",
-        "metadataReview": "Geçişi geri yükleyebilmek için özgün şablonlar saklanır. Siz açıkça kaldırana kadar disk alanı kullanırlar.",
+        "background": "Başlatılan işlemler bu pencereyi kapattığınızda devam eder.",
         "choices": {
-            "separate": "Bu projenin şablonlarını ayrı tut",
-            "use-shared": "Ortak şablonları kullan",
-            "share-project": "Bu projenin şablonlarını paylaş"
+            "share-project": "Paylaşılan dışa aktarma şablonlarına geç",
+            "separate": "Bu projenin dışa aktarma şablonlarını ayrı tut",
+            "use-shared": "Yerel dışa aktarma şablonlarını sil ve paylaşılanları kullan"
         },
         "details": {
-            "separate": "Özel veya şifreleme derlemeleri için önerilir. Dosyaları burada bırakın ve bu seçimi hatırlayın.",
-            "use-shared": "Dosyalarını eklemeden veya değiştirmeden mevcut ortak koleksiyonu kullanın. Bu projenin kullanmayı bırakacağı yerel şablonları inceleyin.",
-            "share-project": "Seçilen proje dosyalarını ortak koleksiyonla birleştirin. Değiştirmeler, aynı sürümü ve türü kullanan bağlı diğer projeleri etkiler."
+            "share-project": "Bu projenin eksik dışa aktarma şablonu dosyalarını paylaşılan dışa aktarma şablonları klasörüne ekleyin. Mevcut paylaşılan dışa aktarma dosyaları değişmez. Proje paylaşılan şablonlara geçer; yerel şablonları silinir.",
+            "use-shared": "Bu projenin yerel dışa aktarma şablonlarını paylaşılan dışa aktarma şablonları klasörüne eklemeden silin. Proje, kendi Godot sürümü için henüz kurulu olmasalar bile paylaşılan şablonları kullanır.",
+            "separate": "Bu projenin yerel dışa aktarma şablonlarını kullanmaya devam edin. Paylaşılan dışa aktarma şablonları klasörüne hiçbir şey kopyalanmaz ve diğer projeler etkilenmez."
         },
         "reasons": {
             "connected": "Ortak şablonları kullanıyor",
@@ -175,12 +171,6 @@
         },
         "recommended": "Önerilen",
         "otherOptions": "Diğer seçenekler",
-        "backups": "Saklanan asıllar",
-        "backupNotice": "Geçişi geri yükleyebilmek için özgün şablonlar saklanır. Siz açıkça kaldırana kadar disk alanı kullanırlar.",
-        "restore": "Önceki şablonları geri yükle",
-        "discard": "Saklanan asılları kaldır",
-        "restoreDetail": "Projenin özgün şablonlarını geri yükleyip ayrı tutun. Bu geçişte değiştirilen paylaşılan dosyalar da geri yüklenir. Dosyalar geçişten sonra değiştiyse geri yükleme durur.",
-        "discardDetail": "Bu özgün şablonlar kalıcı olarak kaldırılsın mı? Bu geçiş artık geri yüklenemez. Mevcut şablonlar değişmez.",
         "affected": "Diğer bağlı projeler",
         "noAffected": "Yok",
         "status": {
@@ -194,6 +184,9 @@
             "standard": "Standart",
             "dotnet": ".NET",
             "custom": "Özel"
-        }
+        },
+        "projectColumn": "Proje",
+        "actionColumn": "İşlem",
+        "permanentDeletion": "Yerel dışa aktarma şablonları kalıcı olarak silinir. Yedek tutulmaz."
     }
 }

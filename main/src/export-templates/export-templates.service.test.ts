@@ -209,230 +209,153 @@ describe('export template downloads', () => {
     });
 });
 
-describe('template migration preparation', () => {
-    it('requires explicit local-only choices and snapshots the complete local folder', async () => {
-        const project = {
-            path: path.resolve('project'),
-            name: 'Project',
-            launch_path: path.resolve('editor', 'Godot'),
-            release: { source: 'official', version: '4.4-stable', mono: false },
-        } as ProjectDetails;
+describe('template migration policy', () => {
+    const project = {
+        path: path.resolve('project'),
+        name: 'Project',
+        launch_path: path.resolve('editor', 'Godot'),
+        release: { source: 'official', version: '4.4-stable', mono: false },
+    } as ProjectDetails;
+    const local = path.join(
+        path.dirname(project.launch_path),
+        'editor_data',
+        'export_templates',
+    );
+    const web = {
+        relative: 'web.zip',
+        hash: 'local-web',
+        size: 20,
+        mode: 0o755,
+    };
+    const linux = { relative: 'linux', hash: 'linux', size: 30, mode: 0o755 };
+    const sharedWeb = { ...web, hash: 'shared-web', mode: 0o644 };
+    beforeEach(() => {
         list.mockResolvedValue([project]);
         vi.mocked(templateConnectionStatus).mockResolvedValue('local');
         vi.mocked(fs.promises.readdir).mockResolvedValue([
             '4.4.stable',
-            '4.4.stable.mono',
         ] as never);
-        const local = path.join(
-            path.dirname(project.launch_path),
-            'editor_data',
-            'export_templates',
-        );
-        const file = {
-            relative: 'nested/template',
-            hash: 'a',
-            size: 20,
-            mode: 0o644,
-        };
+        vi.mocked(stageTemplateSets).mockResolvedValue([]);
         vi.mocked(readTemplateTree).mockImplementation(async (directory) => {
             if (directory === local)
-                return [
-                    { ...file, relative: `4.4.stable/${file.relative}` },
-                    {
-                        ...file,
-                        relative: `4.4.stable.mono/${file.relative}`,
-                    },
-                ];
-            return directory.startsWith(local + path.sep) ? [file] : [];
+                return [web, linux].map((file) => ({
+                    ...file,
+                    relative: `4.4.stable/${file.relative}`,
+                }));
+            return directory.startsWith(local + path.sep)
+                ? [web, linux]
+                : [sharedWeb];
         });
-        await service.prepareMigration(project.path);
+    });
+    it('adds missing files and preserves existing shared contents and permissions without review', async () => {
+        await service.prepareMigration(project.path, 'share-project');
         await vi.waitFor(async () =>
-            expect((await service.getJob())?.stage).toBe('review'),
-        );
-        expect(readTemplateTree).toHaveBeenCalledTimes(5);
-        expect(await service.getJob()).toMatchObject({
-            projectPath: project.path,
-            review: {
-                migrationChoice: 'share-project',
-                requiredDecisions: [
-                    `4.4.stable.mono/${file.relative}`,
-                    `4.4.stable/${file.relative}`,
-                ],
-            },
-        });
-        vi.mocked(stageTemplateSets).mockResolvedValue([]);
-        const job = await service.getJob();
-        if (!job) throw new Error('Expected a migration job');
-        const decisions = {
-            [`4.4.stable/${file.relative}`]: 'incoming' as const,
-            [`4.4.stable.mono/${file.relative}`]: 'incoming' as const,
-        };
-        await service.apply(job.id, decisions);
-        await vi.waitFor(() =>
-            expect(commitTemplateTransaction).toHaveBeenCalled(),
+            expect((await service.getJob())?.stage).toBe('complete'),
         );
         expect(stageTemplateSets).toHaveBeenCalledWith(
             path.resolve('fixture-shared'),
             expect.any(String),
             expect.any(Array),
-            decisions,
+            { '4.4.stable/web.zip': 'shared', '4.4.stable/linux': 'incoming' },
             expect.any(AbortSignal),
-            new Set(Object.keys(decisions)),
+            new Set(['4.4.stable/web.zip', '4.4.stable/linux']),
         );
-        expect(commitTemplateTransaction).toHaveBeenCalledWith(
-            path.resolve('fixture-shared'),
-            expect.any(String),
-            expect.objectContaining({
-                version: 2,
-                sourceHash: templateFingerprint([
-                    { ...file, relative: `4.4.stable/${file.relative}` },
-                    { ...file, relative: `4.4.stable.mono/${file.relative}` },
-                ]),
-            }),
-            local,
-            path.resolve('fixture-shared'),
-        );
-    });
-
-    it('reviews metadata and local differences without staging shared changes for use-shared', async () => {
-        const project = {
-            path: path.resolve('use-shared-project'),
-            name: 'Use shared project',
-            launch_path: path.resolve('use-shared-editor', 'Godot'),
-            release: { source: 'official', version: '4.4-stable', mono: false },
-        } as ProjectDetails;
-        const local = path.join(
-            path.dirname(project.launch_path),
-            'editor_data',
-            'export_templates',
-        );
-        const localFile = {
-            relative: 'template.zip',
-            hash: 'local',
-            size: 20,
-            mode: 0o644,
-        };
-        const sharedFile = { ...localFile, hash: 'shared', size: 30 };
-        const metadata = {
-            relative: '.DS_Store',
-            hash: 'metadata',
-            size: 4,
-            mode: 0o644,
-        };
-        list.mockResolvedValue([project]);
-        vi.mocked(templateConnectionStatus).mockResolvedValue('local');
-        vi.mocked(templateLstat).mockImplementation(async (filename) =>
-            filename === path.join(path.resolve('fixture-shared'), '4.4.stable')
-                ? ({ isDirectory: () => true } as fs.Stats)
-                : undefined,
-        );
-        vi.mocked(fs.promises.readdir).mockResolvedValue([
-            '.DS_Store',
-            '4.4.stable',
-        ] as never);
-        vi.mocked(readTemplateTree).mockImplementation(async (directory) => {
-            if (directory === local)
-                return [
-                    metadata,
-                    {
-                        ...localFile,
-                        relative: `4.4.stable/${localFile.relative}`,
-                    },
-                ];
-            if (directory.startsWith(local + path.sep)) return [localFile];
-            return [sharedFile];
-        });
-
-        await service.prepareMigration(project.path, 'use-shared');
-        await vi.waitFor(async () =>
-            expect((await service.getJob())?.stage).toBe('review'),
-        );
-        expect(await service.getJob()).toMatchObject({
-            projectPath: project.path,
-            review: {
-                migrationChoice: 'use-shared',
-                metadata: ['.DS_Store'],
-                requiredDecisions: [],
-                files: [
-                    {
-                        path: '4.4.stable/template.zip',
-                        state: 'different',
-                        localBytes: 20,
-                        sharedBytes: 30,
-                    },
-                ],
-            },
-        });
-        const job = await service.getJob();
-        if (!job) throw new Error('Expected a migration job');
-        await service.apply(job.id, {});
-        await vi.waitFor(() =>
-            expect(commitTemplateTransaction).toHaveBeenCalled(),
-        );
-        expect(stageTemplateSets).not.toHaveBeenCalled();
+        expect((await service.getJob())?.review).toBeUndefined();
         expect(commitTemplateTransaction).toHaveBeenCalledWith(
             path.resolve('fixture-shared'),
             expect.any(String),
             expect.objectContaining({
                 projectPath: project.path,
-                sourceHash: templateFingerprint([
-                    metadata,
-                    {
-                        ...localFile,
-                        relative: `4.4.stable/${localFile.relative}`,
-                    },
-                ]),
-                sets: [
-                    expect.objectContaining({
-                        id: '4.4.stable',
-                        existed: true,
-                        before: templateFingerprint([sharedFile]),
-                        after: templateFingerprint([sharedFile]),
-                    }),
-                ],
+                retainBackup: false,
             }),
             local,
             path.resolve('fixture-shared'),
         );
     });
-
-    it('rejects a local change captured after the per-file migration review', async () => {
-        const project = {
-            path: path.resolve('changing-project'),
-            name: 'Changing project',
-            launch_path: path.resolve('changing-editor', 'Godot'),
-            release: { source: 'official', version: '4.4-stable', mono: false },
-        } as ProjectDetails;
-        const local = path.join(
-            path.dirname(project.launch_path),
-            'editor_data',
-            'export_templates',
-        );
-        const reviewed = {
-            relative: 'template.zip',
-            hash: 'reviewed',
-            size: 20,
-            mode: 0o644,
-        };
-        list.mockResolvedValue([project]);
-        vi.mocked(templateConnectionStatus).mockResolvedValue('local');
+    it.each([true, false])(
+        'discards local files without changing shared files (shared set exists: %s)',
+        async (exists) => {
+            vi.mocked(readTemplateTree).mockImplementation(
+                async (directory) => {
+                    if (directory === local)
+                        return [web, linux].map((file) => ({
+                            ...file,
+                            relative: `4.4.stable/${file.relative}`,
+                        }));
+                    return directory.startsWith(local + path.sep)
+                        ? [web, linux]
+                        : exists
+                          ? [sharedWeb]
+                          : [];
+                },
+            );
+            await service.prepareMigration(project.path, 'use-shared');
+            await vi.waitFor(async () =>
+                expect((await service.getJob())?.stage).toBe('complete'),
+            );
+            const unchanged = templateFingerprint(exists ? [sharedWeb] : []);
+            expect(stageTemplateSets).not.toHaveBeenCalled();
+            expect(commitTemplateTransaction).toHaveBeenCalledWith(
+                path.resolve('fixture-shared'),
+                expect.any(String),
+                expect.objectContaining({
+                    projectPath: project.path,
+                    retainBackup: false,
+                    sets: [
+                        expect.objectContaining({
+                            id: '4.4.stable',
+                            before: unchanged,
+                            after: unchanged,
+                        }),
+                    ],
+                }),
+                local,
+                path.resolve('fixture-shared'),
+            );
+        },
+    );
+    it('does not add files belonging to another version or edition', async () => {
         vi.mocked(fs.promises.readdir).mockResolvedValue([
             '4.4.stable',
+            '4.4.stable.mono',
         ] as never);
+        vi.mocked(readTemplateTree).mockImplementation(async (directory) => {
+            if (directory === local)
+                return ['4.4.stable', '4.4.stable.mono'].map((id) => ({
+                    ...web,
+                    relative: `${id}/${web.relative}`,
+                }));
+            return directory.startsWith(local + path.sep) ? [web] : [];
+        });
+        await service.prepareMigration(project.path);
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('complete'),
+        );
+        expect(stageTemplateSets).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.any(String),
+            expect.any(Array),
+            {
+                '4.4.stable/web.zip': 'incoming',
+                '4.4.stable.mono/web.zip': 'shared',
+            },
+            expect.any(AbortSignal),
+            expect.any(Set),
+        );
+    });
+    it('rejects source changes during preparation before committing', async () => {
         vi.mocked(readTemplateTree).mockImplementation(async (directory) => {
             if (directory === local)
                 return [
                     {
-                        ...reviewed,
-                        relative: `4.4.stable/${reviewed.relative}`,
-                        hash: 'changed-after-review',
+                        ...web,
+                        relative: `4.4.stable/${web.relative}`,
+                        hash: 'changed',
                     },
                 ];
-            if (directory.startsWith(local + path.sep)) return [reviewed];
-            return [];
+            return directory.startsWith(local + path.sep) ? [web] : [];
         });
-
-        await service.prepareMigration(project.path, 'use-shared');
+        await service.prepareMigration(project.path);
         await vi.waitFor(async () =>
             expect((await service.getJob())?.stage).toBe('error'),
         );
@@ -441,149 +364,55 @@ describe('template migration preparation', () => {
         );
         expect(commitTemplateTransaction).not.toHaveBeenCalled();
     });
-
-    it('offers a choice for a permission-only project difference', async () => {
-        const project = {
-            path: path.resolve('mode-project'),
-            name: 'Mode project',
-            launch_path: path.resolve('mode-editor', 'Godot'),
-            release: { source: 'official', version: '4.4-stable', mono: false },
-        } as ProjectDetails;
-        const local = path.join(
-            path.dirname(project.launch_path),
-            'editor_data',
-            'export_templates',
-        );
-        const projectFile = {
-            relative: 'template.zip',
-            hash: 'same-content',
-            size: 20,
-            mode: 0o755,
-        };
-        const sharedFile = { ...projectFile, mode: 0o644 };
-        list.mockResolvedValue([project]);
-        vi.mocked(templateConnectionStatus).mockResolvedValue('local');
-        vi.mocked(templateLstat).mockImplementation(async (filename) =>
-            filename === path.join(path.resolve('fixture-shared'), '4.4.stable')
-                ? ({ isDirectory: () => true } as fs.Stats)
-                : undefined,
-        );
-        vi.mocked(fs.promises.readdir).mockResolvedValue([
-            '4.4.stable',
-        ] as never);
-        vi.mocked(readTemplateTree).mockImplementation(async (directory) => {
-            if (directory === local)
-                return [
-                    {
-                        ...projectFile,
-                        relative: `4.4.stable/${projectFile.relative}`,
-                    },
-                ];
-            if (directory.startsWith(local + path.sep)) return [projectFile];
-            return [sharedFile];
-        });
-
-        await service.prepareMigration(project.path);
-        await vi.waitFor(async () =>
-            expect((await service.getJob())?.stage).toBe('review'),
-        );
-        expect((await service.getJob())?.review).toMatchObject({
-            conflicts: [
-                {
-                    path: '4.4.stable/template.zip',
-                    sharedBytes: 20,
-                    incomingBytes: 20,
-                },
-            ],
-            requiredDecisions: ['4.4.stable/template.zip'],
-            files: [
-                {
-                    path: '4.4.stable/template.zip',
-                    state: 'different',
-                },
-            ],
-        });
-    });
-
-    it('queues same-version projects serially and rejects the same project twice', async () => {
-        const first = {
-            path: path.resolve('first-project'),
-            name: 'First project',
-            launch_path: path.resolve('first-editor', 'Godot'),
-            release: { source: 'official', version: '4.4-stable', mono: false },
-        } as ProjectDetails;
+    it('queues projects sequentially and rejects duplicate submissions while active', async () => {
         const second = {
-            ...first,
+            ...project,
             path: path.resolve('second-project'),
-            name: 'Second project',
             launch_path: path.resolve('second-editor', 'Godot'),
         };
-        list.mockResolvedValue([first, second]);
-        vi.mocked(templateConnectionStatus).mockResolvedValue('local');
-        vi.mocked(fs.promises.readdir).mockResolvedValue([
-            '4.4.stable',
-        ] as never);
-
-        await service.prepareMigration(first.path);
-        await vi.waitFor(async () =>
-            expect((await service.getJob())?.stage).toBe('review'),
+        list.mockResolvedValue([project, second]);
+        let releaseCommit!: () => void;
+        vi.mocked(commitTemplateTransaction).mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    releaseCommit = resolve;
+                }),
+        );
+        await service.prepareMigration(project.path);
+        await vi.waitFor(() =>
+            expect(commitTemplateTransaction).toHaveBeenCalledTimes(1),
         );
         await service.prepareMigration(second.path);
-        await expect(service.prepareMigration(first.path)).rejects.toThrow(
+        await expect(service.prepareMigration(project.path)).rejects.toThrow(
             'errors.busy',
         );
-        expect(
-            (await service.getJobs()).map(({ projectPath, stage }) => ({
-                projectPath,
-                stage,
-            })),
-        ).toEqual([
-            { projectPath: first.path, stage: 'review' },
-            { projectPath: second.path, stage: 'queued' },
+        expect((await service.getJobs()).map((job) => job.stage)).toEqual([
+            'applying',
+            'queued',
         ]);
-
-        const queued = (await service.getJobs()).find(
-            (job) => job.projectPath === second.path,
+        // The second project has no files and observes the shared collection only when executed.
+        vi.mocked(templateConnectionStatus).mockImplementation(
+            async (filename) =>
+                filename.includes('second-editor') ? 'shared' : 'local',
         );
-        const active = await service.getJob();
-        if (!queued || !active) throw new Error('Expected migration jobs');
-        await service.cancel(queued.id);
-        await service.cancel(active.id);
+        releaseCommit();
+        await vi.waitFor(async () =>
+            expect(
+                (await service.getJobs()).every(
+                    (job) => job.stage === 'complete',
+                ),
+            ).toBe(true),
+        );
     });
-
     it.each(['local', 'missing'] as const)(
-        'reviews an %s collection before connecting it',
+        'connects an empty %s collection without a review',
         async (initialStatus) => {
-            const project = {
-                path: path.resolve(`${initialStatus}-project`),
-                name: `${initialStatus} project`,
-                launch_path: path.resolve(`${initialStatus}-editor`, 'Godot'),
-                release: {
-                    source: 'official',
-                    version: '4.4-stable',
-                    mono: false,
-                },
-            } as ProjectDetails;
-            list.mockResolvedValue([project]);
             vi.mocked(templateConnectionStatus)
                 .mockResolvedValue('shared')
                 .mockResolvedValueOnce(initialStatus)
                 .mockResolvedValueOnce(initialStatus);
             vi.mocked(fs.promises.readdir).mockResolvedValue([]);
-
-            await service.prepareMigration(project.path, 'use-shared');
-            await vi.waitFor(async () =>
-                expect((await service.getJob())?.stage).toBe('review'),
-            );
-            expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
-            expect((await service.getJob())?.review).toMatchObject({
-                migrationChoice: 'use-shared',
-                sets: ['4.4.stable'],
-                files: [],
-            });
-            const job = await service.getJob();
-            if (!job) throw new Error('Expected a migration job');
-            await service.apply(job.id, {});
+            await service.prepareMigration(project.path, 'share-project');
             await vi.waitFor(async () =>
                 expect((await service.getJob())?.stage).toBe('complete'),
             );
@@ -595,6 +424,62 @@ describe('template migration preparation', () => {
             expect(commitTemplateTransaction).not.toHaveBeenCalled();
         },
     );
+    it('automatic discovery skips separate and custom projects and connects only empty candidates', async () => {
+        const separate = {
+            ...project,
+            path: path.resolve('separate'),
+            exportTemplateMode: 'separate' as const,
+        };
+        const custom = {
+            ...project,
+            path: path.resolve('custom'),
+            release: { ...project.release, source: 'custom' as const },
+        };
+        list.mockResolvedValue([project, separate, custom]);
+        vi.mocked(assessProjectTemplates).mockImplementation(async (item) => ({
+            projectPath: item.path,
+            name: item.name,
+            state: 'ready',
+            reason: 'empty',
+            pending: item === project,
+            compared: false,
+            provenance: 'unverified',
+            setIds: [],
+            metadata: [],
+            unexpected: [],
+        }));
+        vi.mocked(templateConnectionStatus)
+            .mockResolvedValue('shared')
+            .mockResolvedValueOnce('missing')
+            .mockResolvedValueOnce('missing');
+        await service.connectEmptyProjects();
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('complete'),
+        );
+        expect((await service.getJobs()).map((job) => job.projectPath)).toEqual(
+            [project.path],
+        );
+    });
+    it('automatic connections refuse files added after discovery', async () => {
+        vi.mocked(assessProjectTemplates).mockResolvedValue({
+            projectPath: project.path,
+            name: project.name,
+            state: 'ready',
+            reason: 'empty',
+            pending: true,
+            compared: false,
+            provenance: 'unverified',
+            setIds: [],
+            metadata: [],
+            unexpected: [],
+        });
+        await service.connectEmptyProjects();
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('error'),
+        );
+        expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
+    });
 });
 
 describe('template migration recovery', () => {

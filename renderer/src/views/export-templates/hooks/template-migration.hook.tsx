@@ -67,6 +67,16 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
         }
     }, []);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Recheck only when registered project environments change.
+    useEffect(() => {
+        void exportTemplatesBridge
+            .connectEmptyProjects()
+            .then(refresh)
+            .catch(() => {
+                setError('exportTemplates:errors.connection');
+            });
+    }, [projectLifecycle, refresh]);
+
     // biome-ignore lint/correctness/useExhaustiveDependencies: Only lifecycle changes require a metadata rescan.
     useEffect(() => {
         void refresh();

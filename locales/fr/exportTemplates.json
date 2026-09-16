@@ -118,9 +118,11 @@
         "header": "Migrer les projets ({{number}})",
         "later": "Plus tard",
         "close": "Fermer",
+        "done": "Terminé",
+        "finishLater": "Terminer plus tard",
         "start": "Examiner les projets",
         "introduction": "Partagez les modèles d'exportation entre les projets pour éviter de conserver des fichiers en double.",
-        "offerDetail": "Examinez chaque projet avant de modifier quoi que ce soit. Vous pouvez séparer les modèles de versions personnalisées ou avec chiffrement. Choisissez Plus tard pour revenir depuis Modèles d'exportation lorsque vous serez prêt.",
+        "offerDetail": "Choisissez quoi faire des modèles existants. Les projets sans modèles locaux sont connectés automatiquement. Vous pouvez revenir depuis Modèles d’exportation.",
         "pending": "{{number}} projets nécessitent encore une décision.",
         "explanation": "Choisissez un projet, décidez quels modèles il doit utiliser, puis examinez les modifications. Les autres projets connectés utilisent les mêmes fichiers partagés.",
         "projects": "Projets à examiner",
@@ -132,22 +134,16 @@
         "projectFiles": "Projet",
         "keepSeparate": "Garder séparés",
         "reviewChanges": "Examiner les modifications",
-        "background": "Le travail soumis continue lorsque vous fermez cette fenêtre. Rouvrez-la pour examiner les modifications préparées ou vérifier la progression.",
-        "useSharedReview": "Ce projet utilisera la collection partagée. Aucun fichier partagé ne sera ajouté ou remplacé. Les fichiers uniquement locaux ne seront plus disponibles pour ce projet, et les fichiers locaux différents seront remplacés par les copies partagées après une migration réussie.",
-        "shareReview": "Les fichiers que vous partagez deviennent disponibles pour les autres projets connectés utilisant cette version et cette édition. Examinez chaque ajout et remplacement non vérifié. Les fichiers locaux sont conservés jusqu'à la réussite de la migration.",
-        "localOnlyReview": "Ces fichiers n'existent que dans ce projet. Choisissez de partager ou non chacun d'eux. Les fichiers que vous n'ajoutez pas ne seront plus disponibles pour ce projet après la migration.",
-        "shareFile": "Partager le fichier du projet",
-        "omitFile": "Ne pas ajouter le fichier",
-        "metadataReview": "Les modèles originaux seront conservés pour restaurer la migration. Ils occupent de l'espace jusqu'à leur suppression explicite.",
+        "background": "Les opérations lancées continuent après la fermeture de cette fenêtre.",
         "choices": {
-            "separate": "Garder les modèles de ce projet séparés",
-            "use-shared": "Utiliser les modèles partagés",
-            "share-project": "Partager les modèles de ce projet"
+            "share-project": "Passer aux modèles d’exportation partagés",
+            "separate": "Garder les modèles d’exportation de ce projet séparés",
+            "use-shared": "Supprimer les modèles d’exportation locaux et utiliser les partagés"
         },
         "details": {
-            "separate": "Recommandé pour les versions personnalisées ou avec chiffrement. Laissez les fichiers ici et souvenez-vous de ce choix.",
-            "use-shared": "Utilisez la collection partagée existante sans ajouter ni remplacer ses fichiers. Examinez quels modèles locaux ce projet cessera d'utiliser.",
-            "share-project": "Fusionnez les fichiers sélectionnés du projet dans la collection partagée. Les remplacements affectent les autres projets connectés utilisant la même version et édition."
+            "share-project": "Ajouter les fichiers de modèles d’exportation manquants au dossier des modèles d’exportation partagés. Les fichiers d’exportation partagés existants restent inchangés. Ce projet utilise ensuite les modèles partagés ; ses modèles locaux sont supprimés.",
+            "use-shared": "Supprimer les modèles d’exportation locaux de ce projet sans les ajouter au dossier des modèles d’exportation partagés. Ce projet utilise ensuite les modèles partagés, même si aucun n’est installé pour sa version de Godot.",
+            "separate": "Continuer à utiliser les modèles d’exportation locaux de ce projet. Rien n’est copié dans le dossier des modèles d’exportation partagés et les autres projets restent inchangés."
         },
         "reasons": {
             "connected": "Utilise les modèles partagés",
@@ -175,12 +171,6 @@
         },
         "recommended": "Recommandé",
         "otherOptions": "Autres options",
-        "backups": "Originaux conservés",
-        "backupNotice": "Les modèles originaux seront conservés pour restaurer la migration. Ils occupent de l'espace jusqu'à leur suppression explicite.",
-        "restore": "Restaurer les modèles précédents",
-        "discard": "Supprimer les originaux conservés",
-        "restoreDetail": "Restaurer les modèles originaux du projet et les garder séparés. Les fichiers partagés modifiés par cette migration seront aussi restaurés. La restauration s'arrête si les fichiers ont changé depuis.",
-        "discardDetail": "Supprimer définitivement ces modèles originaux ? Cette migration ne pourra plus être restaurée. Les modèles actuels resteront inchangés.",
         "affected": "Autres projets connectés",
         "noAffected": "Aucun",
         "status": {
@@ -194,6 +184,9 @@
             "standard": "Standard",
             "dotnet": ".NET",
             "custom": "Personnalisé"
-        }
+        },
+        "projectColumn": "Projet",
+        "actionColumn": "Action",
+        "permanentDeletion": "Les modèles d’exportation locaux sont supprimés définitivement. Aucune sauvegarde n’est conservée."
     }
 }

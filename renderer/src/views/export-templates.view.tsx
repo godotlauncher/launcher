@@ -114,7 +114,6 @@ export function ExportTemplatesView() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {migration.assessment?.pendingCount ||
-                        migration.assessment?.backups?.length ||
                         jobs.some(
                             (job) =>
                                 job.projectPath &&
@@ -131,18 +130,10 @@ export function ExportTemplatesView() {
                                     className="size-4"
                                     aria-hidden="true"
                                 />
-                                {t(
-                                    migration.assessment?.pendingCount
-                                        ? 'migration.header'
-                                        : migration.assessment?.backups?.length
-                                          ? 'migration.backups'
-                                          : 'migration.header',
-                                    {
-                                        number:
-                                            migration.assessment
-                                                ?.pendingCount ?? 0,
-                                    },
-                                )}
+                                {t('migration.header', {
+                                    number:
+                                        migration.assessment?.pendingCount ?? 0,
+                                })}
                             </button>
                         ) : null}
                         <button

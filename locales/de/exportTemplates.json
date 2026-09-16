@@ -118,9 +118,11 @@
         "header": "Projekte migrieren ({{number}})",
         "later": "Später",
         "close": "Schliessen",
+        "done": "Fertig",
+        "finishLater": "Später abschliessen",
         "start": "Projekte prüfen",
         "introduction": "Teilen Sie Exportvorlagen zwischen Projekten, damit keine doppelten Dateien gepflegt werden müssen.",
-        "offerDetail": "Prüfen Sie jedes Projekt, bevor Sie etwas ändern. Sie können Vorlagen für benutzerdefinierte oder Verschlüsselungs-Builds getrennt halten. Wählen Sie Später, um jederzeit von Exportvorlagen zurückzukehren.",
+        "offerDetail": "Wähle, was mit vorhandenen Projektvorlagen geschehen soll. Projekte ohne lokale Vorlagen werden automatisch verbunden. Du kannst später über Exportvorlagen zurückkehren.",
         "pending": "{{number}} Projekte benötigen noch eine Entscheidung.",
         "explanation": "Wählen Sie ein Projekt, entscheiden Sie, welche Vorlagen es verwenden soll, und prüfen Sie dann die Änderungen. Andere verbundene Projekte verwenden dieselben freigegebenen Dateien.",
         "projects": "Zu prüfende Projekte",
@@ -132,22 +134,16 @@
         "projectFiles": "Projekt",
         "keepSeparate": "Getrennt halten",
         "reviewChanges": "Änderungen prüfen",
-        "background": "Übermittelte Arbeit läuft weiter, wenn Sie dieses Fenster schliessen. Öffnen Sie es erneut, um vorbereitete Änderungen zu prüfen oder den Fortschritt zu sehen.",
-        "useSharedReview": "Dieses Projekt verwendet die freigegebene Sammlung. Es werden keine freigegebenen Dateien hinzugefügt oder ersetzt. Nur lokal vorhandene Dateien sind für dieses Projekt nicht mehr verfügbar, und abweichende lokale Dateien werden nach erfolgreicher Migration durch die freigegebenen Kopien ersetzt.",
-        "shareReview": "Dateien, die Sie teilen, werden für andere verbundene Projekte mit dieser Version und Edition verfügbar. Prüfen Sie jede nicht verifizierte Hinzufügung und Ersetzung. Lokale Dateien bleiben bis zum Erfolg der Migration erhalten.",
-        "localOnlyReview": "Diese Dateien gibt es nur in diesem Projekt. Entscheiden Sie, ob Sie jede einzelne teilen möchten. Dateien, die Sie nicht hinzufügen, sind nach der Migration für dieses Projekt nicht mehr verfügbar.",
-        "shareFile": "Projektdatei teilen",
-        "omitFile": "Datei nicht hinzufügen",
-        "metadataReview": "Originalvorlagen werden zur Wiederherstellung aufbewahrt und belegen bis zur ausdrücklichen Entfernung Speicherplatz.",
+        "background": "Gestartete Vorgänge laufen weiter, wenn du dieses Fenster schließt.",
         "choices": {
-            "separate": "Vorlagen dieses Projekts getrennt halten",
-            "use-shared": "Freigegebene Vorlagen verwenden",
-            "share-project": "Vorlagen dieses Projekts teilen"
+            "share-project": "Zu gemeinsamen Exportvorlagen wechseln",
+            "separate": "Exportvorlagen dieses Projekts getrennt halten",
+            "use-shared": "Lokale Exportvorlagen löschen und gemeinsame verwenden"
         },
         "details": {
-            "separate": "Empfohlen für benutzerdefinierte oder Verschlüsselungs-Builds. Lassen Sie die Dateien hier und merken Sie sich diese Wahl.",
-            "use-shared": "Verwenden Sie die bestehende freigegebene Sammlung, ohne ihre Dateien hinzuzufügen oder zu ersetzen. Prüfen Sie, welche lokalen Vorlagen dieses Projekt nicht mehr verwenden wird.",
-            "share-project": "Führen Sie ausgewählte Projektdateien mit der freigegebenen Sammlung zusammen. Ersetzungen betreffen andere verbundene Projekte mit derselben Version und Edition."
+            "share-project": "Fehlende Exportvorlagendateien dieses Projekts zum gemeinsamen Exportvorlagenordner hinzufügen. Vorhandene gemeinsame Exportvorlagendateien bleiben unverändert. Dieses Projekt verwendet danach gemeinsame Exportvorlagen; seine lokalen Exportvorlagen werden gelöscht.",
+            "use-shared": "Die lokalen Exportvorlagen dieses Projekts löschen, ohne sie zum gemeinsamen Exportvorlagenordner hinzuzufügen. Das Projekt verwendet danach gemeinsame Exportvorlagen, auch wenn noch keine für seine Godot-Version installiert sind.",
+            "separate": "Weiter die lokalen Exportvorlagen dieses Projekts verwenden. Nichts wird in den gemeinsamen Exportvorlagenordner kopiert. Andere Projekte bleiben unverändert."
         },
         "reasons": {
             "connected": "Verwendet freigegebene Vorlagen",
@@ -175,12 +171,6 @@
         },
         "recommended": "Empfohlen",
         "otherOptions": "Weitere Optionen",
-        "backups": "Aufbewahrte Originale",
-        "backupNotice": "Originalvorlagen werden zur Wiederherstellung aufbewahrt und belegen bis zur ausdrücklichen Entfernung Speicherplatz.",
-        "restore": "Vorherige Vorlagen wiederherstellen",
-        "discard": "Aufbewahrte Originale entfernen",
-        "restoreDetail": "Die ursprünglichen Projektvorlagen wiederherstellen und getrennt halten. Auch durch diese Migration geänderte gemeinsame Dateien werden wiederhergestellt. Bei nachträglichen Änderungen wird die Wiederherstellung gestoppt.",
-        "discardDetail": "Diese Originalvorlagen dauerhaft entfernen? Diese Migration kann danach nicht wiederhergestellt werden. Aktuelle Vorlagen bleiben unverändert.",
         "affected": "Andere verbundene Projekte",
         "noAffected": "Keine",
         "status": {
@@ -194,6 +184,9 @@
             "standard": "Standard",
             "dotnet": ".NET",
             "custom": "Benutzerdefiniert"
-        }
+        },
+        "projectColumn": "Projekt",
+        "actionColumn": "Aktion",
+        "permanentDeletion": "Lokale Exportvorlagen werden dauerhaft gelöscht. Es wird keine Sicherung behalten."
     }
 }
