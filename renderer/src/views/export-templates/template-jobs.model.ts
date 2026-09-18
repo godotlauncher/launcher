@@ -1,6 +1,6 @@
 import type { TemplateJob } from '@shared/contracts';
 
-/** Keeps only the latest operation for each row, hiding successful or cancelled state.
+/** Keeps the latest shared operation for each row, hiding project-owned and finished work.
  * @param jobs - Session operations in submission order.
  */
 export function getTemplateRowJobs(
@@ -8,6 +8,7 @@ export function getTemplateRowJobs(
 ): Map<string, TemplateJob> {
     const latest = new Map<string, TemplateJob>();
     for (const job of jobs) {
+        if (job.projectPath) continue;
         for (const id of job.setIds?.length ? job.setIds : [`job-${job.id}`])
             latest.set(id, job);
     }

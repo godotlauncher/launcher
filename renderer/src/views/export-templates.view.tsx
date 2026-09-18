@@ -7,8 +7,9 @@ import {
     RefreshCw,
     Upload,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router';
 import { EditorVersionGroup } from '../components/editor-version-group.component';
 import { ContentDivider } from '../components/ui/content-divider.component';
 import { CopyBadge } from '../components/ui/copy-badge.component';
@@ -35,10 +36,28 @@ export function ExportTemplatesView() {
     const { inventory, jobs, error, pending, loading, busy, refresh, run } =
         useExportTemplates();
     const migration = useTemplateMigration();
+    const [params, setParams] = useSearchParams();
     const [search, setSearch] = useState('');
     const [downloadOpen, setDownloadOpen] = useState(false);
     const [manageSet, setManageSet] = useState<ExportTemplateSet | null>(null);
     const [remove, setRemove] = useState<ExportTemplateSet | null>(null);
+    useEffect(() => {
+        const id = params.get('set');
+        if (!id || !inventory) return;
+        setManageSet(
+            inventory.sets.find((set) => set.id === id) ?? {
+                id,
+                version: id.replace(/\.mono$/, ''),
+                edition: id.endsWith('.mono') ? 'dotnet' : 'standard',
+                sizeBytes: 0,
+                fileCount: 0,
+                platforms: [],
+                projects: [],
+            },
+        );
+        setDownloadOpen(true);
+        setParams({}, { replace: true });
+    }, [params, inventory, setParams]);
     /** Formats bytes for the active language.
      * @param value - Logical file size in bytes.
      */
@@ -117,6 +136,7 @@ export function ExportTemplatesView() {
                         jobs.some(
                             (job) =>
                                 job.projectPath &&
+                                job.kind === 'migrate' &&
                                 !['complete', 'cancelled', 'error'].includes(
                                     job.stage,
                                 ),

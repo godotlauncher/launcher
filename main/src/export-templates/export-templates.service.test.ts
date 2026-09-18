@@ -9,11 +9,16 @@ import { downloadReleaseAsset } from '../utils/releases.utils.js';
 import { ExportTemplatesService } from './export-templates.service.js';
 import type { TemplateArchiveAdapter } from './template-archive.adapter.js';
 import { assessProjectTemplates } from './template-assessment.util.js';
+import { updateTemplateFiles } from './template-file-update.util.js';
 import {
     extractTemplateRange,
     openTemplateRange,
 } from './template-range.adapter.js';
 
+vi.mock('./template-file-update.util.js', () => ({
+    updateTemplateFiles: vi.fn(),
+    pruneEmptyTemplateDirectories: vi.fn(),
+}));
 const extractTemplateArchive = vi.fn();
 vi.mock('./template-assessment.util.js', async (load) => ({
     ...(await load<typeof import('./template-assessment.util.js')>()),
@@ -63,6 +68,7 @@ vi.mock('./template-archive.adapter.js', () => ({
 vi.mock('./template-runtime.util.js', () => ({
     getSharedTemplateRoot: () => path.resolve('fixture-shared'),
     rememberSeparateTemplateDirectory: vi.fn(),
+    forgetSeparateTemplateDirectory: vi.fn(),
 }));
 vi.mock('./template-files.util.js', async (load) => ({
     ...(await load<typeof import('./template-files.util.js')>()),
@@ -252,14 +258,14 @@ describe('template migration policy', () => {
         await vi.waitFor(async () =>
             expect((await service.getJob())?.stage).toBe('complete'),
         );
-        expect(stageTemplateSets).toHaveBeenCalledWith(
-            path.resolve('fixture-shared'),
-            expect.any(String),
-            expect.any(Array),
-            { '4.4.stable/web.zip': 'shared', '4.4.stable/linux': 'incoming' },
-            expect.any(AbortSignal),
-            new Set(['4.4.stable/web.zip', '4.4.stable/linux']),
+        expect(updateTemplateFiles).toHaveBeenCalledWith(
+            path.join(path.resolve('fixture-shared'), '4.4.stable'),
+            path.join(local, '4.4.stable'),
+            ['web.zip', 'linux'],
+            [],
+            true,
         );
+        expect(stageTemplateSets).not.toHaveBeenCalled();
         expect((await service.getJob())?.review).toBeUndefined();
         expect(commitTemplateTransaction).toHaveBeenCalledWith(
             path.resolve('fixture-shared'),
@@ -271,6 +277,138 @@ describe('template migration policy', () => {
             local,
             path.resolve('fixture-shared'),
         );
+    });
+    it('merges every installed version and edition for a project-level merge', async () => {
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+            '4.3.stable',
+            '4.3.stable.mono',
+        ] as never);
+        vi.mocked(readTemplateTree).mockResolvedValue([
+            { ...web, relative: '4.4.stable/web.zip' },
+            { ...linux, relative: '4.3.stable/linux' },
+            { ...web, relative: '4.3.stable.mono/custom.zip' },
+        ]);
+        await service.prepareMigration(project.path, 'share-project');
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('complete'),
+        );
+        expect(updateTemplateFiles).toHaveBeenCalledTimes(3);
+        for (const [id, file] of [
+            ['4.4.stable', 'web.zip'],
+            ['4.3.stable', 'linux'],
+            ['4.3.stable.mono', 'custom.zip'],
+        ]) {
+            expect(updateTemplateFiles).toHaveBeenCalledWith(
+                path.join(path.resolve('fixture-shared'), id),
+                path.join(local, id),
+                [file],
+                [],
+                true,
+            );
+        }
+        expect((await service.getJob())?.setIds).toEqual([
+            '4.4.stable',
+            '4.3.stable',
+            '4.3.stable.mono',
+        ]);
+        expect(
+            vi
+                .mocked(readTemplateTree)
+                .mock.calls.every((call) => call[1] === false),
+        ).toBe(true);
+        expect(commitTemplateTransaction).toHaveBeenCalledOnce();
+    });
+    it('merges only versions explicitly selected and connects after all merges finish', async () => {
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+            '4.3.stable',
+        ] as never);
+        vi.mocked(readTemplateTree).mockResolvedValue([
+            { ...web, relative: '4.4.stable/web.zip' },
+            { ...linux, relative: '4.3.stable/linux' },
+        ]);
+        await service.prepareMigration(project.path, 'share-project', {
+            '4.4.stable': 'use-shared',
+            '4.3.stable': 'share-project',
+        });
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('complete'),
+        );
+        expect(updateTemplateFiles).toHaveBeenCalledExactlyOnceWith(
+            path.join(path.resolve('fixture-shared'), '4.3.stable'),
+            path.join(local, '4.3.stable'),
+            ['linux'],
+            [],
+            true,
+        );
+        expect(commitTemplateTransaction).toHaveBeenCalledOnce();
+        expect(
+            vi.mocked(updateTemplateFiles).mock.invocationCallOrder[0],
+        ).toBeLessThan(
+            vi.mocked(commitTemplateTransaction).mock.invocationCallOrder[0],
+        );
+    });
+    it.each([
+        {},
+        { '4.4.stable': 'share-project', '4.3.stable': 'use-shared' },
+    ] as const)(
+        'rejects missing or obsolete decisions before copying or connecting',
+        async (choices) => {
+            await service.prepareMigration(
+                project.path,
+                'share-project',
+                choices,
+            );
+            await vi.waitFor(async () =>
+                expect((await service.getJob())?.stage).toBe('error'),
+            );
+            expect((await service.getJob())?.error).toBe(
+                'exportTemplates:errors.changed',
+            );
+            expect(updateTemplateFiles).not.toHaveBeenCalled();
+            expect(commitTemplateTransaction).not.toHaveBeenCalled();
+            expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
+        },
+    );
+    it('does not connect or delete local originals when any version fails to merge', async () => {
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+            '4.3.stable',
+        ] as never);
+        vi.mocked(readTemplateTree).mockResolvedValue([
+            { ...web, relative: '4.4.stable/web.zip' },
+            { ...linux, relative: '4.3.stable/linux' },
+        ]);
+        vi.mocked(updateTemplateFiles)
+            .mockResolvedValueOnce(undefined)
+            .mockRejectedValueOnce(new Error('exportTemplates:errors.read'));
+        await service.prepareMigration(project.path, 'share-project', {
+            '4.4.stable': 'share-project',
+            '4.3.stable': 'share-project',
+        });
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('error'),
+        );
+        expect(updateTemplateFiles).toHaveBeenCalledTimes(2);
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
+        expect(updateProjects).not.toHaveBeenCalled();
+    });
+    it.each([
+        { '../outside': 'share-project' },
+        { '4.4.stable': 'unknown' },
+        null,
+        [],
+    ])('rejects invalid version decisions at the boundary', async (choices) => {
+        await expect(
+            service.prepareMigration(
+                project.path,
+                'share-project',
+                choices as never,
+            ),
+        ).rejects.toThrow('exportTemplates:errors.decision');
+        expect(updateTemplateFiles).not.toHaveBeenCalled();
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
     });
     it.each([true, false])(
         'discards local files without changing shared files (shared set exists: %s)',
@@ -293,7 +431,6 @@ describe('template migration policy', () => {
             await vi.waitFor(async () =>
                 expect((await service.getJob())?.stage).toBe('complete'),
             );
-            const unchanged = templateFingerprint(exists ? [sharedWeb] : []);
             expect(stageTemplateSets).not.toHaveBeenCalled();
             expect(commitTemplateTransaction).toHaveBeenCalledWith(
                 path.resolve('fixture-shared'),
@@ -301,20 +438,14 @@ describe('template migration policy', () => {
                 expect.objectContaining({
                     projectPath: project.path,
                     retainBackup: false,
-                    sets: [
-                        expect.objectContaining({
-                            id: '4.4.stable',
-                            before: unchanged,
-                            after: unchanged,
-                        }),
-                    ],
+                    sets: [],
                 }),
                 local,
                 path.resolve('fixture-shared'),
             );
         },
     );
-    it('does not add files belonging to another version or edition', async () => {
+    it('keeps each edition in its matching shared version folder', async () => {
         vi.mocked(fs.promises.readdir).mockResolvedValue([
             '4.4.stable',
             '4.4.stable.mono',
@@ -331,30 +462,26 @@ describe('template migration policy', () => {
         await vi.waitFor(async () =>
             expect((await service.getJob())?.stage).toBe('complete'),
         );
-        expect(stageTemplateSets).toHaveBeenCalledWith(
-            expect.any(String),
-            expect.any(String),
-            expect.any(Array),
-            {
-                '4.4.stable/web.zip': 'incoming',
-                '4.4.stable.mono/web.zip': 'shared',
-            },
-            expect.any(AbortSignal),
-            expect.any(Set),
+        expect(updateTemplateFiles).toHaveBeenCalledWith(
+            path.join(path.resolve('fixture-shared'), '4.4.stable'),
+            path.join(local, '4.4.stable'),
+            ['web.zip'],
+            [],
+            true,
+        );
+        expect(updateTemplateFiles).toHaveBeenCalledTimes(2);
+        expect(updateTemplateFiles).toHaveBeenCalledWith(
+            path.join(path.resolve('fixture-shared'), '4.4.stable.mono'),
+            path.join(local, '4.4.stable.mono'),
+            ['web.zip'],
+            [],
+            true,
         );
     });
-    it('rejects source changes during preparation before committing', async () => {
-        vi.mocked(readTemplateTree).mockImplementation(async (directory) => {
-            if (directory === local)
-                return [
-                    {
-                        ...web,
-                        relative: `4.4.stable/${web.relative}`,
-                        hash: 'changed',
-                    },
-                ];
-            return directory.startsWith(local + path.sep) ? [web] : [];
-        });
+    it('keeps the project local if a missing file cannot be copied', async () => {
+        vi.mocked(updateTemplateFiles).mockRejectedValue(
+            new Error('exportTemplates:errors.changed'),
+        );
         await service.prepareMigration(project.path);
         await vi.waitFor(async () =>
             expect((await service.getJob())?.stage).toBe('error'),
@@ -648,6 +775,41 @@ describe('partial template saves', () => {
         expect(openTemplateRange).toHaveBeenCalledOnce();
         expect(getCatalog).toHaveBeenCalledWith({ refreshIfStale: false });
     });
+    it('lists available files without hashing installed export templates', async () => {
+        index();
+        await service.getPackage(release.id, 'templates');
+        expect(readTemplateTree).toHaveBeenCalledWith(
+            expect.any(String),
+            false,
+            undefined,
+            true,
+        );
+        expect(
+            vi
+                .mocked(readTemplateTree)
+                .mock.calls.every((call) => call[1] === false),
+        ).toBe(true);
+    });
+    it('rejects a same-size edit recorded by filesystem metadata before saving', async () => {
+        index();
+        const file = {
+            relative: 'macos.zip',
+            size: 1,
+            hash: '',
+            mode: 0o644,
+            metadata: { mtimeMs: 1, ctimeMs: 1, ino: 1, dev: 1 },
+        };
+        vi.mocked(readTemplateTree).mockResolvedValue([file]);
+        const info = await service.getPackage(release.id, 'templates');
+        vi.mocked(readTemplateTree).mockResolvedValue([
+            { ...file, metadata: { ...file.metadata, ctimeMs: 2 } },
+        ]);
+        await service.savePackage(info.token, []);
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('error'),
+        );
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
+    });
     it('rejects a forged selection before allocating or changing files', async () => {
         index();
         const info = await service.getPackage(release.id, 'templates');
@@ -657,20 +819,30 @@ describe('partial template saves', () => {
         expect(commitTemplateTransaction).not.toHaveBeenCalled();
         expect(extractTemplateRange).not.toHaveBeenCalled();
     });
-    it('rejects a changed local snapshot before downloading or removing anything', async () => {
+    it('preserves unrelated files added since opening the selector', async () => {
         index();
+        const original = {
+            relative: 'macos.zip',
+            size: 1,
+            hash: '',
+            mode: 0o644,
+        };
+        vi.mocked(readTemplateTree).mockResolvedValue([original]);
         const info = await service.getPackage(release.id, 'templates');
         vi.mocked(readTemplateTree).mockResolvedValue([
-            { relative: 'other.zip', size: 1, hash: 'changed', mode: 0o644 },
+            original,
+            { ...original, relative: 'other.zip' },
         ]);
-        await service.savePackage(info.token, ['macos.zip']);
+        await service.savePackage(info.token, []);
         await vi.waitFor(async () =>
-            expect((await service.getJob())?.stage).toBe('error'),
+            expect((await service.getJob())?.stage).toBe('complete'),
         );
-        expect((await service.getJob())?.error).toBe(
-            'exportTemplates:errors.changed',
+        expect(updateTemplateFiles).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.any(String),
+            [],
+            ['macos.zip'],
         );
-        expect(extractTemplateRange).not.toHaveBeenCalled();
         expect(commitTemplateTransaction).not.toHaveBeenCalled();
     });
     it('cancels a partial download without committing additions or removals', async () => {
@@ -733,14 +905,14 @@ describe('partial template saves', () => {
         );
         expect(openTemplateRange).toHaveBeenCalledOnce();
         expect(extractTemplateRange).not.toHaveBeenCalled();
-        expect(stageTemplateSets).toHaveBeenCalledWith(
-            expect.anything(),
-            expect.anything(),
-            [expect.objectContaining({ removed: ['macos.zip'] })],
-            {},
-            expect.any(AbortSignal),
+        expect(updateTemplateFiles).toHaveBeenCalledWith(
+            expect.any(String),
+            expect.any(String),
+            [],
+            ['macos.zip'],
         );
-        expect(commitTemplateTransaction).toHaveBeenCalledOnce();
+        expect(stageTemplateSets).not.toHaveBeenCalled();
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
     });
     /** Creates independent standard and .NET selections for queue scenarios. */
     async function queueSelections() {
@@ -770,40 +942,40 @@ describe('partial template saves', () => {
     }
     it('runs queued editions sequentially and rejects a duplicate pending version', async () => {
         const [first, second] = await queueSelections();
-        const gate = Promise.withResolvers<[]>();
-        vi.mocked(stageTemplateSets)
-            .mockResolvedValue([])
+        const gate = Promise.withResolvers<void>();
+        vi.mocked(updateTemplateFiles)
+            .mockResolvedValue(undefined)
             .mockReturnValueOnce(gate.promise);
         await service.savePackage(first.token, []);
         await vi.waitFor(() =>
-            expect(stageTemplateSets).toHaveBeenCalledOnce(),
+            expect(updateTemplateFiles).toHaveBeenCalledOnce(),
         );
         await service.savePackage(second.token, []);
         await expect(service.savePackage(first.token, [])).rejects.toThrow(
             'errors.busy',
         );
         expect((await service.getJobs()).map((job) => job.stage)).toEqual([
-            'preparing',
+            'applying',
             'queued',
         ]);
-        expect(stageTemplateSets).toHaveBeenCalledOnce();
-        gate.resolve([]);
+        expect(updateTemplateFiles).toHaveBeenCalledOnce();
+        gate.resolve();
         await vi.waitFor(async () =>
             expect((await service.getJobs()).map((job) => job.stage)).toEqual([
                 'complete',
                 'complete',
             ]),
         );
-        expect(stageTemplateSets).toHaveBeenCalledTimes(2);
-        expect(commitTemplateTransaction).toHaveBeenCalledTimes(2);
+        expect(updateTemplateFiles).toHaveBeenCalledTimes(2);
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
     });
     it('cancels a queued entry without touching the active operation', async () => {
         const [first, second] = await queueSelections();
-        const gate = Promise.withResolvers<[]>();
-        vi.mocked(stageTemplateSets).mockReturnValue(gate.promise);
+        const gate = Promise.withResolvers<void>();
+        vi.mocked(updateTemplateFiles).mockReturnValue(gate.promise);
         await service.savePackage(first.token, []);
         await vi.waitFor(() =>
-            expect(stageTemplateSets).toHaveBeenCalledOnce(),
+            expect(updateTemplateFiles).toHaveBeenCalledOnce(),
         );
         await service.savePackage(second.token, []);
         const queued = (await service.getJobs()).find(
@@ -812,34 +984,17 @@ describe('partial template saves', () => {
         if (!queued) throw new Error('Expected queued entry');
         await service.cancel(queued.id);
         expect(await service.getJobs()).toHaveLength(1);
-        gate.resolve([]);
+        gate.resolve();
         await vi.waitFor(async () =>
             expect((await service.getJob())?.stage).toBe('complete'),
         );
-        expect(stageTemplateSets).toHaveBeenCalledOnce();
-    });
-    it('cancels temporary staging before the installed collection is changed', async () => {
-        const [first] = await queueSelections();
-        const gate = Promise.withResolvers<[]>();
-        vi.mocked(stageTemplateSets).mockReturnValue(gate.promise);
-        await service.savePackage(first.token, []);
-        await vi.waitFor(() =>
-            expect(stageTemplateSets).toHaveBeenCalledOnce(),
-        );
-        const job = await service.getJob();
-        if (!job) throw new Error('Expected active entry');
-        await service.cancel(job.id);
-        gate.resolve([]);
-        await vi.waitFor(async () =>
-            expect((await service.getJob())?.stage).toBe('cancelled'),
-        );
-        expect(commitTemplateTransaction).not.toHaveBeenCalled();
+        expect(updateTemplateFiles).toHaveBeenCalledOnce();
     });
     it('refuses cancellation after the final commit starts', async () => {
         const [first] = await queueSelections();
         const gate = Promise.withResolvers<void>();
-        vi.mocked(stageTemplateSets).mockResolvedValue([]);
-        vi.mocked(commitTemplateTransaction).mockReturnValue(gate.promise);
+        vi.mocked(updateTemplateFiles).mockResolvedValue(undefined);
+        vi.mocked(updateTemplateFiles).mockReturnValue(gate.promise);
         await service.savePackage(first.token, []);
         await vi.waitFor(async () =>
             expect((await service.getJob())?.stage).toBe('applying'),
@@ -854,13 +1009,13 @@ describe('partial template saves', () => {
     });
     it('pauses queued work for recovery and resumes after recovery completes', async () => {
         const [first, second] = await queueSelections();
-        const gate = Promise.withResolvers<[]>();
-        vi.mocked(stageTemplateSets)
-            .mockResolvedValue([])
+        const gate = Promise.withResolvers<void>();
+        vi.mocked(updateTemplateFiles)
+            .mockResolvedValue(undefined)
             .mockReturnValueOnce(gate.promise);
         await service.savePackage(first.token, []);
         await vi.waitFor(() =>
-            expect(stageTemplateSets).toHaveBeenCalledOnce(),
+            expect(updateTemplateFiles).toHaveBeenCalledOnce(),
         );
         await service.savePackage(second.token, []);
         const job = await service.getJob();
@@ -877,7 +1032,7 @@ describe('partial template saves', () => {
                 ['error', 'queued'],
             ),
         );
-        expect(stageTemplateSets).toHaveBeenCalledOnce();
+        expect(updateTemplateFiles).toHaveBeenCalledOnce();
         vi.mocked(readTemplateJournal).mockResolvedValue({
             version: 2,
             phase: 'committing',
@@ -885,11 +1040,11 @@ describe('partial template saves', () => {
         });
         vi.mocked(recoverTemplateTransaction).mockImplementation(async () => {
             vi.mocked(templateLstat).mockResolvedValue(undefined);
-            vi.mocked(fs.promises.readdir).mockResolvedValue([]);
+            vi.mocked(fs.promises.readdir).mockResolvedValue(undefined);
         });
         await service.recover(job.id);
         await vi.waitFor(() =>
-            expect(stageTemplateSets).toHaveBeenCalledTimes(2),
+            expect(updateTemplateFiles).toHaveBeenCalledTimes(2),
         );
         await vi.waitFor(async () =>
             expect((await service.getJobs())[1].stage).toBe('complete'),
@@ -1015,5 +1170,134 @@ describe('project migration assessment and preference', () => {
             'errors.connection',
         );
         expect(await service.getJobs()).toEqual([]);
+    });
+});
+
+describe('project export template settings', () => {
+    const project = {
+        path: path.resolve('settings-project'),
+        name: 'Settings project',
+        launch_path: path.resolve('settings-editor', 'Godot'),
+        release: { source: 'official', version: '4.4-stable', mono: false },
+        exportTemplateMode: 'separate',
+    } as ProjectDetails;
+    beforeEach(() => {
+        list.mockResolvedValue([project]);
+        vi.mocked(fs.promises.realpath).mockImplementation(async (filename) =>
+            String(filename),
+        );
+        vi.mocked(templateConnectionStatus).mockResolvedValue('local');
+        vi.mocked(fs.promises.readdir).mockResolvedValue([]);
+        updateProjects.mockImplementation(async (mutator) =>
+            mutator([project]),
+        );
+    });
+    it('captures local selections from the registered project instead of shared storage', async () => {
+        await service.getProjectPackage(project.path, true);
+        expect(readTemplateTree).toHaveBeenCalledWith(
+            path.join(
+                path.dirname(project.launch_path),
+                'editor_data',
+                'export_templates',
+                '4.4.stable',
+            ),
+            false,
+            undefined,
+            true,
+        );
+        expect(openTemplateRange).not.toHaveBeenCalled();
+    });
+    it('keeps selections for another version scoped to the same project collection', async () => {
+        await service.getProjectPackage(project.path, true, '4.5.stable.mono');
+        expect(readTemplateTree).toHaveBeenCalledWith(
+            path.join(
+                path.dirname(project.launch_path),
+                'editor_data',
+                'export_templates',
+                '4.5.stable.mono',
+            ),
+            false,
+            undefined,
+            true,
+        );
+    });
+    it('lists all local versions without reading file contents', async () => {
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+            '4.5.stable.mono',
+            '.DS_Store',
+        ] as never);
+        vi.mocked(readTemplateTree).mockResolvedValue([
+            { relative: 'linux_debug.x86_64', size: 10, mode: 0o644 },
+        ]);
+        const settings = await service.getProjectSettings(
+            project.path,
+            '4.6.stable',
+        );
+        expect(settings.setId).toBe('4.6.stable');
+        expect(settings.sets.map((set) => set.id)).toEqual([
+            '4.4.stable',
+            '4.5.stable.mono',
+        ]);
+        expect(
+            vi
+                .mocked(readTemplateTree)
+                .mock.calls.every(([, hash]) => hash === false),
+        ).toBe(true);
+    });
+    it('rejects version paths outside the project collection', async () => {
+        await expect(
+            service.getProjectPackage(project.path, true, '../outside'),
+        ).rejects.toThrow('errors.identity');
+        await expect(
+            service.getProjectSettings(project.path, '../outside'),
+        ).rejects.toThrow('errors.identity');
+        expect(readTemplateTree).not.toHaveBeenCalled();
+    });
+    it('refuses to load a local selection through a shared or foreign connection', async () => {
+        vi.mocked(templateConnectionStatus).mockResolvedValue('shared');
+        await expect(
+            service.getProjectPackage(project.path, true),
+        ).rejects.toThrow('errors.connection');
+        expect(readTemplateTree).not.toHaveBeenCalled();
+    });
+    it('keeps custom editor builds out of official downloads and detachment', async () => {
+        list.mockResolvedValue([
+            { ...project, release: { ...project.release, source: 'custom' } },
+        ]);
+        await expect(service.getProjectPackage(project.path)).rejects.toThrow(
+            'errors.connection',
+        );
+        await expect(service.detachProject(project.path)).rejects.toThrow(
+            'errors.connection',
+        );
+        expect(openTemplateRange).not.toHaveBeenCalled();
+    });
+    it('rejects a queued reconnection if the project editor changed after the choice', async () => {
+        list.mockResolvedValueOnce([project]).mockResolvedValue([
+            {
+                ...project,
+                release: { ...project.release, version: '4.5-stable' },
+            },
+        ]);
+        await service.prepareMigration(project.path, 'use-shared');
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('error'),
+        );
+        expect((await service.getJob())?.error).toBe(
+            'exportTemplates:errors.changed',
+        );
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
+        expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
+    });
+    it('allows an explicit reconnection and clears the saved opt-out after success', async () => {
+        vi.mocked(templateConnectionStatus).mockResolvedValue('shared');
+        await service.prepareMigration(project.path, 'share-project');
+        await vi.waitFor(async () =>
+            expect((await service.getJob())?.stage).toBe('complete'),
+        );
+        expect(updateProjects).toHaveBeenCalledOnce();
+        const saved = await updateProjects.mock.calls[0][0]([project]);
+        expect(saved[0].exportTemplateMode).toBe('shared');
     });
 });

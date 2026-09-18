@@ -24,6 +24,8 @@ let page: Page;
 let home: string;
 let root: string;
 let local: string;
+let launchEnv: Record<string, string>;
+let packages: { url: string; bytes: string }[];
 test.describe.configure({ mode: 'serial' });
 test.setTimeout(90_000);
 test.beforeAll(async () => {
@@ -87,11 +89,12 @@ test.beforeAll(async () => {
         GODOT_LAUNCHER_E2E_HOME_DIR: home,
     };
     delete env.ELECTRON_RUN_AS_NODE;
+    launchEnv = Object.fromEntries(Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined));
     app = await _electron.launch({
         args: ['.', `--user-data-dir=${path.join(home, 'electron-user-data')}`],
-        env: Object.fromEntries(Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined)),
+        env: launchEnv,
     });
-    const packages = Object.values(catalogue.providers).flatMap((provider) => provider.releases).flatMap((release) => (release.templateAssets ?? []).map((asset) => ({
+    packages = Object.values(catalogue.providers).flatMap((provider) => provider.releases).flatMap((release) => (release.templateAssets ?? []).map((asset) => ({
         url: asset.downloadUrl,
         bytes: storedZip({
             'templates/version.txt': `${release.tag.replace('-', '.')}${asset.flavor === 'dotnet' ? '.mono' : ''}`,
@@ -100,27 +103,7 @@ test.beforeAll(async () => {
             'templates/macos.zip': 'other platform',
         }).toString('base64'),
     })));
-    await app.evaluate((_electron, packages) => {
-        const original = globalThis.fetch;
-        const assets = new Map(packages.map((asset) => [asset.url, Buffer.from(asset.bytes, 'base64')]));
-        globalThis.fetch = async (input, init) => {
-            const archive = assets.get(String(input));
-            if (!archive) return original(input, init);
-            const headers = { etag: '"fixture"', 'content-length': String(archive.length) };
-            if (init?.method === 'HEAD') return new Response(null, { headers });
-            const range = new Headers(init?.headers).get('range');
-            const match = /bytes=(\d+)-(\d+)/.exec(range ?? '');
-            if (!match) throw new Error('Expected a partial template request');
-            const start = Number(match[1]);
-            const end = Number(match[2]) + 1;
-            const state = globalThis as typeof globalThis & { templateHoldUrl?: string };
-            if (state.templateHoldUrl === String(input)) await new Promise<void>((_resolve, reject) => {
-                if (init?.signal?.aborted) reject(init.signal.reason);
-                else init?.signal?.addEventListener('abort', () => reject(init.signal?.reason), { once: true });
-            });
-            return new Response(new Uint8Array(archive.subarray(start, end)), { status: 206, headers: { ...headers, 'content-length': String(end - start), 'content-range': `bytes ${start}-${end - 1}/${archive.length}` } });
-        };
-    }, packages);
+    await installPackageFixtures();
     page = await getMainWindow(app);
     await setAppLanguage(page, 'English');
     await page.getByTestId('btnExportTemplates').click();
@@ -359,6 +342,7 @@ test('imports a real archive, merges conflicts, links a project and removes only
     await apply.click();
     await waitForTemplateStage('complete');
     await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(page.getByTestId('templateMigrationModal')).toBeHidden();
     expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
     if (process.platform !== 'win32')
         expect((await fs.stat(path.join(root, '4.4.stable', 'version.txt'))).mode & 0o777).toBe(0o600);
@@ -583,7 +567,7 @@ test('cancels a reviewed package, keeps editions separate and refuses damaged co
     ).toBe('dotnet template');
 });
 
-test('restores both collections when the final project link cannot be created', async () => {
+test('keeps original project files when the final project link cannot be created', async () => {
     const originalEntries = await fs.readdir(path.dirname(local));
     await fs.unlink(local);
     const id = '4.6.stable';
@@ -609,7 +593,8 @@ test('restores both collections when the final project link cannot be created', 
         await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Finish later', exact: true }).click();
         expect((await fs.lstat(local)).isDirectory()).toBe(true);
         expect(await fs.readFile(path.join(local, id, 'linux_release.x86_64'), 'utf8')).toBe('local template');
-        expect(await fs.readdir(path.join(root, id))).toEqual(['web_release.zip']);
+        expect((await fs.readdir(path.join(root, id))).sort()).toEqual(['linux_release.x86_64', 'version.txt', 'web_release.zip']);
+        expect(await fs.readFile(path.join(root, id, 'linux_release.x86_64'), 'utf8')).toBe('local template');
         expect(await fs.readFile(path.join(root, id, 'web_release.zip'), 'utf8')).toBe('existing web template');
         expect(await fs.readdir(path.dirname(local))).toEqual(originalEntries);
     } finally {
@@ -633,6 +618,7 @@ test('connects an unchanged merge without replacing shared files and keeps the r
     await page.getByRole('button', { name: 'Apply changes' }).click();
     await waitForTemplateStage('complete');
     await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(page.getByTestId('templateMigrationModal')).toBeHidden();
     expect((await fs.stat(path.join(root, id))).ino).toBe(before.ino);
     expect(await fs.readFile(path.join(root, id, 'linux_release.x86_64'), 'utf8')).toBe('shared template');
     expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
@@ -828,3 +814,462 @@ async function openMigrationChoices(): Promise<void> {
     const modal = page.getByTestId('templateMigrationModal');
     await modal.getByRole('combobox', { name: 'Template migration: Choose an option', exact: true }).selectOption('share-project');
 }
+
+test('manages separate project files and reconnects with the chosen merge policy', async () => {
+    await fs.rm(path.join(root, '4.4.stable'), { recursive: true, force: true });
+    await fs.mkdir(path.join(root, '4.4.stable'));
+    await fs.writeFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'shared build');
+    if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
+    else await fs.rm(local, { recursive: true, force: true });
+    await fs.mkdir(path.join(local, '4.4.stable'), { recursive: true });
+    await fs.writeFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'private build');
+    await page.evaluate(async projectPath => window.__di_electron__!.invoke('exportTemplates.keepProjectTemplatesSeparate', projectPath), path.join(home, 'project'));
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    const section = page.getByTestId('projectExportTemplates');
+    await expect(section.getByRole('heading', { name: 'Using dedicated export templates' })).toBeVisible();
+    await section.getByRole('button', { name: 'Switch to shared export templates', exact: true }).click();
+    await section.getByRole('combobox').selectOption('use-shared');
+    await section.getByRole('button', { name: 'Switch to shared', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Using shared export templates' })).toBeVisible();
+    await expect(section).toHaveAttribute('aria-busy', 'false');
+    await page.screenshot({ animations: 'disabled', path: test.info().outputPath('project-shared-templates-manage.png') });
+    await section.getByRole('button', { name: 'Manage', exact: true }).click();
+    await expect(page.getByTestId('templateDownloadDrawer')).toBeVisible();
+    await expect(page.getByTestId('templateDownloadDrawer')).toHaveAccessibleName('Manage templates 4.4.stable - Standard');
+    await page.keyboard.press('Escape');
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    await section.getByRole('button', { name: 'Use dedicated export templates', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Using dedicated export templates' })).toBeVisible();
+    expect((await fs.lstat(local)).isSymbolicLink()).toBe(false);
+    expect(await fs.readFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared build');
+    expect(await fs.readdir(local)).toEqual(['4.4.stable']);
+    await expect(section.getByRole('button', { name: 'Linux', exact: true })).toBeVisible();
+    await section.getByRole('button', { name: 'Linux', exact: true }).click();
+    await section.getByRole('button', { name: 'Linux x86_64', exact: true }).click();
+    await section.getByRole('checkbox', { name: 'linux_release.x86_64', exact: true }).uncheck();
+    await section.getByRole('checkbox', { name: 'linux_debug.x86_64', exact: true }).check();
+    await page.screenshot({ path: test.info().outputPath('project-local-templates.png') });
+    await page.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect.poll(async () => fs.readFile(path.join(local, '4.4.stable', 'linux_debug.x86_64'), 'utf8').catch(() => '')).toBe('official debug');
+    await expect(fs.stat(path.join(local, '4.4.stable', 'linux_release.x86_64'))).rejects.toThrow();
+    expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared build');
+    await expect(fs.stat(path.join(root, '4.4.stable', 'linux_debug.x86_64'))).rejects.toThrow();
+    await expect(section).toBeHidden();
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    await expect(section.getByRole('button', { name: 'Switch to shared export templates', exact: true })).toBeEnabled();
+    await section.getByRole('button', { name: 'Switch to shared export templates', exact: true }).click();
+    await section.getByRole('combobox').selectOption('share-project');
+    await page.screenshot({ path: test.info().outputPath('project-reconnect-templates.png') });
+    await section.getByRole('button', { name: 'Switch to shared', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Using shared export templates' })).toBeVisible();
+    expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
+    expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_debug.x86_64'), 'utf8')).toBe('official debug');
+    expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared build');
+    const saved = JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'projects.json'), 'utf8'));
+    expect(saved[0].exportTemplateMode).toBe('shared');
+    await page.screenshot({ path: test.info().outputPath('project-shared-templates.png') });
+    await page.keyboard.press('Escape');
+});
+
+test('detaches an empty shared version and reconnects without requiring a file decision', async () => {
+    await fs.rm(path.join(root, '4.4.stable'), { recursive: true });
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    let section = page.getByTestId('projectExportTemplates');
+    await expect(section.getByText('No export templates installed for this Godot version.')).toBeVisible();
+    await section.getByRole('button', { name: 'Use dedicated export templates', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Using dedicated export templates' })).toBeVisible();
+    expect(await fs.readdir(local)).toEqual([]);
+    await app.close();
+    app = await _electron.launch({ args: ['.', `--user-data-dir=${path.join(home, 'electron-user-data')}`], env: launchEnv });
+    await installPackageFixtures();
+    page = await getMainWindow(app);
+    section = page.getByTestId('projectExportTemplates');
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    await expect(section.getByRole('heading', { name: 'Using dedicated export templates' })).toBeVisible();
+    await section.getByRole('button', { name: 'Switch to shared export templates', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Using shared export templates' })).toBeVisible();
+    await expect(section.getByRole('combobox')).toHaveCount(0);
+    expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
+});
+
+/** Installs deterministic template responses in the Electron main process. */
+async function installPackageFixtures() {
+    await app.evaluate((_electron, packages) => {
+        const original = globalThis.fetch;
+        const assets = new Map(packages.map((asset) => [asset.url, Buffer.from(asset.bytes, 'base64')]));
+        globalThis.fetch = async (input, init) => {
+            const archive = assets.get(String(input));
+            if (!archive) return original(input, init);
+            const headers = { etag: '"fixture"', 'content-length': String(archive.length) };
+            if (init?.method === 'HEAD') return new Response(null, { headers });
+            const range = new Headers(init?.headers).get('range');
+            const match = /bytes=(\d+)-(\d+)/.exec(range ?? '');
+            if (!match) throw new Error('Expected a partial template request');
+            const start = Number(match[1]);
+            const end = Number(match[2]) + 1;
+            const state = globalThis as typeof globalThis & { templateHoldUrl?: string; templateHoldPayload?: boolean };
+            if (state.templateHoldUrl === String(input) && (!state.templateHoldPayload || end - start > 128 * 1024)) await new Promise<void>((_resolve, reject) => {
+                if (init?.signal?.aborted) reject(init.signal.reason);
+                else init?.signal?.addEventListener('abort', () => reject(init.signal?.reason), { once: true });
+            });
+            return new Response(new Uint8Array(archive.subarray(start, end)), { status: 206, headers: { ...headers, 'content-length': String(end - start), 'content-range': `bytes ${start}-${end - 1}/${archive.length}` } });
+        };
+    }, packages);
+}
+
+test('rolls back a failed detachment and lets the project retry', async () => {
+    const section = page.getByTestId('projectExportTemplates');
+    const target = path.join(await fs.realpath(path.dirname(local)), 'export_templates');
+    await app.evaluate(async (_electron, localPath) => {
+        const { promises } = process.getBuiltinModule('node:fs');
+        const state = globalThis as typeof globalThis & { templateRename?: typeof promises.rename };
+        state.templateRename = promises.rename;
+        promises.rename = async (source, destination) => {
+            if (String(destination) === localPath && String(source).includes('.launcher-new-')) throw new Error('Fixture swap failure');
+            return state.templateRename!(source, destination);
+        };
+    }, target);
+    try {
+        await section.getByRole('button', { name: 'Use dedicated export templates', exact: true }).click();
+        await expect(section.getByRole('alert')).toBeVisible();
+        expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
+        expect(await fs.readdir(path.dirname(local))).toEqual(['export_templates']);
+    } finally {
+        await app.evaluate(async () => {
+            const { promises } = process.getBuiltinModule('node:fs');
+            const state = globalThis as typeof globalThis & { templateRename?: typeof promises.rename };
+            if (state.templateRename) promises.rename = state.templateRename;
+            delete state.templateRename;
+        });
+    }
+    await section.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Using dedicated export templates' })).toBeVisible();
+    expect((await fs.lstat(local)).isDirectory()).toBe(true);
+    await expect(section.getByRole('alert')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await expect(section).toBeHidden();
+});
+
+test('removes one selected file without replacing the files kept in that version', async () => {
+    const id = '4.8.stable';
+    const directory = path.join(root, id);
+    await fs.mkdir(directory, { recursive: true });
+    await fs.writeFile(path.join(directory, 'keep.zip'), 'keep unchanged');
+    await fs.writeFile(path.join(directory, 'remove.zip'), 'remove');
+    const before = await fs.stat(path.join(directory, 'keep.zip'));
+    const result = await page.evaluate(async setId => {
+        const bridge = window.__di_electron__!;
+        const loaded = await bridge.invoke('exportTemplates.getLocalPackage', setId) as { data: { token: string } };
+        return bridge.invoke('exportTemplates.savePackage', loaded.data.token, ['keep.zip']);
+    }, id);
+    expect(result).toMatchObject({ success: true });
+    await waitForTemplateStage('complete');
+    const after = await fs.stat(path.join(directory, 'keep.zip'));
+    expect(after.ino).toBe(before.ino);
+    expect(after.mtimeMs).toBe(before.mtimeMs);
+    expect(await fs.readdir(directory)).toEqual(['keep.zip']);
+});
+
+test('preserves unsaved project export template choices until they are explicitly discarded', async () => {
+    if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
+    else await fs.rm(local, { recursive: true, force: true });
+    await fs.mkdir(path.join(local, '4.4.stable'), { recursive: true });
+    await fs.writeFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'private build');
+    await page.evaluate(async projectPath => window.__di_electron__!.invoke('exportTemplates.keepProjectTemplatesSeparate', projectPath), path.join(home, 'project'));
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    const section = page.getByTestId('projectExportTemplates');
+    await section.getByRole('button', { name: 'Linux', exact: true }).click();
+    await section.getByRole('button', { name: 'Linux x86_64', exact: true }).click();
+    const file = section.getByRole('checkbox', { name: 'linux_release.x86_64', exact: true });
+    await file.uncheck();
+    await expect(section.getByText('Removed export template files will no longer be available to this project.')).toBeVisible();
+    await expect(section.getByText('Removed files will no longer be available to projects using these shared templates.')).toHaveCount(0);
+    await page.getByTestId('tabProjectSettings_project').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    await expect(file).not.toBeChecked();
+    const confirmation = page.getByRole('dialog', { name: 'Unsaved changes', exact: true });
+    const drawer = page.getByRole('dialog', { name: 'Template migration Settings', exact: true });
+    for (const close of [
+        () => drawer.getByRole('button', { name: 'Close', exact: true }).click(),
+        () => drawer.getByRole('button', { name: 'Close drawer', exact: true }).click(),
+        () => page.keyboard.press('Escape'),
+        () => page.getByTestId('drawerBackdrop').click({ position: { x: 10, y: 10 } }),
+    ]) {
+        await close();
+        await expect(confirmation).toBeVisible();
+        await confirmation.getByRole('button', { name: 'Back', exact: true }).click();
+        await expect(confirmation).toBeHidden();
+        await expect(file).not.toBeChecked();
+    }
+    await page.getByTestId('tabProjectSettings_project').click();
+    await page.keyboard.press('Escape');
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(page.getByTestId('tabProjectSettings_project')).toHaveAttribute('aria-selected', 'true');
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    await expect(file).not.toBeChecked();
+    await page.keyboard.press('Escape');
+    await page.screenshot({ path: test.info().outputPath('project-template-unsaved.png') });
+    await confirmation.getByRole('button', { name: 'Discard', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    expect(await fs.readFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('private build');
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    await section.getByRole('button', { name: 'Linux', exact: true }).click();
+    await section.getByRole('button', { name: 'Linux x86_64', exact: true }).click();
+    await expect(file).toBeChecked();
+    await page.keyboard.press('Escape');
+    await expect(drawer).toBeHidden();
+    await expect(confirmation).toBeHidden();
+});
+
+test('reviews every dedicated version before switching to shared', async () => {
+    if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
+    else await fs.rm(local, { recursive: true, force: true });
+    for (const id of ['4.4.stable', '4.3.stable', '4.3.stable.mono', '4.2.stable']) {
+        await fs.mkdir(path.join(local, id), { recursive: true });
+    }
+    await fs.writeFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'dedicated current');
+    await fs.writeFile(path.join(local, '4.4.stable', 'web_release.zip'), 'current web to merge');
+    await fs.writeFile(path.join(local, '4.3.stable', 'private.zip'), 'discard this version');
+    await fs.writeFile(path.join(local, '4.3.stable.mono', 'custom.zip'), 'older dotnet to merge');
+    await fs.writeFile(path.join(local, '4.3.stable.mono', 'web_release.zip'), 'dedicated dotnet web');
+    for (const id of ['4.4.stable', '4.3.stable', '4.3.stable.mono']) {
+        await fs.rm(path.join(root, id), { recursive: true, force: true });
+        await fs.mkdir(path.join(root, id), { recursive: true });
+    }
+    await fs.writeFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'shared current wins');
+    await fs.writeFile(path.join(root, '4.3.stable', 'keep.zip'), 'shared discarded version stays');
+    await fs.writeFile(path.join(root, '4.3.stable.mono', 'web_release.zip'), 'shared dotnet wins');
+    await page.evaluate(async projectPath => window.__di_electron__!.invoke('exportTemplates.keepProjectTemplatesSeparate', projectPath), path.join(home, 'project'));
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Template migration Settings', exact: true });
+    await drawer.getByTestId('tabProjectSettings_exportTemplates').click();
+    const section = drawer.getByTestId('projectExportTemplates');
+    await section.getByRole('button', { name: 'Switch to shared export templates', exact: true }).click();
+    const current = section.getByRole('combobox', { name: '4.4.stable - Standard: export template action', exact: true });
+    const older = section.getByRole('combobox', { name: '4.3.stable - Standard: export template action', exact: true });
+    const dotnet = section.getByRole('combobox', { name: '4.3.stable - .NET: export template action', exact: true });
+    await expect(section.getByRole('combobox')).toHaveCount(3);
+    for (const select of [current, older, dotnet]) await expect(select).toHaveValue('share-project');
+    await older.selectOption('use-shared');
+    await section.getByRole('button', { name: 'Cancel', exact: true }).click();
+    expect((await fs.lstat(local)).isDirectory()).toBe(true);
+    expect(await fs.readFile(path.join(local, '4.3.stable', 'private.zip'), 'utf8')).toBe('discard this version');
+    await section.getByRole('button', { name: 'Switch to shared export templates', exact: true }).click();
+    await expect(older).toHaveValue('share-project');
+    await older.selectOption('use-shared');
+    await page.screenshot({ animations: 'disabled', path: test.info().outputPath('project-switch-all-versions.png') });
+    await section.getByRole('button', { name: 'Switch to shared', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Using shared export templates' })).toBeVisible();
+    await expect(section).toHaveAttribute('aria-busy', 'false');
+    expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
+    expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared current wins');
+    expect(await fs.readFile(path.join(root, '4.4.stable', 'web_release.zip'), 'utf8')).toBe('current web to merge');
+    expect(await fs.readdir(path.join(root, '4.3.stable'))).toEqual(['keep.zip']);
+    expect(await fs.readFile(path.join(root, '4.3.stable.mono', 'custom.zip'), 'utf8')).toBe('older dotnet to merge');
+    expect(await fs.readFile(path.join(root, '4.3.stable.mono', 'web_release.zip'), 'utf8')).toBe('shared dotnet wins');
+    const jobs = await page.evaluate(async () => window.__di_electron__!.invoke('exportTemplates.getJobs')) as { data: { setIds: string[]; stage: string }[] };
+    expect(jobs.data.find(job => job.stage === 'complete')?.setIds).toEqual(expect.arrayContaining(['4.4.stable', '4.3.stable', '4.3.stable.mono']));
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+});
+
+test('confirms per-version deletion and applies it only with Update', async () => {
+    if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
+    else await fs.rm(local, { recursive: true, force: true });
+    await fs.mkdir(path.join(local, '4.4.stable'), { recursive: true });
+    await fs.mkdir(path.join(local, '4.3.stable', 'custom'), { recursive: true });
+    await fs.mkdir(path.join(root, '4.3.stable'), { recursive: true });
+    await fs.writeFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'current private build');
+    await fs.writeFile(path.join(local, '4.3.stable', 'custom', 'encrypted.zip'), 'old custom build');
+    await fs.writeFile(path.join(root, '4.3.stable', 'web_release.zip'), 'shared build');
+    await page.evaluate(async projectPath => window.__di_electron__!.invoke('exportTemplates.keepProjectTemplatesSeparate', projectPath), path.join(home, 'project'));
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Template migration Settings', exact: true });
+    await drawer.getByTestId('tabProjectSettings_exportTemplates').click();
+    const section = drawer.getByTestId('projectExportTemplates');
+    const oldVersion = section.getByRole('article', { name: '4.3.stable', exact: true });
+    const currentVersion = section.getByRole('article', { name: '4.4.stable', exact: true });
+    const removeOld = oldVersion.getByRole('button', { name: 'Delete export templates for 4.3.stable - Standard', exact: true });
+    const confirmation = page.getByRole('dialog', { name: /^Delete .+ export templates\?$/ });
+    await removeOld.click();
+    await expect(confirmation).toContainText('4.3.stable - Standard');
+    await expect(confirmation).toContainText('when you press Update');
+    await expect(confirmation.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(confirmation.getByRole('button', { name: 'Delete', exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(confirmation).toBeHidden();
+    await expect(drawer).toBeVisible();
+    await expect(removeOld).toBeFocused();
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeDisabled();
+
+    await removeOld.click();
+    await page.screenshot({ animations: 'disabled', path: test.info().outputPath('delete-project-version-confirmation.png') });
+    await confirmation.getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(confirmation).toBeHidden();
+    await expect(oldVersion.getByText('Will be deleted on Update')).toBeVisible();
+    await expect(oldVersion.locator('button[aria-expanded]')).toBeFocused();
+    await expect(oldVersion.getByRole('img', { name: 'Unsaved changes', exact: true })).toBeVisible();
+    expect(await fs.readFile(path.join(local, '4.3.stable', 'custom', 'encrypted.zip'), 'utf8')).toBe('old custom build');
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Unsaved changes', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click();
+    await page.getByTestId('btnProjectSettings').click();
+    await drawer.getByTestId('tabProjectSettings_exportTemplates').click();
+    await expect(oldVersion.getByText('Will be deleted on Update')).toBeHidden();
+    await expect(removeOld).toBeEnabled();
+    await currentVersion.getByRole('button', { name: 'Linux', exact: true }).click();
+    await currentVersion.getByRole('button', { name: 'Linux x86_64', exact: true }).click();
+    const addition = currentVersion.getByRole('checkbox', { name: 'linux_debug.x86_64', exact: true });
+    await addition.check();
+    await currentVersion.getByRole('button', { name: 'Delete export templates for 4.4.stable - Standard', exact: true }).click();
+    await expect(confirmation).toContainText("This project's selected editor will have no export templates for this version.");
+    await expect(confirmation).toContainText('Pending additions for this version will also be discarded.');
+    await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(addition).toBeChecked();
+    await removeOld.click();
+    await confirmation.getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(confirmation).toBeHidden();
+    await expect(addition).toBeChecked();
+    await page.screenshot({ animations: 'disabled', path: test.info().outputPath('delete-project-version-pending.png') });
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    expect(await fs.stat(path.join(local, '4.3.stable')).catch(() => null)).toBeNull();
+    expect(await fs.readFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('current private build');
+    expect(await fs.readFile(path.join(local, '4.4.stable', 'linux_debug.x86_64'), 'utf8')).toBe('official debug');
+    expect(await fs.readFile(path.join(root, '4.3.stable', 'web_release.zip'), 'utf8')).toBe('shared build');
+    await page.getByTestId('btnProjectSettings').click();
+    await drawer.getByTestId('tabProjectSettings_exportTemplates').click();
+    await expect(oldVersion).toBeHidden();
+    await expect(currentVersion).toBeVisible();
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+});
+
+test('updates version-bound template selections and the editor together from the side menu', async () => {
+    if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
+    else await fs.rm(local, { recursive: true, force: true });
+    await fs.mkdir(path.join(local, '4.4.stable'), { recursive: true });
+    await fs.writeFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'remove from old version');
+    await fs.writeFile(path.join(local, '4.4.stable', 'custom.zip'), 'keep this custom file');
+    await page.evaluate(async projectPath => window.__di_electron__!.invoke('exportTemplates.keepProjectTemplatesSeparate', projectPath), path.join(home, 'project'));
+    const saved = JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'projects.json'), 'utf8'))[0];
+    await app.evaluate(({ ipcMain }, { saved, local }) => {
+        const next = { ...saved.release, version: '4.5-stable', name: '4.5-stable', version_number: 4.5, valid: true, editor_path: saved.launch_path, mono: false };
+        for (const channel of ['editorInstalls.getInstalledEditors', 'editorInstalls.revalidateInstalledEditors']) {
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, () => ({ success: true, data: [next] }));
+        }
+        ipcMain.removeHandler('projects.setProjectEditor');
+        ipcMain.handle('projects.setProjectEditor', async (_event, project, release) => {
+            const fs = process.getBuiltinModule('node:fs');
+            const path = process.getBuiltinModule('node:path');
+            (globalThis as typeof globalThis & { templateEditorSave?: unknown }).templateEditorSave = {
+                version: release.version,
+                oldFileRemoved: !fs.existsSync(path.join(local, '4.4.stable', 'linux_release.x86_64')),
+                newFileAdded: fs.existsSync(path.join(local, '4.5.stable', 'linux_debug.x86_64')),
+            };
+            return { success: true, data: { success: true, projects: [{ ...project, release, version: release.version, version_number: release.version_number }] } };
+        });
+    }, { saved, local });
+    await page.reload();
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Template migration Settings', exact: true });
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    const section = page.getByTestId('projectExportTemplates');
+    const oldVersion = section.getByRole('article', { name: '4.4.stable', exact: true });
+    await oldVersion.getByRole('button', { name: 'Linux', exact: true }).click();
+    await oldVersion.getByRole('button', { name: 'Linux x86_64', exact: true }).click();
+    await oldVersion.getByRole('checkbox', { name: 'linux_release.x86_64', exact: true }).uncheck();
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeEnabled();
+    await page.getByTestId('tabProjectSettings_project').click();
+    await drawer.getByTestId('selectProjectGodotEditor').click();
+    await drawer.getByRole('option', { name: /4.5-stable/ }).click();
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeEnabled();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    const newVersion = section.getByRole('article', { name: '4.5.stable', exact: true });
+    await expect(newVersion.getByText('Selected editor', { exact: true })).toBeVisible();
+    await expect(oldVersion.getByRole('checkbox', { name: 'linux_release.x86_64', exact: true })).not.toBeChecked();
+    await newVersion.getByRole('button').first().click();
+    await newVersion.getByRole('button', { name: 'Linux', exact: true }).click();
+    await newVersion.getByRole('button', { name: 'Linux x86_64', exact: true }).click();
+    await newVersion.getByRole('checkbox', { name: 'linux_debug.x86_64', exact: true }).check();
+    await page.screenshot({ path: test.info().outputPath('project-version-collection.png') });
+    await page.getByTestId('tabProjectSettings_project').click();
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeEnabled();
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    expect(await app.evaluate(() => (globalThis as typeof globalThis & { templateEditorSave?: unknown }).templateEditorSave)).toEqual({ version: '4.5-stable', oldFileRemoved: true, newFileAdded: true });
+    expect(await fs.readFile(path.join(local, '4.4.stable', 'custom.zip'), 'utf8')).toBe('keep this custom file');
+    expect(await fs.readFile(path.join(local, '4.5.stable', 'linux_debug.x86_64'), 'utf8')).toBe('official debug');
+});
+
+test('keeps separate project download progress in its settings drawer', async () => {
+    const bytes = storedZip({
+        'templates/version.txt': '4.4.stable',
+        'templates/linux_debug.x86_64': 'debug'.repeat(65536),
+        'templates/linux_release.x86_64': 'official release',
+    }).toString('base64');
+    for (const asset of packages) {
+        if (asset.url === 'https://example.invalid/templates/4.4-stable/gdscript.tpz') asset.bytes = bytes;
+    }
+    await app.close();
+    app = await _electron.launch({ args: ['.', `--user-data-dir=${path.join(home, 'electron-user-data')}`], env: launchEnv });
+    await installPackageFixtures();
+    page = await getMainWindow(app);
+    await fs.mkdir(path.join(root, '4.4.stable'), { recursive: true });
+    await fs.writeFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'shared build');
+    if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
+    else await fs.rm(local, { recursive: true, force: true });
+    await fs.mkdir(path.join(local, '4.4.stable'), { recursive: true });
+    await fs.writeFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'private build');
+    await page.evaluate(async projectPath => window.__di_electron__!.invoke('exportTemplates.keepProjectTemplatesSeparate', projectPath), path.join(home, 'project'));
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    await page.getByTestId('tabProjectSettings_exportTemplates').click();
+    const section = page.getByTestId('projectExportTemplates');
+    await section.getByRole('button', { name: 'Linux', exact: true }).click();
+    await section.getByRole('button', { name: 'Linux x86_64', exact: true }).click();
+    await section.getByRole('checkbox', { name: 'linux_debug.x86_64', exact: true }).check();
+    await app.evaluate(() => {
+        (globalThis as typeof globalThis & { templateHoldUrl?: string }).templateHoldUrl = 'https://example.invalid/templates/4.4-stable/gdscript.tpz';
+        (globalThis as typeof globalThis & { templateHoldPayload?: boolean }).templateHoldPayload = true;
+    });
+    try {
+        await page.getByRole('button', { name: 'Update', exact: true }).click();
+        await expect(section.getByRole('status')).toHaveText('Downloading templates');
+        await expect(section.getByRole('progressbar', { name: 'Download templates' })).toBeInViewport();
+        await expect(section.getByRole('checkbox', { name: 'linux_debug.x86_64', exact: true })).toBeDisabled();
+        await expect(section).toHaveAttribute('aria-busy', 'true');
+        await expect(page.getByTestId('btnExportTemplates').getByRole('status')).toBeHidden();
+        await page.screenshot({ path: test.info().outputPath('project-template-progress.png') });
+        await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeDisabled();
+        await page.getByTestId('tabProjectSettings_project').click();
+        await expect(page.getByRole('button', { name: 'Update', exact: true })).toBeDisabled();
+        await page.getByTestId('tabProjectSettings_exportTemplates').click();
+        await expect(section.getByRole('progressbar', { name: 'Download templates' })).toBeInViewport();
+        await section.getByRole('button', { name: 'Cancel', exact: true }).click();
+        await waitForTemplateStage('cancelled');
+        await expect(section.getByRole('progressbar')).toBeHidden();
+        expect(await fs.readFile(path.join(local, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('private build');
+        expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('shared build');
+        await expect(page.getByRole('button', { name: 'Close', exact: true })).toBeEnabled();
+        await page.keyboard.press('Escape');
+    } finally {
+        await app.evaluate(() => {
+            delete (globalThis as typeof globalThis & { templateHoldUrl?: string }).templateHoldUrl;
+            delete (globalThis as typeof globalThis & { templateHoldPayload?: boolean }).templateHoldPayload;
+        });
+    }
+});

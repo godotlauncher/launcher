@@ -21,6 +21,13 @@ export function rememberSeparateTemplateDirectory(
     separateDirectories.add(templateDirectoryKey(editorDirectory));
 }
 
+/** Clears an opt-out after an explicit successful shared connection.
+ * @param editorDirectory - Reconnected editor environment.
+ */
+export function forgetSeparateTemplateDirectory(editorDirectory: string): void {
+    separateDirectories.delete(templateDirectoryKey(editorDirectory));
+}
+
 /** Normalises an editor environment key for the host filesystem.
  * @param editorDirectory - Editor directory to identify.
  */

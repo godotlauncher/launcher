@@ -55,10 +55,19 @@ export function canRenameGodotProject(
     );
 }
 
+/**
+ * Detects a changed editor or an explicit opt-out from automatic editor selection.
+ * @param initialCodeEditorId - The saved editor selection.
+ * @param codeEditorId - The current editor selection.
+ * @param codeEditorTouched - Whether the user explicitly selected an editor or None.
+ */
 export function hasProjectCodeEditorChanges(
     initialCodeEditorId: string | null,
     codeEditorId: string | null,
     codeEditorTouched: boolean,
 ): boolean {
-    return codeEditorTouched || initialCodeEditorId !== codeEditorId;
+    return (
+        initialCodeEditorId !== codeEditorId ||
+        (codeEditorTouched && initialCodeEditorId === null)
+    );
 }

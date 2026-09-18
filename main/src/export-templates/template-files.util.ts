@@ -12,6 +12,7 @@ export type TemplateFile = {
     size: number;
     hash: string;
     mode: number;
+    metadata?: { mtimeMs: number; ctimeMs: number; ino: number; dev: number };
 };
 let mutationActive = false;
 let templateConnectionsActive = 0;
@@ -100,12 +101,14 @@ export async function templateLstat(
 /** Reads a tree, refusing links and special files.
  * @param root - Directory to read.
  * @param hashFiles - Whether file contents are needed for a mutation review.
+ * @param captureMetadata - Include cheap change-detection metadata for file selection.
  * @param signal - Optional cancellation signal.
  */
 export async function readTemplateTree(
     root: string,
     hashFiles = false,
     signal?: AbortSignal,
+    captureMetadata = false,
 ): Promise<TemplateFile[]> {
     const files: TemplateFile[] = [];
     const rootStat = await templateLstat(root);
@@ -130,8 +133,8 @@ export async function readTemplateTree(
             }
             if (!stat.isFile())
                 throw new Error('exportTemplates:errors.unsafe');
-            const hash = createHash('sha256');
-            if (hashFiles) {
+            const hash = hashFiles ? createHash('sha256') : undefined;
+            if (hash) {
                 const stream = fs.createReadStream(filename, { signal });
                 for await (const chunk of stream) hash.update(chunk);
                 const after = await fs.promises.lstat(filename);
@@ -146,8 +149,18 @@ export async function readTemplateTree(
             files.push({
                 relative: child,
                 size: stat.size,
-                hash: hashFiles ? hash.digest('hex') : '',
+                hash: hash?.digest('hex') ?? '',
                 mode: stat.mode & 0o777,
+                ...(captureMetadata
+                    ? {
+                          metadata: {
+                              mtimeMs: stat.mtimeMs,
+                              ctimeMs: stat.ctimeMs,
+                              ino: stat.ino,
+                              dev: stat.dev,
+                          },
+                      }
+                    : {}),
             });
         }
     }

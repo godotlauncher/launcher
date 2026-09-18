@@ -47,11 +47,13 @@ export async function refreshTemplateJobs(): Promise<void> {
 export function useTemplateJobs(): TemplateJob[] {
     return useSyncExternalStore(subscribe, () => jobs);
 }
-/** Reads only the activity flag, avoiding sidebar rerenders for each progress update. */
+/** Reads shared activity only; project operations report progress in project settings. */
 export function useTemplateActivity(): boolean {
     return useSyncExternalStore(subscribe, () =>
         jobs.some(
-            (job) => !['complete', 'cancelled', 'error'].includes(job.stage),
+            (job) =>
+                !job.projectPath &&
+                !['complete', 'cancelled', 'error'].includes(job.stage),
         ),
     );
 }

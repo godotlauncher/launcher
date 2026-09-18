@@ -5,6 +5,7 @@ import {
 import type {
     ExportTemplatesBridge,
     TemplateMigrationChoice,
+    TemplateMigrationVersionChoices,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ExportTemplatesService } from './export-templates.service.js';
@@ -17,6 +18,34 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
      * @param service - Template operations.
      */
     constructor(private readonly service: ExportTemplatesService) {}
+    /** Reads project export template status.
+     * @param projectPath - Registered project identity.
+     * @param setId - Version selected in the drawer, if different from the saved editor.
+     */
+    @Handler('getProjectSettings')
+    getProjectSettings(projectPath: string, setId?: string) {
+        return this.service.getProjectSettings(projectPath, setId);
+    }
+    /** Detaches a project with a local copy of its matching shared files.
+     * @param projectPath - Registered project identity.
+     */
+    @Handler('detachProject')
+    detachProject(projectPath: string) {
+        return this.service.detachProject(projectPath);
+    }
+    /** Loads a selection scoped to one separate project.
+     * @param projectPath - Registered project identity.
+     * @param localOnly - Whether to avoid remote package lookup.
+     * @param setId - Explicit version and edition to manage.
+     */
+    @Handler('getProjectPackage')
+    getProjectPackage(
+        projectPath: string,
+        localOnly?: boolean,
+        setId?: string,
+    ) {
+        return this.service.getProjectPackage(projectPath, localOnly, setId);
+    }
     /** Connects empty official project environments automatically. */
     @Handler('connectEmptyProjects')
     connectEmptyProjects() {
@@ -111,10 +140,19 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     /** Delegates prepareMigration to the template service.
      * @param projectPath - Requested operation input.
      * @param choice - Whether reviewed project files should join shared storage.
+     * @param versionChoices - Optional explicit choices for every populated version.
      */
     @Handler('prepareMigration')
-    prepareMigration(projectPath: string, choice?: TemplateMigrationChoice) {
-        return this.service.prepareMigration(projectPath, choice);
+    prepareMigration(
+        projectPath: string,
+        choice?: TemplateMigrationChoice,
+        versionChoices?: TemplateMigrationVersionChoices,
+    ) {
+        return this.service.prepareMigration(
+            projectPath,
+            choice,
+            versionChoices,
+        );
     }
     /** Delegates apply to the template service.
      * @param jobId - Requested operation input.

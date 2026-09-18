@@ -1,10 +1,12 @@
 import clsx from 'clsx';
 import type { TFunction } from 'i18next';
 import { PanelTop } from 'lucide-react';
+import { PendingChangesIndicator } from './pending-changes-indicator.component';
 
 type ProjectSettingsLaunchSectionProps = {
     t: TFunction;
     windowed: boolean;
+    changed: boolean;
     disabled: boolean;
     onWindowedChange: (windowed: boolean) => void;
 };
@@ -18,6 +20,7 @@ type ProjectSettingsLaunchSectionProps = {
 export function ProjectSettingsLaunchSection({
     t,
     windowed,
+    changed,
     disabled,
     onWindowedChange,
 }: ProjectSettingsLaunchSectionProps) {
@@ -51,7 +54,10 @@ export function ProjectSettingsLaunchSection({
                     aria-hidden="true"
                 />
                 <span className="flex flex-col gap-1">
-                    <span>{t('editProject.launch.windowed.label')}</span>
+                    <span className="flex items-center gap-2">
+                        {t('editProject.launch.windowed.label')}
+                        {changed && <PendingChangesIndicator />}
+                    </span>
                     <span className="text-base-content/75">
                         {t('editProject.launch.windowed.help')}
                     </span>

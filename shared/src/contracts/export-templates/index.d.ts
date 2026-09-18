@@ -41,6 +41,11 @@ export type TemplateConflict = {
 };
 /** Project-level behaviour selected before preparing a migration review. */
 export type TemplateMigrationChoice = 'share-project' | 'use-shared';
+/** Explicit decisions for every populated version in a dedicated collection. */
+export type TemplateMigrationVersionChoices = Record<
+    string,
+    TemplateMigrationChoice
+>;
 /** Prepared operation, held in main until the user confirms or cancels. */
 export type TemplateReview = {
     sets: string[];
@@ -53,7 +58,7 @@ export type TemplateReview = {
 /** Process-local preparation and commit status. */
 export type TemplateJob = {
     id: string;
-    /** Stable registered project identity for migration progress. */
+    /** Stable registered project identity for project-owned operations and progress. */
     projectPath?: string;
     setIds?: string[];
     kind?: 'update' | 'remove' | 'import' | 'migrate' | 'download' | 'recover';
@@ -91,7 +96,28 @@ export type TemplatePackage = {
     localFiles: string[];
 };
 /** Template requests exposed by the Electron preload bridge. */
+export type ProjectTemplateSettings = {
+    projectPath: string;
+    setId: string;
+    status: TemplateConnection['status'];
+    custom: boolean;
+    files: string[];
+    hasLocalFiles: boolean;
+    sets: { id: string; files: string[] }[];
+};
+/** Template requests exposed by the Electron preload bridge. */
 export type ExportTemplatesBridge = {
+    getProjectSettings(
+        projectPath: string,
+        setId?: string,
+    ): Promise<ProjectTemplateSettings>;
+    detachProject(projectPath: string): Promise<void>;
+    getProjectPackage(
+        projectPath: string,
+        localOnly?: boolean,
+        setId?: string,
+    ): Promise<TemplatePackage>;
+
     connectEmptyProjects(): Promise<void>;
     getMigrationAssessment(): Promise<TemplateMigrationAssessment>;
     inspectProjectTemplates(
@@ -114,6 +140,7 @@ export type ExportTemplatesBridge = {
     prepareMigration(
         projectPath: string,
         choice?: TemplateMigrationChoice,
+        versionChoices?: TemplateMigrationVersionChoices,
     ): Promise<void>;
     apply(
         jobId: string,

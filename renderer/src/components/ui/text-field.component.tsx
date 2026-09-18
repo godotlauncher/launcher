@@ -4,7 +4,7 @@ import { FormField } from './form-field.component';
 
 export type TextFieldProps = {
     id: string;
-    label?: string;
+    label?: React.ReactNode;
     labelAction?: React.ReactNode;
     help?: string;
     ariaLabel?: string;

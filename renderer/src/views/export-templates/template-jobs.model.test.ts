@@ -3,6 +3,26 @@ import { describe, expect, it } from 'vitest';
 import { getTemplateRowJobs } from './template-jobs.model';
 
 describe('template row operations', () => {
+    it('keeps project operations out of shared rows, including errors and completed work', () => {
+        const shared: TemplateJob = {
+            id: 'shared',
+            setIds: ['4.4.stable'],
+            stage: 'error',
+        };
+        for (const stage of ['downloading', 'error', 'complete'] as const) {
+            const project: TemplateJob = {
+                id: 'local',
+                setIds: ['4.4.stable'],
+                projectPath: 'project',
+                kind: 'update',
+                stage,
+            };
+            expect(getTemplateRowJobs([project]).size).toBe(0);
+            expect(
+                getTemplateRowJobs([shared, project]).get('4.4.stable'),
+            ).toEqual(shared);
+        }
+    });
     it('clears an earlier error after a later operation succeeds on the same set', () => {
         expect(
             getTemplateRowJobs([

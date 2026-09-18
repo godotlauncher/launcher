@@ -46,7 +46,8 @@ export function TemplateMigrationModal({
     const [failure, setFailure] = useState('');
     const latestJobs = new Map<string, TemplateJob>();
     for (const job of jobs)
-        if (job.projectPath) latestJobs.set(job.projectPath, job);
+        if (job.projectPath && job.kind === 'migrate')
+            latestJobs.set(job.projectPath, job);
     const busy = jobs.some((job) => !finished(job));
     const complete =
         !introduction &&

@@ -31,6 +31,13 @@ const journalSchema = z.object({
         .string()
         .regex(/^[a-f0-9]{64}$/)
         .optional(),
+    metadataOnly: z.boolean().optional(),
+    operation: z.enum(['detach', 'local']).optional(),
+    afterHash: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/)
+        .optional(),
+    localExisted: z.boolean().optional(),
     retainBackup: z.boolean().optional(),
     discardBackup: z.boolean().optional(),
     backupBytes: z.number().nonnegative().optional(),
@@ -266,7 +273,7 @@ export async function commitTemplateTransaction(
             local &&
             ((await templateConnectionStatus(local, linkRoot)) !== 'local' ||
                 templateFingerprint(
-                    await readTemplateTree(local, true),
+                    await readTemplateTree(local, !journal.metadataOnly),
                     journal.version ?? 1,
                 ) !== journal.sourceHash)
         )
@@ -337,6 +344,10 @@ export async function recoverTemplateTransaction(
         await validateLocalRecoveryPath(journal.localPath, root);
         local = journal.localPath;
     }
+    if (journal.operation) {
+        await recoverProjectTemplateTransaction(linkRoot, work, journal);
+        return;
+    }
     if (Boolean(journal.projectPath) !== Boolean(local))
         throw new Error('exportTemplates:errors.recovery');
     // Completed migrations keep originals until the user restores or removes them.
@@ -347,7 +358,7 @@ export async function recoverTemplateTransaction(
     if (local && localBackup && (await templateLstat(localBackup))) {
         if (
             templateFingerprint(
-                await readTemplateTree(localBackup, true),
+                await readTemplateTree(localBackup, !journal.metadataOnly),
                 journal.version ?? 1,
             ) !== journal.sourceHash
         )
@@ -527,4 +538,179 @@ export async function discardTemplateMigration(
         discardBackup: true,
     });
     await recoverTemplateTransaction(root, work, journal.localPath, linkRoot);
+}
+
+/** Copies checked regular files without following links.
+ * @param source - Source collection.
+ * @param destination - Empty destination collection.
+ * @param files - Freshly captured source files.
+ */
+export async function copyTemplateFiles(
+    source: string,
+    destination: string,
+    files: Awaited<ReturnType<typeof readTemplateTree>>,
+): Promise<void> {
+    await fs.promises.mkdir(destination, { recursive: true });
+    await checkTemplateCapacity(
+        destination,
+        files.reduce((total, file) => total + file.size, 0),
+    );
+    for (const file of files) {
+        const target = templateChild(destination, file.relative);
+        await fs.promises.mkdir(path.dirname(target), { recursive: true });
+        await fs.promises.copyFile(
+            templateChild(source, file.relative),
+            target,
+            fs.constants.COPYFILE_EXCL,
+        );
+        await fs.promises.chmod(target, file.mode);
+    }
+    if (
+        templateFingerprint(
+            await readTemplateTree(
+                destination,
+                files.some((file) => Boolean(file.hash)),
+            ),
+        ) !== templateFingerprint(files)
+    )
+        throw new Error('exportTemplates:errors.changed');
+}
+
+/** Swaps a project collection on its own volume with durable rollback metadata.
+ * @param root - Canonical shared root, used only for validating connections.
+ * @param work - Central operation directory.
+ * @param local - Canonical project export templates folder.
+ * @param source - Prepared complete replacement collection.
+ * @param before - Fresh original collection fingerprint, or empty for a shared link.
+ * @param detach - Whether the original is a shared connection.
+ * @param validate - Rechecks project identity before mutation.
+ * @param linkRoot - Conventional shared path used by project links.
+ * @param setId - Optional version folder to copy directly into the detached collection.
+ */
+export async function commitProjectTemplateTransaction(
+    root: string,
+    work: string,
+    local: string,
+    source: string,
+    before: string,
+    detach: boolean,
+    validate: () => Promise<void>,
+    linkRoot = root,
+    setId?: string,
+): Promise<void> {
+    await validateLocalRecoveryPath(local, root);
+    const next = `${local}.launcher-new-${path.basename(work)}`;
+    const backup = `${local}.launcher-${path.basename(work)}`;
+    if ((await templateLstat(next)) || (await templateLstat(backup)))
+        throw new Error('exportTemplates:errors.changed');
+    const files = await readTemplateTree(source, false);
+    const journal: TemplateJournal = {
+        version: 2,
+        phase: 'committing',
+        sets: [],
+        localPath: local,
+        operation: detach ? 'detach' : 'local',
+        metadataOnly: true,
+        sourceHash: before,
+        afterHash: templateFingerprint(
+            setId
+                ? files.map((file) => ({
+                      ...file,
+                      relative: `${setId}/${file.relative}`,
+                  }))
+                : files,
+        ),
+        localExisted: Boolean(await templateLstat(local)),
+    };
+    await writeJournal(work, journal);
+    setTemplatesMutating(true);
+    try {
+        await fs.promises.mkdir(next);
+        if (files.length)
+            await copyTemplateFiles(
+                source,
+                setId ? templateChild(next, setId) : next,
+                files,
+            );
+        await validate();
+        const status = await templateConnectionStatus(local, linkRoot);
+        if (
+            detach
+                ? status !== 'shared'
+                : !['local', 'missing'].includes(status) ||
+                  templateFingerprint(await readTemplateTree(local, false)) !==
+                      before
+        )
+            throw new Error('exportTemplates:errors.changed');
+        if (journal.localExisted) await fs.promises.rename(local, backup);
+        await fs.promises.rename(next, local);
+        await writeJournal(work, { ...journal, phase: 'complete' });
+        await recoverTemplateTransaction(root, work, undefined, linkRoot);
+    } catch (error) {
+        await recoverTemplateTransaction(root, work, undefined, linkRoot).catch(
+            () => {
+                throw new Error('exportTemplates:errors.recovery');
+            },
+        );
+        throw error;
+    } finally {
+        setTemplatesMutating(false);
+    }
+}
+
+/** Rolls back an interrupted project swap, or removes its completed temporary files.
+ * @param root - Canonical shared collection.
+ * @param work - Operation directory.
+ * @param journal - Validated saved operation.
+ */
+async function recoverProjectTemplateTransaction(
+    root: string,
+    work: string,
+    journal: TemplateJournal,
+): Promise<void> {
+    const local = journal.localPath;
+    if (!local || !journal.afterHash || !journal.sourceHash)
+        throw new Error('exportTemplates:errors.recovery');
+    const backup = `${local}.launcher-${path.basename(work)}`;
+    const next = `${local}.launcher-new-${path.basename(work)}`;
+    const saved = await templateLstat(backup);
+    if (saved) {
+        if (journal.operation === 'detach') {
+            if (!(await isSharedTemplateLink(backup, root)))
+                throw new Error('exportTemplates:errors.changed');
+        } else if (
+            templateFingerprint(
+                await readTemplateTree(backup, !journal.metadataOnly),
+            ) !== journal.sourceHash
+        )
+            throw new Error('exportTemplates:errors.changed');
+    }
+    if (journal.phase === 'committing' && (saved || !journal.localExisted)) {
+        if (await templateLstat(local)) {
+            if (
+                templateFingerprint(
+                    await readTemplateTree(local, !journal.metadataOnly),
+                ) !== journal.afterHash
+            )
+                throw new Error('exportTemplates:errors.changed');
+            await fs.promises.rm(local, { recursive: true });
+        }
+        if (saved) await fs.promises.rename(backup, local);
+    } else if (journal.phase === 'complete' && saved) {
+        if (
+            templateFingerprint(
+                await readTemplateTree(local, !journal.metadataOnly),
+            ) !== journal.afterHash
+        )
+            throw new Error('exportTemplates:errors.changed');
+        if (journal.operation === 'detach') await fs.promises.unlink(backup);
+        else await fs.promises.rm(backup, { recursive: true });
+    }
+    const nextStat = await templateLstat(next);
+    if (nextStat) {
+        if (!nextStat.isDirectory() || nextStat.isSymbolicLink())
+            throw new Error('exportTemplates:errors.unsafe');
+        await fs.promises.rm(next, { recursive: true });
+    }
+    await fs.promises.rm(work, { recursive: true });
 }

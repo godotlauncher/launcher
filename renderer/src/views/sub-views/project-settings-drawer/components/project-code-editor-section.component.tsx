@@ -9,6 +9,7 @@ import {
     type SelectFieldOption,
 } from '../../../../components/ui/select-field.component';
 import { Tooltip } from '../../../../components/ui/tooltip.component';
+import { PendingChangesIndicator } from './pending-changes-indicator.component';
 
 type Translate = (key: string) => string;
 const getCodeEditorOptions = (
@@ -55,10 +56,15 @@ type ProjectCodeEditorSectionProps = {
     loadFailed: boolean;
     disabled: boolean;
     showResetConfig?: boolean;
+    changed?: boolean;
     onChange: (codeEditorId: CodeEditorId | null) => void;
     onResetConfig?: () => void;
 };
 
+/**
+ * Renders the project code editor selection and its pending-change indicator.
+ * @param props - Editor choices, pending state and configuration actions.
+ */
 export const ProjectCodeEditorSection: React.FC<
     ProjectCodeEditorSectionProps
 > = ({
@@ -69,6 +75,7 @@ export const ProjectCodeEditorSection: React.FC<
     loadFailed,
     disabled,
     showResetConfig = false,
+    changed = false,
     onChange,
     onResetConfig,
 }) => (
@@ -79,6 +86,7 @@ export const ProjectCodeEditorSection: React.FC<
                     <h2 className="text-base font-semibold">
                         {t('editProject.codeEditor.title')}
                     </h2>
+                    {changed && <PendingChangesIndicator />}
                 </div>
                 <p className="text-base-content/75">
                     {t('editProject.codeEditor.help')}

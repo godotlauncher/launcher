@@ -15,7 +15,8 @@ export type ProjectSettingsTab =
     | 'project'
     | 'sourceControl'
     | 'codeEditor'
-    | 'launch';
+    | 'launch'
+    | 'exportTemplates';
 
 /** Project state and update operations accepted by the drawer. */
 export type ProjectSettingsDrawerProps = {

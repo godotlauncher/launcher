@@ -851,3 +851,98 @@ describe('template journal recovery', () => {
         expect(fs.promises.rename).not.toHaveBeenCalled();
     });
 });
+
+describe('project-local transaction recovery', () => {
+    const local = path.resolve('project', 'editor_data', 'export_templates');
+    const backup = `${local}.launcher-${path.basename(work)}`;
+    const next = `${local}.launcher-new-${path.basename(work)}`;
+    const original = { ...file, hash: 'original' };
+    const replacement = { ...file, hash: 'replacement' };
+    let journal: Record<string, unknown>;
+    beforeEach(() => {
+        journal = {
+            version: 2,
+            phase: 'committing',
+            sets: [],
+            localPath: local,
+            operation: 'local',
+            localExisted: true,
+            sourceHash: templateFingerprint([original]),
+            afterHash: templateFingerprint([replacement]),
+        };
+        vi.mocked(fs.promises.lstat).mockResolvedValue({
+            isFile: () => true,
+            isSymbolicLink: () => false,
+            size: 100,
+        } as fs.Stats);
+        vi.mocked(fs.promises.readFile).mockImplementation(async () =>
+            JSON.stringify(journal),
+        );
+        vi.mocked(templateLstat).mockImplementation(async (filename) =>
+            [local, backup, next].includes(String(filename))
+                ? ({
+                      isDirectory: () => true,
+                      isSymbolicLink: () => false,
+                  } as fs.Stats)
+                : undefined,
+        );
+        vi.mocked(readTemplateTree).mockImplementation(async (directory) =>
+            directory === backup ? [original] : [replacement],
+        );
+    });
+    it('rolls back an interrupted local update without touching shared files', async () => {
+        await recoverTemplateTransaction(root, work);
+        expect(fs.promises.rename).toHaveBeenCalledExactlyOnceWith(
+            backup,
+            local,
+        );
+        expect(fs.promises.rm).toHaveBeenCalledWith(local, { recursive: true });
+        expect(fs.promises.rm).not.toHaveBeenCalledWith(
+            root,
+            expect.anything(),
+        );
+    });
+    it('refuses rollback when the installed project files were changed afterwards', async () => {
+        vi.mocked(readTemplateTree).mockImplementation(async (directory) =>
+            directory === backup
+                ? [original]
+                : [{ ...replacement, hash: 'user-edit' }],
+        );
+        await expect(recoverTemplateTransaction(root, work)).rejects.toThrow(
+            'errors.changed',
+        );
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+    });
+    it('restores the original shared link after an interrupted detachment', async () => {
+        journal.operation = 'detach';
+        vi.mocked(isSharedTemplateLink).mockResolvedValue(true);
+        await recoverTemplateTransaction(root, work);
+        expect(fs.promises.rename).toHaveBeenCalledWith(backup, local);
+        expect(fs.promises.unlink).not.toHaveBeenCalled();
+    });
+    it('cleans a completed detachment by unlinking only the saved connection', async () => {
+        journal.operation = 'detach';
+        journal.phase = 'complete';
+        vi.mocked(isSharedTemplateLink).mockResolvedValue(true);
+        await recoverTemplateTransaction(root, work);
+        expect(fs.promises.unlink).toHaveBeenCalledExactlyOnceWith(backup);
+        expect(fs.promises.rm).not.toHaveBeenCalledWith(
+            local,
+            expect.anything(),
+        );
+        expect(fs.promises.rm).not.toHaveBeenCalledWith(
+            backup,
+            expect.anything(),
+        );
+    });
+    it('refuses a redirected saved connection during detachment recovery', async () => {
+        journal.operation = 'detach';
+        vi.mocked(isSharedTemplateLink).mockResolvedValue(false);
+        await expect(recoverTemplateTransaction(root, work)).rejects.toThrow(
+            'errors.changed',
+        );
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+        expect(fs.promises.rename).not.toHaveBeenCalled();
+    });
+});
