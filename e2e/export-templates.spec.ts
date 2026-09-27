@@ -151,6 +151,107 @@ test.afterAll(async () => {
     await fs.rm(home, { recursive: true, force: true });
 });
 
+/** Counts template reads through the real preload bridge until restored. */
+async function trackTemplateReads() {
+    await app.evaluate(({ ipcMain }) => {
+        const handlers = (ipcMain as typeof ipcMain & {
+            _invokeHandlers: Map<string, (...args: unknown[]) => unknown>;
+        })._invokeHandlers;
+        const counts: Record<string, number> = {};
+        const channels = ['getProjectSettings', 'getProjectPackage', 'getPackage', 'getLocalPackage'];
+        const originals = channels.map(name => {
+            const channel = `exportTemplates.${name}`;
+            const handler = handlers.get(channel)!;
+            counts[name] = 0;
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, (event, ...args) => {
+                counts[name]++;
+                return handler(event, ...args);
+            });
+            return { channel, handler };
+        });
+        (globalThis as any).templateFocusReads = counts;
+        (globalThis as any).restoreTemplateFocusReads = () => {
+            for (const { channel, handler } of originals) {
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, handler);
+            }
+        };
+    });
+}
+
+/** Returns the number of file-selector reads observed in the main process. */
+async function templateReadCounts(): Promise<Record<string, number>> {
+    return app.evaluate(() => (globalThis as any).templateFocusReads);
+}
+
+for (const surface of ['library', 'project'] as const) {
+    test(`refreshes only the visible ${surface} template file tree on focus and preserves drafts`, async () => {
+        const directory = path.join(root, '4.4.stable');
+        await fs.mkdir(directory, { recursive: true });
+        await fs.writeFile(path.join(directory, 'before.txt'), 'before');
+        await trackTemplateReads();
+        try {
+            let drawer;
+            if (surface === 'library') {
+                await page.getByTestId('btnExportTemplates').click();
+                await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+                await page.getByRole('button', { name: 'Manage templates 4.4.stable', exact: true }).click();
+                drawer = page.getByTestId('templateDownloadDrawer');
+            } else {
+                drawer = await openProjectTemplates();
+            }
+            const other = drawer.getByRole('button', { name: 'Other files', exact: true });
+            await expect(other).toBeVisible();
+            if (await other.getAttribute('aria-expanded') === 'false') await other.click();
+            await expect(drawer.getByRole('checkbox', { name: 'before.txt', exact: true })).toBeChecked();
+            await fs.unlink(path.join(directory, 'before.txt'));
+            await fs.writeFile(path.join(directory, 'after.txt'), 'after');
+            await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+            await expect(drawer.getByRole('checkbox', { name: 'before.txt', exact: true })).toHaveCount(0);
+            const file = drawer.getByRole('checkbox', { name: 'after.txt', exact: true });
+            await expect(file).toBeChecked();
+            await file.uncheck();
+            const dirtyReads = await templateReadCounts();
+            await fs.writeFile(path.join(directory, 'later.txt'), 'later');
+            await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+            await page.waitForTimeout(300);
+            await expect(file).not.toBeChecked();
+            const afterDirty = await templateReadCounts();
+            expect(afterDirty.getProjectPackage).toBe(dirtyReads.getProjectPackage);
+            expect(afterDirty.getPackage).toBe(dirtyReads.getPackage);
+            expect(afterDirty.getLocalPackage).toBe(dirtyReads.getLocalPackage);
+            // Undo the draft so closing does not require a discard confirmation.
+            await file.check();
+            if (surface === 'project') {
+                await drawer.getByTestId('tabProjectSettings_project').click();
+                const hiddenReads = await templateReadCounts();
+                await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+                await page.waitForTimeout(300);
+                expect(await templateReadCounts()).toEqual(hiddenReads);
+                await drawer.getByTestId('tabProjectSettings_exportTemplates').click();
+                await expect(drawer.getByRole('checkbox', { name: 'later.txt', exact: true })).toBeChecked();
+            }
+            await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+            await expect(drawer).toBeHidden();
+            await page.getByTestId('btnProjects').click();
+            const closedReads = await templateReadCounts();
+            await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+            await page.waitForTimeout(300);
+            expect(await templateReadCounts()).toEqual(closedReads);
+        } finally {
+            await app.evaluate(() => {
+                (globalThis as any).restoreTemplateFocusReads();
+                delete (globalThis as any).templateFocusReads;
+                delete (globalThis as any).restoreTemplateFocusReads;
+            });
+            await fs.rm(directory, { recursive: true, force: true });
+            await page.getByTestId('btnExportTemplates').click();
+            await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+        }
+    });
+}
+
 test('clears transient inventory and imported-library read errors after refresh', async () => {
     await app.evaluate(({ ipcMain }) => {
         const channels = [
@@ -1264,12 +1365,10 @@ test('uses Official for a new editor version and restores remembered imports wit
     drawer = await openProjectTemplates();
     await expect(drawer.getByRole('button', { name: /^Export template build:/ })).toContainText('Template migration');
     expect(await fs.readFile(path.join(local, '4.4.stable', 'web_release.zip'), 'utf8')).toBe('project custom build');
-    await app.close();
     const files = path.join(home, '.gd-launcher', 'export-templates', 'imported', build.setId, build.directoryName);
     await fs.rename(files, `${files}-unavailable`);
-    await restartTemplatesApp();
-    drawer = await openProjectTemplates();
-    await expect(drawer.getByRole('alert')).toHaveText('The selected imported build is missing. Choose another build or Official.');
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(drawer.getByRole('alert')).toHaveText('Some files for this imported build are missing. Replace the package in Export Templates, or choose another build.');
     expect(JSON.parse(await fs.readFile(projectsFile, 'utf8'))[0].exportTemplateBuilds['4.4.stable']).toBe(build.id);
     await chooseProjectBuild(drawer, 'Official - 4.4.stable - Standard');
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();

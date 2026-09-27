@@ -48,6 +48,7 @@ function changed(draft: Draft): boolean {
 }
 
 /** Keeps version-specific drafts and saves only versions using Official templates.
+ * Refreshes the visible clean draft without replacing unsaved selections.
  * @param props - Project collection, staged editor identity and drawer save handle.
  */
 export function ProjectTemplateFiles({
@@ -120,6 +121,56 @@ export function ProjectTemplateFiles({
     const dirty = !submitting && changedDrafts.length > 0;
     useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
     const loaded = drafts[expanded]?.info;
+    const draftsRef = useRef(drafts);
+    draftsRef.current = drafts;
+    useEffect(() => {
+        if (!active || !expanded || disabled || submitting || deleteId) return;
+        let alive = true;
+        let refreshing = false;
+        /** Refreshes one visible version, preserving edits made during the read. */
+        const refresh = async () => {
+            const draft = draftsRef.current[expanded];
+            if (!draft || changed(draft) || refreshing) return;
+            refreshing = true;
+            try {
+                const info = await exportTemplatesBridge.getProjectPackage(
+                    project.path,
+                    draft.localOnly,
+                    expanded,
+                );
+                if (alive) {
+                    setDrafts((current) =>
+                        current[expanded] !== draft
+                            ? current
+                            : {
+                                  ...current,
+                                  [expanded]: {
+                                      ...draft,
+                                      info,
+                                      selected: info.localFiles,
+                                  },
+                              },
+                    );
+                    setError('');
+                }
+            } catch (failure) {
+                if (alive) setError(String(failure));
+            } finally {
+                refreshing = false;
+            }
+        };
+        /** Starts a bounded refresh when the window regains focus. */
+        const focused = () => {
+            void refresh();
+        };
+        // Revisit only the visible version, retaining any unsaved file selection.
+        focused();
+        window.addEventListener('focus', focused);
+        return () => {
+            alive = false;
+            window.removeEventListener('focus', focused);
+        };
+    }, [active, expanded, disabled, submitting, deleteId, project.path]);
     // biome-ignore lint/correctness/useExhaustiveDependencies: Explicit retries reload a failed selection.
     useEffect(() => {
         if (!active || !expanded || loaded || submitting) return;

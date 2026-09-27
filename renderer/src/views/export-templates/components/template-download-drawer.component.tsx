@@ -1,5 +1,5 @@
 import type { ExportTemplateSet, TemplatePackage } from '@shared/contracts';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Drawer } from '../../../components/ui/drawer/drawer.component';
 import { FileSelectionTree } from '../../../components/ui/file-selection-tree/file-selection-tree.component';
@@ -22,6 +22,7 @@ type TemplateDownloadDrawerProps = {
 };
 
 /** Hosts template selection and stages additions and removals for Save.
+ * Refreshes an open, unedited selection when the window regains focus.
  * @param props - Drawer visibility and current local template inventory.
  */
 export function TemplateDownloadDrawer({
@@ -61,10 +62,24 @@ export function TemplateDownloadDrawer({
     const [error, setError] = useState('');
     const [saving, setSaving] = useState(false);
     const [attempt, setAttempt] = useState(0);
+    const loadedIdentity = useRef<string | undefined>(undefined);
+    const dirty =
+        packageInfo !== null &&
+        (selected.length !== packageInfo.localFiles.length ||
+            selected.some((file) => !packageInfo.localFiles.includes(file)));
+    useEffect(() => {
+        if (!open || dirty || saving || loading) return;
+        /** Reloads the visible package using its cached official file index. */
+        const refresh = () => setAttempt((value) => value + 1);
+        window.addEventListener('focus', refresh);
+        return () => window.removeEventListener('focus', refresh);
+    }, [open, dirty, saving, loading]);
     // biome-ignore lint/correctness/useExhaustiveDependencies: Retry deliberately reloads the current package.
     useEffect(() => {
         let alive = true;
-        setPackageInfo(null);
+        const identity = selection?.asset.id ?? manageSet?.id;
+        if (!open || loadedIdentity.current !== identity) setPackageInfo(null);
+        loadedIdentity.current = identity;
         setError('');
         if ((!selection && !manageSet) || !open) return;
         setLocalOnly(false);
@@ -213,20 +228,24 @@ export function TemplateDownloadDrawer({
                                 </div>
                             )}
                             {packageInfo && (
-                                <FileSelectionTree
-                                    key={selection?.asset.id ?? manageSet?.id}
-                                    nodes={nodes}
-                                    selected={selected}
-                                    onChange={setSelected}
-                                    label={t('picker.files')}
-                                    labels={{
-                                        local: t('picker.local'),
-                                        partial: t('picker.partial'),
-                                        missing: t('picker.missing'),
-                                        add: t('picker.willAdd'),
-                                        remove: t('picker.willRemove'),
-                                    }}
-                                />
+                                <fieldset disabled={loading || saving}>
+                                    <FileSelectionTree
+                                        key={
+                                            selection?.asset.id ?? manageSet?.id
+                                        }
+                                        nodes={nodes}
+                                        selected={selected}
+                                        onChange={setSelected}
+                                        label={t('picker.files')}
+                                        labels={{
+                                            local: t('picker.local'),
+                                            partial: t('picker.partial'),
+                                            missing: t('picker.missing'),
+                                            add: t('picker.willAdd'),
+                                            remove: t('picker.willRemove'),
+                                        }}
+                                    />
+                                </fieldset>
                             )}
                         </div>
                     </>

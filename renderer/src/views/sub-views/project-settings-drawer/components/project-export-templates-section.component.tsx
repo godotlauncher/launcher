@@ -28,6 +28,7 @@ type Props = {
     ref: Ref<ProjectTemplateFilesHandle>;
     selectedSetId: string;
     project: ProjectDetails;
+    active: boolean;
     disabled: boolean;
     onNavigate: (navigate: () => void) => void;
     editorChanged: boolean;
@@ -36,12 +37,13 @@ type Props = {
 };
 
 /** Stages template sources while retaining unsaved shared Official file selections.
- * Keeps file contents within the remaining section height for scrolling.
+ * Refreshes metadata on focus only while the template tab is active.
  * @param props - Project, selected editor and the drawer's save/discard controls.
  */
 export function ProjectExportTemplatesSection({
     ref,
     project,
+    active,
     selectedSetId,
     disabled,
     onNavigate,
@@ -71,8 +73,16 @@ export function ProjectExportTemplatesSection({
     );
     const dirty = filesDirty || changed.length > 0;
     useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
+    useEffect(() => {
+        if (!active || disabled || pending || busy) return;
+        /** Requests fresh metadata for the visible template tab. */
+        const refresh = () => setRevision((value) => value + 1);
+        window.addEventListener('focus', refresh);
+        return () => window.removeEventListener('focus', refresh);
+    }, [active, disabled, pending, busy]);
     // biome-ignore lint/correctness/useExhaustiveDependencies: Refresh on queue transitions, not download byte counters.
     useEffect(() => {
+        if (!active) return;
         let alive = true;
         setError('');
         void exportTemplatesBridge
@@ -86,7 +96,14 @@ export function ProjectExportTemplatesSection({
         return () => {
             alive = false;
         };
-    }, [project.path, project.launch_path, selectedSetId, lifecycle, revision]);
+    }, [
+        active,
+        project.path,
+        project.launch_path,
+        selectedSetId,
+        lifecycle,
+        revision,
+    ]);
     useImperativeHandle(ref, () => ({
         discard: () => {
             filesRef.current?.discard();
@@ -313,7 +330,7 @@ export function ProjectExportTemplatesSection({
                         <ProjectTemplateFiles
                             ref={filesRef}
                             project={project}
-                            active={choice === 'official'}
+                            active={active && choice === 'official'}
                             sets={settings.sets.filter((set) => set.id === id)}
                             selectedSetId={id}
                             buildSelections={buildSelections}

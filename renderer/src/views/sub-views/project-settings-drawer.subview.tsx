@@ -635,6 +635,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                                             setConfirmingTemplateDelete
                                         }
                                         project={project}
+                                        active={activeTab === 'exportTemplates'}
                                         selectedSetId={
                                             form.releaseSelection?.source ===
                                                 'installed' &&
