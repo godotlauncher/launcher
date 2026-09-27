@@ -8,7 +8,8 @@
         "tools": "工具",
         "codeEditors": "程式碼編輯器",
         "connections": "連線",
-        "updates": "更新"
+        "updates": "更新",
+        "exportTemplates": "匯出範本"
     },
     "appearance": {
         "theme": {

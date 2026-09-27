@@ -422,6 +422,9 @@ export async function checkProjectValid(
             await SetProjectEditorRelease(
                 path.dirname(project.launch_path),
                 project.release,
+                undefined,
+                project.exportTemplateMode,
+                project.exportTemplateBuilds,
             );
         }
         project.release.valid = true;

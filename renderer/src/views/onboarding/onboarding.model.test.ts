@@ -2,6 +2,7 @@ import type { UserPreferences } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
     applyOnboardingRecommendedLocations,
+    areOnboardingPathsEqual,
     getNextOnboardingStep,
     getOnboardingDestinationPath,
     getPreviousOnboardingStep,
@@ -55,6 +56,30 @@ describe('onboarding model', () => {
             true,
         );
         expect(isAbsoluteOnboardingPath('Godot/Editors', 'linux')).toBe(false);
+    });
+
+    it('compares storage paths without moving an unchanged location', () => {
+        expect(
+            areOnboardingPathsEqual(
+                '/Users/mario/Godot/ExportTemplates/',
+                '/Users/mario/Godot/ExportTemplates',
+                'darwin',
+            ),
+        ).toBe(true);
+        expect(
+            areOnboardingPathsEqual(
+                'C:\\Godot\\ExportTemplates',
+                'c:/godot/exporttemplates/',
+                'win32',
+            ),
+        ).toBe(true);
+        expect(
+            areOnboardingPathsEqual(
+                '/Users/mario/Godot/ExportTemplates',
+                '/Volumes/Storage/Templates',
+                'darwin',
+            ),
+        ).toBe(false);
     });
 
     it.each([

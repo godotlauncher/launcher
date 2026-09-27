@@ -111,7 +111,7 @@ export const CreateProjectEditorPickerPopover: React.FC<
             aria-labelledby={labelledBy}
             data-testid="createProjectEditorPickerPopover"
             onKeyDown={onKeyDown}
-            className="fixed inset-auto m-0 w-[min(34rem,calc(100vw-2rem))] h-[min(28rem,calc(100vh-2rem))] overflow-hidden rounded-md bg-base-100 p-3 text-base shadow-md"
+            className="fixed inset-auto m-0 w-[min(34rem,calc(100vw-2rem))] h-[min(28rem,calc(100vh-2rem))] overflow-hidden rounded-md border border-base-content/20 bg-base-100 p-3 text-base shadow-md"
             style={style}
         >
             <div className="flex h-full min-h-0 flex-col gap-3">

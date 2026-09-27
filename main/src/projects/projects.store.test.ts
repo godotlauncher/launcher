@@ -2,11 +2,15 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { ProjectDetails } from '@shared/contracts';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AtomicJsonFileAdapter } from '../json-store/atomic-json-file.adapter.js';
 import { JsonStoreConflictError } from '../json-store/json-store.types.js';
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
-import { ProjectsStore } from './projects.store.js';
+import {
+    fromStoredProject,
+    ProjectsStore,
+    toStoredProject,
+} from './projects.store.js';
 
 describe('ProjectsStore', () => {
     let temporaryDirectory: string;
@@ -169,6 +173,28 @@ describe('ProjectsStore', () => {
     });
 });
 
+describe('project template preference projection', () => {
+    it.each(['shared', 'separate'] as const)(
+        'preserves the %s mode and version-specific build on storage round trip',
+        (mode) => {
+            const buildId = '8a15e517-8e8f-43c2-8ddf-7ac83e8fe209';
+            const project = createProject('/projects/demo', null);
+            project.exportTemplateMode = mode;
+            project.exportTemplateBuilds = { '4.5.stable': buildId };
+
+            const stored = toStoredProject(project);
+            expect(stored).toMatchObject({
+                exportTemplateMode: mode,
+                exportTemplateBuilds: { '4.5.stable': buildId },
+            });
+            expect(fromStoredProject(stored)).toMatchObject({
+                exportTemplateMode: mode,
+                exportTemplateBuilds: { '4.5.stable': buildId },
+            });
+        },
+    );
+});
+
 /**
  * Creates a complete project fixture.
  *
@@ -214,3 +240,5 @@ function createProject(
         valid: true,
     };
 }
+
+vi.mock('electron-log', () => ({ default: { error: vi.fn() } }));

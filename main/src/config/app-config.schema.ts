@@ -4,6 +4,7 @@ export const AppPathsSchema = z.object({
     dataDir: z.string(),
     configDir: z.string(),
     projectDir: z.string(),
+    templateDir: z.string(),
     prefsPath: z.string(),
     releaseCachePath: z.string(),
     installedReleasesCachePath: z.string(),

@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { GithubEditorCatalogAdapter } from './github-editor-catalog.adapter.js';
+import { githubReleasePageSchema } from './github-editor-catalog.schema.js';
+
+vi.mock('@mariodebono/di', () => ({ Injectable: () => () => undefined }));
+vi.mock('./github-editor-catalog.schema.js', () => ({
+    githubReleasePageSchema: { parse: vi.fn((value) => value) },
+}));
 
 vi.mock('electron-log', () => ({
     default: {
@@ -12,6 +18,54 @@ afterEach(() => {
 });
 
 describe('GithubEditorCatalogAdapter', () => {
+    it('stops fetching when response validation fails', async () => {
+        const fetchMock = createPagedFetchMock([
+            createGithubReleasePage(1, 100),
+        ]);
+        vi.stubGlobal('fetch', fetchMock);
+        vi.mocked(githubReleasePageSchema.parse).mockImplementationOnce(() => {
+            throw new Error('invalid release response');
+        });
+
+        await expect(
+            new GithubEditorCatalogAdapter().fetchProvider(
+                'official-stable',
+                null,
+            ),
+        ).rejects.toThrow('invalid release response');
+        expect(fetchMock).toHaveBeenCalledOnce();
+    });
+
+    it('keeps template metadata from the GitHub response through catalogue mapping', async () => {
+        const release = createGithubRelease(4);
+        const digest = `sha256:${'a'.repeat(64)}`;
+        const template = {
+            id: 42,
+            name: 'Godot_v4.4-stable_mono_export_templates.tpz',
+            browser_download_url: 'https://example.com/templates.tpz',
+            size: 123456,
+            digest,
+        };
+        const response = { ...release, assets: [...release.assets, template] };
+        vi.stubGlobal('fetch', createPagedFetchMock([[response]]));
+
+        const result = await new GithubEditorCatalogAdapter().fetchProvider(
+            'official-stable',
+            null,
+        );
+
+        expect(result.releases[0].templateAssets).toEqual([
+            expect.objectContaining({
+                id: 'official-stable:4.4-stable:templates:42',
+                name: template.name,
+                flavor: 'dotnet',
+                downloadUrl: template.browser_download_url,
+                sizeBytes: template.size,
+                digest,
+            }),
+        ]);
+    });
+
     it('fetches every page during an empty-cache bootstrap', async () => {
         const fetchMock = createPagedFetchMock([
             createGithubReleasePage(1, 100),
@@ -156,7 +210,7 @@ type GithubReleaseResponse = ReturnType<typeof createGithubRelease>;
  */
 function createPagedFetchMock(pages: GithubReleaseResponse[][]) {
     let pageIndex = 0;
-    return vi.fn(async () => Response.json(pages[pageIndex++] ?? []));
+    return vi.fn(async (_url: URL) => Response.json(pages[pageIndex++] ?? []));
 }
 
 /**

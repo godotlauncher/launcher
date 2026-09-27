@@ -29,6 +29,7 @@ import { ConnectionsSettingsPanel } from './settings/components/connections-sett
 import { InstallsSettingsPanel } from './settings/components/installs-settings-panel.component';
 import { ProjectsSettingsPanel } from './settings/components/projects-settings-panel.component';
 import { SettingsTabs } from './settings/components/settings-tabs.component';
+import { TemplateStorageSettingsPanel } from './settings/components/template-storage-settings-panel.component';
 import { ToolsSettingsPanel } from './settings/components/tools-settings-panel.component';
 import { UpdatesSettingsPanel } from './settings/components/updates-settings-panel.component';
 import { CodeEditorSettingsDrawer } from './sub-views/code-editor-settings-drawer.subview';
@@ -44,7 +45,7 @@ type SettingsViewProps = {
 };
 
 /**
- * Renders settings panels and route-requested terminal recovery.
+ * Renders settings beside a vertical menu and route-requested terminal recovery.
  * @param props - Active tab, optional terminal drawer request and navigation callbacks.
  */
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -739,7 +740,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 {t('title')}
             </h1>
 
-            <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden bg-base-100">
                 <SettingsTabs
                     activeTab={activeTab}
                     t={t}
@@ -747,7 +748,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 />
 
                 <div
-                    className="flex min-h-0 flex-1 flex-col overflow-hidden bg-base-100"
+                    id="settings-panel"
+                    role="tabpanel"
+                    aria-labelledby={`settings-tab-${activeTab}`}
+                    className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
                     data-testid="settingsPanelContainer"
                 >
                     <div className="min-h-0 flex-1 overflow-y-auto p-[24px]">
@@ -756,6 +760,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         />
                         <InstallsSettingsPanel
                             active={activeTab === 'installs'}
+                        />
+                        <TemplateStorageSettingsPanel
+                            active={activeTab === 'exportTemplates'}
                         />
                         <AppearanceSettingsPanel
                             active={activeTab === 'appearance'}

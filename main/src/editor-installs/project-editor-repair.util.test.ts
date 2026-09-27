@@ -321,6 +321,7 @@ describe('setProjectEditor', () => {
 
     it('should reuse the existing editor folder when the project name changes', async () => {
         mockProject.name = 'Renamed Project';
+        mockProject.exportTemplateMode = 'separate';
 
         const result = await setProjectEditor(
             mockProject,
@@ -333,6 +334,8 @@ describe('setProjectEditor', () => {
             path.dirname('/fake/launch/old'),
             mockNewRelease,
             mockOldRelease,
+            'separate',
+            undefined,
         );
     });
 
@@ -354,6 +357,8 @@ describe('setProjectEditor', () => {
             path.resolve('/install/.editor_config/_COM1.data'),
             mockNewRelease,
             mockOldRelease,
+            undefined,
+            undefined,
         );
     });
 

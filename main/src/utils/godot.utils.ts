@@ -10,6 +10,7 @@ import type {
 } from '@shared/contracts';
 import logger from 'electron-log';
 import mst from 'mustache';
+import { connectProjectTemplates } from '../export-templates/template-runtime.util.js';
 import {
     removeProjectEditorDarwin,
     setProjectEditorReleaseDarwin,
@@ -162,11 +163,30 @@ export async function removeProjectEditor(
     }
 }
 
+/**
+ * Configures one project's editor launch path and templates for a release.
+ *
+ * @param projectEditorPath - Project editor configuration directory.
+ * @param release - Editor release to configure.
+ * @param previousRelease - Previously configured editor release.
+ * @param exportTemplateMode - Project template preference.
+ * @param selections - Saved per-version build choices.
+ * @returns The configured editor launch path.
+ */
 export async function SetProjectEditorRelease(
     projectEditorPath: string,
     release: InstalledRelease,
     previousRelease?: InstalledRelease,
+    exportTemplateMode?: ProjectDetails['exportTemplateMode'],
+    selections?: ProjectDetails['exportTemplateBuilds'],
 ): Promise<LaunchPath> {
+    await connectProjectTemplates(
+        projectEditorPath,
+        release,
+        exportTemplateMode,
+        selections,
+        `${release.version.replace('-', '.')}${release.mono ? '.mono' : ''}`,
+    );
     const scFilePath = path.resolve(projectEditorPath, '._sc_');
 
     if (!fs.existsSync(projectEditorPath)) {

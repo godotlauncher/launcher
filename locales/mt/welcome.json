@@ -125,6 +125,11 @@
             "selectEditorLocation": "Agħżel il-post tal-edituri",
             "browseProjectsLocation": "Fittex post għall-proġetti",
             "browseEditorLocation": "Fittex post għall-edituri",
+            "importedTemplatesLocation": "Post tal-mudelli ta' esportazzjoni importati",
+            "importedTemplatesLocationHelp": "Agħżel fejn jinħażnu l-mudelli ta' esportazzjoni personalizzati importati.",
+            "selectImportedTemplatesLocation": "Agħżel il-post tal-mudelli ta' esportazzjoni importati",
+            "browseImportedTemplatesLocation": "Fittex post għall-mudelli ta' esportazzjoni importati",
+            "movingImportedTemplates": "Qed jitmexxew il-mudelli ta' esportazzjoni importati: {{stage}}",
             "codeEditor": "Editur tal-kodiċi predefinit",
             "codeEditorHelp": "Jintuża meta tiftaħ skripts u fajls minn Godot Launcher. Tista' tibdlu aktar tard.",
             "noCodeEditor": "Xejn",
@@ -161,6 +166,7 @@
             "directoryPicker": "L-għażla tal-folder ma setgħetx tinfetaħ. Daħħal mogħdija assoluta minflok.",
             "absolutePath": "Daħħal mogħdija assoluta għal folder.",
             "saveSetup": "Il-konfigurazzjoni ma setgħetx tiġi salvata. Il-preferenzi preċedenti tiegħek ma nbidlux.",
+            "importedTemplatesMove": "Il-mudelli ta' esportazzjoni importati ma setgħux jitmexxew. Il-konfigurazzjoni inizjali tiegħek għadha mhix kompluta. Erġa' pprova.",
             "finish": "Il-konfigurazzjoni inizjali ma setgħetx titlesta. Iċċekkja l-għażliet tiegħek u erġa' pprova."
         }
     }

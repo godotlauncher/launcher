@@ -290,7 +290,10 @@ export class EditorCatalogService {
 function providerNeedsIntegrityRefresh(
     provider: EditorCatalogFile['providers'][EditorCatalogProviderId],
 ): boolean {
-    return provider.integrityMetadataRefreshed !== true;
+    return (
+        provider.integrityMetadataRefreshed !== true ||
+        provider.templateMetadataRefreshed !== true
+    );
 }
 
 /**
@@ -318,6 +321,9 @@ function mergeProviderUpdates(
             ]),
         );
         providers[update.providerId] = {
+            templateMetadataRefreshed:
+                current.templateMetadataRefreshed === true ||
+                integrityRefreshProviderIds.has(update.providerId),
             integrityMetadataRefreshed:
                 current.integrityMetadataRefreshed === true ||
                 integrityRefreshProviderIds.has(update.providerId),

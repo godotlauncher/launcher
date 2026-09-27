@@ -1,18 +1,30 @@
 import type { ProjectEditorSelection } from '@shared/contracts';
 import clsx from 'clsx';
-import { Pin } from 'lucide-react';
+import {
+    Code,
+    FileOutput,
+    GitBranch,
+    Pin,
+    Settings,
+    Terminal,
+} from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CopyBadge } from '../../components/ui/copy-badge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
+import { VerticalTabMenu } from '../../components/ui/vertical-tab-menu.component';
 import { useAlerts } from '../../hooks/alerts.hook';
 import { useProjects } from '../../hooks/projects.hook';
+import { useTemplateJobs } from '../export-templates/hooks/template-jobs.hook';
 import { getCreateProjectReleaseKey } from './create-project/create-project.model';
+import { PendingChangesIndicator } from './project-settings-drawer/components/pending-changes-indicator.component';
 import { ProjectCodeEditorSection } from './project-settings-drawer/components/project-code-editor-section.component';
+import { ProjectExportTemplatesSection } from './project-settings-drawer/components/project-export-templates-section.component';
 import { ProjectSettingsLaunchSection } from './project-settings-drawer/components/project-settings-launch-section.component';
 import { ProjectSettingsProjectSection } from './project-settings-drawer/components/project-settings-project-section.component';
 import { ProjectSettingsSourceControlSection } from './project-settings-drawer/components/project-settings-source-control-section.component';
+import type { ProjectTemplateFilesHandle } from './project-settings-drawer/components/project-template-files.component';
 import { useProjectSettingsForm } from './project-settings-drawer/hooks/project-settings-form.hook';
 import { useProjectSettingsSourceControl } from './project-settings-drawer/hooks/project-settings-source-control.hook';
 import {
@@ -29,10 +41,20 @@ const tabs: ProjectSettingsTab[] = [
     'sourceControl',
     'codeEditor',
     'launch',
+    'exportTemplates',
 ];
+
+const tabIcons = {
+    project: Settings,
+    sourceControl: GitBranch,
+    codeEditor: Code,
+    launch: Terminal,
+    exportTemplates: FileOutput,
+};
 
 /**
  * Renders the Project Settings drawer and coordinates its ordered save operation.
+ * Bounds template content to the available drawer body height.
  *
  * @param props - The active project and its update operations.
  * @returns The drawer element.
@@ -59,6 +81,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         'common',
         'installs',
         'createProject',
+        'exportTemplates',
     ]);
     const { addAlert, addCustomConfirm } = useAlerts();
     const { settingsSaves, queueProjectEditorRepairs, clearSettingsSave } =
@@ -66,7 +89,20 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
     const [activeTab, setActiveTab] = useState<ProjectSettingsTab>('project');
     const activeProjectPathRef = useRef<string | null>(null);
     const [savingLocally, setSavingLocally] = useState(false);
+    const [templatesVisited, setTemplatesVisited] = useState(false);
+    const [templatesDirty, setTemplatesDirty] = useState(false);
+    const [confirmingTemplateDelete, setConfirmingTemplateDelete] =
+        useState(false);
+    const [confirmingTemplateClose, setConfirmingTemplateClose] =
+        useState(false);
     const submitting = useRef(false);
+    const templateFiles = useRef<ProjectTemplateFilesHandle>(null);
+    const jobs = useTemplateJobs();
+    const templateBusy = jobs.some(
+        (job) =>
+            job.projectPath === project?.path &&
+            !['complete', 'cancelled', 'error'].includes(job.stage),
+    );
     const save = project ? settingsSaves?.get(project.path) : undefined;
     const savingInBackground = save?.status === 'pending';
     const form = useProjectSettingsForm({
@@ -88,19 +124,70 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         onSetProjectGitIdentity,
     });
     const isSubmitting = savingLocally || savingInBackground;
+    const gitDirty = sourceControl.nameChanged || sourceControl.emailChanged;
 
     useEffect(() => {
         if (!open || !project) {
             activeProjectPathRef.current = null;
+            setTemplatesVisited(false);
+            setTemplatesDirty(false);
             return;
         }
         if (activeProjectPathRef.current !== project.path) {
             activeProjectPathRef.current = project.path;
             setActiveTab('project');
+            setTemplatesVisited(false);
+            setTemplatesDirty(false);
             setSavingLocally(false);
             submitting.current = false;
         }
     }, [open, project]);
+
+    /** Confirms discarding unsaved settings before closing.
+     * @param afterClose - Optional navigation after the drawer has closed.
+     */
+    const requestClose = (afterClose?: () => void) => {
+        if (
+            savingLocally ||
+            confirmingTemplateClose ||
+            confirmingTemplateDelete
+        )
+            return;
+        if (!changed && !gitDirty) {
+            onOpenChange(false);
+            afterClose?.();
+            return;
+        }
+        setConfirmingTemplateClose(true);
+        addCustomConfirm(
+            t('exportTemplates:project.drawerUnsavedTitle'),
+            t('exportTemplates:project.drawerUnsavedMessage'),
+            [
+                {
+                    text: t('exportTemplates:project.drawerDiscard'),
+                    typeClass: 'btn-error btn-soft',
+                    onClick: () => {
+                        setConfirmingTemplateClose(false);
+                        setTemplatesDirty(false);
+                        onOpenChange(false);
+                        afterClose?.();
+                        return true;
+                    },
+                },
+                {
+                    text: t('exportTemplates:project.drawerBack'),
+                    typeClass: 'btn-primary',
+                    isCancel: true,
+                    onClick: () => {
+                        setConfirmingTemplateClose(false);
+                        return true;
+                    },
+                },
+            ],
+            undefined,
+            'warning',
+        );
+    };
 
     /**
      * Confirms resetting the selected code editor configuration for this project.
@@ -215,6 +302,15 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                               mono: form.releaseSelection.mono,
                           };
             }
+            if (templatesDirty) {
+                setActiveTab('exportTemplates');
+                if (
+                    !templateFiles.current ||
+                    !(await templateFiles.current.submit())
+                )
+                    return;
+                setTemplatesDirty(false);
+            }
             if (rename) {
                 const result = await onRenameProject(project, {
                     name: form.name.trim(),
@@ -254,7 +350,8 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                 form.acceptWindowed(form.windowed);
             }
             clearSettingsSave(project.path);
-            onOpenChange(false);
+            if (gitDirty) setActiveTab('sourceControl');
+            else onOpenChange(false);
             if (
                 form.releaseSelection.source === 'catalogue' &&
                 (current.release.valid === false ||
@@ -292,7 +389,15 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         form.hasRenameChanges ||
         form.hasCodeEditorChanges ||
         form.hasReleaseChanges ||
-        form.hasWindowedChanges;
+        form.hasWindowedChanges ||
+        templatesDirty;
+    const pendingTabs: Record<ProjectSettingsTab, boolean> = {
+        project: form.hasRenameChanges || form.hasReleaseChanges,
+        sourceControl: gitDirty,
+        codeEditor: form.hasCodeEditorChanges,
+        launch: form.hasWindowedChanges,
+        exportTemplates: templatesDirty,
+    };
     const title = project
         ? t('editProject.drawerTitle', { project: project.name })
         : t('editProject.title');
@@ -301,20 +406,26 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         !changed ||
         !form.name.trim() ||
         isSubmitting ||
+        templateBusy ||
         form.loadingGodotName;
     return (
         <Drawer
             open={open && !!project}
             onOpenChange={(next) => {
-                if (!next && savingLocally) return;
-                onOpenChange(next);
+                if (!next) requestClose();
+                else onOpenChange(next);
             }}
             side="right"
             ariaLabel={title}
-            width={560}
+            width={860}
             panelClassName="max-w-[100vw]"
             closeOnBackdrop={!savingLocally}
-            closeOnEscape={!savingLocally}
+            closeOnEscape={
+                !savingLocally &&
+                !confirmingTemplateClose &&
+                !confirmingTemplateDelete
+            }
+            trapFocus={!confirmingTemplateClose && !confirmingTemplateDelete}
         >
             <Drawer.Header className="items-start">
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -347,189 +458,229 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                 className="flex min-h-0 flex-1 flex-col"
                 onSubmit={(event) => void submit(event)}
             >
-                <div
-                    role="tablist"
-                    className="tabs tabs-border grid shrink-0 grid-cols-4 px-5 pt-2"
-                >
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab}
-                            type="button"
-                            role="tab"
-                            data-testid={`tabProjectSettings_${tab}`}
-                            aria-selected={activeTab === tab}
-                            className={clsx(
-                                'tab px-2 text-base',
-                                activeTab === tab && 'tab-active',
-                            )}
-                            onClick={() => setActiveTab(tab)}
+                <div className="flex min-h-0 flex-1">
+                    <VerticalTabMenu
+                        ariaLabel={t('editProject.title')}
+                        activeTab={activeTab}
+                        onActiveTabChange={(tab) => {
+                            setActiveTab(tab);
+                            if (tab === 'exportTemplates')
+                                setTemplatesVisited(true);
+                        }}
+                        items={tabs.map((tab) => ({
+                            value: tab,
+                            label:
+                                tab === 'exportTemplates'
+                                    ? t('common:app.navigation.exportTemplates')
+                                    : t(`editProject.tabs.${tab}`),
+                            icon: tabIcons[tab],
+                            testId: `tabProjectSettings_${tab}`,
+                            trailing: pendingTabs[tab] ? (
+                                <PendingChangesIndicator />
+                            ) : undefined,
+                        }))}
+                    />
+                    <Drawer.Body className="flex min-w-0 flex-1 flex-col gap-4 text-base">
+                        {savingInBackground && (
+                            <p className="text-base-content/75" role="status">
+                                {t('editProject.actions.installingEditor')}
+                            </p>
+                        )}
+                        <fieldset
+                            className={clsx('flex min-w-0 flex-col gap-4', {
+                                'min-h-0 flex-1':
+                                    activeTab === 'exportTemplates',
+                            })}
                         >
-                            {t(`editProject.tabs.${tab}`)}
-                        </button>
-                    ))}
+                            {form.formError && (
+                                <div
+                                    className="alert alert-error alert-soft text-error-content dark:text-error"
+                                    role="alert"
+                                >
+                                    {form.formError}
+                                </div>
+                            )}
+                            {activeTab === 'project' && (
+                                <ProjectSettingsProjectSection
+                                    t={t}
+                                    open={open}
+                                    disabled={isSubmitting}
+                                    name={form.name}
+                                    nameChanged={
+                                        form.name.trim() !== form.initialName
+                                    }
+                                    editorChanged={form.hasReleaseChanges}
+                                    nameError={form.nameError}
+                                    godotProjectName={form.godotProjectName}
+                                    loadingGodotName={form.loadingGodotName}
+                                    renameGodotProject={form.renameGodotProject}
+                                    godotError={form.godotError}
+                                    selectableReleases={form.selectableReleases}
+                                    compatibleCatalogueReleases={
+                                        form.compatibleCatalogueReleases
+                                    }
+                                    compatibleCataloguePrereleases={
+                                        form.compatibleCataloguePrereleases
+                                    }
+                                    releaseInstallProgress={
+                                        form.releaseInstallProgress
+                                    }
+                                    releasesLoading={form.releasesLoading}
+                                    catalogueError={form.catalogueError}
+                                    releaseSelection={form.releaseSelection}
+                                    onNameChange={form.changeName}
+                                    onNameBlur={form.validateName}
+                                    onRenameGodotProjectChange={
+                                        form.changeRenameGodotProject
+                                    }
+                                    onReleaseSelectionChange={
+                                        form.changeReleaseSelection
+                                    }
+                                    onCancelInstall={(job) =>
+                                        void form.cancelInstall(job)
+                                    }
+                                    onRetryCatalogue={
+                                        form.refreshAvailableReleases
+                                    }
+                                />
+                            )}
+                            {activeTab === 'sourceControl' && project && (
+                                <ProjectSettingsSourceControlSection
+                                    t={t}
+                                    project={project}
+                                    withGit={sourceControl.withGit}
+                                    gitAvailable={sourceControl.gitAvailable}
+                                    loadingGitAvailability={
+                                        sourceControl.loadingGitAvailability
+                                    }
+                                    isInitializingGit={
+                                        sourceControl.isInitializingGit
+                                    }
+                                    gitIdentity={sourceControl.gitIdentity}
+                                    loadingGitIdentity={
+                                        sourceControl.loadingGitIdentity
+                                    }
+                                    editingGitIdentity={
+                                        sourceControl.editingGitIdentity
+                                    }
+                                    nameChanged={sourceControl.nameChanged}
+                                    emailChanged={sourceControl.emailChanged}
+                                    gitIdentityName={
+                                        sourceControl.gitIdentityName
+                                    }
+                                    gitIdentityEmail={
+                                        sourceControl.gitIdentityEmail
+                                    }
+                                    savingGitIdentity={
+                                        sourceControl.savingGitIdentity
+                                    }
+                                    gitIdentityError={
+                                        sourceControl.gitIdentityError
+                                    }
+                                    gitUnavailable={
+                                        sourceControl.gitUnavailable
+                                    }
+                                    disabled={isSubmitting}
+                                    onInitializeGit={() =>
+                                        void sourceControl.initializeGit()
+                                    }
+                                    onEditGitIdentity={
+                                        sourceControl.editGitIdentity
+                                    }
+                                    onSaveGitIdentity={() =>
+                                        void sourceControl.saveGitIdentity()
+                                    }
+                                    onCancelGitIdentity={
+                                        sourceControl.cancelGitIdentity
+                                    }
+                                    onGitIdentityNameChange={
+                                        sourceControl.setGitIdentityName
+                                    }
+                                    onGitIdentityEmailChange={
+                                        sourceControl.setGitIdentityEmail
+                                    }
+                                />
+                            )}
+                            {activeTab === 'codeEditor' && (
+                                <ProjectCodeEditorSection
+                                    t={t}
+                                    codeEditorId={form.codeEditorId}
+                                    changed={form.hasCodeEditorChanges}
+                                    settings={form.codeEditorSettings}
+                                    loading={form.loadingCodeEditors}
+                                    loadFailed={form.codeEditorLoadFailed}
+                                    disabled={!project?.valid || isSubmitting}
+                                    showResetConfig={
+                                        form.initialCodeEditorId !== null &&
+                                        form.initialCodeEditorId ===
+                                            form.codeEditorId
+                                    }
+                                    onChange={form.changeCodeEditor}
+                                    onResetConfig={resetCodeEditorConfig}
+                                />
+                            )}
+                            {open && templatesVisited && project && (
+                                <div
+                                    hidden={activeTab !== 'exportTemplates'}
+                                    className={
+                                        activeTab === 'exportTemplates'
+                                            ? 'flex min-h-0 flex-1 flex-col'
+                                            : undefined
+                                    }
+                                >
+                                    <ProjectExportTemplatesSection
+                                        key={project.path}
+                                        ref={templateFiles}
+                                        onConfirmationChange={
+                                            setConfirmingTemplateDelete
+                                        }
+                                        project={project}
+                                        active={activeTab === 'exportTemplates'}
+                                        selectedSetId={
+                                            form.releaseSelection?.source ===
+                                                'installed' &&
+                                            form.releaseSelection.release
+                                                .source === 'custom'
+                                                ? ''
+                                                : `${(form.releaseSelection?.release.version ?? project.release.version).replace('-', '.')}${(form.releaseSelection?.source === 'installed' ? form.releaseSelection.release.mono : form.releaseSelection?.mono) ? '.mono' : ''}`
+                                        }
+                                        disabled={isSubmitting}
+                                        editorChanged={form.hasReleaseChanges}
+                                        onNavigate={requestClose}
+                                        onDirtyChange={setTemplatesDirty}
+                                    />
+                                </div>
+                            )}
+                            {activeTab === 'launch' && (
+                                <ProjectSettingsLaunchSection
+                                    t={t}
+                                    windowed={form.windowed}
+                                    changed={form.hasWindowedChanges}
+                                    disabled={isSubmitting}
+                                    onWindowedChange={form.changeWindowed}
+                                />
+                            )}
+                        </fieldset>
+                    </Drawer.Body>
                 </div>
-                <Drawer.Body className="flex flex-col gap-4 text-base">
-                    {savingInBackground && (
-                        <p className="text-base-content/75" role="status">
-                            {t('editProject.actions.installingEditor')}
-                        </p>
-                    )}
-                    <fieldset
-                        disabled={isSubmitting}
-                        className="flex min-w-0 flex-col gap-4"
-                    >
-                        {form.formError && (
-                            <div
-                                className="alert alert-error alert-soft text-error-content dark:text-error"
-                                role="alert"
-                            >
-                                {form.formError}
-                            </div>
-                        )}
-                        {activeTab === 'project' && (
-                            <ProjectSettingsProjectSection
-                                t={t}
-                                open={open}
-                                disabled={isSubmitting}
-                                name={form.name}
-                                nameError={form.nameError}
-                                godotProjectName={form.godotProjectName}
-                                loadingGodotName={form.loadingGodotName}
-                                renameGodotProject={form.renameGodotProject}
-                                godotError={form.godotError}
-                                selectableReleases={form.selectableReleases}
-                                compatibleCatalogueReleases={
-                                    form.compatibleCatalogueReleases
-                                }
-                                compatibleCataloguePrereleases={
-                                    form.compatibleCataloguePrereleases
-                                }
-                                releaseInstallProgress={
-                                    form.releaseInstallProgress
-                                }
-                                releasesLoading={form.releasesLoading}
-                                catalogueError={form.catalogueError}
-                                releaseSelection={form.releaseSelection}
-                                onNameChange={form.changeName}
-                                onNameBlur={form.validateName}
-                                onRenameGodotProjectChange={
-                                    form.changeRenameGodotProject
-                                }
-                                onReleaseSelectionChange={
-                                    form.changeReleaseSelection
-                                }
-                                onCancelInstall={(job) =>
-                                    void form.cancelInstall(job)
-                                }
-                                onRetryCatalogue={form.refreshAvailableReleases}
-                            />
-                        )}
-                        {activeTab === 'sourceControl' && project && (
-                            <ProjectSettingsSourceControlSection
-                                t={t}
-                                project={project}
-                                withGit={sourceControl.withGit}
-                                gitAvailable={sourceControl.gitAvailable}
-                                loadingGitAvailability={
-                                    sourceControl.loadingGitAvailability
-                                }
-                                isInitializingGit={
-                                    sourceControl.isInitializingGit
-                                }
-                                gitIdentity={sourceControl.gitIdentity}
-                                loadingGitIdentity={
-                                    sourceControl.loadingGitIdentity
-                                }
-                                editingGitIdentity={
-                                    sourceControl.editingGitIdentity
-                                }
-                                gitIdentityName={sourceControl.gitIdentityName}
-                                gitIdentityEmail={
-                                    sourceControl.gitIdentityEmail
-                                }
-                                savingGitIdentity={
-                                    sourceControl.savingGitIdentity
-                                }
-                                gitIdentityError={
-                                    sourceControl.gitIdentityError
-                                }
-                                gitUnavailable={sourceControl.gitUnavailable}
-                                disabled={isSubmitting}
-                                onInitializeGit={() =>
-                                    void sourceControl.initializeGit()
-                                }
-                                onEditGitIdentity={
-                                    sourceControl.editGitIdentity
-                                }
-                                onSaveGitIdentity={() =>
-                                    void sourceControl.saveGitIdentity()
-                                }
-                                onCancelGitIdentity={
-                                    sourceControl.cancelGitIdentity
-                                }
-                                onGitIdentityNameChange={
-                                    sourceControl.setGitIdentityName
-                                }
-                                onGitIdentityEmailChange={
-                                    sourceControl.setGitIdentityEmail
-                                }
-                            />
-                        )}
-                        {activeTab === 'codeEditor' && (
-                            <ProjectCodeEditorSection
-                                t={t}
-                                codeEditorId={form.codeEditorId}
-                                settings={form.codeEditorSettings}
-                                loading={form.loadingCodeEditors}
-                                loadFailed={form.codeEditorLoadFailed}
-                                disabled={!project?.valid || isSubmitting}
-                                showResetConfig={
-                                    form.initialCodeEditorId !== null &&
-                                    form.initialCodeEditorId ===
-                                        form.codeEditorId
-                                }
-                                onChange={form.changeCodeEditor}
-                                onResetConfig={resetCodeEditorConfig}
-                            />
-                        )}
-                        {activeTab === 'launch' && (
-                            <ProjectSettingsLaunchSection
-                                t={t}
-                                windowed={form.windowed}
-                                disabled={isSubmitting}
-                                onWindowedChange={form.changeWindowed}
-                            />
-                        )}
-                    </fieldset>
-                </Drawer.Body>
                 <Drawer.Footer>
                     <button
                         type="button"
                         className="btn btn-ghost text-base"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => requestClose()}
                         disabled={savingLocally}
                     >
-                        {t('common:buttons.cancel')}
+                        {t('exportTemplates:migration.close')}
                     </button>
                     <button
                         type="submit"
                         className="btn btn-primary text-base"
                         disabled={disabled}
                     >
-                        {isSubmitting && (
+                        {(isSubmitting || templateBusy) && (
                             <span className="loading loading-spinner loading-xs" />
                         )}
-                        {isSubmitting &&
-                        form.releaseSelection?.source === 'catalogue' &&
-                        !form.releaseSelection.installedRelease
-                            ? t('editProject.actions.installingEditor')
-                            : form.hasReleaseChanges &&
-                                form.releaseSelection?.source === 'catalogue' &&
-                                !form.releaseSelection.installedRelease
-                              ? t('editProject.actions.installAndSave')
-                              : isSubmitting
-                                ? t('editProject.actions.updating')
-                                : t('editProject.actions.update')}
+                        {t('editProject.actions.update')}
                     </button>
                 </Drawer.Footer>
             </form>

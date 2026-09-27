@@ -8,7 +8,8 @@
         "tools": "Инструменты",
         "codeEditors": "Редакторы кода",
         "connections": "Подключения",
-        "updates": "Обновления"
+        "updates": "Обновления",
+        "exportTemplates": "Шаблоны экспорта"
     },
     "appearance": {
         "theme": {

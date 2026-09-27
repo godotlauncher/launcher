@@ -37,6 +37,8 @@ export type ProjectSettingsSourceControlHook = {
     editingGitIdentity: boolean;
     gitIdentityName: string;
     gitIdentityEmail: string;
+    nameChanged: boolean;
+    emailChanged: boolean;
     savingGitIdentity: boolean;
     gitIdentityError: string | undefined;
     gitUnavailable: boolean;
@@ -309,7 +311,18 @@ export function useProjectSettingsSourceControl(
         setGitIdentityError(undefined);
     };
 
+    const nameChanged =
+        editingGitIdentity &&
+        gitIdentity?.status === 'available' &&
+        gitIdentityName.trim() !== gitIdentity.name.value;
+    const emailChanged =
+        editingGitIdentity &&
+        gitIdentity?.status === 'available' &&
+        gitIdentityEmail.trim() !== gitIdentity.email.value;
+
     return {
+        nameChanged,
+        emailChanged,
         withGit,
         gitAvailable,
         loadingGitAvailability,

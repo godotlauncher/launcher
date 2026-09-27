@@ -136,6 +136,8 @@ export async function setProjectEditor(
             projectEditorPath,
             newRelease,
             currentProject.release,
+            currentProject.exportTemplateMode,
+            currentProject.exportTemplateBuilds,
         );
         const editorSettingsFilename = config.editorConfigFilename(
             newRelease.version_number,

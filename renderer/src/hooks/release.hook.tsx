@@ -1,4 +1,5 @@
 import type {
+    EditorCatalogRelease,
     EditorInstallOrigin,
     InstalledRelease,
     InstallReleaseResult,
@@ -16,6 +17,7 @@ import { useEditorCatalog } from './editor-catalog.hook.ts';
 import { mapEditorCatalogResult } from './editor-catalog-release.mapper.ts';
 
 type ReleaseContext = {
+    catalogueReleases: EditorCatalogRelease[];
     availableReleases: ReleaseSummary[];
     availablePrereleases: ReleaseSummary[];
     installedReleases: InstalledRelease[];
@@ -79,6 +81,9 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
 }) => {
     const { getCatalog, refreshCatalog } = useEditorCatalog();
     const [hasError, setHasError] = React.useState<string>();
+    const [catalogueReleases, setCatalogueReleases] = React.useState<
+        EditorCatalogRelease[]
+    >([]);
     const [availableReleases, setAvailableReleases] = React.useState<
         ReleaseSummary[]
     >([]);
@@ -112,6 +117,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
             ]);
             const catalog = mapEditorCatalogResult(catalogResult);
 
+            setCatalogueReleases(catalogResult.releases);
             setAvailableReleases(catalog.availableReleases);
             setAvailablePrereleases(catalog.availablePrereleases);
             setHasError(catalog.refreshError);
@@ -362,6 +368,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     return (
         <releaseContext.Provider
             value={{
+                catalogueReleases,
                 availableReleases,
                 availablePrereleases,
                 installedReleases,

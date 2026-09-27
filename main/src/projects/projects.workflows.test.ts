@@ -29,6 +29,18 @@ const checksMocks = vi.hoisted(() => ({
     hasProjectHealthChanged: vi.fn(() => false),
 }));
 
+const templateMocks = vi.hoisted(() => ({
+    areTemplatesMutating: vi.fn(() => false),
+    connectProjectTemplates: vi.fn(async () => undefined),
+}));
+
+vi.mock('../export-templates/template-files.util.js', () => ({
+    areTemplatesMutating: templateMocks.areTemplatesMutating,
+}));
+vi.mock('../export-templates/template-runtime.util.js', () => ({
+    connectProjectTemplates: templateMocks.connectProjectTemplates,
+}));
+
 vi.mock('../checks.js', async (importOriginal) => ({
     ...(await importOriginal<typeof import('../checks.js')>()),
     checkProjectHealth: checksMocks.checkProjectHealth,
@@ -417,6 +429,8 @@ function createProjectDetails(
 describe('launchProject', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        templateMocks.areTemplatesMutating.mockReturnValue(false);
+        templateMocks.connectProjectTemplates.mockResolvedValue(undefined);
         getDefaultDirs.mockReturnValue({ configDir: '/config' });
         windowMock = {
             webContents: {},
@@ -532,6 +546,102 @@ describe('launchProject', () => {
         ).resolves.toEqual({ launched: true });
 
         expect(childProcessMocks.spawn).toHaveBeenCalled();
+    });
+
+    it('connects the stored template choice before spawning the editor', async () => {
+        const incoming = createProjectDetails();
+        const selectedBuilds = {
+            '4.3.stable': '8a15e517-8e8f-43c2-8ddf-7ac83e8fe209',
+        };
+        const stored = createProjectDetails({
+            exportTemplateMode: 'shared',
+            exportTemplateBuilds: selectedBuilds,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [stored],
+            version: 'v1',
+        });
+
+        await launchProject(
+            incoming,
+            codeEditorIntegrationService,
+            trayAvailabilityService as never,
+        );
+
+        expect(templateMocks.connectProjectTemplates).toHaveBeenCalledWith(
+            path.dirname(stored.launch_path),
+            stored.release,
+            'shared',
+            selectedBuilds,
+            '4.3.stable',
+        );
+        expect(childProcessMocks.spawn).toHaveBeenCalledOnce();
+        expect(
+            templateMocks.connectProjectTemplates.mock.invocationCallOrder[0],
+        ).toBeLessThan(childProcessMocks.spawn.mock.invocationCallOrder[0]);
+    });
+
+    it('does not connect or spawn while templates are mutating', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        templateMocks.areTemplatesMutating.mockReturnValue(true);
+
+        await expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).rejects.toThrow('exportTemplates:errors.busy');
+
+        expect(templateMocks.connectProjectTemplates).not.toHaveBeenCalled();
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+    });
+
+    it('does not spawn when a mutation starts during connection', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        templateMocks.areTemplatesMutating
+            .mockReturnValueOnce(false)
+            .mockReturnValueOnce(true);
+
+        await expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).rejects.toThrow('exportTemplates:errors.busy');
+
+        expect(templateMocks.connectProjectTemplates).toHaveBeenCalledOnce();
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+    });
+
+    it('does not spawn if the template connection fails', async () => {
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        templateMocks.connectProjectTemplates.mockRejectedValue(
+            new Error('Template drive unavailable'),
+        );
+
+        await expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).rejects.toThrow('Template drive unavailable');
+
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
     });
 
     it('blocks launch without side effects when the selected code editor is unavailable', async () => {

@@ -8,7 +8,8 @@
         "tools": "工具",
         "codeEditors": "代码编辑器",
         "connections": "连接",
-        "updates": "更新"
+        "updates": "更新",
+        "exportTemplates": "导出模板"
     },
     "appearance": {
         "theme": {

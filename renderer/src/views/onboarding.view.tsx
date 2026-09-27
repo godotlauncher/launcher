@@ -1,6 +1,7 @@
 import type {
     CodeEditorId,
     CodeEditorIntegrationSettings,
+    TemplateStorageSettings,
     UserPreferences,
 } from '@shared/contracts';
 import { CircleX } from 'lucide-react';
@@ -12,10 +13,12 @@ import { useCodeEditorIntegrations } from '../hooks/code-editor-integrations.hoo
 import { usePreferences } from '../hooks/preferences.hook';
 import { useTheme } from '../hooks/theme.hook';
 import { useTrayAvailability } from '../hooks/tray-availability.hook';
-import { appBridge } from '../renderer.bridge';
+import { appBridge, exportTemplatesBridge } from '../renderer.bridge';
+import { formatTemplateBytes } from './export-templates/template-format.util';
 import { AppearanceStep } from './onboarding/appearance-step.component';
 import {
     applyOnboardingRecommendedLocations,
+    areOnboardingPathsEqual,
     getNextOnboardingStep,
     getOnboardingDestinationPath,
     getPreviousOnboardingStep,
@@ -32,7 +35,16 @@ import { WelcomeStep } from './onboarding/welcome-step.component';
 type PathErrors = {
     projectsLocation?: string;
     editorLocation?: string;
+    importedTemplatesLocation?: string;
 };
+
+function storageErrorKey(failure: unknown): string | null {
+    return (
+        String(failure).match(
+            /exportTemplates:(storage\.errors\.[\w.]+)/,
+        )?.[1] ?? null
+    );
+}
 
 function readStoredStep(): OnboardingStepId {
     if (typeof localStorage === 'undefined') {
@@ -49,7 +61,11 @@ function readStoredStep(): OnboardingStepId {
  * @returns The active onboarding step.
  */
 export const OnboardingView: React.FC = () => {
-    const { t } = useTranslation(['welcome', 'common']);
+    const { t, i18n } = useTranslation([
+        'welcome',
+        'common',
+        'exportTemplates',
+    ]);
     const navigate = useNavigate();
     const {
         preferences,
@@ -68,6 +84,11 @@ export const OnboardingView: React.FC = () => {
         projectsLocation: string;
         editorLocation: string;
     } | null>(null);
+    const [storageSettings, setStorageSettings] =
+        useState<TemplateStorageSettings | null>(null);
+    const [storageLoadAttempt, setStorageLoadAttempt] = useState(0);
+    const [importedTemplatesLocation, setImportedTemplatesLocation] =
+        useState('');
     const [pathErrors, setPathErrors] = useState<PathErrors>({});
     const [integrations, setIntegrations] = useState<
         CodeEditorIntegrationSettings[]
@@ -79,6 +100,21 @@ export const OnboardingView: React.FC = () => {
     const storedCodeEditorId = useRef<CodeEditorId | null>(null);
     const [pending, setPending] = useState(false);
     const [operationError, setOperationError] = useState<string>();
+    const [storageMoveActive, setStorageMoveActive] = useState(false);
+    const [storageRecovering, setStorageRecovering] = useState(false);
+    const storageMoveActiveRef = useRef(false);
+    const importedLocation = storageSettings?.locations.find(
+        (location) => location.kind === 'imported',
+    );
+    const importedTemplateStorage = importedLocation
+        ? {
+              currentPath: importedLocation.storagePath,
+              recommendedPath: importedLocation.defaultPath,
+          }
+        : null;
+    const storageRecoveryRequired = storageSettings?.recoveryRequired ?? false;
+    const storageMoveJob =
+        storageSettings?.job?.kind === 'imported' ? storageSettings.job : null;
 
     useEffect(() => {
         if (!preferences || !platform || draft) {
@@ -111,6 +147,67 @@ export const OnboardingView: React.FC = () => {
             active = false;
         };
     }, [draft, platform, preferences]);
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Retry explicitly refetches storage status.
+    useEffect(() => {
+        let active = true;
+        exportTemplatesBridge
+            .getStorageSettings()
+            .then((settings) => {
+                const imported = settings.locations.find(
+                    (location) => location.kind === 'imported',
+                );
+                if (!imported) throw new Error('Imported storage is missing');
+                if (!active) return;
+                setStorageSettings(settings);
+                setImportedTemplatesLocation(
+                    (current) => current || imported.storagePath,
+                );
+            })
+            .catch(() => {
+                if (active) {
+                    setStorageSettings(null);
+                    setOperationError(
+                        t('welcome:onboarding.errors.importedTemplatesMove'),
+                    );
+                }
+            });
+        return () => {
+            active = false;
+        };
+    }, [t, storageLoadAttempt]);
+
+    useEffect(() => {
+        if (!storageMoveActive) return;
+        const welcomeHash = window.location.hash;
+        /** Prevents closing or reloading the renderer while templates move. */
+        const preventClose = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+        /** Restores onboarding when a hash change tries to leave an active move. */
+        const preventNavigation = () => {
+            if (
+                !storageMoveActiveRef.current ||
+                window.location.hash === welcomeHash
+            )
+                return;
+            window.history.replaceState(
+                null,
+                '',
+                `${window.location.pathname}${window.location.search}${welcomeHash}`,
+            );
+            window.dispatchEvent(new HashChangeEvent('hashchange'));
+        };
+        window.addEventListener('beforeunload', preventClose);
+        window.addEventListener('hashchange', preventNavigation, true);
+        window.addEventListener('popstate', preventNavigation, true);
+        return () => {
+            window.removeEventListener('beforeunload', preventClose);
+            window.removeEventListener('hashchange', preventNavigation, true);
+            window.removeEventListener('popstate', preventNavigation, true);
+        };
+    }, [storageMoveActive]);
 
     useEffect(() => {
         localStorage.setItem(ONBOARDING_STEP_STORAGE_KEY, step);
@@ -204,6 +301,23 @@ export const OnboardingView: React.FC = () => {
         }
     };
 
+    const selectImportedTemplatesDirectory = async () => {
+        setPending(true);
+        setOperationError(undefined);
+        try {
+            const result = await appBridge.openDirectoryDialog(
+                importedTemplatesLocation,
+                t('welcome:onboarding.setup.selectImportedTemplatesLocation'),
+            );
+            if (!result.canceled && result.filePaths[0])
+                setImportedTemplatesLocation(result.filePaths[0]);
+        } catch {
+            setOperationError(t('welcome:onboarding.errors.directoryPicker'));
+        } finally {
+            setPending(false);
+        }
+    };
+
     const validateSetup = (): boolean => {
         const nextErrors: PathErrors = {};
         if (!isAbsoluteOnboardingPath(draft.projects_location, platform)) {
@@ -216,8 +330,150 @@ export const OnboardingView: React.FC = () => {
                 'welcome:onboarding.errors.absolutePath',
             );
         }
+        if (!isAbsoluteOnboardingPath(importedTemplatesLocation, platform)) {
+            nextErrors.importedTemplatesLocation = t(
+                'welcome:onboarding.errors.absolutePath',
+            );
+        }
         setPathErrors(nextErrors);
         return Object.keys(nextErrors).length === 0;
+    };
+
+    const moveImportedTemplates = async (): Promise<void> => {
+        const currentSettings =
+            await exportTemplatesBridge.getStorageSettings();
+        setStorageSettings(currentSettings);
+        if (currentSettings.recoveryRequired)
+            throw new Error('exportTemplates:storage.errors.recovery');
+        const imported = currentSettings.locations.find(
+            (location) => location.kind === 'imported',
+        );
+        if (!imported) {
+            throw new Error('Imported storage is unavailable');
+        }
+        const destination = importedTemplatesLocation.trim();
+        if (
+            areOnboardingPathsEqual(destination, imported.storagePath, platform)
+        )
+            return;
+        const review = await exportTemplatesBridge.prepareStorageMove(
+            'imported',
+            destination,
+        );
+        if (review.spaceSufficient === false)
+            throw new Error('exportTemplates:storage.errors.destination');
+        setStorageSettings({ ...currentSettings, job: null });
+        storageMoveActiveRef.current = true;
+        setStorageMoveActive(true);
+        try {
+            await exportTemplatesBridge.startStorageMove(review.token);
+            for (;;) {
+                const settings =
+                    await exportTemplatesBridge.getStorageSettings();
+                setStorageSettings(settings);
+                const nextJob = settings.job;
+                if (nextJob?.kind === 'imported') {
+                    if (
+                        nextJob.stage === 'error' ||
+                        nextJob.stage === 'cancelled'
+                    )
+                        throw new Error(
+                            nextJob.error ??
+                                'exportTemplates:storage.errors.failed',
+                        );
+                }
+                if (settings.recoveryRequired)
+                    throw new Error('exportTemplates:storage.errors.recovery');
+                if (
+                    nextJob?.kind === 'imported' &&
+                    nextJob.stage === 'complete'
+                )
+                    return;
+                const currentImported = settings.locations.find(
+                    (location) => location.kind === 'imported',
+                );
+                if (
+                    !settings.busy &&
+                    currentImported &&
+                    areOnboardingPathsEqual(
+                        currentImported.storagePath,
+                        destination,
+                        platform,
+                    )
+                )
+                    return;
+                await new Promise<void>((resolve) => {
+                    window.setTimeout(resolve, 500);
+                });
+            }
+        } finally {
+            storageMoveActiveRef.current = false;
+            setStorageMoveActive(false);
+        }
+    };
+
+    /** Reconciles an interrupted move before onboarding can finish or retry. */
+    const recoverImportedTemplates = async (): Promise<void> => {
+        if (!storageRecoveryRequired || storageRecovering || pending) return;
+        const attemptedDestination = storageMoveJob?.destination;
+        setStorageRecovering(true);
+        setOperationError(undefined);
+        storageMoveActiveRef.current = true;
+        setStorageMoveActive(true);
+        try {
+            await exportTemplatesBridge.recoverStorageMove();
+            const next = await exportTemplatesBridge.getStorageSettings();
+            setStorageSettings(next);
+            if (next.recoveryRequired) {
+                setOperationError(
+                    t('exportTemplates:storage.errors.attention'),
+                );
+            } else {
+                const imported = next.locations.find(
+                    (location) => location.kind === 'imported',
+                );
+                if (imported) {
+                    const completed =
+                        !!attemptedDestination &&
+                        areOnboardingPathsEqual(
+                            imported.storagePath,
+                            attemptedDestination,
+                            platform,
+                        );
+                    setImportedTemplatesLocation(
+                        completed
+                            ? imported.storagePath
+                            : (attemptedDestination ?? imported.storagePath),
+                    );
+                    if (!completed) setStep('setup');
+                }
+            }
+        } catch (failure) {
+            setOperationError(
+                t(
+                    `exportTemplates:${storageErrorKey(failure) ?? 'storage.errors.failed'}`,
+                ),
+            );
+            try {
+                const next = await exportTemplatesBridge.getStorageSettings();
+                setStorageSettings(next);
+                if (!next.recoveryRequired) {
+                    setOperationError(undefined);
+                    const imported = next.locations.find(
+                        (location) => location.kind === 'imported',
+                    );
+                    if (imported)
+                        setImportedTemplatesLocation(imported.storagePath);
+                    setStep('setup');
+                }
+            } catch {
+                // Keep the recovery action visible until storage can be checked.
+            }
+        } finally {
+            storageMoveActiveRef.current = false;
+            setStorageMoveActive(false);
+            setStorageRecovering(false);
+        }
     };
 
     const continueFromSetup = async () => {
@@ -252,8 +508,11 @@ export const OnboardingView: React.FC = () => {
      * @returns A promise that ends after preferences and navigation update.
      */
     const finishOnboarding = async (): Promise<void> => {
+        if (storageRecoveryRequired || storageRecovering || !storageSettings)
+            return;
         setPending(true);
         setOperationError(undefined);
+        let movingTemplates = false;
         try {
             await savePreferences({ ...draft, first_run: true });
             if (platform !== 'linux') {
@@ -265,14 +524,36 @@ export const OnboardingView: React.FC = () => {
                     throw new Error('Unable to update startup behavior');
                 }
             }
+            movingTemplates = true;
+            await moveImportedTemplates();
             await savePreferences({
                 ...draft,
                 first_run: false,
             });
             localStorage.removeItem(ONBOARDING_STEP_STORAGE_KEY);
             navigate(destinationPath, { replace: true });
-        } catch {
-            setOperationError(t('welcome:onboarding.errors.finish'));
+        } catch (failure) {
+            let recoveryRequired = false;
+            if (movingTemplates) {
+                try {
+                    const next =
+                        await exportTemplatesBridge.getStorageSettings();
+                    setStorageSettings(next);
+                    recoveryRequired = next.recoveryRequired;
+                } catch {
+                    // Keep the original error when status cannot be refreshed.
+                }
+            }
+            const key = storageErrorKey(failure);
+            setOperationError(
+                recoveryRequired
+                    ? undefined
+                    : key
+                      ? t(`exportTemplates:${key}`)
+                      : movingTemplates
+                        ? t('welcome:onboarding.errors.importedTemplatesMove')
+                        : t('welcome:onboarding.errors.finish'),
+            );
         } finally {
             setPending(false);
         }
@@ -324,14 +605,23 @@ export const OnboardingView: React.FC = () => {
                             platform={platform}
                             projectsLocation={draft.projects_location}
                             editorLocation={draft.install_location}
+                            importedTemplatesLocation={
+                                importedTemplatesLocation
+                            }
                             recommendedProjectsLocation={
                                 recommendedLocations?.projectsLocation
                             }
                             recommendedEditorLocation={
                                 recommendedLocations?.editorLocation
                             }
+                            recommendedImportedTemplatesLocation={
+                                importedTemplateStorage?.recommendedPath
+                            }
                             projectsLocationError={pathErrors.projectsLocation}
                             editorLocationError={pathErrors.editorLocation}
+                            importedTemplatesLocationError={
+                                pathErrors.importedTemplatesLocation
+                            }
                             integrations={integrations}
                             integrationsLoading={integrationsLoading}
                             integrationsLoadFailed={integrationsLoadFailed}
@@ -339,7 +629,7 @@ export const OnboardingView: React.FC = () => {
                             windowsSymlinksEnabled={
                                 draft.windows_enable_symlinks
                             }
-                            pending={pending}
+                            pending={pending || storageRecovering}
                             onProjectsLocationChange={(value) => {
                                 setPathErrors((errors) => ({
                                     ...errors,
@@ -358,6 +648,14 @@ export const OnboardingView: React.FC = () => {
                                     install_location: value,
                                 });
                             }}
+                            onImportedTemplatesLocationChange={(value) => {
+                                setPathErrors((errors) => ({
+                                    ...errors,
+                                    importedTemplatesLocation: undefined,
+                                }));
+                                setImportedTemplatesLocation(value);
+                                setOperationError(undefined);
+                            }}
                             onProjectsLocationSelect={() =>
                                 void selectDirectory(
                                     draft.projects_location,
@@ -375,6 +673,9 @@ export const OnboardingView: React.FC = () => {
                                     ),
                                     'install_location',
                                 )
+                            }
+                            onImportedTemplatesLocationSelect={() =>
+                                void selectImportedTemplatesDirectory()
                             }
                             onCodeEditorChange={setSelectedCodeEditorId}
                             onWindowsSymlinksChange={(enabled) =>
@@ -399,7 +700,7 @@ export const OnboardingView: React.FC = () => {
                                         ? 'available'
                                         : 'unavailable'
                             }
-                            pending={pending}
+                            pending={pending || storageRecovering}
                             onPostLaunchActionChange={(postLaunchAction) =>
                                 setDraftPreferences({
                                     post_launch_action: postLaunchAction,
@@ -417,15 +718,83 @@ export const OnboardingView: React.FC = () => {
                     )}
                 </main>
 
-                {operationError && (
+                {(operationError || storageRecoveryRequired) && (
                     <div className="px-10 pb-3">
                         <div
-                            className="alert alert-error alert-soft text-base text-error-content dark:text-error py-3"
+                            className={`alert alert-soft text-base py-3 ${storageRecoveryRequired ? 'alert-warning' : 'alert-error text-error-content dark:text-error'}`}
                             role="alert"
                         >
-                            <CircleX className="size-5" aria-hidden="true" />
-                            <span>{operationError}</span>
+                            {!storageRecoveryRequired && (
+                                <CircleX
+                                    className="size-5"
+                                    aria-hidden="true"
+                                />
+                            )}
+                            <div className="min-w-0 flex-1">
+                                {storageRecoveryRequired && (
+                                    <p>
+                                        {t(
+                                            'exportTemplates:storage.errors.recovery',
+                                        )}
+                                    </p>
+                                )}
+                                {operationError && <p>{operationError}</p>}
+                            </div>
+                            {storageRecoveryRequired ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-warning shrink-0 whitespace-nowrap text-base"
+                                    onClick={() =>
+                                        void recoverImportedTemplates()
+                                    }
+                                    disabled={pending || storageRecovering}
+                                >
+                                    {storageRecovering && (
+                                        <span
+                                            className="loading loading-spinner loading-sm"
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                    {t('exportTemplates:storage.recover')}
+                                </button>
+                            ) : (
+                                !storageSettings && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-ghost text-base"
+                                        onClick={() => {
+                                            setOperationError(undefined);
+                                            setStorageLoadAttempt(
+                                                (attempt) => attempt + 1,
+                                            );
+                                        }}
+                                    >
+                                        {t('exportTemplates:storage.retry')}
+                                    </button>
+                                )
+                            )}
                         </div>
+                    </div>
+                )}
+                {storageMoveActive && !storageRecovering && storageMoveJob && (
+                    <div className="px-10 pb-3" role="status">
+                        <p>
+                            {t(
+                                'welcome:onboarding.setup.movingImportedTemplates',
+                                {
+                                    stage: t(
+                                        `exportTemplates:storage.stages.${storageMoveJob.stage}`,
+                                    ),
+                                },
+                            )}
+                            {` - ${formatTemplateBytes(
+                                storageMoveJob.completedBytes,
+                                i18n.language,
+                            )} of ${formatTemplateBytes(
+                                storageMoveJob.totalBytes,
+                                i18n.language,
+                            )}`}
+                        </p>
                     </div>
                 )}
 
@@ -439,7 +808,7 @@ export const OnboardingView: React.FC = () => {
                             onClick={() =>
                                 setStep(getPreviousOnboardingStep(step))
                             }
-                            disabled={pending}
+                            disabled={pending || storageRecovering}
                         >
                             {t('common:buttons.back')}
                         </button>
@@ -448,7 +817,13 @@ export const OnboardingView: React.FC = () => {
                         type="button"
                         className="btn btn-primary text-base min-w-28"
                         onClick={continueStep}
-                        disabled={pending}
+                        disabled={
+                            pending ||
+                            storageRecovering ||
+                            ((step === 'setup' || step === 'preferences') &&
+                                !importedTemplateStorage) ||
+                            (step === 'preferences' && storageRecoveryRequired)
+                        }
                     >
                         {pending && (
                             <span

@@ -125,6 +125,11 @@
             "selectEditorLocation": "Choose the editors location",
             "browseProjectsLocation": "Browse for a projects location",
             "browseEditorLocation": "Browse for an editors location",
+            "importedTemplatesLocation": "Imported export templates location",
+            "importedTemplatesLocationHelp": "Choose where imported custom export templates are stored.",
+            "selectImportedTemplatesLocation": "Choose the imported export templates location",
+            "browseImportedTemplatesLocation": "Browse for an imported export templates location",
+            "movingImportedTemplates": "Moving imported export templates: {{stage}}",
             "codeEditor": "Default code editor",
             "codeEditorHelp": "Used when opening scripts and files from Godot Launcher. You can change this later.",
             "noCodeEditor": "None",
@@ -161,6 +166,7 @@
             "directoryPicker": "The folder picker could not be opened. Enter an absolute path instead.",
             "absolutePath": "Enter an absolute folder path.",
             "saveSetup": "Setup could not be saved. Your previous preferences are unchanged.",
+            "importedTemplatesMove": "Imported export templates could not be moved. Your onboarding is still incomplete. Try again.",
             "finish": "Onboarding could not be completed. Review your choices and try again."
         }
     }

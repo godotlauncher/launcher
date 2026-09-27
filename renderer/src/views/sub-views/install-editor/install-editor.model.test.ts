@@ -53,6 +53,34 @@ describe('install editor drawer model', () => {
         ).toEqual([prerelease[1]]);
     });
 
+    it('keeps template package identifiers when ordering catalogue releases', () => {
+        const releases = [
+            {
+                version: '4.9-stable',
+                id: 'older',
+                templateAssets: [{ id: 'older-standard' }],
+            },
+            {
+                version: '4.10-stable',
+                id: 'newer',
+                templateAssets: [{ id: 'newer-dotnet' }],
+            },
+        ];
+        const rows = getInstallEditorRows({
+            show: 'all',
+            channel: 'stable',
+            availableReleases: releases,
+            availablePrereleases: [],
+            search: '',
+        });
+        expect(rows).toEqual([releases[1], releases[0]]);
+        expect(rows[0].templateAssets[0].id).toBe('newer-dotnet');
+        expect(releases.map((release) => release.id)).toEqual([
+            'older',
+            'newer',
+        ]);
+    });
+
     it('counts refresh cooldown seconds from the current time', () => {
         expect(getInstallEditorRefreshCooldownSeconds(60_000, 0)).toBe(60);
         expect(getInstallEditorRefreshCooldownSeconds(60_000, 18_100)).toBe(42);

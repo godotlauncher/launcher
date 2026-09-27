@@ -51,10 +51,24 @@ export const EditorCatalogReleaseSchema = z.object({
         iteration: z.number().int().nonnegative(),
     }),
     variants: z.array(EditorCatalogVariantSchema).min(1),
+    templateAssets: z
+        .array(
+            z.object({
+                id: z.string().min(1),
+                name: z.string().min(1),
+                flavor: EditorCatalogFlavorSchema,
+                downloadUrl: z.url(),
+                sizeBytes: z.number().nonnegative(),
+                digest: z.string().optional(),
+                checksumManifestUrl: z.url().optional(),
+            }),
+        )
+        .optional(),
 });
 
 const EditorCatalogProviderStateSchema = z.object({
     integrityMetadataRefreshed: z.boolean().optional().default(false),
+    templateMetadataRefreshed: z.boolean().optional().default(false),
     lastFetchedAt: z.number().int().nonnegative().nullable(),
     lastPublishedAt: z.iso.datetime().nullable(),
     releases: z.array(EditorCatalogReleaseSchema),
@@ -115,6 +129,7 @@ export function normalizeEditorCatalog(value: unknown): EditorCatalogFile {
 function createEmptyProviderState(): EditorCatalogProviderState {
     return {
         integrityMetadataRefreshed: false,
+        templateMetadataRefreshed: false,
         lastFetchedAt: null,
         lastPublishedAt: null,
         releases: [],
@@ -140,6 +155,7 @@ function normalizeProviderState(
 
     return {
         integrityMetadataRefreshed: state.integrityMetadataRefreshed ?? false,
+        templateMetadataRefreshed: state.templateMetadataRefreshed ?? false,
         lastFetchedAt: state.lastFetchedAt,
         lastPublishedAt: state.lastPublishedAt,
         releases: [...releasesById.values()].sort(compareEditorReleases),

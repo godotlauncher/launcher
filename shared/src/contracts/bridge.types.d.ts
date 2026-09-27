@@ -3,6 +3,7 @@ import type { AppIntegrationsBridge } from './app-integrations/index.js';
 import type { CodeEditorIntegrationBridge } from './codeEditorIntegration/index.js';
 import type { EditorCatalogBridge } from './editor-catalog/index.js';
 import type { EditorInstallsBridge } from './editor-installs/index.js';
+import type { ExportTemplatesBridge } from './export-templates/index.js';
 import type { GitBridge } from './git/index.js';
 import type { GitLfsBridge } from './git-lfs/index.js';
 import type { ProjectsBridge } from './projects/index.js';
@@ -13,6 +14,7 @@ import type { ToolIntegrationBridge } from './tools/index.js';
  * Lists the independent bridges exposed to the renderer.
  */
 export type BridgeNamespaces = {
+    exportTemplates: ExportTemplatesBridge;
     app: AppBridge;
     appIntegrations: AppIntegrationsBridge;
     codeEditorIntegration: CodeEditorIntegrationBridge;

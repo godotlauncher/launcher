@@ -7,10 +7,11 @@ import {
 } from './app.routes';
 
 describe('settings routes', () => {
-    it('registers Connections between Tools and Updates', () => {
+    it('registers Export Templates after Installs', () => {
         expect(settingsTabs).toEqual([
             'projects',
             'installs',
+            'exportTemplates',
             'appearance',
             'behavior',
             'codeEditors',

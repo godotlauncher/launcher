@@ -8,7 +8,8 @@
         "tools": "Werkzeuge",
         "codeEditors": "Code-Editoren",
         "connections": "Verbindungen",
-        "updates": "Aktualisierungen"
+        "updates": "Aktualisierungen",
+        "exportTemplates": "Exportvorlagen"
     },
     "appearance": {
         "theme": {

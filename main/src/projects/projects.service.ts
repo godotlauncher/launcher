@@ -51,6 +51,8 @@ import { getUserPreferences } from '../commands/userPreferences.js';
 import { EDITOR_CONFIG_DIRNAME } from '../constants.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
+import { areTemplatesMutating } from '../export-templates/template-files.util.js';
+import { connectProjectTemplates } from '../export-templates/template-runtime.util.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';
@@ -725,6 +727,8 @@ export class ProjectsService {
                 projectEditorPath,
                 release,
                 currentProject.release,
+                currentProject.exportTemplateMode,
+                currentProject.exportTemplateBuilds,
             );
             const editorSettingsFilename = config.editorConfigFilename(
                 release.version_number,
@@ -1191,6 +1195,17 @@ export class ProjectsService {
             }
         }
 
+        if (areTemplatesMutating())
+            throw new Error(t('exportTemplates:errors.busy'));
+        await connectProjectTemplates(
+            path.dirname(project.launch_path),
+            project.release,
+            project.exportTemplateMode,
+            project.exportTemplateBuilds,
+            `${project.release.version.replace('-', '.')}${project.release.mono ? '.mono' : ''}`,
+        );
+        if (areTemplatesMutating())
+            throw new Error(t('exportTemplates:errors.busy'));
         const command = project.launch_path;
         let editor: ChildProcess | ChildProcessByStdio<null, null, null>;
 

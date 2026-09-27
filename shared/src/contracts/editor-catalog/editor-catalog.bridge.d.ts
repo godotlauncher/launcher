@@ -1,3 +1,4 @@
+import type { ExportTemplateAsset } from '../export-templates/index.js';
 /** Identifies a source of editor releases. */
 export type EditorCatalogProviderId = 'official-stable' | 'official-prerelease';
 
@@ -48,6 +49,7 @@ export type EditorCatalogRelease = {
     prerelease: boolean;
     versionParts: EditorCatalogVersionParts;
     variants: EditorCatalogVariant[];
+    templateAssets?: ExportTemplateAsset[];
 };
 
 /** Reports the cache state of one catalog provider. */

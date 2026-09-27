@@ -125,6 +125,11 @@
             "selectEditorLocation": "エディターの保存先を選択",
             "browseProjectsLocation": "プロジェクトの保存先を参照",
             "browseEditorLocation": "エディターの保存先を参照",
+            "importedTemplatesLocation": "インポートしたエクスポートテンプレートの保存先",
+            "importedTemplatesLocationHelp": "インポートしたカスタムエクスポートテンプレートの保存先を選択します。",
+            "selectImportedTemplatesLocation": "インポートしたエクスポートテンプレートの保存先を選択",
+            "browseImportedTemplatesLocation": "インポートしたエクスポートテンプレートの保存先を参照",
+            "movingImportedTemplates": "インポートしたエクスポートテンプレートを移動中: {{stage}}",
             "codeEditor": "デフォルトのコードエディター",
             "codeEditorHelp": "Godot Launcher からスクリプトやファイルを開く際に使用します。後から変更できます。",
             "noCodeEditor": "なし",
@@ -161,6 +166,7 @@
             "directoryPicker": "フォルダー選択画面を開けませんでした。代わりに絶対パスを入力してください。",
             "absolutePath": "フォルダーの絶対パスを入力してください。",
             "saveSetup": "セットアップを保存できませんでした。以前の設定は変更されていません。",
+            "importedTemplatesMove": "インポートしたエクスポートテンプレートを移動できませんでした。初期設定はまだ完了していません。もう一度お試しください。",
             "finish": "初期設定を完了できませんでした。選択内容を確認して、もう一度お試しください。"
         }
     }

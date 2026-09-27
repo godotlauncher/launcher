@@ -125,6 +125,11 @@
             "selectEditorLocation": "Speicherort für Editoren auswählen",
             "browseProjectsLocation": "Nach einem Speicherort für Projekte suchen",
             "browseEditorLocation": "Nach einem Speicherort für Editoren suchen",
+            "importedTemplatesLocation": "Speicherort für importierte Exportvorlagen",
+            "importedTemplatesLocationHelp": "Wählen Sie aus, wo importierte benutzerdefinierte Exportvorlagen gespeichert werden.",
+            "selectImportedTemplatesLocation": "Speicherort für importierte Exportvorlagen auswählen",
+            "browseImportedTemplatesLocation": "Nach einem Speicherort für importierte Exportvorlagen suchen",
+            "movingImportedTemplates": "Importierte Exportvorlagen werden verschoben: {{stage}}",
             "codeEditor": "Standard-Code-Editor",
             "codeEditorHelp": "Wird zum Öffnen von Skripten und Dateien aus Godot Launcher verwendet. Sie können dies später ändern.",
             "noCodeEditor": "Keiner",
@@ -161,6 +166,7 @@
             "directoryPicker": "Die Ordnerauswahl konnte nicht geöffnet werden. Geben Sie stattdessen einen absoluten Pfad ein.",
             "absolutePath": "Geben Sie einen absoluten Ordnerpfad ein.",
             "saveSetup": "Die Einrichtung konnte nicht gespeichert werden. Ihre bisherigen Einstellungen bleiben unverändert.",
+            "importedTemplatesMove": "Importierte Exportvorlagen konnten nicht verschoben werden. Ihre Einrichtung ist noch nicht abgeschlossen. Versuchen Sie es erneut.",
             "finish": "Die Einrichtung konnte nicht abgeschlossen werden. Prüfen Sie Ihre Auswahl und versuchen Sie es erneut."
         }
     }

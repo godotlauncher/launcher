@@ -83,6 +83,19 @@ export function mapGithubEditorRelease(
         prerelease: versionParts.channel !== 'stable',
         versionParts,
         variants,
+        templateAssets: release.assets
+            .filter((asset) => /_export_templates\.tpz$/i.test(asset.name))
+            .map((asset) => ({
+                id: `${releaseId}:templates:${asset.id}`,
+                name: asset.name,
+                flavor: asset.name.includes('_mono_')
+                    ? ('dotnet' as const)
+                    : ('gdscript' as const),
+                downloadUrl: asset.browserDownloadUrl,
+                sizeBytes: asset.size ?? 0,
+                digest: normalizeGithubAssetDigest(asset.digest),
+                checksumManifestUrl,
+            })),
     };
 }
 

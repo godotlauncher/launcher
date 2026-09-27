@@ -125,6 +125,11 @@
             "selectEditorLocation": "Wybierz lokalizację edytorów",
             "browseProjectsLocation": "Przeglądaj lokalizacje projektów",
             "browseEditorLocation": "Przeglądaj lokalizacje edytorów",
+            "importedTemplatesLocation": "Lokalizacja zaimportowanych szablonów eksportu",
+            "importedTemplatesLocationHelp": "Wybierz miejsce przechowywania zaimportowanych niestandardowych szablonów eksportu.",
+            "selectImportedTemplatesLocation": "Wybierz lokalizację zaimportowanych szablonów eksportu",
+            "browseImportedTemplatesLocation": "Przeglądaj lokalizacje zaimportowanych szablonów eksportu",
+            "movingImportedTemplates": "Przenoszenie zaimportowanych szablonów eksportu: {{stage}}",
             "codeEditor": "Domyślny edytor kodu",
             "codeEditorHelp": "Służy do otwierania skryptów i plików z Godot Launcher. Możesz go później zmienić.",
             "noCodeEditor": "Brak",
@@ -161,6 +166,7 @@
             "directoryPicker": "Nie udało się otworzyć okna wyboru folderu. Wpisz ścieżkę bezwzględną.",
             "absolutePath": "Wpisz bezwzględną ścieżkę folderu.",
             "saveSetup": "Nie udało się zapisać konfiguracji. Poprzednie preferencje pozostają bez zmian.",
+            "importedTemplatesMove": "Nie udało się przenieść zaimportowanych szablonów eksportu. Konfiguracja początkowa nie jest jeszcze ukończona. Spróbuj ponownie.",
             "finish": "Nie udało się ukończyć konfiguracji początkowej. Sprawdź wybrane opcje i spróbuj ponownie."
         }
     }

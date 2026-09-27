@@ -125,6 +125,11 @@
             "selectEditorLocation": "选择编辑器位置",
             "browseProjectsLocation": "浏览项目位置",
             "browseEditorLocation": "浏览编辑器位置",
+            "importedTemplatesLocation": "导入的导出模板位置",
+            "importedTemplatesLocationHelp": "选择导入的自定义导出模板的存储位置。",
+            "selectImportedTemplatesLocation": "选择导入的导出模板位置",
+            "browseImportedTemplatesLocation": "浏览导入的导出模板位置",
+            "movingImportedTemplates": "正在移动导入的导出模板: {{stage}}",
             "codeEditor": "默认代码编辑器",
             "codeEditorHelp": "用于从 Godot Launcher 打开脚本和文件。您可以稍后更改。",
             "noCodeEditor": "无",
@@ -161,6 +166,7 @@
             "directoryPicker": "无法打开文件夹选择器。请改为输入绝对路径。",
             "absolutePath": "请输入文件夹的绝对路径。",
             "saveSetup": "无法保存配置。您之前的偏好设置未更改。",
+            "importedTemplatesMove": "无法移动导入的导出模板。您的初始设置仍未完成。请重试。",
             "finish": "无法完成初始设置。请检查您的选择并重试。"
         }
     }

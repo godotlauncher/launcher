@@ -6,12 +6,15 @@ import { TextField } from '../../../../components/ui/text-field.component';
 import { CreateProjectEditorPicker } from '../../create-project/components/create-project-editor-picker.component';
 import type { CreateProjectEditorSelection } from '../../create-project/create-project.model';
 import { canRenameGodotProject } from '../project-settings.model';
+import { PendingChangesIndicator } from './pending-changes-indicator.component';
 
 type ProjectSettingsProjectSectionProps = {
     t: TFunction;
     open: boolean;
     disabled: boolean;
     name: string;
+    nameChanged: boolean;
+    editorChanged: boolean;
     nameError?: string;
     godotProjectName: string | null;
     loadingGodotName: boolean;
@@ -51,6 +54,8 @@ export function ProjectSettingsProjectSection({
     open,
     disabled,
     name,
+    nameChanged,
+    editorChanged,
     nameError,
     godotProjectName,
     loadingGodotName,
@@ -77,7 +82,12 @@ export function ProjectSettingsProjectSection({
         <div className="flex flex-col gap-[12px]">
             <TextField
                 id="projectEditName"
-                label={t('editProject.fields.name.label')}
+                label={
+                    <>
+                        {t('editProject.fields.name.label')}
+                        {nameChanged && <PendingChangesIndicator />}
+                    </>
+                }
                 help={t('editProject.fields.name.help')}
                 value={name}
                 onChange={onNameChange}
@@ -112,7 +122,12 @@ export function ProjectSettingsProjectSection({
                             'opacity-50',
                     )}
                 >
-                    <span>{t('editProject.godot.renameLabel')}</span>
+                    <span className="flex items-center gap-2">
+                        {t('editProject.godot.renameLabel')}
+                        {renameGodotProject && godotRenameEnabled && (
+                            <PendingChangesIndicator />
+                        )}
+                    </span>
                     <span className="text-base-content">
                         {loadingGodotName && t('editProject.godot.loading')}
                         {!loadingGodotName &&
@@ -132,8 +147,9 @@ export function ProjectSettingsProjectSection({
             <ContentDivider />
             <div className="flex flex-col gap-2">
                 <div>
-                    <h3 className="text-base font-semibold">
+                    <h3 className="flex items-center gap-2 text-base font-semibold">
                         {t('editProject.godotEditor.title')}
+                        {editorChanged && <PendingChangesIndicator />}
                     </h3>
                     <p className="text-base-content/75">
                         {t('editProject.godotEditor.help')}

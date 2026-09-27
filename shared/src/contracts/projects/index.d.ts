@@ -233,6 +233,12 @@ export type ProjectDetails = {
     launch_path: string;
     config_version: 4 | 5;
     codeEditorId: CodeEditorId | null;
+    /**
+     * Legacy storage preference retained while existing local collections are migrated.
+     */
+    exportTemplateMode?: 'shared' | 'separate';
+    /** Per-version selection: official or an imported build ID. Absence means Official. */
+    exportTemplateBuilds?: Record<string, string>;
     withGit: boolean;
     valid: boolean;
     invalid_reason?: ProjectInvalidReason;

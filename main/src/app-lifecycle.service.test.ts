@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppLifecycleService } from './app-lifecycle.service.js';
 
 const mocks = vi.hoisted(() => ({
+    appReadyHooks: [] as Array<{
+        method: string | symbol;
+        order: string;
+        priority?: number;
+    }>,
     ensurePreferencesStorage: vi.fn(),
+    recoverTemplateStorageOnStartup: vi.fn(),
     getUserPreferences: vi.fn(),
     ipcWebContentsSend: vi.fn(),
     configureI18n: vi.fn(),
@@ -24,11 +30,29 @@ const mocks = vi.hoisted(() => ({
     stopAutoUpdateChecks: vi.fn(),
 }));
 
+vi.mock('@mariodebono/di', () => ({ Injectable: () => () => undefined }));
+vi.mock('@mariodebono/di-config', () => ({
+    ConfigService: class ConfigService {},
+}));
+vi.mock('./editor-installs/installed-editor.service.js', () => ({
+    InstalledEditorService: class InstalledEditorService {},
+}));
+vi.mock('./services/tray-availability.service.js', () => ({
+    TrayAvailabilityService: class TrayAvailabilityService {},
+}));
+vi.mock('./tool-integration/tool-integration.service.js', () => ({
+    ToolIntegrationService: class ToolIntegrationService {},
+}));
+
 vi.mock('@mariodebono/di-electron', () => {
     const hook = () => () => undefined;
     return {
         AppLaunchContext: class AppLaunchContext {},
-        AppReady: hook,
+        AppReady:
+            (options: { order: string; priority?: number }) =>
+            (_target: unknown, method: string | symbol) => {
+                mocks.appReadyHooks.push({ method, ...options });
+            },
         AppReadyOrder: {
             BeforeWindow: 'before-window',
             AfterWindow: 'after-window',
@@ -71,11 +95,15 @@ vi.mock('electron-log/main.js', () => ({
         error: vi.fn(),
         info: vi.fn(),
         log: vi.fn(),
+        warn: vi.fn(),
     },
 }));
 
 vi.mock('./utils/prefs.utils.js', () => ({
     ensurePreferencesStorage: mocks.ensurePreferencesStorage,
+}));
+vi.mock('./export-templates/template-storage.service.js', () => ({
+    recoverTemplateStorageOnStartup: mocks.recoverTemplateStorageOnStartup,
 }));
 vi.mock('./commands/userPreferences.js', () => ({
     getUserPreferences: mocks.getUserPreferences,
@@ -208,6 +236,7 @@ describe('AppLifecycleService', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.recoverTemplateStorageOnStartup.mockResolvedValue(undefined);
         configService.getAll.mockReturnValue({
             isDev: false,
             startHidden: false,
@@ -235,6 +264,56 @@ describe('AppLifecycleService', () => {
         expect(onActivate).toHaveBeenCalledOnce();
         expect(offActivate).toHaveBeenCalledOnce();
         expect(offActivate).toHaveBeenCalledWith(onActivate.mock.calls[0]?.[0]);
+    });
+
+    it('runs template storage recovery before other pre-window hooks', async () => {
+        const recoveryHook = mocks.appReadyHooks.find(
+            ({ method }) => method === 'recoverTemplateStorage',
+        );
+        const projectHook = mocks.appReadyHooks.find(
+            ({ method }) => method === 'beforeWindowReady',
+        );
+        expect(recoveryHook?.order).toBe('before-window');
+        expect(recoveryHook?.priority).toBeLessThan(projectHook?.priority ?? 0);
+
+        let finishRecovery: (() => void) | undefined;
+        mocks.recoverTemplateStorageOnStartup.mockReturnValue(
+            new Promise<void>((resolve) => {
+                finishRecovery = resolve;
+            }),
+        );
+        const service = createService();
+        let settled = false;
+        const pending = service.recoverTemplateStorage().then(() => {
+            settled = true;
+        });
+        await Promise.resolve();
+        expect(settled).toBe(false);
+
+        finishRecovery?.();
+        await pending;
+        await service.beforeWindowReady();
+        expect(mocks.recoverTemplateStorageOnStartup).toHaveBeenCalledOnce();
+        expect(projectsService.checkAllProjectsValid).toHaveBeenCalledOnce();
+    });
+
+    it('logs a recovery failure without blocking the project checks or logging paths', async () => {
+        mocks.recoverTemplateStorageOnStartup.mockRejectedValue(
+            new Error('/private/template-location'),
+        );
+        const service = createService();
+
+        await service.recoverTemplateStorage();
+        await service.beforeWindowReady();
+
+        const logger = (await import('electron-log/main.js')).default;
+        expect(logger.warn).toHaveBeenCalledWith(
+            expect.stringMatching(/Export template storage requires recovery/),
+        );
+        expect(logger.warn).not.toHaveBeenCalledWith(
+            expect.stringContaining('/private/template-location'),
+        );
+        expect(projectsService.checkAllProjectsValid).toHaveBeenCalledOnce();
     });
 
     it('applies the Electron system locale before startup checks', async () => {

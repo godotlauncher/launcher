@@ -271,6 +271,7 @@ export const SAMPLE_PREFS: UserPreferences = {
     start_in_tray: true,
     confirm_project_remove: true,
     first_run: false,
+    export_template_migration_offered: true,
     windows_enable_symlinks: true,
     language: 'system',
 };

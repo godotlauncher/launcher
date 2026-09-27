@@ -7,7 +7,7 @@ import { Tooltip } from './tooltip.component';
 export type FormFieldProps = {
     id: string;
     labelAction?: React.ReactNode;
-    label?: string;
+    label?: React.ReactNode;
     help?: string;
     error?: string;
     children: React.ReactNode;

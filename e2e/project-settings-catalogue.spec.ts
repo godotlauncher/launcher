@@ -4,6 +4,7 @@ import { _electron, type ElectronApplication, expect, type Page, test } from '@p
 import type {
     InstalledRelease,
     ProjectDetails,
+    ProjectTemplateSettings,
     ReleaseInstallProgress,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -14,6 +15,72 @@ import { getMainWindow } from './splashscreen/getMainWindow';
 let electronApp: ElectronApplication;
 let page: Page;
 let fixtureHome: string;
+
+for (const missingBeforeOpen of [true, false]) {
+    test(`shows unavailable imported templates ${missingBeforeOpen ? 'on opening settings' : 'when files disappear before saving'}`, async () => {
+        await prepareAppWithStubbedData(page, electronApp, {
+            projects: [project], installedReleases: [installedRelease], availableReleases: [], availablePrereleases: [],
+        });
+        const id = `${installedRelease.version.replace('-', '.')}${installedRelease.mono ? '.mono' : ''}`;
+        const build = {
+            id: '2364e12d-c53c-4eaa-bac2-6d2c9bb0e3e1',
+            revision: 'db7c2070-0f41-473d-a935-580627aa1011',
+            directoryName: 'Cloud Build', label: 'Cloud Build', setId: id,
+            importedAt: '2026-09-01T00:00:00Z', archiveName: 'custom-templates.tpz',
+            files: ['web_release.zip'], sizeBytes: 100, available: !missingBeforeOpen,
+        };
+        const settings: ProjectTemplateSettings = {
+            projectPath: project.path, setId: id, status: 'shared', custom: false,
+            files: [], hasLocalFiles: false,
+            buildSelections: missingBeforeOpen ? { [id]: build.id } : {},
+            importedBuilds: [build], sets: [{ id, files: [] }],
+        };
+        await electronApp.evaluate(({ ipcMain }, value) => {
+            for (const [channel, data] of Object.entries({
+                'exportTemplates.getProjectSettings': value,
+                'exportTemplates.getProjectPackage': { token: 'unused-official', files: [], localFiles: [] },
+                'exportTemplates.getJobs': [],
+                'exportTemplates.getInventory': { root: '', totalBytes: 0, issues: [], recoveries: [], connections: [], job: null, sets: [] },
+                'exportTemplates.getImportedTemplates': { schemaVersion: 1, builds: [], usage: {}, references: {} },
+            })) {
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, async () => ({ success: true, data }));
+            }
+            ipcMain.removeHandler('exportTemplates.setProjectTemplateBuilds');
+            ipcMain.handle('exportTemplates.setProjectTemplateBuilds', async () => {
+                value.importedBuilds[0].available = false;
+                return { success: false, error: { type: 'Error', message: 'exportTemplates:library.missing' } };
+            });
+        }, settings);
+        await page.getByTestId('btnProjects').click();
+        await page.getByTestId('btnProjectSettings').click();
+        const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+        await drawer.getByTestId('tabProjectSettings_exportTemplates').click();
+        const section = drawer.getByTestId('projectExportTemplates');
+        const selector = section.locator('#project-template-build');
+        if (!missingBeforeOpen) {
+            await selector.click();
+            await page.getByRole('option', { name: /Cloud Build/ }).click();
+            await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+        }
+        await expect(section.getByRole('alert')).toHaveText('Some files for this imported build are missing. Replace the package in Export Templates, or choose another build.');
+        await expect(selector).toContainText('Cloud Build');
+        await expect(selector).toContainText('Unavailable');
+        await selector.click();
+        await expect(page.getByRole('option', { name: /Cloud Build.*Unavailable/ })).toBeDisabled();
+        await page.keyboard.press('Escape');
+        await expect(section.getByRole('button', { name: 'Open Export Templates', exact: true })).toBeEnabled();
+        if (missingBeforeOpen) {
+            await section.getByRole('button', { name: 'Open Export Templates', exact: true }).click();
+            await expect(drawer).toBeHidden();
+            await expect(page).toHaveURL(/export-templates/);
+        } else {
+            await selector.click();
+            await page.getByRole('option', { name: /^Official/ }).click();
+            await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+        }
+    });
+}
 
 const installedRelease = SAMPLE_INSTALLED_RELEASES[0];
 const project: ProjectDetails = {
@@ -62,7 +129,7 @@ test('saves a catalogue editor before its delayed download and recovers both pro
     await drawer.getByTestId('selectProjectGodotEditor').click();
     await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
     await drawer.getByTestId('createProjectCatalogueEditor_catalogue:4.9.3-stable:mono').click();
-    await drawer.getByRole('button', { name: 'Install and save' }).click();
+    await drawer.getByRole('button', { name: 'Update' }).click();
 
     await expect(drawer).not.toBeVisible();
     await expect.poll(readSettingsEvents).toEqual([
@@ -104,7 +171,7 @@ test('keeps the saved missing selection after a download failure', async () => {
     await drawer.getByTestId('selectProjectGodotEditor').click();
     await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
     await drawer.getByTestId('createProjectCatalogueEditor_catalogue:4.9.3-stable:mono').click();
-    await drawer.getByRole('button', { name: 'Install and save' }).click();
+    await drawer.getByRole('button', { name: 'Update' }).click();
     await expect(drawer).not.toBeVisible();
     await expect(page.getByText('Simulated installation failure')).toBeVisible();
     const card = page.locator('[data-project-path]');
@@ -129,7 +196,7 @@ test('keeps Settings open when a combined save fails before download starts', as
     await drawer.getByTestId('selectProjectGodotEditor').click();
     await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
     await drawer.getByTestId('createProjectCatalogueEditor_catalogue:4.9.3-stable:mono').click();
-    await drawer.getByRole('button', { name: 'Install and save' }).click();
+    await drawer.getByRole('button', { name: 'Update' }).click();
 
     await expect(drawer).toBeVisible();
     await expect(drawer.getByRole('alert')).toContainText('Simulated save failure');
@@ -221,7 +288,7 @@ test('offers the matching missing editor from the catalogue', async () => {
             `createProjectCatalogueEditor_catalogue:${installedRelease.version}:std`,
         )
         .click();
-    await drawer.getByRole('button', { name: 'Install and save' }).click();
+    await drawer.getByRole('button', { name: 'Update' }).click();
     await expect(drawer).not.toBeVisible();
     await expect.poll(readSettingsEvents).toEqual([
         `editor:${installedRelease.version}:false`,
@@ -268,7 +335,8 @@ test('retains staged settings across tabs and discards them when closed', async 
     await expect(drawer.locator('#projectEditName')).toHaveValue('Unsaved draft');
     await drawer.getByTestId('tabProjectSettings_launch').click();
     await expect(windowed).toBeChecked({ checked: !Boolean(project.open_windowed) });
-    await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Unsaved changes', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click();
     await expect(drawer).not.toBeVisible();
     await electronApp.evaluate(({ ipcMain }) => {
         ipcMain.removeHandler('projects.getProjectGodotName');
@@ -279,7 +347,120 @@ test('retains staged settings across tabs and discards them when closed', async 
     await drawer.getByTestId('tabProjectSettings_launch').click();
     await expect(windowed).toBeChecked({ checked: Boolean(project.open_windowed) });
     await expect.poll(readSettingsEvents).toEqual([]);
-    await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+});
+
+test('supports keyboard navigation in both settings menus', async () => {
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: [project], installedReleases: [installedRelease],
+        availableReleases: [catalogueRelease], availablePrereleases: [],
+    });
+    await stubCatalogueEditorSave();
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+    const projectTab = drawer.getByRole('tab', { name: 'Project', exact: true });
+    const sourceControl = drawer.getByRole('tab', { name: 'Source Control', exact: true });
+    const exportTemplates = drawer.getByRole('tab', { name: 'Export Templates', exact: true });
+    await projectTab.focus();
+    await projectTab.press('ArrowDown');
+    await expect(sourceControl).toBeFocused();
+    await expect(sourceControl).toHaveAttribute('aria-selected', 'true');
+    await sourceControl.press('End');
+    await expect(exportTemplates).toBeFocused();
+    await expect(exportTemplates).toHaveAttribute('aria-selected', 'true');
+    await exportTemplates.press('ArrowDown');
+    await expect(projectTab).toBeFocused();
+    await projectTab.press('ArrowUp');
+    await expect(exportTemplates).toBeFocused();
+    await exportTemplates.press('Home');
+    await expect(projectTab).toBeFocused();
+    await expect(projectTab).toHaveAttribute('aria-selected', 'true');
+    await page.screenshot({ path: test.info().outputPath('project-settings-menu.png') });
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+
+    await page.getByTestId('btnSettings').click();
+    const projectsTab = page.getByTestId('tabProjects');
+    const installsTab = page.getByTestId('tabInstalls');
+    const updatesTab = page.getByTestId('tabUpdates');
+    await projectsTab.click();
+    await projectsTab.press('ArrowDown');
+    await expect(installsTab).toBeFocused();
+    await expect(installsTab).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'settings-tab-installs');
+    await installsTab.press('End');
+    await expect(updatesTab).toBeFocused();
+    await expect(updatesTab).toHaveAttribute('aria-selected', 'true');
+    await updatesTab.press('ArrowDown');
+    await expect(projectsTab).toBeFocused();
+    await projectsTab.press('ArrowUp');
+    await expect(updatesTab).toBeFocused();
+    await updatesTab.press('Home');
+    await expect(projectsTab).toBeFocused();
+    await expect(projectsTab).toHaveAttribute('aria-selected', 'true');
+    await page.screenshot({ path: test.info().outputPath('settings-menu.png') });
+});
+
+test('marks changed fields and menu items and clears indicators when reverted', async () => {
+    const selectedProject = { ...project, codeEditorId: 'vscode' };
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: [selectedProject], installedReleases: [installedRelease],
+        availableReleases: [catalogueRelease], availablePrereleases: [],
+    });
+    await stubCatalogueEditorSave({ initialProject: selectedProject });
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+    const dots = drawer.getByRole('img', { name: 'Unsaved changes', exact: true });
+    const projectTab = drawer.getByTestId('tabProjectSettings_project');
+    const codeTab = drawer.getByTestId('tabProjectSettings_codeEditor');
+    const launchTab = drawer.getByTestId('tabProjectSettings_launch');
+    await expect(dots).toHaveCount(0);
+    await drawer.locator('#projectEditName').fill('Draft name');
+    await expect(dots).toHaveCount(2);
+    await projectTab.getByRole('img', { name: 'Unsaved changes' }).hover();
+    await expect(page.getByRole('tooltip', { name: 'Unsaved changes' })).toBeVisible();
+    await drawer.locator('#projectEditName').fill(project.name);
+    await expect(dots).toHaveCount(0);
+    await drawer.locator('#projectEditName').fill('Draft name');
+    await drawer.getByRole('checkbox').check();
+    await expect(dots).toHaveCount(3);
+    await drawer.getByRole('checkbox').uncheck();
+    await expect(dots).toHaveCount(2);
+    await drawer.locator('#projectEditName').fill(project.name);
+    await expect(dots).toHaveCount(0);
+
+    await codeTab.click();
+    await drawer.getByTestId('selectProjectCodeEditor').click();
+    await page.getByRole('option', { name: 'None', exact: true }).click();
+    await expect(dots).toHaveCount(2);
+    await drawer.getByTestId('selectProjectCodeEditor').click();
+    await page.getByRole('option', { name: 'Visual Studio Code', exact: true }).click();
+    await expect(dots).toHaveCount(0);
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeDisabled();
+
+    await launchTab.click();
+    await drawer.getByRole('checkbox').setChecked(!Boolean(project.open_windowed));
+    await expect(dots).toHaveCount(2);
+    await projectTab.click();
+    await expect(launchTab.getByRole('img', { name: 'Unsaved changes' })).toBeVisible();
+    await drawer.locator('#projectEditName').fill('Draft name');
+    await drawer.getByTestId('selectProjectGodotEditor').click();
+    await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
+    await drawer.getByTestId('createProjectCatalogueEditor_catalogue:4.9.3-stable:mono').click();
+    await expect(dots).toHaveCount(4);
+    await page.screenshot({ path: test.info().outputPath('project-settings-pending-changes.png') });
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Unsaved changes', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click();
+    await page.getByTestId('btnProjectSettings').click();
+    await expect(dots).toHaveCount(0);
+    await drawer.getByTestId('tabProjectSettings_launch').click();
+    await drawer.getByRole('checkbox').setChecked(!Boolean(project.open_windowed));
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).not.toBeVisible();
+    await page.getByTestId('btnProjectSettings').click();
+    await expect(dots).toHaveCount(0);
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
 });
 
 test('retains a Git identity draft across tabs and saves it independently', async () => {
@@ -336,8 +517,30 @@ test('retains a Git identity draft across tabs and saves it independently', asyn
     });
     await expect(drawer.getByText('Stale response', { exact: true })).not.toBeVisible();
     await sourceControl.getByRole('button', { name: 'Update', exact: true }).click();
+    const gitTab = drawer.getByTestId('tabProjectSettings_sourceControl');
+    const dots = drawer.getByRole('img', { name: 'Unsaved changes', exact: true });
+    await expect(dots).toHaveCount(0);
+    await drawer.locator('#projectGitIdentityName').fill('Cancelled identity');
+    await expect(dots).toHaveCount(2);
+    await drawer.locator('#projectGitIdentityName').fill('Original identity');
+    await expect(dots).toHaveCount(0);
+    await drawer.locator('#projectGitIdentityEmail').fill('cancelled@example.invalid');
+    await expect(dots).toHaveCount(2);
+    await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(dots).toHaveCount(0);
+    await sourceControl.getByRole('button', { name: 'Update', exact: true }).click();
     await drawer.locator('#projectGitIdentityName').fill('Saved identity');
     await drawer.locator('#projectGitIdentityEmail').fill('saved@example.invalid');
+    await expect(dots).toHaveCount(3);
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Unsaved changes', exact: true }).getByRole('button', { name: 'Back', exact: true }).click();
+    await drawer.getByTestId('tabProjectSettings_launch').click();
+    await expect(gitTab.getByRole('img', { name: 'Unsaved changes' })).toBeVisible();
+    await drawer.getByRole('checkbox').setChecked(!Boolean(project.open_windowed));
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeVisible();
+    await expect(gitTab).toHaveAttribute('aria-selected', 'true');
+    await expect(dots).toHaveCount(3);
     await drawer.getByTestId('tabProjectSettings_project').click();
     await drawer.getByTestId('tabProjectSettings_sourceControl').click();
     await expect(drawer.locator('#projectGitIdentityName')).toHaveValue('Saved identity');
@@ -346,8 +549,9 @@ test('retains a Git identity draft across tabs and saves it independently', asyn
     await expect(drawer.locator('#projectGitIdentityName')).not.toBeVisible();
     await expect(drawer.getByText('Saved identity', { exact: true })).toBeVisible();
     await expect(drawer.getByText('saved@example.invalid', { exact: true })).toBeVisible();
-    await expect.poll(readSettingsEvents).toEqual([]);
-    await drawer.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(dots).toHaveCount(0);
+    await expect.poll(readSettingsEvents).toEqual([`windowed:${!Boolean(project.open_windowed)}`]);
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
 });
 
 /**

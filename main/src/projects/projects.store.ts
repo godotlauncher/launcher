@@ -45,6 +45,9 @@ export function fromStoredProject(
                 : withVSCode
                   ? 'vscode'
                   : null,
+        exportTemplateBuilds: normalizeTemplateBuilds(
+            storedProject.exportTemplateBuilds,
+        ),
         last_opened: toDate(storedProject.last_opened),
     };
 }
@@ -58,6 +61,9 @@ export function fromStoredProject(
 export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
     return {
         ...project,
+        exportTemplateBuilds: normalizeTemplateBuilds(
+            project.exportTemplateBuilds,
+        ),
         pinned_order: project.pinned
             ? normalizePinnedOrder(project.pinned_order)
             : undefined,
@@ -261,4 +267,23 @@ function toDate(value: Date | string | null | undefined): Date | null {
 
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/** Keeps version-specific selections portable and excludes malformed stored keys.
+ * @param value - Optional preferences from an existing project record.
+ */
+function normalizeTemplateBuilds(
+    value: unknown,
+): ProjectDetails['exportTemplateBuilds'] {
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+        return undefined;
+    return Object.fromEntries(
+        Object.entries(value).filter(
+            ([key, selection]) =>
+                /^\d+\.\d+(?:\.\d+)?\.[a-zA-Z][\w.-]*$/.test(key) &&
+                typeof selection === 'string' &&
+                (selection === 'official' ||
+                    /^[a-f0-9-]{36}$/i.test(selection)),
+        ),
+    );
 }

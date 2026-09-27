@@ -68,7 +68,7 @@ export function mapEditorCatalogResult(
  * @param releases - Catalog releases in provider order.
  * @returns Unique releases in the order their versions first appeared.
  */
-function deduplicateEditorCatalogReleases(
+export function deduplicateEditorCatalogReleases(
     releases: EditorCatalogRelease[],
 ): EditorCatalogRelease[] {
     const releasesByVersion = new Map<string, EditorCatalogRelease>();

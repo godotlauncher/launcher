@@ -24,6 +24,7 @@ import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { InstalledEditorService } from './editor-installs/installed-editor.service.js';
+import { recoverTemplateStorageOnStartup } from './export-templates/template-storage.service.js';
 import { createEditingMenu, createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
@@ -76,6 +77,27 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
 
     onModuleDestroy(): void {
         this.electronAppService.offActivate(this.handleActivate);
+    }
+
+    /** Recovers interrupted template moves after this process owns the app instance. */
+    @AppReady({ order: AppReadyOrder.BeforeWindow, priority: -1000 })
+    async recoverTemplateStorage(): Promise<void> {
+        const startedAt = Date.now();
+        try {
+            await recoverTemplateStorageOnStartup();
+        } catch (error) {
+            const reason =
+                error instanceof Error
+                    ? 'code' in error && typeof error.code === 'string'
+                        ? error.code
+                        : error.message.startsWith('exportTemplates:')
+                          ? error.message
+                          : error.name
+                    : 'unknown';
+            logger.warn(
+                `Export template storage requires recovery after ${Date.now() - startedAt} ms (${reason})`,
+            );
+        }
     }
 
     @AppReady({ order: AppReadyOrder.BeforeWindow })

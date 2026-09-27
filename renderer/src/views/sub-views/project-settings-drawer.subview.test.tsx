@@ -39,6 +39,7 @@ vi.mock('react-i18next', () => {
             'Could not load code editors.',
         'projects:editProject.actions.update': 'Update',
         'projects:editProject.actions.updating': 'Updating...',
+        'exportTemplates:migration.close': 'Close',
         'common:buttons.cancel': 'Cancel',
         'common:buttons.copyPath': 'Copy path',
         'common:success': 'Copied',
@@ -61,6 +62,10 @@ vi.mock('react-i18next', () => {
         }),
     };
 });
+
+vi.mock('../export-templates/hooks/template-jobs.hook', () => ({
+    useTemplateJobs: () => [],
+}));
 
 vi.mock('../../hooks/release.hook', () => ({
     useRelease: () => ({
@@ -140,7 +145,7 @@ describe('ProjectSettingsDrawer', () => {
         expect(html).toContain('Pinned');
         expect(html).not.toContain('Keep this project in the Pinned section.');
         expect(html).toContain('Update');
-        expect(html).toContain('Cancel');
+        expect(html).toContain('Close');
     });
 
     it('orders installed editors and excludes the missing current version', () => {
@@ -207,6 +212,15 @@ describe('ProjectSettingsDrawer', () => {
         );
         expect(hasProjectRenameChanges('Demo', 'Demo', 'Demo', true)).toBe(
             false,
+        );
+    });
+
+    it('clears the pending change when the saved editor is selected again', () => {
+        expect(hasProjectCodeEditorChanges('vscode', 'vscode', true)).toBe(
+            false,
+        );
+        expect(hasProjectCodeEditorChanges('vscode', 'cursor', true)).toBe(
+            true,
         );
     });
 

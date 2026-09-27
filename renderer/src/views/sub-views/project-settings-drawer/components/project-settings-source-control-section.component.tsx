@@ -7,6 +7,7 @@ import type React from 'react';
 import { ContentDivider } from '../../../../components/ui/content-divider.component';
 import { CopyButton } from '../../../../components/ui/copy-button.component';
 import { TextField } from '../../../../components/ui/text-field.component';
+import { PendingChangesIndicator } from './pending-changes-indicator.component';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -22,6 +23,8 @@ type ProjectSettingsSourceControlSectionProps = {
     editingGitIdentity: boolean;
     gitIdentityName: string;
     gitIdentityEmail: string;
+    nameChanged: boolean;
+    emailChanged: boolean;
     savingGitIdentity: boolean;
     gitIdentityError: string | undefined;
     gitUnavailable: boolean;
@@ -54,6 +57,8 @@ export const ProjectSettingsSourceControlSection: React.FC<
     editingGitIdentity,
     gitIdentityName,
     gitIdentityEmail,
+    nameChanged,
+    emailChanged,
     savingGitIdentity,
     gitIdentityError,
     gitUnavailable,
@@ -162,7 +167,14 @@ export const ProjectSettingsSourceControlSection: React.FC<
                     <div className="flex flex-col gap-3">
                         <TextField
                             id="projectGitIdentityName"
-                            label={t('editProject.sourceControl.identityName')}
+                            label={
+                                <>
+                                    {t(
+                                        'editProject.sourceControl.identityName',
+                                    )}
+                                    {nameChanged && <PendingChangesIndicator />}
+                                </>
+                            }
                             help={t(
                                 'editProject.sourceControl.identityNameHelp',
                             )}
@@ -172,7 +184,16 @@ export const ProjectSettingsSourceControlSection: React.FC<
                         />
                         <TextField
                             id="projectGitIdentityEmail"
-                            label={t('editProject.sourceControl.identityEmail')}
+                            label={
+                                <>
+                                    {t(
+                                        'editProject.sourceControl.identityEmail',
+                                    )}
+                                    {emailChanged && (
+                                        <PendingChangesIndicator />
+                                    )}
+                                </>
+                            }
                             help={t(
                                 'editProject.sourceControl.identityEmailHelp',
                             )}
@@ -223,7 +244,7 @@ export const ProjectSettingsSourceControlSection: React.FC<
                                         )}
                                     </span>
                                 </dt>
-                                <dd className="mt-1 flex min-w-0 items-center gap-2 rounded-md bg-base-content/5 px-3 py-2">
+                                <dd className="mt-1 flex min-h-8 min-w-0 items-center gap-2 rounded-md bg-base-content/5 px-3">
                                     <span className="min-w-0 flex-1 break-all select-text">
                                         {value.value ||
                                             t(
@@ -279,7 +300,7 @@ export const ProjectSettingsSourceControlSection: React.FC<
                             <dt className="text-base-content/75">
                                 {t(`editProject.sourceControl.${label}`)}
                             </dt>
-                            <dd className="mt-1 rounded-md bg-base-content/5 px-3 py-2 text-base-content/60">
+                            <dd className="mt-1 flex min-h-8 items-center rounded-md bg-base-content/5 px-3 text-base-content/60">
                                 {t(
                                     'editProject.sourceControl.identityUnavailable',
                                 )}

@@ -79,6 +79,37 @@ describe('github editor release mapper', () => {
         ).toBeNull();
     });
 
+    it('keeps complete template packages separate from editor binaries with integrity and size metadata', () => {
+        const base = createGithubRelease();
+        const release = mapGithubEditorRelease('official-stable', false, {
+            ...base,
+            assets: [
+                ...base.assets,
+                ...['', '_mono'].map((edition, index) => ({
+                    id: 100 + index,
+                    name: `Godot_v4.5-stable${edition}_export_templates.tpz`,
+                    browserDownloadUrl: `https://example.com/templates-${index}.tpz`,
+                    size: 1024 + index,
+                    digest: `sha256:${'a'.repeat(64)}`,
+                })),
+            ],
+        });
+        expect(release?.templateAssets).toEqual([
+            expect.objectContaining({
+                flavor: 'gdscript',
+                sizeBytes: 1024,
+                digest: `sha256:${'a'.repeat(64)}`,
+                checksumManifestUrl: 'https://example.com/SHA512-SUMS.txt',
+            }),
+            expect.objectContaining({ flavor: 'dotnet', sizeBytes: 1025 }),
+        ]);
+        expect(
+            release?.variants
+                .flatMap((variant) => variant.assets)
+                .some((asset) => asset.name.endsWith('.tpz')),
+        ).toBe(false);
+    });
+
     it('parses supported release channels', () => {
         expect(parseEditorVersion('v4.6-rc2')).toEqual({
             major: 4,

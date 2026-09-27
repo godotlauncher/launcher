@@ -77,7 +77,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                         type="button"
                         data-testid="btnProjectAdd"
                         onClick={onAddProject}
-                        className="btn btn-ghost text-base"
+                        className="btn btn-ghost bg-base-content/5 text-base"
                     >
                         {addLabel}
                         <ChevronDown
