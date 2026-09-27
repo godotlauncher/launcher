@@ -67,6 +67,7 @@ export type TemplateProjectAssessment = {
 /** Cheap discovery result; detailed comparisons are requested per project. */
 export type TemplateMigrationAssessment = {
     projects: TemplateProjectAssessment[];
+    /** Projects needing attention, excluding empty projects which connect automatically. */
     pendingCount: number;
     recoveryIds: string[];
 };

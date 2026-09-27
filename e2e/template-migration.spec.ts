@@ -196,3 +196,45 @@ for (const sharedExists of [true, false]) {
         expect(await fs.readFile(path.join(local(0), '4.4.stable', 'linux_release.x86_64'), 'utf8')).toBe('private build 0');
     });
 }
+
+test('dismisses the introduction when the last project no longer needs a decision', async () => {
+    await app.close();
+    const prefsPath = path.join(home, '.gd-launcher', 'prefs.json');
+    const prefs = JSON.parse(await fs.readFile(prefsPath, 'utf8'));
+    prefs.export_template_migration_offered = false;
+    await fs.writeFile(prefsPath, JSON.stringify(prefs));
+    await launch();
+    const modal = page.getByTestId('templateMigrationModal');
+    await expect(modal).toBeVisible();
+    await expect(modal.getByText('1 projects still need a decision.')).toBeVisible();
+
+    await fs.rm(local(0), { recursive: true });
+    await fs.mkdir(local(0));
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(modal).toBeHidden();
+    await page.getByTestId('btnExportTemplates').click();
+    await expect(page.getByRole('button', { name: /^Migrate projects/ })).toHaveCount(0);
+});
+
+test('skips the first-run wizard when only empty projects need automatic connection', async () => {
+    await app.close();
+    await launch();
+    await expect.poll(async () => (await fs.lstat(local(0))).isSymbolicLink()).toBe(true);
+    await page.getByTestId('btnExportTemplates').click();
+    // Allow the delayed first-run offer to run after automatic connections settle.
+    await page.waitForTimeout(1_000);
+    await expect(page.getByTestId('templateMigrationModal')).toBeHidden();
+    await expect(page.getByRole('button', { name: /^Migrate projects/ })).toHaveCount(0);
+    const prefs = JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'prefs.json'), 'utf8'));
+    expect(prefs.export_template_migration_offered).toBe(false);
+});
+
+test('skips the first-run wizard when no projects are registered', async () => {
+    await app.close();
+    await fs.writeFile(path.join(home, '.gd-launcher', 'projects.json'), '[]');
+    await launch();
+    await page.getByTestId('btnExportTemplates').click();
+    await page.waitForTimeout(1_000);
+    await expect(page.getByTestId('templateMigrationModal')).toBeHidden();
+    await expect(page.getByRole('button', { name: /^Migrate projects/ })).toHaveCount(0);
+});

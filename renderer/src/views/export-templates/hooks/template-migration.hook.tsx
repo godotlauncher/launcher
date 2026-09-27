@@ -103,6 +103,14 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
     }, [loadPreferences, savePreferences]);
 
     useEffect(() => {
+        if (introduction && assessment?.pendingCount === 0 && !error) {
+            setVisible(false);
+            setIntroduction(false);
+            offered.current = false;
+        }
+    }, [assessment, introduction, error]);
+
+    useEffect(() => {
         if (
             !assessment ||
             preferences?.export_template_migration_offered === true ||

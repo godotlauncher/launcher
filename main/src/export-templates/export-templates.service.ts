@@ -351,24 +351,28 @@ export class ExportTemplatesService {
         };
     }
 
-    /** Lists migration candidates using metadata only, without network requests. */
+    /** Lists migration candidates and counts projects needing a user decision, using metadata only. */
     async getMigrationAssessment(): Promise<TemplateMigrationAssessment> {
         await this.storage.assertAvailable('official');
         const projects = await this.projects.list();
         const recoveryIds = await this.recoveries();
         const assessments: TemplateProjectAssessment[] = [];
+        let pendingCount = 0;
         for (const project of projects) {
             const assessment = await assessProjectTemplates(
                 project,
                 getSharedTemplateRoot(),
             );
+            // Empty projects connect automatically, even while their queued work is busy.
+            if (assessment.pending && assessment.reason !== 'empty')
+                pendingCount++;
             assessments.push(
                 this.migrationAvailability(assessment, recoveryIds),
             );
         }
         return {
             projects: assessments,
-            pendingCount: assessments.filter((item) => item.pending).length,
+            pendingCount,
             recoveryIds,
         };
     }

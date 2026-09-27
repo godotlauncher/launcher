@@ -1157,7 +1157,7 @@ describe('project migration assessment and preference', () => {
     });
     it('discovers without hashes, then compares only an explicitly selected registered project', async () => {
         expect(await service.getMigrationAssessment()).toMatchObject({
-            pendingCount: 1,
+            pendingCount: 0,
         });
         expect(assessProjectTemplates).toHaveBeenLastCalledWith(
             project,
@@ -1174,6 +1174,70 @@ describe('project migration assessment and preference', () => {
             service.inspectProjectTemplates('unregistered'),
         ).rejects.toThrow('errors.connection');
         expect(updateProjects).not.toHaveBeenCalled();
+    });
+
+    it('counts only projects needing attention while retaining empty projects for automatic connection', async () => {
+        vi.mocked(assessProjectTemplates)
+            .mockResolvedValueOnce({
+                projectPath: project.path,
+                name: project.name,
+                state: 'ready',
+                reason: 'empty',
+                pending: true,
+                compared: false,
+                provenance: 'unverified',
+                setIds: [],
+                metadata: [],
+                unexpected: [],
+            })
+            .mockResolvedValueOnce({
+                projectPath: path.resolve('local-templates-game'),
+                name: 'Local templates game',
+                state: 'needs-review',
+                reason: 'unverified-files',
+                pending: true,
+                compared: false,
+                provenance: 'unverified',
+                setIds: ['4.4.stable'],
+                metadata: [],
+                unexpected: [],
+            });
+        list.mockResolvedValue([
+            project,
+            {
+                ...project,
+                path: path.resolve('local-templates-game'),
+                name: 'Local templates game',
+            },
+        ]);
+
+        expect(await service.getMigrationAssessment()).toMatchObject({
+            pendingCount: 1,
+            projects: [
+                { pending: true, reason: 'empty' },
+                { pending: true, reason: 'unverified-files' },
+            ],
+        });
+    });
+
+    it('has no migration decisions when no projects are registered', async () => {
+        list.mockResolvedValue([]);
+        expect(await service.getMigrationAssessment()).toMatchObject({
+            pendingCount: 0,
+            projects: [],
+        });
+    });
+
+    it('does not offer empty projects while automatic connections are busy', async () => {
+        setTemplatesMutating(true);
+        try {
+            expect(await service.getMigrationAssessment()).toMatchObject({
+                pendingCount: 0,
+                projects: [{ state: 'busy', reason: 'active-operation' }],
+            });
+        } finally {
+            setTemplatesMutating(false);
+        }
     });
 });
 
