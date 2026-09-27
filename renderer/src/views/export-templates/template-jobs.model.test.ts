@@ -42,12 +42,12 @@ describe('template row operations', () => {
             '4.6.stable.mono',
         ]);
     });
-    it('gives an archive import a temporary row before its version is identified', () => {
+    it('gives recovery a temporary row before its affected versions are read', () => {
         const job: TemplateJob = {
-            id: 'archive',
-            kind: 'import',
+            id: 'recovery',
+            kind: 'recover',
             stage: 'preparing',
         };
-        expect(getTemplateRowJobs([job]).get('job-archive')).toEqual(job);
+        expect(getTemplateRowJobs([job]).get('job-recovery')).toEqual(job);
     });
 });

@@ -16,6 +16,7 @@ import { CopyBadge } from '../components/ui/copy-badge.component';
 import { EmptyState } from '../components/ui/empty-state.component';
 import { SearchField } from '../components/ui/search-field.component';
 import { groupEditorsByBaseVersion } from '../editor-version-group.model';
+import { ImportedTemplateLibrary } from './export-templates/components/imported-template-library.component';
 import { TemplateDownloadDrawer } from './export-templates/components/template-download-drawer.component';
 import { TemplateRemoveDialog } from './export-templates/components/template-remove-dialog.component';
 import { TemplateSetRow } from './export-templates/components/template-set-row.component';
@@ -38,6 +39,7 @@ export function ExportTemplatesView() {
     const migration = useTemplateMigration();
     const [params, setParams] = useSearchParams();
     const [search, setSearch] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
     const [downloadOpen, setDownloadOpen] = useState(false);
     const [manageSet, setManageSet] = useState<ExportTemplateSet | null>(null);
     const [remove, setRemove] = useState<ExportTemplateSet | null>(null);
@@ -159,8 +161,8 @@ export function ExportTemplatesView() {
                         <button
                             type="button"
                             className="btn btn-ghost bg-base-content/5"
-                            disabled={pending}
-                            onClick={() => void run({ type: 'import' })}
+                            disabled={busy}
+                            onClick={() => setImportOpen(true)}
                         >
                             <Upload className="size-4" />
                             {t('import')}
@@ -250,23 +252,60 @@ export function ExportTemplatesView() {
                             <span>{errorText(error)}</span>
                         </div>
                     )}
-                    {loading && <p role="status">{t('loading')}</p>}
-                    {!loading && !busy && !visible.length && (
-                        <EmptyState
-                            icon={FileOutput}
-                            heading={search ? t('noMatches') : t('empty')}
-                            description={t('emptyDetail')}
-                            primaryActionLabel={
-                                search
-                                    ? t('installs:search.clear')
-                                    : t('download')
-                            }
-                            primaryActionPending={!search && busy}
-                            onPrimaryAction={() =>
-                                search ? setSearch('') : setDownloadOpen(true)
-                            }
-                        />
+                    {!!inventory?.issues.length && (
+                        <div role="alert" className="alert alert-warning">
+                            <div>
+                                <p>{t('scanIssues')}</p>
+                                <ul className="mt-1 list-inside list-disc break-all">
+                                    {[...new Set(inventory.issues)].map(
+                                        (issue) => (
+                                            <li key={issue}>
+                                                {issue.startsWith(
+                                                    'exportTemplates:',
+                                                )
+                                                    ? errorText(issue)
+                                                    : issue}
+                                            </li>
+                                        ),
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
                     )}
+                    <ImportedTemplateLibrary
+                        importOpen={importOpen}
+                        onImportClose={() => setImportOpen(false)}
+                        templateBusy={busy}
+                        search={search}
+                        revision={inventory}
+                        onChanged={() => void refresh()}
+                    />
+                    <h2 className="text-lg font-semibold">
+                        {t('library.official')}
+                    </h2>
+                    {loading && <p role="status">{t('loading')}</p>}
+                    {!loading &&
+                        !busy &&
+                        !error &&
+                        !inventory?.issues.length &&
+                        !visible.length && (
+                            <EmptyState
+                                icon={FileOutput}
+                                heading={search ? t('noMatches') : t('empty')}
+                                description={t('emptyDetail')}
+                                primaryActionLabel={
+                                    search
+                                        ? t('installs:search.clear')
+                                        : t('download')
+                                }
+                                primaryActionPending={!search && busy}
+                                onPrimaryAction={() =>
+                                    search
+                                        ? setSearch('')
+                                        : setDownloadOpen(true)
+                                }
+                            />
+                        )}
                     <div className="space-y-4">
                         {groups.map(({ baseVersion, items: sets }) => (
                             <EditorVersionGroup

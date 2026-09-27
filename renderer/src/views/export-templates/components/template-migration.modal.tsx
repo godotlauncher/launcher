@@ -6,10 +6,11 @@ import { CircleX, FileOutput, RefreshCw, TriangleAlert } from 'lucide-react';
 import { type RefObject, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '../../../components/dialog.component';
+import { SelectField } from '../../../components/ui/select-field.component';
 import { exportTemplatesBridge } from '../../../renderer.bridge';
 import { refreshTemplateJobs } from '../hooks/template-jobs.hook';
 
-type Choice = 'share-project' | 'use-shared' | 'separate';
+type Choice = 'share-project' | 'use-shared' | 'save-imported';
 type Props = {
     assessment: TemplateMigrationAssessment | null;
     jobs: TemplateJob[];
@@ -26,7 +27,7 @@ type Props = {
  */
 const finished = (job: TemplateJob) =>
     ['complete', 'cancelled', 'error'].includes(job.stage);
-/** Applies one project-level choice without a second file review.
+/** Shows each project's editor and applies a migration choice using the shared select.
  * @param props - Discovery, queued jobs and dialog actions.
  */
 export function TemplateMigrationModal({
@@ -164,7 +165,7 @@ export function TemplateMigrationModal({
                     <div className="min-h-0 flex-1 overflow-y-auto">
                         {!!projects.length && (
                             <div
-                                className="flex items-center gap-2 px-3 pb-2 text-sm font-semibold text-base-content/75"
+                                className="flex items-center gap-2 px-3 pb-2 text-base font-semibold text-base-content/75"
                                 aria-hidden="true"
                             >
                                 <span className="min-w-0 flex-1">
@@ -182,7 +183,7 @@ export function TemplateMigrationModal({
                             aria-label={t('migration.projects')}
                             className="space-y-2"
                         >
-                            {projects.map((project) => {
+                            {projects.map((project, index) => {
                                 const choice =
                                     choices[project.projectPath] ?? '';
                                 const projectJob = latestJobs.get(
@@ -194,11 +195,6 @@ export function TemplateMigrationModal({
                                     !pending &&
                                     !busy &&
                                     !assessment?.recoveryIds.length;
-                                const canKeepSeparate =
-                                    available &&
-                                    ['local', 'missing'].includes(
-                                        project.connection ?? '',
-                                    );
                                 const canMigrate =
                                     available &&
                                     ['ready', 'needs-review'].includes(
@@ -211,86 +207,77 @@ export function TemplateMigrationModal({
                                         className="rounded-md border border-base-content/10 bg-base-content/2 p-3"
                                     >
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <span
-                                                className="min-w-0 flex-1 break-words font-medium"
-                                                title={`${project.name} - ${project.version} - ${t(`migration.edition.${project.edition ?? 'standard'}`)}`}
-                                            >
-                                                {project.name}
-                                            </span>
-                                            <select
-                                                className="select select-bordered w-[22rem] max-w-full text-sm"
-                                                aria-label={`${project.name}: ${t('choose')}`}
-                                                value={choice}
-                                                disabled={!available || !!live}
-                                                title={
-                                                    choice
-                                                        ? t(
-                                                              `migration.details.${choice}`,
-                                                          )
-                                                        : t('choose')
-                                                }
-                                                onChange={(event) =>
-                                                    setChoices((previous) => ({
-                                                        ...previous,
-                                                        [project.projectPath]:
-                                                            event.target
-                                                                .value as
-                                                                | Choice
-                                                                | '',
-                                                    }))
-                                                }
-                                            >
-                                                <option value="" disabled>
-                                                    {t('choose')}
-                                                </option>
-                                                {(
-                                                    [
-                                                        'share-project',
-                                                        'use-shared',
-                                                        'separate',
-                                                    ] as const
-                                                ).map((value) => (
-                                                    <option
-                                                        key={value}
-                                                        value={value}
-                                                        disabled={
-                                                            value === 'separate'
-                                                                ? !canKeepSeparate
-                                                                : !canMigrate ||
-                                                                  (value ===
-                                                                      'share-project' &&
-                                                                      !project
-                                                                          .setIds
-                                                                          .length)
-                                                        }
-                                                    >
-                                                        {t(
-                                                            `migration.choices.${value}`,
-                                                        )}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <div className="min-w-0 flex-1 break-words">
+                                                <div className="font-medium">
+                                                    {project.name}
+                                                </div>
+                                                <div className="text-base text-base-content/60">
+                                                    {project.version} -{' '}
+                                                    {t(
+                                                        `migration.edition.${project.edition ?? 'standard'}`,
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="w-[22rem] max-w-full">
+                                                <SelectField
+                                                    id={`templateMigrationAction-${index}`}
+                                                    ariaLabel={project.name}
+                                                    value={choice}
+                                                    disabled={
+                                                        !available || !!live
+                                                    }
+                                                    onChange={(value) =>
+                                                        setChoices(
+                                                            (previous) => ({
+                                                                ...previous,
+                                                                [project.projectPath]:
+                                                                    value as Choice,
+                                                            }),
+                                                        )
+                                                    }
+                                                    options={[
+                                                        {
+                                                            value: '',
+                                                            label: t('choose'),
+                                                            disabled: true,
+                                                        },
+                                                        ...(
+                                                            [
+                                                                'share-project',
+                                                                'use-shared',
+                                                                'save-imported',
+                                                            ] as const
+                                                        ).map((value) => ({
+                                                            value,
+                                                            label: t(
+                                                                `migration.choices.${value}`,
+                                                            ),
+                                                            disabled:
+                                                                !canMigrate ||
+                                                                (value !==
+                                                                    'use-shared' &&
+                                                                    !project
+                                                                        .setIds
+                                                                        .length),
+                                                        })),
+                                                    ]}
+                                                />
+                                            </div>
                                             <button
                                                 type="button"
                                                 className="btn btn-primary text-base"
                                                 disabled={
                                                     !choice ||
                                                     !!live ||
-                                                    (choice === 'separate'
-                                                        ? !canKeepSeparate
-                                                        : !canMigrate)
+                                                    !canMigrate
                                                 }
                                                 onClick={() =>
                                                     void run(() =>
-                                                        choice === 'separate'
-                                                            ? exportTemplatesBridge.keepProjectTemplatesSeparate(
-                                                                  project.projectPath,
-                                                              )
-                                                            : exportTemplatesBridge.prepareMigration(
-                                                                  project.projectPath,
-                                                                  choice ||
-                                                                      'share-project',
-                                                              ),
+                                                        exportTemplatesBridge.prepareMigration(
+                                                            project.projectPath,
+                                                            choice ||
+                                                                'share-project',
+                                                        ),
                                                     )
                                                 }
                                             >
@@ -298,7 +285,7 @@ export function TemplateMigrationModal({
                                             </button>
                                         </div>
                                         {choice && (
-                                            <div className="alert alert-warning alert-soft mt-3 flex items-start gap-2 p-3 text-sm leading-relaxed text-warning-content dark:text-warning">
+                                            <div className="alert alert-warning alert-soft mt-3 flex items-start gap-2 p-3 text-base leading-relaxed text-warning-content dark:text-warning">
                                                 <TriangleAlert
                                                     className="size-5 shrink-0"
                                                     aria-hidden="true"
@@ -310,23 +297,24 @@ export function TemplateMigrationModal({
                                                 </p>
                                             </div>
                                         )}
-                                        {choice && choice !== 'separate' && (
-                                            <div className="alert alert-error alert-soft mt-3 flex items-start gap-2 p-3 text-sm text-error-content dark:text-error">
-                                                <CircleX
-                                                    className="size-5 shrink-0"
-                                                    aria-hidden="true"
-                                                />
-                                                <p>
-                                                    {t(
-                                                        'migration.permanentDeletion',
-                                                    )}
-                                                </p>
-                                            </div>
-                                        )}
+                                        {choice &&
+                                            choice !== 'save-imported' && (
+                                                <div className="alert alert-error alert-soft mt-3 flex items-start gap-2 p-3 text-base text-error-content dark:text-error">
+                                                    <CircleX
+                                                        className="size-5 shrink-0"
+                                                        aria-hidden="true"
+                                                    />
+                                                    <p>
+                                                        {t(
+                                                            'migration.permanentDeletion',
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            )}
                                         {live && (
                                             <p
                                                 role="status"
-                                                className="mt-1 text-xs text-base-content/70"
+                                                className="mt-1 text-base text-base-content/70"
                                             >
                                                 {t(
                                                     `stages.${projectJob.stage}`,
@@ -336,7 +324,7 @@ export function TemplateMigrationModal({
                                         {projectJob?.stage === 'error' && (
                                             <p
                                                 role="alert"
-                                                className="mt-1 text-xs text-error"
+                                                className="mt-1 text-base text-error"
                                             >
                                                 {errorText(
                                                     projectJob.error ?? '',
@@ -347,7 +335,7 @@ export function TemplateMigrationModal({
                                             !['ready', 'needs-review'].includes(
                                                 project.state,
                                             ) && (
-                                                <p className="mt-1 text-xs text-base-content/70">
+                                                <p className="mt-1 text-base text-base-content/70">
                                                     {t(
                                                         `migration.reasons.${project.reason}`,
                                                     )}
@@ -359,7 +347,7 @@ export function TemplateMigrationModal({
                         </ul>
                     </div>
                     {busy && (
-                        <p className="mt-3 shrink-0 text-xs text-base-content/60">
+                        <p className="mt-3 shrink-0 text-base text-base-content/60">
                             {t('migration.background')}
                         </p>
                     )}

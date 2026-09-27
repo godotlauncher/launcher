@@ -424,6 +424,7 @@ export async function checkProjectValid(
                 project.release,
                 undefined,
                 project.exportTemplateMode,
+                project.exportTemplateBuilds,
             );
         }
         project.release.valid = true;

@@ -58,11 +58,13 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
                     aria-label={ariaLabel}
                     aria-describedby={ariaDescribedBy}
                     aria-invalid={invalid}
+                    disabled={disabled}
                     maxLength={maxLength}
                     value={draft}
                     ref={(input) => input?.focus()}
                     onChange={(event) => onDraftChange(event.target.value)}
                     onKeyDown={(event) => {
+                        if (disabled) return;
                         if (event.key === 'Enter') {
                             event.preventDefault();
                             onSave();
@@ -76,6 +78,7 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
                 <button
                     type="button"
                     className="btn btn-sm btn-ghost btn-square text-success hover:bg-success/10"
+                    disabled={disabled}
                     aria-label={saveLabel}
                     onClick={onSave}
                 >
@@ -84,6 +87,7 @@ export const EditableTextField: React.FC<EditableTextFieldProps> = ({
                 <button
                     type="button"
                     className="btn btn-sm btn-ghost btn-square text-error hover:bg-error/10"
+                    disabled={disabled}
                     aria-label={cancelLabel}
                     onClick={onCancel}
                 >

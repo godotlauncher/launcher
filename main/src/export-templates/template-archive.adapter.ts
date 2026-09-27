@@ -49,18 +49,24 @@ export class TemplateArchiveAdapter {
      * @param archive - Job-owned local archive.
      * @param destination - New extraction directory.
      * @param signal - User cancellation.
+     * @param onProgress - Expanded bytes processed and total bytes.
      */
     async extract(
         archive: string,
         destination: string,
         signal: AbortSignal,
+        onProgress?: (completedBytes: number, totalBytes: number) => void,
     ): Promise<{ identity: string; contents: string }> {
         let manifest: ZipManifest;
         try {
             manifest = await this.archives.extractCheckedZip(
                 archive,
                 destination,
-                { signal, validateEntries: validateTemplateLayout },
+                {
+                    signal,
+                    validateEntries: validateTemplateLayout,
+                    ...(onProgress ? { onProgress } : {}),
+                },
             );
         } catch (error) {
             if (error instanceof ArchiveError) {

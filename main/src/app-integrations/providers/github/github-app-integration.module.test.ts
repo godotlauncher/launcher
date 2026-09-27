@@ -42,6 +42,7 @@ vi.mock('electron', () => ({
                             dataDir: '/data',
                             configDir: '/config',
                             projectDir: '/projects',
+                            templateDir: '/templates',
                             prefsPath: '/config/prefs.json',
                             releaseCachePath: '/config/releases.json',
                             installedReleasesCachePath:

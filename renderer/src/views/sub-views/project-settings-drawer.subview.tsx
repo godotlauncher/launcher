@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CopyBadge } from '../../components/ui/copy-badge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
+import { VerticalTabMenu } from '../../components/ui/vertical-tab-menu.component';
 import { useAlerts } from '../../hooks/alerts.hook';
 import { useProjects } from '../../hooks/projects.hook';
 import { useTemplateJobs } from '../export-templates/hooks/template-jobs.hook';
@@ -43,8 +44,17 @@ const tabs: ProjectSettingsTab[] = [
     'exportTemplates',
 ];
 
+const tabIcons = {
+    project: Settings,
+    sourceControl: GitBranch,
+    codeEditor: Code,
+    launch: Terminal,
+    exportTemplates: FileOutput,
+};
+
 /**
  * Renders the Project Settings drawer and coordinates its ordered save operation.
+ * Bounds template content to the available drawer body height.
  *
  * @param props - The active project and its update operations.
  * @returns The drawer element.
@@ -449,91 +459,39 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                 onSubmit={(event) => void submit(event)}
             >
                 <div className="flex min-h-0 flex-1">
-                    <div
-                        role="tablist"
-                        aria-orientation="vertical"
-                        aria-label={t('editProject.title')}
-                        className="flex w-48 shrink-0 flex-col gap-1 overflow-auto border-r border-base-content/10 p-3 sm:w-56"
-                    >
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab}
-                                type="button"
-                                role="tab"
-                                data-testid={`tabProjectSettings_${tab}`}
-                                aria-selected={activeTab === tab}
-                                className={clsx(
-                                    'flex items-center gap-3 rounded-md px-3 py-3 text-left text-sm hover:bg-base-content/5',
-                                    activeTab === tab &&
-                                        'bg-primary/10 text-primary font-semibold',
-                                )}
-                                tabIndex={activeTab === tab ? 0 : -1}
-                                onKeyDown={(event) => {
-                                    const delta =
-                                        event.key === 'ArrowDown'
-                                            ? 1
-                                            : event.key === 'ArrowUp'
-                                              ? -1
-                                              : 0;
-                                    if (!delta) return;
-                                    event.preventDefault();
-                                    const next =
-                                        tabs[
-                                            (tabs.indexOf(tab) +
-                                                delta +
-                                                tabs.length) %
-                                                tabs.length
-                                        ];
-                                    setActiveTab(next);
-                                    if (next === 'exportTemplates')
-                                        setTemplatesVisited(true);
-                                    document
-                                        .querySelector<HTMLButtonElement>(
-                                            `[data-testid="tabProjectSettings_${next}"]`,
-                                        )
-                                        ?.focus();
-                                }}
-                                onClick={() => {
-                                    setActiveTab(tab);
-                                    if (tab === 'exportTemplates')
-                                        setTemplatesVisited(true);
-                                }}
-                            >
-                                {(() => {
-                                    const Icon = {
-                                        project: Settings,
-                                        sourceControl: GitBranch,
-                                        codeEditor: Code,
-                                        launch: Terminal,
-                                        exportTemplates: FileOutput,
-                                    }[tab];
-                                    return (
-                                        <Icon
-                                            className="size-4 shrink-0"
-                                            aria-hidden="true"
-                                        />
-                                    );
-                                })()}
-                                <span className="min-w-0 flex-1">
-                                    {tab === 'exportTemplates'
-                                        ? t(
-                                              'common:app.navigation.exportTemplates',
-                                          )
-                                        : t(`editProject.tabs.${tab}`)}
-                                </span>
-                                {pendingTabs[tab] && (
-                                    <PendingChangesIndicator />
-                                )}
-                            </button>
-                        ))}
-                    </div>
+                    <VerticalTabMenu
+                        ariaLabel={t('editProject.title')}
+                        activeTab={activeTab}
+                        onActiveTabChange={(tab) => {
+                            setActiveTab(tab);
+                            if (tab === 'exportTemplates')
+                                setTemplatesVisited(true);
+                        }}
+                        items={tabs.map((tab) => ({
+                            value: tab,
+                            label:
+                                tab === 'exportTemplates'
+                                    ? t('common:app.navigation.exportTemplates')
+                                    : t(`editProject.tabs.${tab}`),
+                            icon: tabIcons[tab],
+                            testId: `tabProjectSettings_${tab}`,
+                            trailing: pendingTabs[tab] ? (
+                                <PendingChangesIndicator />
+                            ) : undefined,
+                        }))}
+                    />
                     <Drawer.Body className="flex min-w-0 flex-1 flex-col gap-4 text-base">
                         {savingInBackground && (
                             <p className="text-base-content/75" role="status">
                                 {t('editProject.actions.installingEditor')}
                             </p>
                         )}
-                        <fieldset className="flex min-w-0 flex-col gap-4">
+                        <fieldset
+                            className={clsx('flex min-w-0 flex-col gap-4', {
+                                'min-h-0 flex-1':
+                                    activeTab === 'exportTemplates',
+                            })}
+                        >
                             {form.formError && (
                                 <div
                                     className="alert alert-error alert-soft text-error-content dark:text-error"
@@ -662,7 +620,14 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                                 />
                             )}
                             {open && templatesVisited && project && (
-                                <div hidden={activeTab !== 'exportTemplates'}>
+                                <div
+                                    hidden={activeTab !== 'exportTemplates'}
+                                    className={
+                                        activeTab === 'exportTemplates'
+                                            ? 'flex min-h-0 flex-1 flex-col'
+                                            : undefined
+                                    }
+                                >
                                     <ProjectExportTemplatesSection
                                         key={project.path}
                                         ref={templateFiles}

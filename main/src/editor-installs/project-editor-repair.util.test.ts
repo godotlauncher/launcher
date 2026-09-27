@@ -335,6 +335,7 @@ describe('setProjectEditor', () => {
             mockNewRelease,
             mockOldRelease,
             'separate',
+            undefined,
         );
     });
 
@@ -356,6 +357,7 @@ describe('setProjectEditor', () => {
             path.resolve('/install/.editor_config/_COM1.data'),
             mockNewRelease,
             mockOldRelease,
+            undefined,
             undefined,
         );
     });

@@ -30,7 +30,7 @@ export type ProjectsSnapshot = {
 export function fromStoredProject(
     storedProject: StoredProjectDetails,
 ): ProjectDetails {
-    const { withVSCode, exportTemplateMode, ...project } = storedProject;
+    const { withVSCode, ...project } = storedProject;
 
     return {
         ...project,
@@ -45,7 +45,9 @@ export function fromStoredProject(
                 : withVSCode
                   ? 'vscode'
                   : null,
-        exportTemplateMode: normalizeExportTemplateMode(exportTemplateMode),
+        exportTemplateBuilds: normalizeTemplateBuilds(
+            storedProject.exportTemplateBuilds,
+        ),
         last_opened: toDate(storedProject.last_opened),
     };
 }
@@ -59,8 +61,8 @@ export function fromStoredProject(
 export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
     return {
         ...project,
-        exportTemplateMode: normalizeExportTemplateMode(
-            project.exportTemplateMode,
+        exportTemplateBuilds: normalizeTemplateBuilds(
+            project.exportTemplateBuilds,
         ),
         pinned_order: project.pinned
             ? normalizePinnedOrder(project.pinned_order)
@@ -249,18 +251,6 @@ function normalizePinnedOrder(value: number | undefined): number | undefined {
 }
 
 /**
- * Normalises the optional export-template preference from stored project data.
- *
- * @param value - Stored template preference.
- * @returns A supported preference, or undefined for automatic behaviour.
- */
-function normalizeExportTemplateMode(
-    value: unknown,
-): ProjectDetails['exportTemplateMode'] {
-    return value === 'shared' || value === 'separate' ? value : undefined;
-}
-
-/**
  * Converts one stored date value into a valid Date or null.
  *
  * @param value - Stored date value.
@@ -277,4 +267,23 @@ function toDate(value: Date | string | null | undefined): Date | null {
 
     const parsed = new Date(value);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/** Keeps version-specific selections portable and excludes malformed stored keys.
+ * @param value - Optional preferences from an existing project record.
+ */
+function normalizeTemplateBuilds(
+    value: unknown,
+): ProjectDetails['exportTemplateBuilds'] {
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+        return undefined;
+    return Object.fromEntries(
+        Object.entries(value).filter(
+            ([key, selection]) =>
+                /^\d+\.\d+(?:\.\d+)?\.[a-zA-Z][\w.-]*$/.test(key) &&
+                typeof selection === 'string' &&
+                (selection === 'official' ||
+                    /^[a-f0-9-]{36}$/i.test(selection)),
+        ),
+    );
 }

@@ -3,38 +3,19 @@ import * as path from 'node:path';
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import logger from 'electron-log';
 import { getCurrentAppConfig } from '../config/current-app-config.js';
+import { readImportedTemplates } from './imported-templates.store.js';
 import {
     connectEmptyTemplateFolder,
+    reserveTemplateConnection,
     resolveTemplateRoot,
     templateConnectionStatus,
 } from './template-files.util.js';
-
-// Protects late automatic work holding project snapshots from before a saved opt-out.
-const separateDirectories = new Set<string>();
-
-/** Remembers a successfully persisted opt-out for in-flight project snapshots.
- * @param editorDirectory - Editor environment whose preference was saved.
- */
-export function rememberSeparateTemplateDirectory(
-    editorDirectory: string,
-): void {
-    separateDirectories.add(templateDirectoryKey(editorDirectory));
-}
-
-/** Clears an opt-out after an explicit successful shared connection.
- * @param editorDirectory - Reconnected editor environment.
- */
-export function forgetSeparateTemplateDirectory(editorDirectory: string): void {
-    separateDirectories.delete(templateDirectoryKey(editorDirectory));
-}
-
-/** Normalises an editor environment key for the host filesystem.
- * @param editorDirectory - Editor directory to identify.
- */
-function templateDirectoryKey(editorDirectory: string): string {
-    const resolved = path.resolve(editorDirectory);
-    return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
-}
+import { projectOfficialTemplateRoot } from './template-paths.util.js';
+import {
+    disconnectImportedTemplateView,
+    projectTemplateBuilds,
+} from './template-projection.util.js';
+import { assertTemplateStorageAvailable } from './template-storage.service.js';
 
 /** Resolves production storage or the isolated development fixture root. */
 export function getSharedTemplateRoot(): string {
@@ -47,20 +28,29 @@ export function getSharedTemplateRoot(): string {
  * @param editorDirectory - Project editor directory.
  * @param release - Selected editor.
  * @param exportTemplateMode - Project template preference.
+ * @param selections - Saved per-version build choices.
+ * @param currentSetId - Current editor identity.
  */
 export async function connectProjectTemplates(
     editorDirectory: string,
     release: Pick<InstalledRelease, 'source'>,
     exportTemplateMode?: ProjectDetails['exportTemplateMode'],
+    selections?: ProjectDetails['exportTemplateBuilds'],
+    currentSetId?: string,
 ): Promise<void> {
-    if (
-        exportTemplateMode === 'separate' ||
-        separateDirectories.has(templateDirectoryKey(editorDirectory))
-    )
-        return;
-
+    await assertTemplateStorageAvailable(
+        release.source === 'custom' ? 'journal' : 'official',
+    );
+    const selected = currentSetId ? selections?.[currentSetId] : undefined;
+    const importedSelected = Boolean(
+        release.source !== 'custom' && selected && selected !== 'official',
+    );
+    if (importedSelected) await assertTemplateStorageAvailable('imported');
+    const releaseConnection = await reserveTemplateConnection();
     try {
         if (release.source === 'custom') {
+            await disconnectImportedTemplateView(editorDirectory);
+            if (exportTemplateMode === 'separate') return;
             const local = path.join(
                 editorDirectory,
                 'editor_data',
@@ -77,13 +67,63 @@ export async function connectProjectTemplates(
             }
             return;
         }
-        await connectEmptyTemplateFolder(
-            editorDirectory,
-            release,
-            getSharedTemplateRoot(),
-        );
-    } catch (error) {
-        if (release.source === 'custom') throw error;
-        logger.warn('Could not connect shared export templates', error);
+
+        try {
+            await connectEmptyTemplateFolder(
+                editorDirectory,
+                release,
+                getSharedTemplateRoot(),
+            );
+        } catch (error) {
+            logger.warn('Could not connect shared export templates', error);
+        }
+        const backing = projectOfficialTemplateRoot(editorDirectory);
+        if (
+            (await templateConnectionStatus(
+                backing,
+                getSharedTemplateRoot(),
+            )) === 'local' &&
+            (await fs.promises.readdir(backing)).length
+        )
+            return;
+        try {
+            await projectTemplateBuilds(
+                editorDirectory,
+                getSharedTemplateRoot(),
+                importedSelected
+                    ? await readImportedTemplates()
+                    : { schemaVersion: 1, builds: [] },
+                selections,
+                currentSetId,
+            );
+        } catch (error) {
+            const code = (error as NodeJS.ErrnoException).code;
+            if (!importedSelected && (code === 'EACCES' || code === 'EPERM')) {
+                const active = path.join(
+                    editorDirectory,
+                    'editor_data',
+                    'export_templates',
+                );
+                const status = await templateConnectionStatus(
+                    active,
+                    getSharedTemplateRoot(),
+                );
+                if (
+                    status === 'shared' ||
+                    status === 'missing' ||
+                    (status === 'local' &&
+                        !(await fs.promises.readdir(active)).length)
+                ) {
+                    logger.warn(
+                        'Could not connect shared export templates',
+                        error,
+                    );
+                    return;
+                }
+            }
+            throw error;
+        }
+    } finally {
+        releaseConnection();
     }
 }

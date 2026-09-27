@@ -65,6 +65,28 @@ export function isAbsoluteOnboardingPath(
     return trimmedValue.startsWith('/');
 }
 
+/** Compares two user-entered filesystem paths using host path case rules.
+ * @param left - First path to compare.
+ * @param right - Second path to compare.
+ * @param platform - Host platform identifier.
+ * @returns Whether both paths name the same requested location.
+ */
+export function areOnboardingPathsEqual(
+    left: string,
+    right: string,
+    platform: string,
+): boolean {
+    const normalise = (value: string) => {
+        const trimmed = value.trim();
+        const withoutTrailingSeparators = trimmed.replace(/[\\/]+$/, '');
+        const resolved = withoutTrailingSeparators || trimmed;
+        return platform === 'win32'
+            ? resolved.replace(/\//g, '\\').toLowerCase()
+            : resolved;
+    };
+    return normalise(left) === normalise(right);
+}
+
 export function applyOnboardingRecommendedLocations(
     preferences: UserPreferences,
     platform: string,

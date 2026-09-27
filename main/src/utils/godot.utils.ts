@@ -170,6 +170,7 @@ export async function removeProjectEditor(
  * @param release - Editor release to configure.
  * @param previousRelease - Previously configured editor release.
  * @param exportTemplateMode - Project template preference.
+ * @param selections - Saved per-version build choices.
  * @returns The configured editor launch path.
  */
 export async function SetProjectEditorRelease(
@@ -177,11 +178,14 @@ export async function SetProjectEditorRelease(
     release: InstalledRelease,
     previousRelease?: InstalledRelease,
     exportTemplateMode?: ProjectDetails['exportTemplateMode'],
+    selections?: ProjectDetails['exportTemplateBuilds'],
 ): Promise<LaunchPath> {
     await connectProjectTemplates(
         projectEditorPath,
         release,
         exportTemplateMode,
+        selections,
+        `${release.version.replace('-', '.')}${release.mono ? '.mono' : ''}`,
     );
     const scFilePath = path.resolve(projectEditorPath, '._sc_');
 

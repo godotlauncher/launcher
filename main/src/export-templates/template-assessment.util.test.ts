@@ -77,7 +77,7 @@ describe('project template assessment', () => {
             pending: false,
         });
     });
-    it('remembers intentional separation even when the local folder is missing', async () => {
+    it('offers previously dedicated empty folders for migration', async () => {
         vi.mocked(templateConnectionStatus).mockResolvedValue('missing');
         expect(
             await assessProjectTemplates(
@@ -85,10 +85,10 @@ describe('project template assessment', () => {
                 root,
                 true,
             ),
-        ).toMatchObject({ state: 'separate', pending: false });
+        ).toMatchObject({ state: 'ready', pending: true });
         expect(readTemplateTree).not.toHaveBeenCalled();
     });
-    it('reports a separate preference that disagrees with a shared link', async () => {
+    it('recognises a shared link despite a legacy dedicated preference', async () => {
         vi.mocked(templateConnectionStatus).mockResolvedValue('shared');
         expect(
             await assessProjectTemplates(
@@ -96,8 +96,8 @@ describe('project template assessment', () => {
                 root,
             ),
         ).toMatchObject({
-            state: 'blocked',
-            reason: 'preference-mismatch',
+            state: 'shared',
+            reason: 'connected',
             pending: false,
         });
     });
@@ -231,3 +231,8 @@ describe('project template assessment', () => {
         );
     });
 });
+
+vi.mock('./template-paths.util.js', () => ({
+    projectOfficialTemplateRoot: (editor: string) =>
+        path.join(editor, 'editor_data', 'export_templates'),
+}));

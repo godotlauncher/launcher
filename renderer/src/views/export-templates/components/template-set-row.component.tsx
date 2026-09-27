@@ -4,10 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { TemplateAction } from '../hooks/export-templates.hook';
 import { isTemplateJobFinished } from '../hooks/export-templates.hook';
-import { useTemplateMigration } from '../hooks/template-migration.hook';
 import { formatTemplateBytes } from '../template-format.util';
 import { TemplatePlatformBadges } from './template-platform-badges.component';
-import { TemplateReviewPanel } from './template-review.component';
 
 type Props = {
     set: ExportTemplateSet;
@@ -36,7 +34,6 @@ export function TemplateSetRow({
     onRemove,
     run,
 }: Props) {
-    const migration = useTemplateMigration();
     const { t, i18n } = useTranslation('exportTemplates');
     const active = !!job && !isTemplateJobFinished(job);
     const showJob = job && !['complete', 'cancelled'].includes(job.stage);
@@ -140,83 +137,57 @@ export function TemplateSetRow({
                 {installed && (
                     <TemplatePlatformBadges platforms={set.platforms} />
                 )}
-                {showJob &&
-                    ['downloading', 'error', 'review'].includes(job.stage) && (
-                        <div className="space-y-2">
-                            {job.stage === 'downloading' && (
-                                <>
-                                    <progress
-                                        className="progress progress-primary"
-                                        aria-label={t('download')}
-                                        max={job.totalBytes || 1}
-                                        value={
-                                            job.totalBytes
-                                                ? (job.receivedBytes ?? 0)
-                                                : undefined
-                                        }
-                                    />
-                                    <p className="text-sm text-base-content/70">
-                                        {formatTemplateBytes(
-                                            job.receivedBytes ?? 0,
-                                            i18n.language,
-                                        )}
-                                        {job.totalBytes
-                                            ? ` / ${formatTemplateBytes(job.totalBytes, i18n.language)}`
-                                            : ''}
-                                    </p>
-                                </>
-                            )}
-                            {job.error && (
-                                <p role="alert" className="text-sm text-error">
-                                    {t(
-                                        job.error.match(
-                                            /exportTemplates:([\w.]+)/,
-                                        )?.[1] ?? 'errors.failed',
-                                    )}
-                                </p>
-                            )}
-                            {job.stage === 'error' && (
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-ghost"
-                                    disabled={pending || recovery}
-                                    onClick={() =>
-                                        void run({
-                                            type: 'retry',
-                                            jobId: job.id,
-                                        })
+                {showJob && ['downloading', 'error'].includes(job.stage) && (
+                    <div className="space-y-2">
+                        {job.stage === 'downloading' && (
+                            <>
+                                <progress
+                                    className="progress progress-primary"
+                                    aria-label={t('download')}
+                                    max={job.totalBytes || 1}
+                                    value={
+                                        job.totalBytes
+                                            ? (job.receivedBytes ?? 0)
+                                            : undefined
                                     }
-                                >
-                                    {t('retry')}
-                                </button>
-                            )}
-                            {job.stage === 'review' &&
-                                job.review &&
-                                (!job.setIds?.length ||
-                                    job.setIds[0] === set.id) &&
-                                (job.projectPath ? (
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-primary"
-                                        onClick={migration.open}
-                                    >
-                                        {t('review')}
-                                    </button>
-                                ) : (
-                                    <TemplateReviewPanel
-                                        review={job.review}
-                                        pending={pending}
-                                        onApply={(decisions) =>
-                                            void run({
-                                                type: 'apply',
-                                                jobId: job.id,
-                                                decisions,
-                                            })
-                                        }
-                                    />
-                                ))}
-                        </div>
-                    )}
+                                />
+                                <p className="text-sm text-base-content/70">
+                                    {formatTemplateBytes(
+                                        job.receivedBytes ?? 0,
+                                        i18n.language,
+                                    )}
+                                    {job.totalBytes
+                                        ? ` / ${formatTemplateBytes(job.totalBytes, i18n.language)}`
+                                        : ''}
+                                </p>
+                            </>
+                        )}
+                        {job.error && (
+                            <p role="alert" className="text-sm text-error">
+                                {t(
+                                    job.error.match(
+                                        /exportTemplates:([\w.]+)/,
+                                    )?.[1] ?? 'errors.failed',
+                                )}
+                            </p>
+                        )}
+                        {job.stage === 'error' && (
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-ghost"
+                                disabled={pending || recovery}
+                                onClick={() =>
+                                    void run({
+                                        type: 'retry',
+                                        jobId: job.id,
+                                    })
+                                }
+                            >
+                                {t('retry')}
+                            </button>
+                        )}
+                    </div>
+                )}
                 {!!recoveryIds.length && (
                     <div className="space-y-2 border-t border-warning/30 pt-3">
                         <p className="text-sm text-warning">

@@ -125,6 +125,11 @@
             "selectEditorLocation": "Scegli il percorso degli editor",
             "browseProjectsLocation": "Cerca un percorso per i progetti",
             "browseEditorLocation": "Cerca un percorso per gli editor",
+            "importedTemplatesLocation": "Percorso dei modelli di esportazione importati",
+            "importedTemplatesLocationHelp": "Scegli dove archiviare i modelli di esportazione personalizzati importati.",
+            "selectImportedTemplatesLocation": "Scegli il percorso dei modelli di esportazione importati",
+            "browseImportedTemplatesLocation": "Cerca un percorso per i modelli di esportazione importati",
+            "movingImportedTemplates": "Spostamento dei modelli di esportazione importati: {{stage}}",
             "codeEditor": "Editor di codice predefinito",
             "codeEditorHelp": "Usato per aprire script e file da Godot Launcher. Puoi cambiarlo in seguito.",
             "noCodeEditor": "Nessuno",
@@ -161,6 +166,7 @@
             "directoryPicker": "Impossibile aprire il selettore di cartelle. Inserisci un percorso assoluto.",
             "absolutePath": "Inserisci un percorso assoluto per la cartella.",
             "saveSetup": "Impossibile salvare la configurazione. Le preferenze precedenti sono rimaste invariate.",
+            "importedTemplatesMove": "Impossibile spostare i modelli di esportazione importati. La configurazione iniziale è ancora incompleta. Riprova.",
             "finish": "Impossibile completare la configurazione iniziale. Controlla le scelte e riprova."
         }
     }

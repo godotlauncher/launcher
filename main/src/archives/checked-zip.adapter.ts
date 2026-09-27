@@ -140,6 +140,8 @@ export async function extractCheckedZip(
             throw new ArchiveError('space');
         signal.throwIfAborted();
         await fs.promises.mkdir(destination);
+        let completedBytes = 0;
+        options.onProgress?.(0, bytes);
         for (const entry of entries) {
             signal.throwIfAborted();
             const target = archiveChild(
@@ -162,6 +164,8 @@ export async function extractCheckedZip(
                 transform(chunk: Buffer, _encoding, callback) {
                     received += chunk.length;
                     checksum = crc32(chunk, checksum);
+                    completedBytes += chunk.length;
+                    options.onProgress?.(completedBytes, bytes);
                     callback(
                         received > entry.uncompressedSize
                             ? new ArchiveError('unsafe')

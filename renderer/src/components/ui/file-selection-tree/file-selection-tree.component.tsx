@@ -9,6 +9,7 @@ import type { FileSelectionNode } from './file-selection-tree.types';
 
 type FileSelectionTreeProps = {
     nodes: FileSelectionNode[];
+    defaultExpandedDepth?: number;
     selected: string[];
     onChange: (selected: string[]) => void;
     label: string;
@@ -22,10 +23,11 @@ type FileSelectionTreeProps = {
 };
 
 /** Displays a nested file chooser using keyboard-accessible disclosures and checkboxes.
- * @param props - Caller-owned hierarchy, selection and localised labels.
+ * @param props - Caller-owned hierarchy, selection, initial expansion depth and localised labels.
  */
 export function FileSelectionTree({
     nodes,
+    defaultExpandedDepth = 1,
     selected,
     onChange,
     label,
@@ -41,6 +43,7 @@ export function FileSelectionTree({
                     onChange={onChange}
                     labels={labels}
                     depth={0}
+                    defaultExpandedDepth={defaultExpandedDepth}
                 />
             ))}
         </ul>
@@ -48,7 +51,7 @@ export function FileSelectionTree({
 }
 
 /** Displays one file or expandable group with independent availability and selection.
- * @param props - Item, tree selection and nesting depth.
+ * @param props - Item, tree selection, nesting depth and initial expansion depth.
  */
 function FileSelectionRow({
     node,
@@ -56,11 +59,13 @@ function FileSelectionRow({
     onChange,
     labels,
     depth,
+    defaultExpandedDepth,
 }: Pick<FileSelectionTreeProps, 'selected' | 'onChange' | 'labels'> & {
     node: FileSelectionNode;
     depth: number;
+    defaultExpandedDepth: number;
 }) {
-    const [expanded, setExpanded] = useState(depth < 1);
+    const [expanded, setExpanded] = useState(depth < defaultExpandedDepth);
     const leaves = getFileLeaves(node);
     const missing = leaves.filter((file) => !file.available);
     const count = leaves.filter((file) => selected.includes(file.id)).length;
@@ -182,6 +187,7 @@ function FileSelectionRow({
                             onChange={onChange}
                             labels={labels}
                             depth={depth + 1}
+                            defaultExpandedDepth={defaultExpandedDepth}
                         />
                     ))}
                 </ul>

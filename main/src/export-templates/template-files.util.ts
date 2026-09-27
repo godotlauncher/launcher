@@ -4,6 +4,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import type { InstalledRelease, TemplateConnection } from '@shared/contracts';
 import { isPortablePathSegment as safeTemplateSegment } from '../utils/portable-path.util.js';
+import { projectOfficialTemplateRoot } from './template-paths.util.js';
 
 export { isPortablePathSegment as safeTemplateSegment } from '../utils/portable-path.util.js';
 
@@ -16,10 +17,12 @@ export type TemplateFile = {
 };
 let mutationActive = false;
 let templateConnectionsActive = 0;
+let templateOperationsActive = 0;
+let templateAccess: Promise<void> = Promise.resolve();
 
-/** Reports whether a shared-template commit is in progress. */
+/** Reports whether template writes are active or reserved by an operation. */
 export function areTemplatesMutating(): boolean {
-    return mutationActive;
+    return mutationActive || templateOperationsActive > 0;
 }
 /** Reserves shared-template writes.
  * @param active - Whether a transaction is running.
@@ -31,6 +34,48 @@ export function setTemplatesMutating(active: boolean): void {
 /** Reports whether an automatic project template connection is in progress. */
 export function areTemplateConnectionsActive(): boolean {
     return templateConnectionsActive > 0;
+}
+
+/** Waits for the previous owner before granting exclusive access to template paths. */
+async function reserveTemplateAccess(): Promise<() => void> {
+    const previous = templateAccess;
+    let release!: () => void;
+    templateAccess = new Promise<void>((resolve) => {
+        release = resolve;
+    });
+    await previous;
+    return release;
+}
+
+/** Serialises complete editor connections, including imported-build links.
+ * @returns An idempotent release function that must run even when connecting fails.
+ */
+export async function reserveTemplateConnection(): Promise<() => void> {
+    if (areTemplatesMutating()) throw new Error('exportTemplates:errors.busy');
+    templateConnectionsActive += 1;
+    const unlock = await reserveTemplateAccess();
+    let released = false;
+    return () => {
+        if (released) return;
+        released = true;
+        templateConnectionsActive -= 1;
+        unlock();
+    };
+}
+
+/** Reserves a whole template operation after any editor connections have finished.
+ * @returns An idempotent release function retained until commit, failure or cancellation.
+ */
+export async function reserveTemplateOperation(): Promise<() => void> {
+    templateOperationsActive += 1;
+    const unlock = await reserveTemplateAccess();
+    let released = false;
+    return () => {
+        if (released) return;
+        released = true;
+        templateOperationsActive -= 1;
+        unlock();
+    };
 }
 
 /** Resolves Godot's per-user template root.
@@ -262,7 +307,7 @@ export async function connectEmptyTemplateFolder(
     templateConnectionsActive += 1;
     try {
         const data = path.join(editorDirectory, 'editor_data');
-        const local = path.join(data, 'export_templates');
+        const local = projectOfficialTemplateRoot(editorDirectory);
         const parent = await templateLstat(data);
         if (parent && (!parent.isDirectory() || parent.isSymbolicLink()))
             return;

@@ -215,6 +215,11 @@ describe('configuration', () => {
             configDir: path.win32.resolve(windowsHome, `.${APP_INTERNAL_NAME}`),
             dataDir: path.win32.resolve(windowsHome, 'Godot', 'Editors'),
             projectDir: path.win32.resolve(windowsHome, 'Godot', 'Projects'),
+            templateDir: path.win32.resolve(
+                windowsHome,
+                'Godot',
+                'ExportTemplates',
+            ),
             prefsPath: path.win32.resolve(
                 windowsHome,
                 `.${APP_INTERNAL_NAME}`,
@@ -251,6 +256,11 @@ describe('configuration', () => {
             ),
             dataDir: path.posix.resolve('/home/user', 'Godot', 'Editors'),
             projectDir: path.posix.resolve('/home/user', 'Godot', 'Projects'),
+            templateDir: path.posix.resolve(
+                '/home/user',
+                'Godot',
+                'ExportTemplates',
+            ),
             prefsPath: path.posix.resolve(
                 '/home/user',
                 `.${APP_INTERNAL_NAME}`,

@@ -137,7 +137,7 @@ export function getTemplateFileTree(
     return nodes.flatMap(prune);
 }
 
-/** Identifies hidden entries and operating-system housekeeping files.
+/** Identifies known operating-system housekeeping files.
  * @param path - Relative package or local file path.
  */
 export function isTemplateMetadata(path: string): boolean {
@@ -145,15 +145,21 @@ export function isTemplateMetadata(path: string): boolean {
         .split('/')
         .some(
             (part) =>
-                part.startsWith('.') ||
+                part.startsWith('._') ||
                 [
+                    '.ds_store',
                     'thumbs.db',
                     'ehthumbs.db',
                     'ehthumbs_vista.db',
                     'desktop.ini',
                     '__macosx',
+                    '.trash',
+                    '.trashes',
+                    '.spotlight-v100',
+                    '.fseventsd',
                     '$recycle.bin',
                     'system volume information',
-                ].includes(part.toLowerCase()),
+                ].includes(part.toLowerCase()) ||
+                /^\.Trash-\d+$/.test(part),
         );
 }

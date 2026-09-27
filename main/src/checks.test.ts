@@ -394,6 +394,19 @@ config/icon="res://assets/icon.svg"
         expect(validatedProject.release.valid).toBe(true);
         expect(SetProjectEditorRelease).not.toHaveBeenCalled();
 
+        project.exportTemplateMode = 'shared';
+        project.exportTemplateBuilds = {
+            '4.2.stable': 'f62b4564-1e52-4b54-b740-876543210abc',
+        };
+        await checkProjectValid(project);
+        expect(SetProjectEditorRelease).toHaveBeenCalledWith(
+            path.dirname(project.launch_path),
+            project.release,
+            undefined,
+            project.exportTemplateMode,
+            project.exportTemplateBuilds,
+        );
+
         fs.rmSync(projectDir, { recursive: true, force: true });
         fs.rmSync(releaseDir, { recursive: true, force: true });
     });

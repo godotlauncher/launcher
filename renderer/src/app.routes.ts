@@ -8,6 +8,7 @@ export type View =
 export const settingsTabs = [
     'projects',
     'installs',
+    'exportTemplates',
     'appearance',
     'behavior',
     'codeEditors',

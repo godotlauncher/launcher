@@ -16,10 +16,13 @@ type SetupStepProps = {
     platform: string;
     projectsLocation: string;
     editorLocation: string;
+    importedTemplatesLocation: string;
     recommendedProjectsLocation?: string;
     recommendedEditorLocation?: string;
+    recommendedImportedTemplatesLocation?: string;
     projectsLocationError?: string;
     editorLocationError?: string;
+    importedTemplatesLocationError?: string;
     integrations: CodeEditorIntegrationSettings[];
     integrationsLoading: boolean;
     integrationsLoadFailed: boolean;
@@ -28,8 +31,10 @@ type SetupStepProps = {
     pending: boolean;
     onProjectsLocationChange: (value: string) => void;
     onEditorLocationChange: (value: string) => void;
+    onImportedTemplatesLocationChange: (value: string) => void;
     onProjectsLocationSelect: () => void;
     onEditorLocationSelect: () => void;
+    onImportedTemplatesLocationSelect: () => void;
     onCodeEditorChange: (value: CodeEditorId | null) => void;
     onWindowsSymlinksChange: (enabled: boolean) => void;
 };
@@ -38,10 +43,13 @@ export const SetupStep: React.FC<SetupStepProps> = ({
     platform,
     projectsLocation,
     editorLocation,
+    importedTemplatesLocation,
     recommendedProjectsLocation,
     recommendedEditorLocation,
+    recommendedImportedTemplatesLocation,
     projectsLocationError,
     editorLocationError,
+    importedTemplatesLocationError,
     integrations,
     integrationsLoading,
     integrationsLoadFailed,
@@ -50,8 +58,10 @@ export const SetupStep: React.FC<SetupStepProps> = ({
     pending,
     onProjectsLocationChange,
     onEditorLocationChange,
+    onImportedTemplatesLocationChange,
     onProjectsLocationSelect,
     onEditorLocationSelect,
+    onImportedTemplatesLocationSelect,
     onCodeEditorChange,
     onWindowsSymlinksChange,
 }) => {
@@ -112,6 +122,35 @@ export const SetupStep: React.FC<SetupStepProps> = ({
                     browseKind="directory"
                     browseLabel={t(
                         'welcome:onboarding.setup.browseEditorLocation',
+                    )}
+                    browseText={t('settings:codeEditors.drawer.path.browse')}
+                />
+                <PathField
+                    id="onboarding-imported-templates-location"
+                    testId="onboarding-imported-templates-location"
+                    label={t(
+                        'welcome:onboarding.setup.importedTemplatesLocation',
+                    )}
+                    labelAction={
+                        importedTemplatesLocation ===
+                        recommendedImportedTemplatesLocation ? (
+                            <span className="badge badge-ghost">
+                                {t('welcome:onboarding.setup.recommended')}
+                            </span>
+                        ) : undefined
+                    }
+                    help={t(
+                        'welcome:onboarding.setup.importedTemplatesLocationHelp',
+                    )}
+                    value={importedTemplatesLocation}
+                    onChange={onImportedTemplatesLocationChange}
+                    onSelect={onImportedTemplatesLocationSelect}
+                    error={importedTemplatesLocationError}
+                    disabled={pending}
+                    browseKind="directory"
+                    browseTestId="onboarding-browse-imported-templates-location"
+                    browseLabel={t(
+                        'welcome:onboarding.setup.browseImportedTemplatesLocation',
                     )}
                     browseText={t('settings:codeEditors.drawer.path.browse')}
                 />

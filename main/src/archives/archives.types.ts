@@ -12,5 +12,6 @@ export type ZipManifest = {
 /** Controls checked extraction without exposing backend-specific options. */
 export type CheckedZipOptions = {
     signal: AbortSignal;
+    onProgress?: (completedBytes: number, totalBytes: number) => void;
     validateEntries: (manifest: ZipManifest) => void;
 };

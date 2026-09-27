@@ -6,6 +6,7 @@ import { ArchivesService } from './archives.service.js';
 import { extractCheckedZip } from './checked-zip.adapter.js';
 
 vi.mock('@electron-internal/extract-zip', () => ({ default: vi.fn() }));
+vi.mock('@mariodebono/di', () => ({ Injectable: () => () => undefined }));
 vi.mock('./checked-zip.adapter.js', () => ({ extractCheckedZip: vi.fn() }));
 vi.mock('node:fs', () => ({ promises: { lstat: vi.fn(), readdir: vi.fn() } }));
 const service = new ArchivesService();

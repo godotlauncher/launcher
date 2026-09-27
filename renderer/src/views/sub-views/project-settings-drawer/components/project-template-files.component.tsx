@@ -30,7 +30,9 @@ type Props = {
     project: ProjectDetails;
     sets: ProjectTemplateSettings['sets'];
     selectedSetId: string;
+    buildSelections: Record<string, string>;
     disabled: boolean;
+    active?: boolean;
     onDirtyChange: (dirty: boolean) => void;
     onConfirmationChange: (open: boolean) => void;
 };
@@ -45,7 +47,7 @@ function changed(draft: Draft): boolean {
     );
 }
 
-/** Keeps file selections bound to their version while the chosen editor changes.
+/** Keeps version-specific drafts and saves only versions using Official templates.
  * @param props - Project collection, staged editor identity and drawer save handle.
  */
 export function ProjectTemplateFiles({
@@ -53,13 +55,16 @@ export function ProjectTemplateFiles({
     project,
     sets,
     selectedSetId,
+    buildSelections,
     disabled,
+    active = true,
     onDirtyChange,
     onConfirmationChange,
 }: Props) {
     const { t } = useTranslation('exportTemplates');
     const [drafts, setDrafts] = useState<Record<string, Draft>>({});
     const [expanded, setExpanded] = useState(selectedSetId);
+    useEffect(() => setExpanded(selectedSetId), [selectedSetId]);
     const [error, setError] = useState('');
     const [attempt, setAttempt] = useState(0);
     const [submitting, setSubmitting] = useState(false);
@@ -107,12 +112,17 @@ export function ProjectTemplateFiles({
      */
     const versionLabel = (id: string) =>
         `${id.replace(/\.mono$/, '')} - ${t(`editions.${id.endsWith('.mono') ? 'dotnet' : 'standard'}`)}`;
-    const dirty = !submitting && Object.values(drafts).some(changed);
+    const changedDrafts = Object.entries(drafts).filter(
+        ([id, draft]) =>
+            (buildSelections[id] ?? 'official') === 'official' &&
+            changed(draft),
+    );
+    const dirty = !submitting && changedDrafts.length > 0;
     useEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange]);
     const loaded = drafts[expanded]?.info;
     // biome-ignore lint/correctness/useExhaustiveDependencies: Explicit retries reload a failed selection.
     useEffect(() => {
-        if (!expanded || loaded || submitting) return;
+        if (!active || !expanded || loaded || submitting) return;
         let alive = true;
         setError('');
         let localOnly = false;
@@ -143,16 +153,14 @@ export function ProjectTemplateFiles({
         return () => {
             alive = false;
         };
-    }, [expanded, loaded, project.path, submitting, attempt]);
+    }, [active, expanded, loaded, project.path, submitting, attempt]);
     useImperativeHandle(ref, () => ({
         discard: () => setDrafts({}),
         submit: async () => {
             setSubmitting(true);
             onDirtyChange(false);
             try {
-                for (const [id, draft] of Object.entries(drafts).filter(
-                    ([, draft]) => changed(draft),
-                )) {
+                for (const [id, draft] of changedDrafts) {
                     setExpanded(id);
                     const previous = new Set(
                         (await exportTemplatesBridge.getJobs()).map(
@@ -170,7 +178,6 @@ export function ProjectTemplateFiles({
                         ).find(
                             (job) =>
                                 !previous.has(job.id) &&
-                                job.projectPath === project.path &&
                                 job.setIds?.includes(id),
                         );
                         if (job?.stage === 'complete') break;
@@ -216,17 +223,9 @@ export function ProjectTemplateFiles({
             'additional',
         ].map((key) => [key, t(`picker.${key}`)]),
     );
-    const ids = [
-        ...new Set(
-            [
-                ...sets.map((set) => set.id),
-                ...Object.keys(drafts),
-                selectedSetId,
-            ].filter(Boolean),
-        ),
-    ].sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+    const ids = selectedSetId ? [selectedSetId] : [];
     return (
-        <div className="flex flex-col gap-3">
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
             {deleteId && (
                 <Dialog
                     title={t('project.deleteTitle', {
@@ -292,9 +291,6 @@ export function ProjectTemplateFiles({
                     )}
                 </Dialog>
             )}
-            <p className="text-sm text-base-content/70">
-                {t('project.collectionDetail')}
-            </p>
             {ids.map((id) => {
                 const draft = drafts[id];
                 const files =
@@ -313,9 +309,9 @@ export function ProjectTemplateFiles({
                     <article
                         key={id}
                         aria-label={id}
-                        className="rounded-md border border-base-content/10 bg-base-content/2"
+                        className={`flex min-h-0 flex-col rounded-md border border-base-content/10 bg-base-content/2 ${expanded === id ? 'flex-1' : 'shrink-0'}`}
                     >
-                        <div className="flex items-center gap-2 pr-3">
+                        <div className="flex shrink-0 items-center gap-2 pr-3">
                             <button
                                 type="button"
                                 className="flex min-w-0 flex-1 items-center gap-3 p-3 text-left"
@@ -393,7 +389,7 @@ export function ProjectTemplateFiles({
                             )}
                         </div>
                         {expanded === id && (
-                            <div className="flex flex-col gap-3 border-t border-base-content/10 p-3">
+                            <div className="flex min-h-0 flex-1 flex-col gap-3 border-t border-base-content/10 p-3">
                                 {error && (
                                     <div
                                         role="alert"
@@ -426,8 +422,12 @@ export function ProjectTemplateFiles({
                                                 {t('picker.localOnly')}
                                             </p>
                                         )}
-                                        <fieldset disabled={disabled}>
+                                        <fieldset
+                                            disabled={disabled}
+                                            className="min-h-0 min-w-0 flex-1 overflow-auto"
+                                        >
                                             <FileSelectionTree
+                                                defaultExpandedDepth={0}
                                                 nodes={getTemplateFileTree(
                                                     draft.info.files.map(
                                                         (file) => file.path,
@@ -461,7 +461,7 @@ export function ProjectTemplateFiles({
                                         </fieldset>
                                         {!!removed && (
                                             <p className="text-sm text-warning">
-                                                {t('project.removalNotice')}
+                                                {t('picker.removalNotice')}
                                             </p>
                                         )}
                                         {!!(added || removed) && (

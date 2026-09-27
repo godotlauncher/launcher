@@ -122,6 +122,11 @@ suite('prefs.util', (_test) => {
                     `.${APP_INTERNAL_NAME}`,
                 ),
                 dataDir: path.win32.join(mockedHomeDir, 'Godot', 'Editors'),
+                templateDir: path.win32.join(
+                    mockedHomeDir,
+                    'Godot',
+                    'ExportTemplates',
+                ),
                 prefsPath: path.win32.join(
                     mockedHomeDir,
                     `.${APP_INTERNAL_NAME}`,
@@ -164,6 +169,9 @@ suite('prefs.util', (_test) => {
                     `/home/user/.${APP_INTERNAL_NAME}`,
                 ),
                 dataDir: path.posix.resolve(`/home/user/Godot/Editors`),
+                templateDir: path.posix.resolve(
+                    '/home/user/Godot/ExportTemplates',
+                ),
                 prefsPath: path.posix.resolve(
                     `/home/user/.${APP_INTERNAL_NAME}/prefs.json`,
                 ),

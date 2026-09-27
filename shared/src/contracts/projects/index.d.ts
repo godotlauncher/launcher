@@ -234,10 +234,11 @@ export type ProjectDetails = {
     config_version: 4 | 5;
     codeEditorId: CodeEditorId | null;
     /**
-     * Controls whether this project's export templates are automatically shared.
-     * Undefined preserves the existing automatic behaviour.
+     * Legacy storage preference retained while existing local collections are migrated.
      */
     exportTemplateMode?: 'shared' | 'separate';
+    /** Per-version selection: official or an imported build ID. Absence means Official. */
+    exportTemplateBuilds?: Record<string, string>;
     withGit: boolean;
     valid: boolean;
     invalid_reason?: ProjectInvalidReason;

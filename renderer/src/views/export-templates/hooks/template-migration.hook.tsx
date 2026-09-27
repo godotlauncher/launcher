@@ -77,10 +77,10 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
             });
     }, [projectLifecycle, refresh]);
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: Only lifecycle changes require a metadata rescan.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Project changes are refreshed after empty projects connect.
     useEffect(() => {
         void refresh();
-    }, [lifecycle, projectLifecycle, refresh]);
+    }, [lifecycle, refresh]);
     useEffect(() => {
         const focused = () => {
             void refresh();

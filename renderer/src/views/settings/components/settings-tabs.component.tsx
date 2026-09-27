@@ -1,12 +1,24 @@
-import clsx from 'clsx';
+import {
+    Code,
+    Download,
+    Folder,
+    FolderArchive,
+    Palette,
+    Plug,
+    RefreshCw,
+    SlidersHorizontal,
+    Wrench,
+} from 'lucide-react';
 import type React from 'react';
 import { type SettingsTab, settingsTabs } from '../../../app.routes';
+import { VerticalTabMenu } from '../../../components/ui/vertical-tab-menu.component';
 
 type Translate = (key: string) => string;
 
 const settingsTabTestIds: Record<SettingsTab, string> = {
     projects: 'tabProjects',
     installs: 'tabInstalls',
+    exportTemplates: 'tabExportTemplates',
     appearance: 'tabAppearance',
     behavior: 'tabBehavior',
     codeEditors: 'tabCodeEditors',
@@ -15,40 +27,44 @@ const settingsTabTestIds: Record<SettingsTab, string> = {
     updates: 'tabUpdates',
 };
 
+const settingsTabIcons = {
+    projects: Folder,
+    installs: Download,
+    exportTemplates: FolderArchive,
+    appearance: Palette,
+    behavior: SlidersHorizontal,
+    codeEditors: Code,
+    tools: Wrench,
+    connections: Plug,
+    updates: RefreshCw,
+};
+
 type SettingsTabsProps = {
     activeTab: SettingsTab;
     t: Translate;
     onActiveTabChange: (tab: SettingsTab) => void;
 };
 
+/**
+ * Renders the vertical settings menu with keyboard navigation.
+ * @param props - Active section, translated labels and navigation callback.
+ */
 export const SettingsTabs: React.FC<SettingsTabsProps> = ({
     activeTab,
     t,
     onActiveTabChange,
 }) => (
-    <div
-        role="tablist"
-        className="flex w-full shrink-0 flex-nowrap tabs tabs-lift overflow-x-auto"
-    >
-        {settingsTabs.map((tab) => (
-            <button
-                key={tab}
-                type="button"
-                data-testid={settingsTabTestIds[tab]}
-                onClick={() => onActiveTabChange(tab)}
-                role="tab"
-                aria-selected={activeTab === tab}
-                className={clsx('tab shrink-0 text-base', {
-                    'tab-active': activeTab === tab,
-                })}
-            >
-                {t(`tabs.${tab}`)}
-            </button>
-        ))}
-        <span
-            className="tab min-w-4 flex-1 pointer-events-none"
-            data-testid="settingsTabRailEnd"
-            aria-hidden="true"
-        />
-    </div>
+    <VerticalTabMenu
+        ariaLabel={t('title')}
+        activeTab={activeTab}
+        onActiveTabChange={onActiveTabChange}
+        items={settingsTabs.map((tab) => ({
+            value: tab,
+            label: t(`tabs.${tab}`),
+            icon: settingsTabIcons[tab],
+            id: `settings-tab-${tab}`,
+            panelId: 'settings-panel',
+            testId: settingsTabTestIds[tab],
+        }))}
+    />
 );

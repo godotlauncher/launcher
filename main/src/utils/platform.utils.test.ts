@@ -86,6 +86,11 @@ describe('platform.utils', () => {
                     `.${APP_INTERNAL_NAME}`,
                 ),
                 dataDir: path.win32.join(expectedHomeDir, 'Godot', 'Editors'),
+                templateDir: path.win32.join(
+                    expectedHomeDir,
+                    'Godot',
+                    'ExportTemplates',
+                ),
                 prefsPath: path.win32.join(
                     expectedHomeDir,
                     `.${APP_INTERNAL_NAME}`,
@@ -135,6 +140,11 @@ describe('platform.utils', () => {
                     `.${APP_INTERNAL_NAME}`,
                 ),
                 dataDir: path.posix.join(expectedHomeDir, 'Godot', 'Editors'),
+                templateDir: path.posix.join(
+                    expectedHomeDir,
+                    'Godot',
+                    'ExportTemplates',
+                ),
                 prefsPath: path.posix.join(
                     expectedHomeDir,
                     `.${APP_INTERNAL_NAME}`,

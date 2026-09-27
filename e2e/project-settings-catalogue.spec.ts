@@ -4,6 +4,7 @@ import { _electron, type ElectronApplication, expect, type Page, test } from '@p
 import type {
     InstalledRelease,
     ProjectDetails,
+    ProjectTemplateSettings,
     ReleaseInstallProgress,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -14,6 +15,72 @@ import { getMainWindow } from './splashscreen/getMainWindow';
 let electronApp: ElectronApplication;
 let page: Page;
 let fixtureHome: string;
+
+for (const missingBeforeOpen of [true, false]) {
+    test(`shows unavailable imported templates ${missingBeforeOpen ? 'on opening settings' : 'when files disappear before saving'}`, async () => {
+        await prepareAppWithStubbedData(page, electronApp, {
+            projects: [project], installedReleases: [installedRelease], availableReleases: [], availablePrereleases: [],
+        });
+        const id = `${installedRelease.version.replace('-', '.')}${installedRelease.mono ? '.mono' : ''}`;
+        const build = {
+            id: '2364e12d-c53c-4eaa-bac2-6d2c9bb0e3e1',
+            revision: 'db7c2070-0f41-473d-a935-580627aa1011',
+            directoryName: 'Cloud Build', label: 'Cloud Build', setId: id,
+            importedAt: '2026-09-01T00:00:00Z', archiveName: 'custom-templates.tpz',
+            files: ['web_release.zip'], sizeBytes: 100, available: !missingBeforeOpen,
+        };
+        const settings: ProjectTemplateSettings = {
+            projectPath: project.path, setId: id, status: 'shared', custom: false,
+            files: [], hasLocalFiles: false,
+            buildSelections: missingBeforeOpen ? { [id]: build.id } : {},
+            importedBuilds: [build], sets: [{ id, files: [] }],
+        };
+        await electronApp.evaluate(({ ipcMain }, value) => {
+            for (const [channel, data] of Object.entries({
+                'exportTemplates.getProjectSettings': value,
+                'exportTemplates.getProjectPackage': { token: 'unused-official', files: [], localFiles: [] },
+                'exportTemplates.getJobs': [],
+                'exportTemplates.getInventory': { root: '', totalBytes: 0, issues: [], recoveries: [], connections: [], job: null, sets: [] },
+                'exportTemplates.getImportedTemplates': { schemaVersion: 1, builds: [], usage: {}, references: {} },
+            })) {
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, async () => ({ success: true, data }));
+            }
+            ipcMain.removeHandler('exportTemplates.setProjectTemplateBuilds');
+            ipcMain.handle('exportTemplates.setProjectTemplateBuilds', async () => {
+                value.importedBuilds[0].available = false;
+                return { success: false, error: { type: 'Error', message: 'exportTemplates:library.missing' } };
+            });
+        }, settings);
+        await page.getByTestId('btnProjects').click();
+        await page.getByTestId('btnProjectSettings').click();
+        const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+        await drawer.getByTestId('tabProjectSettings_exportTemplates').click();
+        const section = drawer.getByTestId('projectExportTemplates');
+        const selector = section.locator('#project-template-build');
+        if (!missingBeforeOpen) {
+            await selector.click();
+            await page.getByRole('option', { name: /Cloud Build/ }).click();
+            await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+        }
+        await expect(section.getByRole('alert')).toHaveText('Some files for this imported build are missing. Replace the package in Export Templates, or choose another build.');
+        await expect(selector).toContainText('Cloud Build');
+        await expect(selector).toContainText('Unavailable');
+        await selector.click();
+        await expect(page.getByRole('option', { name: /Cloud Build.*Unavailable/ })).toBeDisabled();
+        await page.keyboard.press('Escape');
+        await expect(section.getByRole('button', { name: 'Open Export Templates', exact: true })).toBeEnabled();
+        if (missingBeforeOpen) {
+            await section.getByRole('button', { name: 'Open Export Templates', exact: true }).click();
+            await expect(drawer).toBeHidden();
+            await expect(page).toHaveURL(/export-templates/);
+        } else {
+            await selector.click();
+            await page.getByRole('option', { name: /^Official/ }).click();
+            await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+        }
+    });
+}
 
 const installedRelease = SAMPLE_INSTALLED_RELEASES[0];
 const project: ProjectDetails = {
@@ -281,6 +348,57 @@ test('retains staged settings across tabs and discards them when closed', async 
     await expect(windowed).toBeChecked({ checked: Boolean(project.open_windowed) });
     await expect.poll(readSettingsEvents).toEqual([]);
     await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+});
+
+test('supports keyboard navigation in both settings menus', async () => {
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: [project], installedReleases: [installedRelease],
+        availableReleases: [catalogueRelease], availablePrereleases: [],
+    });
+    await stubCatalogueEditorSave();
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+    const projectTab = drawer.getByRole('tab', { name: 'Project', exact: true });
+    const sourceControl = drawer.getByRole('tab', { name: 'Source Control', exact: true });
+    const exportTemplates = drawer.getByRole('tab', { name: 'Export Templates', exact: true });
+    await projectTab.focus();
+    await projectTab.press('ArrowDown');
+    await expect(sourceControl).toBeFocused();
+    await expect(sourceControl).toHaveAttribute('aria-selected', 'true');
+    await sourceControl.press('End');
+    await expect(exportTemplates).toBeFocused();
+    await expect(exportTemplates).toHaveAttribute('aria-selected', 'true');
+    await exportTemplates.press('ArrowDown');
+    await expect(projectTab).toBeFocused();
+    await projectTab.press('ArrowUp');
+    await expect(exportTemplates).toBeFocused();
+    await exportTemplates.press('Home');
+    await expect(projectTab).toBeFocused();
+    await expect(projectTab).toHaveAttribute('aria-selected', 'true');
+    await page.screenshot({ path: test.info().outputPath('project-settings-menu.png') });
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+
+    await page.getByTestId('btnSettings').click();
+    const projectsTab = page.getByTestId('tabProjects');
+    const installsTab = page.getByTestId('tabInstalls');
+    const updatesTab = page.getByTestId('tabUpdates');
+    await projectsTab.click();
+    await projectsTab.press('ArrowDown');
+    await expect(installsTab).toBeFocused();
+    await expect(installsTab).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby', 'settings-tab-installs');
+    await installsTab.press('End');
+    await expect(updatesTab).toBeFocused();
+    await expect(updatesTab).toHaveAttribute('aria-selected', 'true');
+    await updatesTab.press('ArrowDown');
+    await expect(projectsTab).toBeFocused();
+    await projectsTab.press('ArrowUp');
+    await expect(updatesTab).toBeFocused();
+    await updatesTab.press('Home');
+    await expect(projectsTab).toBeFocused();
+    await expect(projectsTab).toHaveAttribute('aria-selected', 'true');
+    await page.screenshot({ path: test.info().outputPath('settings-menu.png') });
 });
 
 test('marks changed fields and menu items and clears indicators when reverted', async () => {

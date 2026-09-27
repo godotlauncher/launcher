@@ -11,6 +11,7 @@ import {
 import { readTemplateTree } from './template-files.util.js';
 
 vi.mock('node:fs', () => ({ promises: { readFile: vi.fn() } }));
+vi.mock('@mariodebono/di', () => ({ Injectable: () => () => undefined }));
 vi.mock('../archives/archives.service.js', () => ({
     ArchivesService: class {},
 }));

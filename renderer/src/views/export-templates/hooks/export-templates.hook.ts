@@ -4,18 +4,10 @@ import { exportTemplatesBridge } from '../../../renderer.bridge';
 import { refreshTemplateJobs, useTemplateJobs } from './template-jobs.hook';
 
 export type TemplateAction =
-    | { type: 'import' }
     | { type: 'retry'; jobId: string }
     | { type: 'savePackage'; token: string; selected: string[] }
-    | { type: 'download'; releaseId: string; assetId: string }
-    | { type: 'migrate'; projectPath: string }
     | { type: 'remove'; setId: string }
     | { type: 'recover'; recoveryId: string }
-    | {
-          type: 'apply';
-          jobId: string;
-          decisions: Record<string, 'shared' | 'incoming'>;
-      }
     | { type: 'cancel'; jobId: string }
     | { type: 'openFolder' };
 
@@ -37,21 +29,10 @@ function perform(action: TemplateAction): Promise<void> {
                 action.token,
                 action.selected,
             );
-        case 'import':
-            return exportTemplatesBridge.importArchive();
-        case 'download':
-            return exportTemplatesBridge.download(
-                action.releaseId,
-                action.assetId,
-            );
-        case 'migrate':
-            return exportTemplatesBridge.prepareMigration(action.projectPath);
         case 'remove':
             return exportTemplatesBridge.remove(action.setId);
         case 'recover':
             return exportTemplatesBridge.recover(action.recoveryId);
-        case 'apply':
-            return exportTemplatesBridge.apply(action.jobId, action.decisions);
         case 'cancel':
             return exportTemplatesBridge.cancel(action.jobId);
         case 'openFolder':
@@ -59,7 +40,7 @@ function perform(action: TemplateAction): Promise<void> {
     }
 }
 
-/** Owns inventory refreshes, ordered job polling and retryable user actions. */
+/** Owns inventory refreshes, ordered job polling and user actions. */
 export function useExportTemplates() {
     const [inventory, setInventory] = useState<Omit<
         ExportTemplateInventory,
@@ -85,19 +66,11 @@ export function useExportTemplates() {
                   },
               ]
             : queuedJobs;
-    const job =
-        jobs.find(
-            (item) =>
-                !['queued', 'complete', 'cancelled', 'error'].includes(
-                    item.stage,
-                ),
-        ) ??
-        jobs[jobs.length - 1] ??
-        null;
-    const [error, setError] = useState('');
+    const [readError, setReadError] = useState('');
+    const [jobReadError, setJobReadError] = useState('');
+    const [actionError, setActionError] = useState('');
     const [pending, setPending] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [retryAction, setRetryAction] = useState<TemplateAction | null>(null);
     const inventoryRequest = useRef(0);
 
     /** Rescans inventory without publishing its potentially older job snapshot. */
@@ -106,10 +79,13 @@ export function useExportTemplates() {
         try {
             const { job: _job, ...result } =
                 await exportTemplatesBridge.getInventory();
-            if (request === inventoryRequest.current) setInventory(result);
+            if (request === inventoryRequest.current) {
+                setInventory(result);
+                setReadError('');
+            }
         } catch {
             if (request === inventoryRequest.current)
-                setError('exportTemplates:errors.read');
+                setReadError('exportTemplates:errors.read');
         } finally {
             if (request === inventoryRequest.current) setLoading(false);
         }
@@ -117,7 +93,13 @@ export function useExportTemplates() {
 
     /** Refreshes both disk inventory and live progress on entry, focus or request. */
     const refresh = useCallback(async () => {
-        await Promise.all([refreshTemplateJobs(), refreshInventory()]);
+        await Promise.all([
+            refreshTemplateJobs().then(
+                () => setJobReadError(''),
+                () => setJobReadError('exportTemplates:errors.read'),
+            ),
+            refreshInventory(),
+        ]);
     }, [refreshInventory]);
     useEffect(() => {
         const focus = () => {
@@ -138,24 +120,23 @@ export function useExportTemplates() {
         void refreshInventory();
     }, [lifecycle, refreshInventory]);
 
-    /** Runs an action while preserving the preparation inputs needed for retry.
+    /** Runs an explicit template action.
      * @param action - User-requested operation.
      */
     const run = async (action: TemplateAction) => {
         setPending(true);
-        setError('');
+        setActionError('');
         if (action.type === 'remove') setRemovingSet(action.setId);
-
-        if (!['apply', 'cancel', 'openFolder'].includes(action.type))
-            setRetryAction(action);
         try {
-            await perform(action);
+            try {
+                await perform(action);
+            } catch (failure) {
+                if (action.type !== 'recover') setActionError(String(failure));
+                void refreshTemplateJobs().catch(() => undefined);
+                return false;
+            }
             await refresh();
             return true;
-        } catch (failure) {
-            if (action.type !== 'recover') setError(String(failure));
-            void refreshTemplateJobs().catch(() => undefined);
-            return false;
         } finally {
             if (action.type === 'remove') setRemovingSet(null);
             setPending(false);
@@ -163,13 +144,11 @@ export function useExportTemplates() {
     };
     return {
         inventory,
-        job,
         jobs,
-        error,
+        error: actionError || readError || jobReadError,
         pending,
         loading,
         busy: pending || active,
-        retryAction,
         refresh,
         run,
     };

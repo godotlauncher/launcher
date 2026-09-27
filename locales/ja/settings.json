@@ -8,7 +8,8 @@
         "tools": "ツール",
         "codeEditors": "コードエディター",
         "connections": "接続",
-        "updates": "アップデート"
+        "updates": "アップデート",
+        "exportTemplates": "エクスポートテンプレート"
     },
     "appearance": {
         "theme": {

@@ -137,6 +137,17 @@ beforeEach(() => {
 });
 
 describe('checked ZIP extraction', () => {
+    it('reports expanded bytes from zero through the complete payload', async () => {
+        const onProgress = vi.fn();
+        await extractCheckedZip(archive, destination, {
+            signal: new AbortController().signal,
+            validateEntries: vi.fn(),
+            onProgress,
+        });
+        expect(onProgress).toHaveBeenNthCalledWith(1, 0, data.length);
+        expect(onProgress).toHaveBeenLastCalledWith(data.length, data.length);
+    });
+
     it('preflights expanded size and feature rules before writing, then closes the same handle', async () => {
         const validateEntries = vi.fn((manifest) => {
             expect(manifest.uncompressedBytes).toBe(data.length);

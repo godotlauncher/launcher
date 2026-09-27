@@ -41,6 +41,7 @@ export function resolveAppPaths(
     const configDir = pathModule.resolve(homedir, `.${APP_INTERNAL_NAME}`);
     const dataDir = pathModule.resolve(homedir, 'Godot', 'Editors');
     const projectDir = pathModule.resolve(homedir, 'Godot', 'Projects');
+    const templateDir = pathModule.resolve(homedir, 'Godot', 'ExportTemplates');
     const prefsPath = pathModule.resolve(configDir, PREFS_FILENAME);
     const releaseCachePath = pathModule.resolve(configDir, RELEASES_FILENAME);
     const prereleaseCachePath = pathModule.resolve(
@@ -60,6 +61,7 @@ export function resolveAppPaths(
         dataDir,
         configDir,
         projectDir,
+        templateDir,
         prefsPath,
         releaseCachePath,
         installedReleasesCachePath,

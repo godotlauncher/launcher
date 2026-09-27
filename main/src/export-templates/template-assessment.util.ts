@@ -12,6 +12,7 @@ import {
     templateConnectionStatus,
     templateLstat,
 } from './template-files.util.js';
+import { projectOfficialTemplateRoot } from './template-paths.util.js';
 
 /** Recognises housekeeping entries without treating arbitrary hidden files as disposable.
  * @param name - One directory entry.
@@ -62,9 +63,7 @@ export async function assessProjectTemplates(
         mode: project.exportTemplateMode,
         state: 'unavailable',
         reason: 'unreadable',
-        pending:
-            project.exportTemplateMode !== 'separate' &&
-            project.release.source !== 'custom',
+        pending: project.release.source !== 'custom',
         compared: false,
         provenance: 'unverified',
         setIds: [],
@@ -73,25 +72,12 @@ export async function assessProjectTemplates(
     };
     try {
         const local = project.launch_path
-            ? path.join(
-                  path.dirname(project.launch_path),
-                  'editor_data',
-                  'export_templates',
-              )
+            ? projectOfficialTemplateRoot(path.dirname(project.launch_path))
             : undefined;
         const connection = local
             ? await templateConnectionStatus(local, root)
             : undefined;
         result.connection = connection;
-        if (project.exportTemplateMode === 'separate') {
-            if (connection === 'error') return result;
-            result.state = connection === 'shared' ? 'blocked' : 'separate';
-            result.reason =
-                connection === 'shared'
-                    ? 'preference-mismatch'
-                    : 'kept-separate';
-            return result;
-        }
         if (project.release.source === 'custom') {
             result.state = 'separate';
             result.reason = 'custom-editor';

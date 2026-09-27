@@ -46,6 +46,7 @@ import { useTheme } from './hooks/theme.hook';
 import { useSplashscreenHandoff } from './splashscreen/splashscreen-handoff.hook';
 import { useTemplateActivity } from './views/export-templates/hooks/template-jobs.hook';
 import { TemplateMigrationProvider } from './views/export-templates/hooks/template-migration.hook';
+import { TemplateStorageProvider } from './views/export-templates/hooks/template-storage.hook';
 import { ExportTemplatesView } from './views/export-templates.view';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
@@ -81,9 +82,11 @@ function App() {
     }
 
     return (
-        <TemplateMigrationProvider>
-            <MainAppRoutes />
-        </TemplateMigrationProvider>
+        <TemplateStorageProvider>
+            <TemplateMigrationProvider>
+                <MainAppRoutes />
+            </TemplateMigrationProvider>
+        </TemplateStorageProvider>
     );
 }
 

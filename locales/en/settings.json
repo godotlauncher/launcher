@@ -3,6 +3,7 @@
     "tabs": {
         "projects": "Projects",
         "installs": "Installs",
+        "exportTemplates": "Export Templates",
         "appearance": "Appearance",
         "behavior": "Behavior",
         "tools": "Tools",

@@ -4,8 +4,10 @@ import {
 } from '@mariodebono/di-electron';
 import type {
     ExportTemplatesBridge,
+    RemoveImportedTemplateOptions,
     TemplateMigrationChoice,
     TemplateMigrationVersionChoices,
+    TemplateStorageKind,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ExportTemplatesService } from './export-templates.service.js';
@@ -18,6 +20,38 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
      * @param service - Template operations.
      */
     constructor(private readonly service: ExportTemplatesService) {}
+    /** Reads current storage locations and retained move progress. */
+    @Handler('getStorageSettings')
+    getStorageSettings() {
+        return this.service.getStorageSettings();
+    }
+    /** Reviews the exact destination and affected projects.
+     * @param kind - Store selected for relocation.
+     * @param destination - Exact physical directory.
+     */
+    @Handler('prepareStorageMove')
+    prepareStorageMove(kind: TemplateStorageKind, destination: string) {
+        return this.service.prepareStorageMove(kind, destination);
+    }
+    /** Starts the main-owned relocation job.
+     * @param token - Process-owned review token.
+     */
+    @Handler('startStorageMove')
+    startStorageMove(token: string) {
+        return this.service.startStorageMove(token);
+    }
+    /** Cancels preparation or copying.
+     * @param jobId - Active relocation job.
+     */
+    @Handler('cancelStorageMove')
+    cancelStorageMove(jobId: string) {
+        return this.service.cancelStorageMove(jobId);
+    }
+    /** Recovers an interrupted storage relocation. */
+    @Handler('recoverStorageMove')
+    recoverStorageMove() {
+        return this.service.recoverStorageMove();
+    }
     /** Reads project export template status.
      * @param projectPath - Registered project identity.
      * @param setId - Version selected in the drawer, if different from the saved editor.
@@ -25,13 +59,6 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     @Handler('getProjectSettings')
     getProjectSettings(projectPath: string, setId?: string) {
         return this.service.getProjectSettings(projectPath, setId);
-    }
-    /** Detaches a project with a local copy of its matching shared files.
-     * @param projectPath - Registered project identity.
-     */
-    @Handler('detachProject')
-    detachProject(projectPath: string) {
-        return this.service.detachProject(projectPath);
     }
     /** Loads a selection scoped to one separate project.
      * @param projectPath - Registered project identity.
@@ -69,24 +96,11 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     cancelTemplateInspection() {
         return this.service.cancelTemplateInspection();
     }
-    /** Remembers that a local project must not be connected automatically.
-     * @param projectPath - Registered project identity.
-     */
-    @Handler('keepProjectTemplatesSeparate')
-    keepProjectTemplatesSeparate(projectPath: string) {
-        return this.service.keepProjectTemplatesSeparate(projectPath);
-    }
     /** Delegates getInventory to the template service.
      */
     @Handler('getInventory')
     getInventory() {
         return this.service.getInventory();
-    }
-    /** Delegates getJob to the template service.
-     */
-    @Handler('getJob')
-    getJob() {
-        return this.service.getJob();
     }
     /** Returns active, queued and failed operations. */
     @Handler('getJobs')
@@ -123,19 +137,84 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     savePackage(token: string, selected: string[]) {
         return this.service.savePackage(token, selected);
     }
-    /** Delegates download to the template service.
-     * @param releaseId - Requested operation input.
-     * @param assetId - Requested operation input.
+    /** Delegates imported library operations.
      */
-    @Handler('download')
-    download(releaseId: string, assetId: string) {
-        return this.service.download(releaseId, assetId);
+    @Handler('getImportedTemplates')
+    getImportedTemplates() {
+        return this.service.getImportedTemplates();
     }
-    /** Delegates importArchive to the template service.
+    /** Delegates imported library operations.
      */
-    @Handler('importArchive')
-    importArchive() {
-        return this.service.importArchive();
+    @Handler('chooseTemplateImport')
+    chooseTemplateImport() {
+        return this.service.chooseTemplateImport();
+    }
+    /** Prepares a selected archive for review.
+     * @param token - Main-owned file selection token.
+     */
+    @Handler('prepareTemplateImport')
+    prepareTemplateImport(token: string) {
+        return this.service.prepareTemplateImport(token);
+    }
+    /** Reads preparation progress for the selected archive.
+     * @param token - Main-owned file selection token.
+     */
+    @Handler('getTemplateImportProgress')
+    getTemplateImportProgress(token: string) {
+        return this.service.getTemplateImportProgress(token);
+    }
+    /** Delegates imported library operations.
+     * @param token - Validated operation input.
+     */
+    @Handler('discardTemplateImport')
+    discardTemplateImport(token: string) {
+        return this.service.discardTemplateImport(token);
+    }
+    /** Delegates imported library operations.
+     * @param token - Validated operation input.
+     * @param label - Validated operation input.
+     * @param replaceId - Validated operation input.
+     */
+    @Handler('installTemplateImport')
+    installTemplateImport(token: string, label: string, replaceId?: string) {
+        return this.service.installTemplateImport(token, label, replaceId);
+    }
+    /** Delegates imported library operations.
+     * @param id - Validated operation input.
+     * @param label - Validated operation input.
+     */
+    @Handler('renameImportedTemplate')
+    renameImportedTemplate(id: string, label: string) {
+        return this.service.renameImportedTemplate(id, label);
+    }
+    /** Opens the stored files for one imported build.
+     * @param id - Imported build ID.
+     */
+    @Handler('openImportedTemplateFolder')
+    openImportedTemplateFolder(id: string) {
+        return this.service.openImportedTemplateFolder(id);
+    }
+    /** Delegates imported library operations.
+     * @param id - Validated operation input.
+     * @param options - Reviewed replacement and exact project references.
+     */
+    @Handler('removeImportedTemplate')
+    removeImportedTemplate(
+        id: string,
+        options?: RemoveImportedTemplateOptions,
+    ) {
+        return this.service.removeImportedTemplate(id, options);
+    }
+    /** Delegates imported library operations.
+     * @param projectPath - Validated operation input.
+     * @param choices - Validated operation input.
+     */
+    @Handler('setProjectTemplateBuilds')
+    setProjectTemplateBuilds(
+        projectPath: string,
+        choices: Record<string, string>,
+    ) {
+        return this.service.setProjectTemplateBuilds(projectPath, choices);
     }
     /** Delegates prepareMigration to the template service.
      * @param projectPath - Requested operation input.
@@ -153,14 +232,6 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
             choice,
             versionChoices,
         );
-    }
-    /** Delegates apply to the template service.
-     * @param jobId - Requested operation input.
-     * @param decisions - Requested operation input.
-     */
-    @Handler('apply')
-    apply(jobId: string, decisions: Record<string, 'shared' | 'incoming'>) {
-        return this.service.apply(jobId, decisions);
     }
     /** Delegates cancel to the template service.
      * @param jobId - Requested operation input.

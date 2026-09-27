@@ -1,238 +1,272 @@
-import * as fs from 'node:fs/promises';
-import * as os from 'node:os';
+import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { crc32, deflateRawSync } from 'node:zlib';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { PassThrough, Readable, Writable } from 'node:stream';
+import { createInflateRaw } from 'node:zlib';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type Entry, fromRandomAccessReaderPromise, type ZipFile } from 'yauzl';
 import {
     extractTemplateRange,
     openTemplateRange,
 } from './template-range.adapter.js';
 
-const directories: string[] = [];
-afterEach(async () => {
-    vi.unstubAllGlobals();
-    await Promise.all(
-        directories
-            .splice(0)
-            .map((directory) =>
-                fs.rm(directory, { recursive: true, force: true }),
-            ),
-    );
-});
+vi.mock('yauzl', () => ({
+    RandomAccessReader: class {},
+    fromRandomAccessReaderPromise: vi.fn(),
+}));
+vi.mock('node:fs', () => ({
+    promises: { mkdir: vi.fn() },
+    createWriteStream: vi.fn(),
+}));
+vi.mock('node:zlib', () => ({
+    crc32: vi.fn(() => 123),
+    createInflateRaw: vi.fn(() => new PassThrough()),
+}));
 
-/** Serves exact ranges from a generated archive without any network access.
- * @param archive - Test ZIP bytes.
- * @param status - Response status for range requests.
- */
-function serve(archive: Buffer, status = 206) {
-    const ranges: [number, number][] = [];
-    vi.stubGlobal(
-        'fetch',
-        vi.fn(async (_url: string, init: RequestInit) => {
-            const headers = {
-                etag: '"fixture"',
-                'content-length': String(archive.length),
-            };
-            if (init.method === 'HEAD') return new Response(null, { headers });
-            const range = new Headers(init.headers).get('range') ?? '';
-            const match = /bytes=(\d+)-(\d+)/.exec(range);
-            if (!match) throw new Error('Expected a range');
-            const start = Number(match[1]);
-            const end = Number(match[2]) + 1;
-            ranges.push([start, end]);
-            return new Response(new Uint8Array(archive.subarray(start, end)), {
-                status,
-                headers: {
-                    ...headers,
-                    'content-length': String(end - start),
-                    'content-range': `bytes ${start}-${end - 1}/${archive.length}`,
-                },
-            });
-        }),
+const url = 'https://example.test/templates.tpz';
+const size = 256 * 1024;
+const payload = Buffer.from('template bytes');
+const destination = path.resolve('staging');
+const fetchMock = vi.fn();
+let entries: Entry[];
+const zip = {
+    on: vi.fn(),
+    close: vi.fn(),
+    eachEntry: async function* () {
+        yield* entries;
+    },
+    openReadStreamPromise: vi.fn(),
+};
+
+beforeEach(() => {
+    vi.resetAllMocks();
+    vi.stubGlobal('fetch', fetchMock);
+    entries = [
+        {
+            fileName: 'templates/version.txt',
+            uncompressedSize: payload.length,
+            compressedSize: payload.length,
+            compressionMethod: 0,
+            crc32: 123,
+            externalFileAttributes: (0o100644 << 16) >>> 0,
+            generalPurposeBitFlag: 0,
+        } as Entry,
+    ];
+    vi.mocked(fromRandomAccessReaderPromise).mockResolvedValue(
+        zip as unknown as ZipFile,
     );
-    return ranges;
+    zip.openReadStreamPromise.mockImplementation(async () =>
+        Readable.from([payload]),
+    );
+    vi.mocked(fs.createWriteStream).mockImplementation(
+        () =>
+            new Writable({
+                write(_chunk, _encoding, callback) {
+                    callback();
+                },
+            }) as fs.WriteStream,
+    );
+    fetchMock.mockImplementation(async (_url: string, init: RequestInit) => {
+        if (init.method === 'HEAD')
+            return new Response(null, {
+                headers: { 'content-length': String(size), etag: '"fixture"' },
+            });
+        return new Response(new Uint8Array(128 * 1024), {
+            status: 206,
+            headers: {
+                'content-range': `bytes 0-131071/${size}`,
+                etag: '"fixture"',
+            },
+        });
+    });
+});
+afterEach(() => vi.unstubAllGlobals());
+
+/** Opens the public adapter and captures the reader passed to the mocked parser. */
+async function openReader() {
+    const controller = new AbortController();
+    await openTemplateRange(url, controller.signal);
+    const reader = vi.mocked(fromRandomAccessReaderPromise).mock
+        .calls[0][0] as unknown as {
+        _readStreamForRange: (start: number, end: number) => Readable;
+    };
+    return { reader, controller };
 }
 
-describe('remote template archive', () => {
-    it('indexes and extracts one chosen file without downloading the other platform payload', async () => {
-        const archive = storedZip({
-            'templates/version.txt': '4.7.2.stable',
-            'templates/linux_debug.x86_64': 'selected file',
-            'templates/macos.zip': 'x'.repeat(2 * 1024 * 1024),
+/** Consumes a stream so its completion and failures are observable.
+ * @param stream - Adapter output supplied to the parser.
+ */
+async function read(stream: Readable): Promise<Buffer> {
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    return Buffer.concat(chunks);
+}
+
+describe('remote template index', () => {
+    it('returns validated entries and their shared package prefix', async () => {
+        const result = await openTemplateRange(
+            url,
+            new AbortController().signal,
+        );
+        expect(result.index).toMatchObject({
+            url,
+            size,
+            prefix: 'templates/',
+            entries,
         });
-        const ranges = serve(archive);
-        const { zip, index } = await openTemplateRange(
-            'https://example.test/templates.tpz',
-            new AbortController().signal,
-        );
-        const directory = await fs.mkdtemp(
-            path.join(os.tmpdir(), 'template-range-'),
-        );
-        directories.push(directory);
-        try {
-            expect(index.entries.map((entry) => entry.fileName)).toEqual([
-                'templates/version.txt',
-                'templates/linux_debug.x86_64',
-                'templates/macos.zip',
-            ]);
-            await extractTemplateRange(
-                zip,
-                index.entries[1],
-                directory,
-                'linux_debug.x86_64',
-                new AbortController().signal,
-                vi.fn(),
-            );
-            expect(
-                await fs.readFile(
-                    path.join(directory, 'linux_debug.x86_64'),
-                    'utf8',
-                ),
-            ).toBe('selected file');
-            expect(await fs.readdir(directory)).toEqual(['linux_debug.x86_64']);
-            expect(
-                ranges.reduce((sum, [start, end]) => sum + end - start, 0),
-            ).toBeLessThan(archive.length / 2);
-        } finally {
-            zip.close();
-        }
+        expect(result.zip).toBe(zip);
+        expect(fs.createWriteStream).not.toHaveBeenCalled();
     });
-    it('inflates compressed files and reports compressed download bytes', async () => {
-        const content = 'template data'.repeat(1000);
-        serve(
-            storedZip(
-                { 'version.txt': '4.7.2.stable', 'macos.zip': content },
-                true,
-            ),
+
+    it('closes the parser when an entry escapes the package', async () => {
+        entries[0].fileName = '../escaped';
+        await expect(
+            openTemplateRange(url, new AbortController().signal),
+        ).rejects.toThrow('unsafe');
+        expect(zip.close).toHaveBeenCalledOnce();
+    });
+
+    it('rejects missing package identity before extraction', async () => {
+        entries[0].fileName = 'templates/macos.zip';
+        await expect(
+            openTemplateRange(url, new AbortController().signal),
+        ).rejects.toThrow('identity');
+        expect(zip.close).toHaveBeenCalledOnce();
+    });
+
+    it('rejects a redirect from the package URL to HTTP', async () => {
+        fetchMock.mockResolvedValueOnce(
+            new Response(null, {
+                status: 302,
+                headers: { location: 'http://example.test/templates.tpz' },
+            }),
         );
-        const { zip, index } = await openTemplateRange(
-            'https://example.test/a.tpz',
-            new AbortController().signal,
+
+        await expect(
+            openTemplateRange(url, new AbortController().signal),
+        ).rejects.toThrow('errors.package');
+
+        expect(fetchMock).toHaveBeenCalledOnce();
+        expect(fromRandomAccessReaderPromise).not.toHaveBeenCalled();
+    });
+});
+
+describe('remote template ranges', () => {
+    it('requests a bounded range with the validator and reuses its metadata block', async () => {
+        const { reader } = await openReader();
+        expect((await read(reader._readStreamForRange(10, 20))).length).toBe(
+            10,
         );
-        const directory = await fs.mkdtemp(
-            path.join(os.tmpdir(), 'template-deflate-'),
+        expect((await read(reader._readStreamForRange(30, 40))).length).toBe(
+            10,
         );
-        directories.push(directory);
-        let received = 0;
-        try {
-            await extractTemplateRange(
-                zip,
-                index.entries[1],
-                directory,
-                'macos.zip',
-                new AbortController().signal,
-                (bytes) => {
-                    received += bytes;
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock).toHaveBeenLastCalledWith(
+            url,
+            expect.objectContaining({
+                headers: {
+                    Range: 'bytes=0-131071',
+                    'If-Range': '"fixture"',
+                    'Accept-Encoding': 'identity',
                 },
-            );
-            expect(
-                await fs.readFile(path.join(directory, 'macos.zip'), 'utf8'),
-            ).toBe(content);
-            expect(received).toBe(index.entries[1].compressedSize);
-            expect(received).toBeLessThan(content.length);
-        } finally {
-            zip.close();
-        }
-    });
-    it('refuses a server that ignores Range instead of accepting a full download', async () => {
-        serve(storedZip({ 'version.txt': '4.7.2.stable' }), 200);
-        await expect(
-            openTemplateRange(
-                'https://example.test/a.tpz',
-                new AbortController().signal,
-            ),
-        ).rejects.toThrow('errors.range');
-    });
-    it('rejects traversal paths while indexing', async () => {
-        serve(
-            storedZip({ 'version.txt': '4.7.2.stable', '../escaped': 'bad' }),
+            }),
         );
-        await expect(
-            openTemplateRange(
-                'https://example.test/a.tpz',
-                new AbortController().signal,
-            ),
-        ).rejects.toThrow();
     });
-    it('rejects a damaged selected file before it can be committed', async () => {
-        const archive = storedZip({ 'version.txt': '4.7.2.stable' });
-        archive[30 + 'version.txt'.length] ^= 1;
-        serve(archive);
-        const { zip, index } = await openTemplateRange(
-            'https://example.test/a.tpz',
+
+    it('rejects a server that ignores the requested range', async () => {
+        const { reader } = await openReader();
+        fetchMock.mockResolvedValueOnce(
+            new Response('whole archive', { status: 200 }),
+        );
+        await expect(read(reader._readStreamForRange(0, 10))).rejects.toThrow(
+            'errors.range',
+        );
+    });
+
+    it.each([
+        {
+            reason: 'a changed validator',
+            range: `bytes 0-131071/${size}`,
+            etag: '"changed"',
+        },
+        {
+            reason: 'an incorrect content range',
+            range: `bytes 1-131072/${size}`,
+            etag: '"fixture"',
+        },
+    ])('rejects $reason in a partial response', async ({ range, etag }) => {
+        const { reader } = await openReader();
+        fetchMock.mockResolvedValueOnce(
+            new Response(new Uint8Array(128 * 1024), {
+                status: 206,
+                headers: { 'content-range': range, etag },
+            }),
+        );
+
+        await expect(read(reader._readStreamForRange(0, 10))).rejects.toThrow(
+            'errors.range',
+        );
+    });
+
+    it('honours cancellation before requesting another range', async () => {
+        const { reader, controller } = await openReader();
+        controller.abort();
+        await expect(
+            read(reader._readStreamForRange(0, 10)),
+        ).rejects.toMatchObject({ name: 'AbortError' });
+        expect(fetchMock).toHaveBeenCalledOnce();
+    });
+});
+
+describe('selected template extraction', () => {
+    it('writes only the selected entry and reports its transferred bytes', async () => {
+        const progress = vi.fn();
+        await extractTemplateRange(
+            zip as unknown as ZipFile,
+            entries[0],
+            destination,
+            'version.txt',
             new AbortController().signal,
+            progress,
         );
-        const directory = await fs.mkdtemp(
-            path.join(os.tmpdir(), 'template-crc-'),
+        expect(zip.openReadStreamPromise).toHaveBeenCalledWith(entries[0], {
+            decodeFileData: false,
+        });
+        expect(fs.createWriteStream).toHaveBeenCalledOnce();
+        expect(fs.createWriteStream).toHaveBeenCalledWith(
+            path.join(destination, 'version.txt'),
+            { flags: 'wx', mode: 0o644 },
         );
-        directories.push(directory);
-        try {
+        expect(progress).toHaveBeenCalledWith(payload.length);
+        expect(createInflateRaw).not.toHaveBeenCalled();
+    });
+
+    it('delegates compressed payloads to the inflater', async () => {
+        entries[0].compressionMethod = 8;
+        await extractTemplateRange(
+            zip as unknown as ZipFile,
+            entries[0],
+            destination,
+            'version.txt',
+            new AbortController().signal,
+            vi.fn(),
+        );
+        expect(createInflateRaw).toHaveBeenCalledOnce();
+    });
+
+    it.each(['crc32', 'compressedSize', 'uncompressedSize'] as const)(
+        'rejects a payload that does not match its %s',
+        async (field) => {
+            entries[0][field] += 1;
             await expect(
                 extractTemplateRange(
-                    zip,
-                    index.entries[0],
-                    directory,
+                    zip as unknown as ZipFile,
+                    entries[0],
+                    destination,
                     'version.txt',
                     new AbortController().signal,
                     vi.fn(),
                 ),
             ).rejects.toThrow('errors.archive');
-        } finally {
-            zip.close();
-        }
-    });
-    it('honours cancellation before requesting an archive range', async () => {
-        serve(storedZip({ 'version.txt': '4.7.2.stable' }));
-        const controller = new AbortController();
-        controller.abort();
-        await expect(
-            openTemplateRange('https://example.test/a.tpz', controller.signal),
-        ).rejects.toThrow();
-    });
+        },
+    );
 });
-
-/** Builds a small ZIP with regular files for archive and transaction scenarios.
- * @param files - Archive paths and UTF-8 contents.
- * @param compressed - Whether to exercise deflate payloads.
- */
-function storedZip(files: Record<string, string>, compressed = false): Buffer {
-    const localRecords: Buffer[] = [];
-    const centralRecords: Buffer[] = [];
-    let offset = 0;
-    for (const [filename, text] of Object.entries(files)) {
-        const name = Buffer.from(filename);
-        const data = Buffer.from(text);
-        const checksum = crc32(data);
-        const payload = compressed ? deflateRawSync(data) : data;
-        const local = Buffer.alloc(30);
-        local.writeUInt32LE(0x04034b50);
-        local.writeUInt16LE(20, 4);
-        local.writeUInt32LE(checksum, 14);
-        local.writeUInt16LE(compressed ? 8 : 0, 8);
-        local.writeUInt32LE(payload.length, 18);
-        local.writeUInt32LE(data.length, 22);
-        local.writeUInt16LE(name.length, 26);
-        localRecords.push(Buffer.concat([local, name, payload]));
-        const central = Buffer.alloc(46);
-        central.writeUInt32LE(0x02014b50);
-        central.writeUInt16LE(0x0314, 4);
-        central.writeUInt16LE(20, 6);
-        central.writeUInt32LE(checksum, 16);
-        central.writeUInt16LE(compressed ? 8 : 0, 10);
-        central.writeUInt32LE(payload.length, 20);
-        central.writeUInt32LE(data.length, 24);
-        central.writeUInt16LE(name.length, 28);
-        central.writeUInt32LE((0o100644 << 16) >>> 0, 38);
-        central.writeUInt32LE(offset, 42);
-        centralRecords.push(Buffer.concat([central, name]));
-        offset += local.length + name.length + payload.length;
-    }
-    const directory = Buffer.concat(centralRecords);
-    const end = Buffer.alloc(22);
-    end.writeUInt32LE(0x06054b50);
-    end.writeUInt16LE(centralRecords.length, 8);
-    end.writeUInt16LE(centralRecords.length, 10);
-    end.writeUInt32LE(directory.length, 12);
-    end.writeUInt32LE(offset, 16);
-    return Buffer.concat([...localRecords, directory, end]);
-}

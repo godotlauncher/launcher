@@ -24,6 +24,22 @@ const names: Record<string, string> = {
     visionos: 'visionOS',
     web: 'Web',
 };
+/** Detects platform badges from the filenames in an imported package.
+ * @param files - Relative template filenames.
+ */
+export function importedTemplatePlatforms(files: string[]): string[] {
+    return [
+        ...new Set(
+            files.flatMap((file) => {
+                const platform =
+                    /^(windows|linux|macos|osx|web|android|ios|visionos)/i.exec(
+                        file,
+                    )?.[1];
+                return platform ? [platform.toLowerCase()] : [];
+            }),
+        ),
+    ];
+}
 /** Identifies installed platforms with readable badges.
  * @param props - Platforms detected from local template files.
  */

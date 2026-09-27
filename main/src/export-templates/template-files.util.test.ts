@@ -266,3 +266,8 @@ describe('template folder totals', () => {
         });
     });
 });
+
+vi.mock('./template-paths.util.js', () => ({
+    projectOfficialTemplateRoot: (editor: string) =>
+        path.join(editor, 'editor_data', 'export_templates'),
+}));

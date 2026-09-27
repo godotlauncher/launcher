@@ -728,6 +728,7 @@ export class ProjectsService {
                 release,
                 currentProject.release,
                 currentProject.exportTemplateMode,
+                currentProject.exportTemplateBuilds,
             );
             const editorSettingsFilename = config.editorConfigFilename(
                 release.version_number,
@@ -1200,6 +1201,8 @@ export class ProjectsService {
             path.dirname(project.launch_path),
             project.release,
             project.exportTemplateMode,
+            project.exportTemplateBuilds,
+            `${project.release.version.replace('-', '.')}${project.release.mono ? '.mono' : ''}`,
         );
         if (areTemplatesMutating())
             throw new Error(t('exportTemplates:errors.busy'));

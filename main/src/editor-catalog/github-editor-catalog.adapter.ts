@@ -1,7 +1,6 @@
 import { Injectable } from '@mariodebono/di';
 import type { EditorCatalogProviderId } from '@shared/contracts';
 import logger from 'electron-log';
-import { z } from 'zod';
 import {
     EDITOR_CATALOG_PAGE_LIMIT,
     EDITOR_CATALOG_PAGE_SIZE,
@@ -11,25 +10,11 @@ import type {
     FetchedEditorCatalogProvider,
     GithubEditorRelease,
 } from './editor-catalog.types.js';
+import {
+    type GithubReleaseResponse,
+    githubReleasePageSchema,
+} from './github-editor-catalog.schema.js';
 import { mapGithubEditorRelease } from './github-editor-release.mapper.js';
-
-const GithubReleaseSchema = z.object({
-    id: z.number().int(),
-    name: z.string().nullable(),
-    tag_name: z.string(),
-    published_at: z.string().nullable(),
-    draft: z.boolean(),
-    prerelease: z.boolean(),
-    assets: z.array(
-        z.object({
-            id: z.number().int(),
-            name: z.string(),
-            browser_download_url: z.url(),
-            digest: z.string().nullable().optional(),
-            size: z.number().int().nonnegative().optional(),
-        }),
-    ),
-});
 
 /** Fetches editor releases from the configured GitHub providers. */
 @Injectable()
@@ -68,8 +53,7 @@ export class GithubEditorCatalogAdapter {
                 );
             }
 
-            const pageReleases = z
-                .array(GithubReleaseSchema)
+            const pageReleases = githubReleasePageSchema
                 .parse(await response.json())
                 .map(toGithubEditorRelease);
             const reachedBoundary =
@@ -124,7 +108,7 @@ export class GithubEditorCatalogAdapter {
  * @returns The release fields used by the catalog mapper.
  */
 function toGithubEditorRelease(
-    value: z.infer<typeof GithubReleaseSchema>,
+    value: GithubReleaseResponse,
 ): GithubEditorRelease {
     return {
         id: value.id,

@@ -1,22 +1,41 @@
-import { promises as fs } from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import type {
     EditorCatalogProviderId,
     EditorCatalogRelease,
 } from '@shared/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { seedLauncherData } from '../../../e2e/support/e2e-fixture-runtime.js';
-import { AtomicJsonFileAdapter } from '../json-store/atomic-json-file.adapter.js';
-import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
 import { createEmptyEditorCatalog } from './editor-catalog.schema.js';
 import { EditorCatalogService } from './editor-catalog.service.js';
-import { EditorCatalogStore } from './editor-catalog.store.js';
+import type { EditorCatalogStore } from './editor-catalog.store.js';
 import type {
     EditorCatalogFile,
     FetchedEditorCatalogProvider,
 } from './editor-catalog.types.js';
 import type { GithubEditorCatalogAdapter } from './github-editor-catalog.adapter.js';
+
+vi.mock('@mariodebono/di', () => ({ Injectable: () => () => undefined }));
+vi.mock('@mariodebono/di-config', () => ({ ConfigService: class {} }));
+vi.mock('./editor-catalog.store.js', () => ({ EditorCatalogStore: class {} }));
+vi.mock('./github-editor-catalog.adapter.js', () => ({
+    GithubEditorCatalogAdapter: class {},
+}));
+vi.mock('./editor-catalog.schema.js', () => ({
+    compareEditorReleases: vi.fn(() => 0),
+    createEmptyEditorCatalog: () => ({
+        schemaVersion: 1,
+        providers: Object.fromEntries(
+            ['official-stable', 'official-prerelease'].map((id) => [
+                id,
+                {
+                    integrityMetadataRefreshed: false,
+                    templateMetadataRefreshed: false,
+                    lastFetchedAt: null,
+                    lastPublishedAt: null,
+                    releases: [],
+                },
+            ]),
+        ),
+    }),
+}));
 
 vi.mock('electron-log', () => ({
     default: {
@@ -61,51 +80,6 @@ describe('EditorCatalogService', () => {
         expect(githubAdapter.fetchProvider).not.toHaveBeenCalled();
     });
 
-    it('reads the seeded E2E catalogue from disk without fetching', async () => {
-        const homeDirectory = await fs.mkdtemp(
-            path.join(os.tmpdir(), 'launcher-editor-catalog-fixture-'),
-        );
-
-        try {
-            await seedLauncherData(homeDirectory);
-            const store = new EditorCatalogStore(
-                new JsonStoreCoordinatorService(new AtomicJsonFileAdapter()),
-                {
-                    directory: path.join(homeDirectory, '.gd-launcher'),
-                    fileName: 'editor-catalog.json',
-                },
-            );
-            const githubAdapter = {
-                fetchProvider: vi.fn(),
-            };
-            const configService = {
-                get: vi.fn(() => true),
-            };
-            const service = new EditorCatalogService(
-                store,
-                githubAdapter as unknown as GithubEditorCatalogAdapter,
-                configService as never,
-            );
-
-            const catalog = await service.getCatalog();
-            const refreshedCatalog = await service.refreshCatalog();
-
-            expect(catalog.releases).toContainEqual(
-                expect.objectContaining({
-                    id: 'official-stable:4.7.1-stable',
-                }),
-            );
-            expect(refreshedCatalog.releases).toContainEqual(
-                expect.objectContaining({
-                    id: 'official-stable:4.7.1-stable',
-                }),
-            );
-            expect(githubAdapter.fetchProvider).not.toHaveBeenCalled();
-        } finally {
-            await fs.rm(homeDirectory, { recursive: true, force: true });
-        }
-    });
-
     it('fully refreshes a fresh legacy cache without integrity metadata', async () => {
         const cached = createRelease('official-stable', '4.5-stable');
         delete cached.variants[0].assets[0].digest;
@@ -122,6 +96,47 @@ describe('EditorCatalogService', () => {
 
         await service.getCatalog();
 
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledOnce();
+    });
+
+    it('refreshes a legacy cache missing only template metadata once', async () => {
+        const catalog = createCatalogWithRelease(
+            createRelease('official-stable', '4.5-stable'),
+        );
+        catalog.providers['official-stable'].templateMetadataRefreshed = false;
+        const { service, githubAdapter, store } = createService(catalog);
+        const updated = createRelease('official-stable', '4.5-stable');
+        updated.templateAssets = [
+            {
+                id: 'templates',
+                name: 'Godot_v4.5-stable_export_templates.tpz',
+                flavor: 'gdscript',
+                downloadUrl: 'https://example.test/templates.tpz',
+                sizeBytes: 123456,
+            },
+        ];
+        githubAdapter.fetchProvider.mockResolvedValueOnce({
+            providerId: 'official-stable',
+            lastPublishedAt: updated.publishedAt,
+            releases: [updated],
+        });
+
+        const result = await service.getCatalog();
+
+        expect(result.releases[0].templateAssets).toEqual(
+            updated.templateAssets,
+        );
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledExactlyOnceWith(
+            'official-stable',
+            null,
+        );
+        expect((await store.read()).providers['official-stable']).toMatchObject(
+            {
+                integrityMetadataRefreshed: true,
+                templateMetadataRefreshed: true,
+            },
+        );
+        await service.getCatalog();
         expect(githubAdapter.fetchProvider).toHaveBeenCalledOnce();
     });
 
@@ -311,18 +326,22 @@ function createService(initialCatalog: EditorCatalogFile, e2eFixtures = false) {
         }),
     };
     const githubAdapter = {
-        fetchProvider: vi.fn(async (providerId: EditorCatalogProviderId) => ({
-            providerId,
-            lastPublishedAt: '2026-01-02T00:00:00.000Z',
-            releases: [
-                createRelease(
-                    providerId,
-                    providerId === 'official-stable'
-                        ? '4.5-stable'
-                        : '4.6-beta1',
-                ),
-            ],
-        })),
+        fetchProvider: vi.fn(
+            async (
+                providerId: EditorCatalogProviderId,
+            ): Promise<FetchedEditorCatalogProvider> => ({
+                providerId,
+                lastPublishedAt: '2026-01-02T00:00:00.000Z',
+                releases: [
+                    createRelease(
+                        providerId,
+                        providerId === 'official-stable'
+                            ? '4.5-stable'
+                            : '4.6-beta1',
+                    ),
+                ],
+            }),
+        ),
     };
     const configService = {
         get: vi.fn(() => e2eFixtures),

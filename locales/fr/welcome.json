@@ -125,6 +125,11 @@
             "selectEditorLocation": "Choisir l'emplacement des éditeurs",
             "browseProjectsLocation": "Parcourir les dossiers pour les projets",
             "browseEditorLocation": "Parcourir les dossiers pour les éditeurs",
+            "importedTemplatesLocation": "Emplacement des modèles d'exportation importés",
+            "importedTemplatesLocationHelp": "Choisissez où sont stockés les modèles d'exportation personnalisés importés.",
+            "selectImportedTemplatesLocation": "Choisir l'emplacement des modèles d'exportation importés",
+            "browseImportedTemplatesLocation": "Parcourir les dossiers pour les modèles d'exportation importés",
+            "movingImportedTemplates": "Déplacement des modèles d'exportation importés : {{stage}}",
             "codeEditor": "Éditeur de code par défaut",
             "codeEditorHelp": "Utilisé pour ouvrir les scripts et les fichiers depuis Godot Launcher. Vous pourrez le modifier plus tard.",
             "noCodeEditor": "Aucun",
@@ -161,6 +166,7 @@
             "directoryPicker": "Le sélecteur de dossier n'a pas pu être ouvert. Saisissez plutôt un chemin absolu.",
             "absolutePath": "Saisissez un chemin de dossier absolu.",
             "saveSetup": "La configuration n'a pas pu être enregistrée. Vos préférences précédentes restent inchangées.",
+            "importedTemplatesMove": "Les modèles d'exportation importés n'ont pas pu être déplacés. Votre configuration initiale est encore incomplète. Réessayez.",
             "finish": "La configuration initiale n'a pas pu être terminée. Vérifiez vos choix et réessayez."
         }
     }

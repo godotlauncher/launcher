@@ -8,7 +8,8 @@
         "tools": "Araçlar",
         "codeEditors": "Kod Düzenleyicileri",
         "connections": "Bağlantılar",
-        "updates": "Güncellemeler"
+        "updates": "Güncellemeler",
+        "exportTemplates": "Dışa Aktarma Şablonları"
     },
     "appearance": {
         "theme": {

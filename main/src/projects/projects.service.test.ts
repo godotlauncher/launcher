@@ -807,6 +807,8 @@ describe('ProjectsService', () => {
             '/install/.editor_config/Game',
             installedRelease,
             previousRelease,
+            undefined,
+            undefined,
         );
         expect(result.projects?.[0]).toMatchObject({
             valid: true,
