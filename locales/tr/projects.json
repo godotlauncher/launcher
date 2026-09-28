@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "{{project}} projesini yeniden sırala",
-            "disabledSearch": "Sabitlenen projeleri yeniden sıralamak için aramayı temizleyin.",
+            "disabledSearch": "Sabitlenmiş projeleri yeniden sıralamak için filtreleri temizleyin.",
             "instructions": "Sabitlenen bir projeyi almak için Boşluk veya Enter tuşuna basın. Taşımak için ok tuşlarını, bırakmak için Boşluk veya Enter tuşunu, iptal etmek için Escape tuşunu kullanın.",
             "announcements": {
                 "pickedUp": "{{project}} alındı, {{count}} içinde {{position}}. konum.",
@@ -534,6 +534,13 @@
             "darkBlue": "Koyu mavi",
             "darkViolet": "Koyu mor",
             "darkFuchsia": "Koyu fuşya"
+        },
+        "filter": {
+            "search": "Etiket ara",
+            "noMatches": "Eşleşen etiket yok",
+            "clear": "Etiketleri temizle",
+            "clearAll": "Filtreleri temizle",
+            "saveFailed": "Etiket filtreleri kaydedilemedi."
         }
     }
 }

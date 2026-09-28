@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Riordina {{project}}",
-            "disabledSearch": "Cancella la ricerca per riordinare i progetti fissati.",
+            "disabledSearch": "Cancella i filtri per riordinare i progetti fissati.",
             "instructions": "Per prendere un progetto fissato, premi Spazio o Invio. Usa i tasti freccia per spostarlo, Spazio o Invio per rilasciarlo ed Esc per annullare.",
             "announcements": {
                 "pickedUp": "{{project}} selezionato, posizione {{position}} di {{count}}.",
@@ -534,6 +534,13 @@
             "darkBlue": "Blu scuro",
             "darkViolet": "Viola scuro",
             "darkFuchsia": "Fucsia scuro"
+        },
+        "filter": {
+            "search": "Cerca tag",
+            "noMatches": "Nessun tag corrispondente",
+            "clear": "Cancella tag",
+            "clearAll": "Cancella filtri",
+            "saveFailed": "Impossibile salvare i filtri dei tag."
         }
     }
 }

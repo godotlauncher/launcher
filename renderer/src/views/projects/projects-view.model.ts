@@ -1,4 +1,4 @@
-import type { ProjectDetails } from '@shared/contracts';
+import type { ProjectDetails, ProjectTagsSnapshot } from '@shared/contracts';
 
 export type ProjectSections = {
     newProjects: ProjectDetails[];
@@ -12,6 +12,7 @@ type GetProjectsViewStateOptions = {
     projectCount: number;
     textSearch: string;
     projectsLoading: boolean;
+    tagFilterActive?: boolean;
 };
 
 /**
@@ -25,12 +26,13 @@ export function getProjectsViewState({
     projectCount,
     textSearch,
     projectsLoading,
+    tagFilterActive = false,
 }: GetProjectsViewStateOptions): ProjectsViewState {
     if (projectsLoading) {
         return 'loading';
     }
 
-    if (projectCount > 0 || textSearch.trim().length > 0) {
+    if (projectCount > 0 || textSearch.trim().length > 0 || tagFilterActive) {
         return 'list';
     }
 
@@ -106,17 +108,28 @@ function sortPinnedProjects(projects: ProjectDetails[]): ProjectDetails[] {
     });
 }
 
+/** Filters by project name and any selected tag before retaining section ordering.
+ * @param projects - Registered projects.
+ * @param textSearch - Project name search.
+ * @param tagIds - Selected tag IDs, matched with OR semantics.
+ * @param assignments - Persisted project-to-tag assignments.
+ */
 export function getProjectSections(
     projects: ProjectDetails[],
     textSearch: string,
+    tagIds: readonly string[] = [],
+    assignments: ProjectTagsSnapshot['assignments'] = {},
 ): ProjectSections {
     const normalizedSearch = textSearch.trim().toLocaleLowerCase();
-    const filteredProjects =
-        normalizedSearch.length === 0
-            ? projects
-            : projects.filter((project) =>
-                  project.name.toLocaleLowerCase().includes(normalizedSearch),
-              );
+    const filteredProjects = projects.filter(
+        (project) =>
+            (!normalizedSearch ||
+                project.name.toLocaleLowerCase().includes(normalizedSearch)) &&
+            (tagIds.length === 0 ||
+                (assignments[project.path] ?? []).some((id) =>
+                    tagIds.includes(id),
+                )),
+    );
 
     return {
         newProjects: sortByLastAdded(

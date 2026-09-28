@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Réorganiser {{project}}",
-            "disabledSearch": "Effacez la recherche pour réorganiser les projets épinglés.",
+            "disabledSearch": "Effacez les filtres pour réorganiser les projets épinglés.",
             "instructions": "Pour saisir un projet épinglé, appuyez sur Espace ou Entrée. Utilisez les flèches pour le déplacer, Espace ou Entrée pour le déposer et Échap pour annuler.",
             "announcements": {
                 "pickedUp": "{{project}} saisi, position {{position}} sur {{count}}.",
@@ -534,6 +534,13 @@
             "darkBlue": "Bleu foncé",
             "darkViolet": "Violet foncé",
             "darkFuchsia": "Fuchsia foncé"
+        },
+        "filter": {
+            "search": "Rechercher des étiquettes",
+            "noMatches": "Aucune étiquette correspondante",
+            "clear": "Effacer les étiquettes",
+            "clearAll": "Effacer les filtres",
+            "saveFailed": "Impossible d’enregistrer les filtres d’étiquettes."
         }
     }
 }

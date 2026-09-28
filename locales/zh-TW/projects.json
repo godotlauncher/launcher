@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "重新排序 {{project}}",
-            "disabledSearch": "清除搜尋後可重新排序已釘選的專案。",
+            "disabledSearch": "清除篩選以重新排序釘選專案。",
             "instructions": "按空白鍵或 Enter 鍵選取已釘選的專案。使用方向鍵移動，按空白鍵或 Enter 鍵放下，按 Escape 鍵取消。",
             "announcements": {
                 "pickedUp": "已選取 {{project}}，位置 {{position}}，共 {{count}} 個。",
@@ -534,6 +534,13 @@
             "darkBlue": "深藍色",
             "darkViolet": "深紫色",
             "darkFuchsia": "深洋紅色"
+        },
+        "filter": {
+            "search": "搜尋標籤",
+            "noMatches": "沒有符合的標籤",
+            "clear": "清除標籤",
+            "clearAll": "清除篩選",
+            "saveFailed": "無法儲存標籤篩選。"
         }
     }
 }

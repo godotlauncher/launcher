@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Reorder {{project}}",
-            "disabledSearch": "Clear search to reorder pinned projects.",
+            "disabledSearch": "Clear filters to reorder pinned projects.",
             "instructions": "To pick up a pinned project, press Space or Enter. Use the arrow keys to move it, Space or Enter to drop it, and Escape to cancel.",
             "announcements": {
                 "pickedUp": "Picked up {{project}}, position {{position}} of {{count}}.",
@@ -534,6 +534,13 @@
             "darkBlue": "Dark blue",
             "darkViolet": "Dark violet",
             "darkFuchsia": "Dark fuchsia"
+        },
+        "filter": {
+            "search": "Search tags",
+            "noMatches": "No matching tags",
+            "clear": "Clear tags",
+            "clearAll": "Clear filters",
+            "saveFailed": "Could not save tag filters."
         }
     }
 }

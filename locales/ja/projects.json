@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "{{project}} の順序を変更",
-            "disabledSearch": "ピン留めしたプロジェクトを並べ替えるには検索をクリアしてください。",
+            "disabledSearch": "固定したプロジェクトを並べ替えるには、フィルターをクリアしてください。",
             "instructions": "ピン留めしたプロジェクトを選択するには Space または Enter キーを押します。矢印キーで移動し、Space または Enter キーで確定、Escape キーでキャンセルします。",
             "announcements": {
                 "pickedUp": "{{project}} を選択しました。{{count}} 件中 {{position}} 番目です。",
@@ -534,6 +534,13 @@
             "darkBlue": "ダークブルー",
             "darkViolet": "ダークバイオレット",
             "darkFuchsia": "ダークフクシア"
+        },
+        "filter": {
+            "search": "タグを検索",
+            "noMatches": "一致するタグがありません",
+            "clear": "タグをクリア",
+            "clearAll": "フィルターをクリア",
+            "saveFailed": "タグフィルターを保存できませんでした。"
         }
     }
 }

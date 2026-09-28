@@ -98,6 +98,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
     loading,
     searchQuery,
     onClearSearch,
+    clearSearchLabel,
     highlightedPinnedProjectPath,
     pinnedReorderingDisabled,
     onPinnedHighlightComplete,
@@ -288,7 +289,8 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                             className="btn btn-ghost text-base"
                             onClick={onClearSearch}
                         >
-                            {itemProps.t('installs:search.clear')}
+                            {clearSearchLabel ??
+                                itemProps.t('installs:search.clear')}
                         </button>
                     )}
                 </div>

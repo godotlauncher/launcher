@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Zmień kolejność {{project}}",
-            "disabledSearch": "Wyczyść wyszukiwanie, aby zmienić kolejność przypiętych projektów.",
+            "disabledSearch": "Wyczyść filtry, aby zmienić kolejność przypiętych projektów.",
             "instructions": "Aby podnieść przypięty projekt, naciśnij Spację lub Enter. Użyj klawiszy strzałek, aby go przenieść, Spacji lub Enter, aby go upuścić, oraz Escape, aby anulować.",
             "announcements": {
                 "pickedUp": "Podniesiono {{project}}, pozycja {{position}} z {{count}}.",
@@ -534,6 +534,13 @@
             "darkBlue": "Ciemnoniebieski",
             "darkViolet": "Ciemnofioletowy",
             "darkFuchsia": "Ciemna fuksja"
+        },
+        "filter": {
+            "search": "Szukaj tagów",
+            "noMatches": "Brak pasujących tagów",
+            "clear": "Wyczyść tagi",
+            "clearAll": "Wyczyść filtry",
+            "saveFailed": "Nie udało się zapisać filtrów tagów."
         }
     }
 }

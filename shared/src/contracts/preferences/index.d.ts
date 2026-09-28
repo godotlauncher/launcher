@@ -30,6 +30,8 @@ export type CodeEditorIntegrationPreferences = {
 export type UserPreferences = {
     /** Preferred Projects presentation; older preferences default to Cards. */
     projects_view_mode?: 'cards' | 'list';
+    /** Selected project tag IDs; older preferences default to no filter. */
+    projects_tag_filter?: string[];
     prefs_version: number;
     install_location: string;
     config_location: string;

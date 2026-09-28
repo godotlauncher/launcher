@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appRoutePaths } from '../app.routes';
+import { ProjectTagFilter } from '../components/project-tags/project-tag-filter.component';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
@@ -92,7 +93,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setLocalCreateOpen(open);
     };
 
-    const { snapshot: tagSnapshot } = useProjectTags();
+    const {
+        snapshot: tagSnapshot,
+        loadFailed: tagsLoadFailed,
+        reload: reloadTags,
+    } = useProjectTags();
+    const [savingTagFilter, setSavingTagFilter] = useState(false);
+    const savingTagFilterRef = useRef(false);
     const [focusTags, setFocusTags] = useState(false);
     const [editProjectFor, setEditProjectFor] = useState<ProjectDetails | null>(
         null,
@@ -122,6 +129,40 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const navigate = useNavigate();
 
     const { preferences, updatePreferences } = usePreferences();
+    const selectedFilterTags = (preferences?.projects_tag_filter ?? []).flatMap(
+        (id) => {
+            const tag = tagSnapshot?.tags.find((tag) => tag.id === id);
+            return tag ? [tag] : [];
+        },
+    );
+    const selectedFilterIds = selectedFilterTags.map((tag) => tag.id);
+    const savedFilterUnavailable =
+        !tagSnapshot &&
+        tagsLoadFailed &&
+        !!preferences?.projects_tag_filter?.length;
+    /** Saves tag filters while retaining the previous selection on failure.
+     * @param ids - Existing tags to match against projects.
+     */
+    const setTagFilter = async (ids: string[]): Promise<boolean> => {
+        if (
+            !preferences ||
+            savingTagFilterRef.current ||
+            savingViewModeRef.current
+        )
+            return false;
+        savingTagFilterRef.current = true;
+        setSavingTagFilter(true);
+        try {
+            await updatePreferences({ projects_tag_filter: ids });
+            return true;
+        } catch {
+            addAlert(t('common:error'), t('tags.filter.saveFailed'));
+            return false;
+        } finally {
+            savingTagFilterRef.current = false;
+            setSavingTagFilter(false);
+        }
+    };
     const projectViewMode: ProjectViewMode =
         preferences?.projects_view_mode === 'list' ? 'list' : 'cards';
     /**
@@ -132,6 +173,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         if (
             !preferences ||
             savingViewModeRef.current ||
+            savingTagFilterRef.current ||
             mode === projectViewMode
         )
             return;
@@ -408,9 +450,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         return updatedProject;
     };
 
-    const projectSections = getProjectSections(projects, textSearch);
+    const projectSections = getProjectSections(
+        projects,
+        textSearch,
+        selectedFilterIds,
+        tagSnapshot?.assignments,
+    );
     const viewState = getProjectsViewState({
         projectCount: projects.length,
+        tagFilterActive:
+            selectedFilterIds.length > 0 ||
+            (!tagSnapshot && !!preferences?.projects_tag_filter?.length),
         textSearch,
         projectsLoading: loading,
     });
@@ -446,7 +496,20 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         onViewModeChange={(mode) =>
                             void setProjectViewMode(mode)
                         }
-                        viewModeDisabled={savingViewMode || !preferences}
+                        viewModeDisabled={
+                            savingViewMode || savingTagFilter || !preferences
+                        }
+                        tagFilter={
+                            <ProjectTagFilter
+                                tags={tagSnapshot?.tags ?? []}
+                                selected={selectedFilterTags}
+                                disabled={!preferences || !tagSnapshot}
+                                saving={savingTagFilter || savingViewMode}
+                                loadFailed={tagsLoadFailed}
+                                onRetry={reloadTags}
+                                onChange={setTagFilter}
+                            />
+                        }
                         cardsViewLabel={t('view.cards')}
                         listViewLabel={t('view.list')}
                         title={t('title')}
@@ -482,143 +545,182 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 {!showEmptyState && (
                     <>
                         <ContentDivider />
-                        <ProjectsList
-                            searchQuery={textSearch}
-                            onClearSearch={() => setTextSearch('')}
-                            viewMode={projectViewMode}
-                            sections={projectSections}
-                            projectGitHubUrls={projectGitHubUrls}
-                            loading={loading}
-                            locale={
-                                i18n.resolvedLanguage ?? i18n.language ?? 'en'
-                            }
-                            busyProjects={busyProjects}
-                            codeEditorSettings={codeEditorSettings}
-                            highlightedPinnedProjectPath={
-                                highlightedPinnedProjectPath
-                            }
-                            pinnedReorderingDisabled={
-                                textSearch.trim().length > 0
-                            }
-                            onPinnedHighlightComplete={clearPinnedHighlight}
-                            onReorderPinnedProjects={async (
-                                orderedProjectPaths,
-                            ) => {
-                                try {
-                                    await reorderPinnedProjects(
-                                        orderedProjectPaths,
-                                    );
-                                } catch (error) {
-                                    showProjectActionError(error);
-                                    await refreshProjects();
+                        {savedFilterUnavailable ? (
+                            <div
+                                role="alert"
+                                className="flex flex-1 items-center justify-center gap-3"
+                            >
+                                <span>{t('tags.loadFailed')}</span>
+                                <button
+                                    type="button"
+                                    className="btn btn-ghost"
+                                    onClick={() => void reloadTags()}
+                                >
+                                    {t('tags.retry')}
+                                </button>
+                            </div>
+                        ) : (
+                            <ProjectsList
+                                searchQuery={textSearch}
+                                onClearSearch={() => {
+                                    if (selectedFilterIds.length) {
+                                        void setTagFilter([]).then((saved) => {
+                                            if (saved) setTextSearch('');
+                                        });
+                                    } else setTextSearch('');
+                                }}
+                                clearSearchLabel={
+                                    selectedFilterIds.length
+                                        ? t('tags.filter.clearAll')
+                                        : undefined
                                 }
-                            }}
-                            isInstalledRelease={isInstalledRelease}
-                            isProjectEditorDownloading={
-                                isProjectEditorDownloading
-                            }
-                            getDownloadableProjectEditor={(project) =>
-                                findDownloadableMissingProjectEditor(
-                                    project,
-                                    availableReleases,
-                                    availablePrereleases,
-                                )
-                            }
-                            onInstallRequiredProjectEditor={(
-                                project,
-                                release,
-                            ) =>
-                                void onInstallRequiredProjectEditor(
+                                viewMode={projectViewMode}
+                                sections={projectSections}
+                                projectGitHubUrls={projectGitHubUrls}
+                                loading={
+                                    loading ||
+                                    (!tagSnapshot &&
+                                        !tagsLoadFailed &&
+                                        !!preferences?.projects_tag_filter
+                                            ?.length)
+                                }
+                                locale={
+                                    i18n.resolvedLanguage ??
+                                    i18n.language ??
+                                    'en'
+                                }
+                                busyProjects={busyProjects}
+                                codeEditorSettings={codeEditorSettings}
+                                highlightedPinnedProjectPath={
+                                    highlightedPinnedProjectPath
+                                }
+                                pinnedReorderingDisabled={
+                                    textSearch.trim().length > 0 ||
+                                    selectedFilterIds.length > 0
+                                }
+                                onPinnedHighlightComplete={clearPinnedHighlight}
+                                onReorderPinnedProjects={async (
+                                    orderedProjectPaths,
+                                ) => {
+                                    try {
+                                        await reorderPinnedProjects(
+                                            orderedProjectPaths,
+                                        );
+                                    } catch (error) {
+                                        showProjectActionError(error);
+                                        await refreshProjects();
+                                    }
+                                }}
+                                isInstalledRelease={isInstalledRelease}
+                                isProjectEditorDownloading={
+                                    isProjectEditorDownloading
+                                }
+                                getDownloadableProjectEditor={(project) =>
+                                    findDownloadableMissingProjectEditor(
+                                        project,
+                                        availableReleases,
+                                        availablePrereleases,
+                                    )
+                                }
+                                onInstallRequiredProjectEditor={(
                                     project,
                                     release,
-                                )
-                            }
-                            onLaunchProject={(project) =>
-                                void onLaunchProject(project)
-                            }
-                            onOpenTerminal={(project) =>
-                                runProjectAction(async () => {
-                                    const result =
-                                        await terminalBridge.openProject(
-                                            project.path,
-                                        );
-                                    if (!result.success) {
-                                        if (
-                                            result.reason ===
-                                            'invalid-configuration'
-                                        ) {
-                                            addCustomConfirm(
-                                                t('common:warning'),
-                                                t(
-                                                    'terminal.errors.invalid-configuration',
-                                                ),
-                                                [
-                                                    {
-                                                        isCancel: true,
-                                                        typeClass: 'btn-ghost',
-                                                        text: t(
-                                                            'common:buttons.ok',
-                                                        ),
-                                                    },
-                                                    {
-                                                        typeClass:
-                                                            'btn-primary',
-                                                        text: t(
-                                                            'terminal.openSettings',
-                                                        ),
-                                                        onClick: () => {
-                                                            navigate(
-                                                                `${appRoutePaths.settingsTab('tools')}?terminal=true`,
-                                                            );
-                                                            return true;
-                                                        },
-                                                    },
-                                                ],
-                                                undefined,
-                                                'warning',
+                                ) =>
+                                    void onInstallRequiredProjectEditor(
+                                        project,
+                                        release,
+                                    )
+                                }
+                                onLaunchProject={(project) =>
+                                    void onLaunchProject(project)
+                                }
+                                onOpenTerminal={(project) =>
+                                    runProjectAction(async () => {
+                                        const result =
+                                            await terminalBridge.openProject(
+                                                project.path,
                                             );
-                                            return;
+                                        if (!result.success) {
+                                            if (
+                                                result.reason ===
+                                                'invalid-configuration'
+                                            ) {
+                                                addCustomConfirm(
+                                                    t('common:warning'),
+                                                    t(
+                                                        'terminal.errors.invalid-configuration',
+                                                    ),
+                                                    [
+                                                        {
+                                                            isCancel: true,
+                                                            typeClass:
+                                                                'btn-ghost',
+                                                            text: t(
+                                                                'common:buttons.ok',
+                                                            ),
+                                                        },
+                                                        {
+                                                            typeClass:
+                                                                'btn-primary',
+                                                            text: t(
+                                                                'terminal.openSettings',
+                                                            ),
+                                                            onClick: () => {
+                                                                navigate(
+                                                                    `${appRoutePaths.settingsTab('tools')}?terminal=true`,
+                                                                );
+                                                                return true;
+                                                            },
+                                                        },
+                                                    ],
+                                                    undefined,
+                                                    'warning',
+                                                );
+                                                return;
+                                            }
+                                            const tone =
+                                                result.reason ===
+                                                'launch-failed'
+                                                    ? 'error'
+                                                    : 'warning';
+                                            addAlert(
+                                                t(`common:${tone}`),
+                                                t(
+                                                    `terminal.errors.${result.reason}`,
+                                                ),
+                                                undefined,
+                                                tone,
+                                            );
                                         }
-                                        const tone =
-                                            result.reason === 'launch-failed'
-                                                ? 'error'
-                                                : 'warning';
-                                        addAlert(
-                                            t(`common:${tone}`),
-                                            t(
-                                                `terminal.errors.${result.reason}`,
-                                            ),
-                                            undefined,
-                                            tone,
-                                        );
-                                    }
-                                })
-                            }
-                            onProjectFoldersOptions={(event, project) => {
-                                event.stopPropagation();
-                                setProjectActionsMenu(null);
-                                setProjectFoldersMenu({
-                                    project,
-                                    githubUrl:
-                                        projectGitHubUrls.get(project.path) ??
-                                        null,
-                                    anchorRect: getActionMenuAnchorRect(
-                                        event.currentTarget,
-                                    ),
-                                });
-                            }}
-                            onTogglePinned={handleToggleProjectPinned}
-                            tagSnapshot={tagSnapshot}
-                            onProjectSettings={(project, tags = false) => {
-                                setFocusTags(tags);
-                                setEditProjectFor(project);
-                            }}
-                            onProjectMoreOptions={(event, project) => {
-                                setProjectFoldersMenu(null);
-                                void onProjectMoreOptions(event, project);
-                            }}
-                            t={t}
-                        />
+                                    })
+                                }
+                                onProjectFoldersOptions={(event, project) => {
+                                    event.stopPropagation();
+                                    setProjectActionsMenu(null);
+                                    setProjectFoldersMenu({
+                                        project,
+                                        githubUrl:
+                                            projectGitHubUrls.get(
+                                                project.path,
+                                            ) ?? null,
+                                        anchorRect: getActionMenuAnchorRect(
+                                            event.currentTarget,
+                                        ),
+                                    });
+                                }}
+                                onTogglePinned={handleToggleProjectPinned}
+                                tagSnapshot={tagSnapshot}
+                                onProjectSettings={(project, tags = false) => {
+                                    setFocusTags(tags);
+                                    setEditProjectFor(project);
+                                }}
+                                onProjectMoreOptions={(event, project) => {
+                                    setProjectFoldersMenu(null);
+                                    void onProjectMoreOptions(event, project);
+                                }}
+                                t={t}
+                            />
+                        )}
                     </>
                 )}
             </div>

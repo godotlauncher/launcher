@@ -1,6 +1,7 @@
 import type { ProjectTag } from '@shared/contracts';
 import { Tooltip } from '../ui/tooltip.component';
 import { projectTagColours } from './project-tag.model';
+import { ProjectTagPills } from './project-tag-pills.component';
 
 type ProjectTagIndicatorsProps = {
     tags: ProjectTag[];
@@ -20,32 +21,7 @@ export function ProjectTagIndicators({
     const names = tags.map((tag) => tag.name).join(', ');
     return (
         <Tooltip
-            tip={
-                <ul className="flex max-w-full flex-wrap gap-1.5 text-sm">
-                    {tags.map((tag) => (
-                        <li
-                            key={tag.id}
-                            className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-md border px-2 py-1"
-                            style={{
-                                backgroundColor: `color-mix(in srgb, ${projectTagColours[tag.colour]} 20%, transparent)`,
-                                borderColor: `color-mix(in srgb, ${projectTagColours[tag.colour]} 45%, transparent)`,
-                            }}
-                        >
-                            <span
-                                aria-hidden="true"
-                                className="size-2.5 shrink-0 rounded-full"
-                                style={{
-                                    backgroundColor:
-                                        projectTagColours[tag.colour],
-                                }}
-                            />
-                            <span className="min-w-0 whitespace-normal break-words text-left">
-                                {tag.name}
-                            </span>
-                        </li>
-                    ))}
-                </ul>
-            }
+            tip={<ProjectTagPills tags={tags} />}
             placement="top"
             className="shrink-0"
         >

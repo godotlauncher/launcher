@@ -18,6 +18,7 @@ export type ProjectsListProps = {
     loading: boolean;
     searchQuery?: string;
     onClearSearch?: () => void;
+    clearSearchLabel?: string;
     locale: string;
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];

@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Ibdel l-ordni ta' {{project}}",
-            "disabledSearch": "Neħħi t-tfittxija biex tibdel l-ordni tal-proġetti mwaħħlin.",
+            "disabledSearch": "Neħħi l-filtri biex tibdel l-ordni tal-proġetti mwaħħla.",
             "instructions": "Biex taqbad proġett imwaħħal, agħfas Space jew Enter. Uża l-vleġeġ biex tmexxih, Space jew Enter biex tpoġġih, u Escape biex tikkanċella.",
             "announcements": {
                 "pickedUp": "Inqabad {{project}}, pożizzjoni {{position}} minn {{count}}.",
@@ -534,6 +534,13 @@
             "darkBlue": "Blu skur",
             "darkViolet": "Vjola skur",
             "darkFuchsia": "Fuksja skura"
+        },
+        "filter": {
+            "search": "Fittex tikketti",
+            "noMatches": "Ebda tikketta taqbel",
+            "clear": "Neħħi t-tikketti",
+            "clearAll": "Neħħi l-filtri",
+            "saveFailed": "Ma setgħux jiġu ssejvjati l-filtri tat-tikketti."
         }
     }
 }
