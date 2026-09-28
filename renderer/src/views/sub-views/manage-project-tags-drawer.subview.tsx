@@ -93,7 +93,10 @@ function TagForm({ tag, tags, usage, save, remove }: TagFormProps) {
         if (!tag || !remove || busy.current) return;
         addCustomConfirm(
             t('tags.manage.deleteTitle', { name: tag.name }),
-            t('tags.manage.deleteDescription'),
+            <div className="flex flex-col gap-2">
+                <p>{t('tags.manage.deleteDescription')}</p>
+                <p>{t('tags.manage.usage', { count: usage ?? 0 })}</p>
+            </div>,
             [
                 {
                     isCancel: true,

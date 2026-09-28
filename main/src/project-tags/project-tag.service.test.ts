@@ -61,6 +61,20 @@ describe('ProjectTagService', () => {
         expect(await store.snapshot()).toEqual(result);
     });
 
+    it('rejects stale drafts after deletion without recreating tags or partially saving new ones', async () => {
+        const initial = await service.setProjectTags(projectPath, [
+            { name: 'Art' },
+        ]);
+        const deleted = await service.deleteTag(initial.tags[0].id);
+        await expect(
+            service.setProjectTags(projectPath, [
+                { name: 'New draft' },
+                { id: initial.tags[0].id },
+            ]),
+        ).rejects.toMatchObject({ code: 'unknown-tag' });
+        expect(await store.snapshot()).toEqual(deleted);
+    });
+
     it('creates unused catalogue tags and preserves assignments when renaming and recolouring', async () => {
         const unused = await service.saveTag(null, '  Art  ', 4);
         expect(unused.tags).toMatchObject([{ name: 'Art', colour: 4 }]);
