@@ -196,9 +196,8 @@ export function ProjectTagColourPicker({
                                     await result;
                                     window.requestAnimationFrame(() => {
                                         if (
-                                            trigger.current?.closest(
-                                                ':popover-open',
-                                            )
+                                            trigger.current?.checkVisibility() &&
+                                            !trigger.current.disabled
                                         )
                                             trigger.current.focus({
                                                 preventScroll: true,

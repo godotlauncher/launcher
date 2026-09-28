@@ -82,6 +82,7 @@ test('manages catalogue tags without changing project membership', async () => {
     await row.getByRole('button', { name: 'Colour for In progress', exact: true }).click();
     await page.getByRole('option', { name: 'Blue', exact: true }).click();
     await expect.poll(async () => (await readTags()).tags[0].colour).toBe(7);
+    await expect(row.getByRole('button', { name: 'Colour for In progress', exact: true })).toBeFocused();
     await expect(row.getByRole('textbox')).toHaveValue('In progress');
     await row.getByRole('button', { name: 'Save', exact: true }).click();
     row = drawer.getByRole('form', { name: 'In progress', exact: true });
