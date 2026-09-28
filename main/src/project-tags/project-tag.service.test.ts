@@ -41,6 +41,70 @@ describe('ProjectTagService', () => {
         projects.list.mockReset();
     });
 
+    it('deletes a tag and only its memberships, preserving other and unused tags', async () => {
+        const initial = await service.setProjectTags(projectPath, [
+            { name: 'Art' },
+            { name: 'Music' },
+        ]);
+        const id = initial.tags[0].id;
+        await service.setProjectTags(otherPath, [{ id }]);
+        const unused = await service.saveTag(null, 'Unused', 2);
+        const result = await service.deleteTag(id);
+        expect(result.tags).toEqual(unused.tags.slice(1));
+        expect(result.assignments).toEqual({
+            [projectPath]: [initial.tags[1].id],
+        });
+        expect(await store.snapshot()).toEqual(result);
+        await expect(service.deleteTag(id)).rejects.toMatchObject({
+            code: 'unknown-tag',
+        });
+        expect(await store.snapshot()).toEqual(result);
+    });
+
+    it('creates unused catalogue tags and preserves assignments when renaming and recolouring', async () => {
+        const unused = await service.saveTag(null, '  Art  ', 4);
+        expect(unused.tags).toMatchObject([{ name: 'Art', colour: 4 }]);
+        expect(unused.assignments).toEqual({});
+        const id = unused.tags[0].id;
+        await service.setProjectTags(projectPath, [{ id }]);
+        const assigned = await service.setProjectTags(otherPath, [{ id }]);
+        const changed = await service.saveTag(id, 'Artwork', 7);
+        expect(changed.tags).toEqual([{ id, name: 'Artwork', colour: 7 }]);
+        expect(changed.assignments).toEqual(assigned.assignments);
+        expect(await store.snapshot()).toEqual(changed);
+    });
+
+    it('rejects duplicate catalogue names atomically, including concurrent creation', async () => {
+        const first = await service.saveTag(null, 'Art', 0);
+        const second = await service.saveTag(null, 'Music', 1);
+        await expect(
+            service.saveTag(second.tags[1].id, ' ART ', 2),
+        ).rejects.toMatchObject({ code: 'duplicate-name' });
+        expect(await store.snapshot()).toEqual(second);
+        await service.saveTag(first.tags[0].id, 'ART', 3);
+        const results = await Promise.allSettled([
+            service.saveTag(null, 'New', 0),
+            service.saveTag(null, 'new', 1),
+        ]);
+        expect(
+            results.filter((result) => result.status === 'fulfilled'),
+        ).toHaveLength(1);
+        expect((await store.snapshot()).tags).toHaveLength(3);
+    });
+
+    it('rejects invalid catalogue edits without writes', async () => {
+        await expect(service.saveTag(null, ' ', 0)).rejects.toMatchObject({
+            code: 'blank-name',
+        });
+        await expect(service.saveTag(null, 'Art', 30)).rejects.toMatchObject({
+            code: 'invalid-colour',
+        });
+        await expect(
+            service.saveTag('missing', 'Art', 0),
+        ).rejects.toMatchObject({ code: 'unknown-tag' });
+        expect(await store.snapshot()).toEqual({ tags: [], assignments: {} });
+    });
+
     it('trims, reuses case-insensitive names, and deduplicates assignments', async () => {
         const first = await service.setProjectTags(projectPath, [
             { name: '  Art  ' },

@@ -16,6 +16,12 @@ import { projectTagsBridge, subscribeAppEvent } from '../renderer.bridge';
 type ProjectTagsContextValue = {
     snapshot: ProjectTagsSnapshot | null;
     loadFailed: boolean;
+    deleteTag: (id: string) => Promise<ProjectTagsSnapshot>;
+    saveTag: (
+        id: string | null,
+        name: string,
+        colour: number,
+    ) => Promise<ProjectTagsSnapshot>;
     reload: () => Promise<void>;
     save: (
         projectPath: string,
@@ -74,9 +80,25 @@ export function ProjectTagsProvider({ children }: PropsWithChildren) {
         },
         [],
     );
+    const saveTag = useCallback(
+        async (id: string | null, name: string, colour: number) => {
+            const request = ++revision.current;
+            const next = await projectTagsBridge.saveTag(id, name, colour);
+            if (mounted.current && request === revision.current)
+                setSnapshot(next);
+            return next;
+        },
+        [],
+    );
+    const deleteTag = useCallback(async (id: string) => {
+        const request = ++revision.current;
+        const next = await projectTagsBridge.deleteTag(id);
+        if (mounted.current && request === revision.current) setSnapshot(next);
+        return next;
+    }, []);
     return (
         <ProjectTagsContext.Provider
-            value={{ snapshot, loadFailed, reload, save }}
+            value={{ snapshot, loadFailed, reload, save, saveTag, deleteTag }}
         >
             {children}
         </ProjectTagsContext.Provider>

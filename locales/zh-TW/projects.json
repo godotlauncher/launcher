@@ -542,6 +542,20 @@
             "clearAll": "清除篩選",
             "saveFailed": "無法儲存標籤篩選。"
         },
-        "none": "無標籤"
+        "none": "無標籤",
+        "manage": {
+            "title": "管理標籤",
+            "newTag": "新增標籤",
+            "name": "標籤名稱",
+            "save": "儲存",
+            "add": "新增",
+            "usage": "專案數：{{count}}",
+            "duplicate": "已存在同名標籤。",
+            "edit": "編輯名稱",
+            "description": "使用標籤整理和篩選專案。",
+            "delete": "刪除",
+            "deleteTitle": "刪除「{{name}}」？",
+            "deleteDescription": "此標籤將從所有專案中移除。"
+        }
     }
 }

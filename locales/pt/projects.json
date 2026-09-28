@@ -542,6 +542,20 @@
             "clearAll": "Limpar filtros",
             "saveFailed": "Não foi possível guardar os filtros de etiquetas."
         },
-        "none": "Sem etiquetas"
+        "none": "Sem etiquetas",
+        "manage": {
+            "title": "Gerir etiquetas",
+            "newTag": "Nova etiqueta",
+            "name": "Nome da etiqueta",
+            "save": "Guardar",
+            "add": "Adicionar",
+            "usage": "Projetos: {{count}}",
+            "duplicate": "Já existe uma etiqueta com este nome.",
+            "edit": "Editar nome",
+            "description": "Organize e filtre os seus projetos com etiquetas.",
+            "delete": "Eliminar",
+            "deleteTitle": "Eliminar \"{{name}}\"?",
+            "deleteDescription": "Esta etiqueta será removida de todos os projetos."
+        }
     }
 }

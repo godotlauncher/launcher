@@ -395,9 +395,17 @@ test('saves row edits immediately and keeps failed changes available to retry', 
     const input = popover.getByRole('combobox', { name: 'Tags', exact: true });
     await expect(input).toBeFocused();
 
+    await expect(popover.getByRole('heading')).toBeVisible();
+    const initialPosition = await popover.boundingBox();
+    const triggerPosition = await indicator.boundingBox();
+    expect(Math.abs(initialPosition!.y - (triggerPosition!.y + triggerPosition!.height) - 6)).toBeLessThan(1);
     await input.fill('Row baseline');
+    await expect.poll(async () => (await popover.boundingBox())!.y).toBe(initialPosition!.y);
     await input.press('Enter');
+    await expect(popover.getByRole('button', { name: 'Remove Row baseline', exact: true })).toBeVisible();
     await expect.poll(async () => (await readTags()).tags.some(tag => tag.name === 'Row baseline')).toBe(true);
+    await expect.poll(async () => (await popover.boundingBox())!.y).toBe(initialPosition!.y);
+    await expect(popover).toBeInViewport({ ratio: 1 });
     const baselineId = (await readTags()).tags.find(tag => tag.name === 'Row baseline')!.id;
     await expect.poll(async () => (await readTags()).assignments[projectPath!]?.includes(baselineId)).toBe(true);
     await popover.getByRole('button', { name: 'Remove Row baseline', exact: true }).click();

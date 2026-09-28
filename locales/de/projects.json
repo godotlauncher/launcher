@@ -542,6 +542,20 @@
             "clearAll": "Filter zurücksetzen",
             "saveFailed": "Tag-Filter konnten nicht gespeichert werden."
         },
-        "none": "Keine Tags"
+        "none": "Keine Tags",
+        "manage": {
+            "title": "Tags verwalten",
+            "newTag": "Neuer Tag",
+            "name": "Tag-Name",
+            "save": "Speichern",
+            "add": "Hinzufügen",
+            "usage": "Projekte: {{count}}",
+            "duplicate": "Ein Tag mit diesem Namen existiert bereits.",
+            "edit": "Namen bearbeiten",
+            "description": "Organisiere und filtere deine Projekte mit Tags.",
+            "delete": "Löschen",
+            "deleteTitle": "\"{{name}}\" löschen?",
+            "deleteDescription": "Dieser Tag wird aus allen Projekten entfernt."
+        }
     }
 }

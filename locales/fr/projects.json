@@ -542,6 +542,20 @@
             "clearAll": "Effacer les filtres",
             "saveFailed": "Impossible d’enregistrer les filtres d’étiquettes."
         },
-        "none": "Aucune étiquette"
+        "none": "Aucune étiquette",
+        "manage": {
+            "title": "Gérer les étiquettes",
+            "newTag": "Nouvelle étiquette",
+            "name": "Nom de l’étiquette",
+            "save": "Enregistrer",
+            "add": "Ajouter",
+            "usage": "Projets : {{count}}",
+            "duplicate": "Une étiquette porte déjà ce nom.",
+            "edit": "Modifier le nom",
+            "description": "Organisez et filtrez vos projets avec des étiquettes.",
+            "delete": "Supprimer",
+            "deleteTitle": "Supprimer « {{name}} » ?",
+            "deleteDescription": "Cette étiquette sera retirée de tous les projets."
+        }
     }
 }

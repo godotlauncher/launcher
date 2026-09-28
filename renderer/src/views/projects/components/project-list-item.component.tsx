@@ -119,6 +119,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
         badges,
         tagIndicators: (
             <ProjectTagPopover
+                projectName={project.name}
                 tags={tagSnapshot?.tags ?? []}
                 selection={(tagSnapshot?.assignments[project.path] ?? []).map(
                     (id) => ({ id }),

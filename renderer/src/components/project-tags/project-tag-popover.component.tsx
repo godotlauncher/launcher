@@ -7,6 +7,7 @@ import { ProjectTagIndicators } from './project-tag-indicators.component';
 import { ProjectTagPicker } from './project-tag-picker.component';
 
 type ProjectTagPopoverProps = {
+    projectName?: string;
     tags: ProjectTag[];
     selection: ProjectTagSelection[];
     variant?: 'row' | 'field';
@@ -23,6 +24,7 @@ type ProjectTagPopoverProps = {
  */
 export function ProjectTagPopover({
     tags,
+    projectName,
     selection,
     variant = 'row',
     changed = false,
@@ -39,39 +41,81 @@ export function ProjectTagPopover({
     const input = useRef<HTMLInputElement>(null);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState(false);
-    const [position, setPosition] = useState({ left: 0, top: 0 });
+    const [position, setPosition] = useState<{
+        left: number;
+        top: number;
+        maxHeight?: number;
+        height?: number;
+    }>({ left: 0, top: 0 });
     const selected = getSelectedProjectTags(selection, tags);
-    /** Fits the picker beside its trigger without scrolling the drawer or row. */
+    /** Anchors beside the trigger and limits growth to the available space. */
     const reposition = useCallback(() => {
         if (!trigger.current || !panel.current) return;
         const anchor = trigger.current.getBoundingClientRect();
         const popup = panel.current.getBoundingClientRect();
+        const left = Math.max(
+            12,
+            Math.min(anchor.left, window.innerWidth - popup.width - 12),
+        );
+        if (variant === 'row') {
+            const limit =
+                30 *
+                Number.parseFloat(
+                    getComputedStyle(document.documentElement).fontSize,
+                );
+            const below = window.innerHeight - anchor.bottom - 18;
+            if (below >= 160 || below >= anchor.top - 18) {
+                setPosition({
+                    left,
+                    top: anchor.bottom + 6,
+                    maxHeight: Math.max(0, Math.min(limit, below)),
+                });
+            } else {
+                const height = Math.max(0, Math.min(limit, anchor.top - 18));
+                // A fixed upward panel keeps its lower edge next to the trigger.
+                setPosition({
+                    left,
+                    top: anchor.top - height - 6,
+                    maxHeight: height,
+                    height,
+                });
+            }
+            return;
+        }
         setPosition({
-            left: Math.max(
-                12,
-                Math.min(anchor.left, window.innerWidth - popup.width - 12),
-            ),
+            left,
             top:
                 anchor.bottom + popup.height + 6 <= window.innerHeight - 12
                     ? anchor.bottom + 6
                     : Math.max(12, anchor.top - popup.height - 6),
         });
-    }, []);
+    }, [variant]);
     useLayoutEffect(() => {
         if (!open) return;
         reposition();
         if (!loading && !loadFailed)
             input.current?.focus({ preventScroll: true });
         const observer = new ResizeObserver(reposition);
-        if (panel.current) observer.observe(panel.current);
+        if (panel.current && variant !== 'row') observer.observe(panel.current);
+        /** Follows viewport scrolling, ignoring scrolling inside the picker.
+         * @param event - Scroll source.
+         */
+        const onScroll = (event: Event) => {
+            if (
+                event.target instanceof Node &&
+                panel.current?.contains(event.target)
+            )
+                return;
+            reposition();
+        };
         window.addEventListener('resize', reposition);
-        window.addEventListener('scroll', reposition, true);
+        window.addEventListener('scroll', onScroll, true);
         return () => {
             observer.disconnect();
             window.removeEventListener('resize', reposition);
-            window.removeEventListener('scroll', reposition, true);
+            window.removeEventListener('scroll', onScroll, true);
         };
-    }, [open, loading, loadFailed, reposition]);
+    }, [open, loading, loadFailed, reposition, variant]);
     /** Leaves the existing selection available when an immediate save fails.
      * @param next - Requested tag membership and colours.
      */
@@ -177,7 +221,7 @@ export function ProjectTagPopover({
                 role="dialog"
                 aria-label={t('tags.label')}
                 className="fixed m-0 w-96 max-w-[calc(100vw-24px)] overflow-y-auto rounded-lg border border-base-content/20 bg-base-100 p-3 text-base text-base-content shadow-xl"
-                style={{ ...position, maxHeight: 'calc(100vh - 24px)' }}
+                style={{ maxHeight: 'calc(100vh - 24px)', ...position }}
                 onToggle={(event) => {
                     if (event.target !== event.currentTarget) return;
                     const next = event.newState === 'open';
@@ -202,6 +246,14 @@ export function ProjectTagPopover({
             >
                 {open && (
                     <div className="flex flex-col gap-3">
+                        {variant === 'row' && projectName && (
+                            <h3
+                                className="truncate border-b border-base-content/10 pb-2 text-base font-semibold"
+                                title={projectName}
+                            >
+                                {projectName}
+                            </h3>
+                        )}
                         {loadFailed ? (
                             <div
                                 role="alert"

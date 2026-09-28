@@ -166,6 +166,77 @@ export class ProjectTagService {
         return snapshot;
     }
 
+    /** Creates or edits a catalogue tag without changing project assignments.
+     * @param id - Existing tag ID, or null to create a tag.
+     * @param name - Display name, trimmed before saving.
+     * @param colour - Preset colour index.
+     */
+    async saveTag(
+        id: string | null,
+        name: string,
+        colour: number,
+    ): Promise<ProjectTagsSnapshot> {
+        if (id !== null && (typeof id !== 'string' || !id))
+            throw new ProjectTagError('unknown-tag');
+        if (typeof name !== 'string' || !name.trim())
+            throw new ProjectTagError('blank-name');
+        if (!Number.isInteger(colour) || colour < 0 || colour > 29)
+            throw new ProjectTagError('invalid-colour');
+        const trimmed = name.trim();
+        const snapshot = await this.store.update((current) => {
+            if (id !== null && !current.tags.some((tag) => tag.id === id))
+                throw new ProjectTagError('unknown-tag');
+            if (
+                current.tags.some(
+                    (tag) =>
+                        tag.id !== id &&
+                        tag.name.toLowerCase() === trimmed.toLowerCase(),
+                )
+            )
+                throw new ProjectTagError('duplicate-name');
+            const tag = { id: id ?? randomUUID(), name: trimmed, colour };
+            return {
+                tags:
+                    id === null
+                        ? [...current.tags, tag]
+                        : current.tags.map((existing) =>
+                              existing.id === id ? tag : existing,
+                          ),
+                assignments: current.assignments,
+            };
+        });
+        this.publish(snapshot);
+        return snapshot;
+    }
+
+    /** Deletes a catalogue tag and its memberships atomically.
+     * @param id - Tag to remove from all projects.
+     */
+    async deleteTag(id: string): Promise<ProjectTagsSnapshot> {
+        if (typeof id !== 'string' || !id)
+            throw new ProjectTagError('unknown-tag');
+        const snapshot = await this.store.update((current) => {
+            if (!current.tags.some((tag) => tag.id === id))
+                throw new ProjectTagError('unknown-tag');
+            return {
+                tags: current.tags.filter((tag) => tag.id !== id),
+                assignments: Object.fromEntries(
+                    Object.entries(current.assignments)
+                        .map(
+                            ([project, ids]) =>
+                                [
+                                    project,
+                                    ids.filter((tagId) => tagId !== id),
+                                ] as const,
+                        )
+                        .filter(([, ids]) => ids.length),
+                ),
+            };
+        });
+        this.publish(snapshot);
+        return snapshot;
+    }
+
     /**
      * Removes assignments after a project has been unregistered.
      * @param projectPath - Exact path of the removed project.

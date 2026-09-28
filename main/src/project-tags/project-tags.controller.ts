@@ -39,4 +39,23 @@ export class ProjectTagsController implements ProjectTagsBridge {
     ): Promise<ProjectTagsSnapshot> {
         return this.tags.setProjectTags(projectPath, selection);
     }
+    /** Saves a catalogue tag independently of project membership.
+     * @param id - Existing ID, or null for a new tag.
+     * @param name - Requested display name.
+     * @param colour - Preset colour index.
+     */
+    @ProjectTagsHandler('saveTag')
+    saveTag(
+        id: string | null,
+        name: string,
+        colour: number,
+    ): Promise<ProjectTagsSnapshot> {
+        return this.tags.saveTag(id, name, colour);
+    } /** Deletes a tag and removes it from assigned projects.
+     * @param id - Catalogue tag ID.
+     */
+    @ProjectTagsHandler('deleteTag')
+    deleteTag(id: string): Promise<ProjectTagsSnapshot> {
+        return this.tags.deleteTag(id);
+    }
 }

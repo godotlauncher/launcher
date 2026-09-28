@@ -542,6 +542,20 @@
             "clearAll": "Cancella filtri",
             "saveFailed": "Impossibile salvare i filtri dei tag."
         },
-        "none": "Nessun tag"
+        "none": "Nessun tag",
+        "manage": {
+            "title": "Gestisci tag",
+            "newTag": "Nuovo tag",
+            "name": "Nome del tag",
+            "save": "Salva",
+            "add": "Aggiungi",
+            "usage": "Progetti: {{count}}",
+            "duplicate": "Esiste già un tag con questo nome.",
+            "edit": "Modifica nome",
+            "description": "Organizza e filtra i tuoi progetti con i tag.",
+            "delete": "Elimina",
+            "deleteTitle": "Eliminare \"{{name}}\"?",
+            "deleteDescription": "Questo tag verrà rimosso da tutti i progetti."
+        }
     }
 }

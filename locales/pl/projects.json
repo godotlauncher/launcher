@@ -542,6 +542,20 @@
             "clearAll": "Wyczyść filtry",
             "saveFailed": "Nie udało się zapisać filtrów tagów."
         },
-        "none": "Brak tagów"
+        "none": "Brak tagów",
+        "manage": {
+            "title": "Zarządzaj tagami",
+            "newTag": "Nowy tag",
+            "name": "Nazwa tagu",
+            "save": "Zapisz",
+            "add": "Dodaj",
+            "usage": "Projekty: {{count}}",
+            "duplicate": "Tag o tej nazwie już istnieje.",
+            "edit": "Edytuj nazwę",
+            "description": "Organizuj i filtruj projekty za pomocą tagów.",
+            "delete": "Usuń",
+            "deleteTitle": "Usunąć „{{name}}”?",
+            "deleteDescription": "Ten tag zostanie usunięty ze wszystkich projektów."
+        }
     }
 }

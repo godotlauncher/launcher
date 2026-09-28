@@ -542,6 +542,20 @@
             "clearAll": "Filtreleri temizle",
             "saveFailed": "Etiket filtreleri kaydedilemedi."
         },
-        "none": "Etiket yok"
+        "none": "Etiket yok",
+        "manage": {
+            "title": "Etiketleri yönet",
+            "newTag": "Yeni etiket",
+            "name": "Etiket adı",
+            "save": "Kaydet",
+            "add": "Ekle",
+            "usage": "Projeler: {{count}}",
+            "duplicate": "Bu ada sahip bir etiket zaten var.",
+            "edit": "Adı düzenle",
+            "description": "Projelerinizi etiketlerle düzenleyin ve filtreleyin.",
+            "delete": "Sil",
+            "deleteTitle": "\"{{name}}\" silinsin mi?",
+            "deleteDescription": "Bu etiket tüm projelerden kaldırılacak."
+        }
     }
 }

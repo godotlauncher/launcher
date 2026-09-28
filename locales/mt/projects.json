@@ -542,6 +542,20 @@
             "clearAll": "Neħħi l-filtri",
             "saveFailed": "Ma setgħux jiġu ssejvjati l-filtri tat-tikketti."
         },
-        "none": "Ebda tikketta"
+        "none": "Ebda tikketta",
+        "manage": {
+            "title": "Immaniġġja t-tags",
+            "newTag": "Tag ġdid",
+            "name": "Isem tat-tag",
+            "save": "Issejvja",
+            "add": "Żid",
+            "usage": "Proġetti: {{count}}",
+            "duplicate": "Diġà jeżisti tag b’dan l-isem.",
+            "edit": "Editja l-isem",
+            "description": "Organizza u ffiltra l-proġetti tiegħek bit-tags.",
+            "delete": "Ħassar",
+            "deleteTitle": "Tħassar \"{{name}}\"?",
+            "deleteDescription": "Dan it-tag jitneħħa mill-proġetti kollha."
+        }
     }
 }

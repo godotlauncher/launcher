@@ -21,4 +21,5 @@ export type ProjectTagErrorCode =
     | 'invalid-selection'
     | 'invalid-colour'
     | 'blank-name'
+    | 'duplicate-name'
     | 'unknown-tag';

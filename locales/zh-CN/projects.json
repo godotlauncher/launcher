@@ -542,6 +542,20 @@
             "clearAll": "清除筛选",
             "saveFailed": "无法保存标签筛选。"
         },
-        "none": "无标签"
+        "none": "无标签",
+        "manage": {
+            "title": "管理标签",
+            "newTag": "新建标签",
+            "name": "标签名称",
+            "save": "保存",
+            "add": "添加",
+            "usage": "项目数：{{count}}",
+            "duplicate": "已存在同名标签。",
+            "edit": "编辑名称",
+            "description": "使用标签整理和筛选项目。",
+            "delete": "删除",
+            "deleteTitle": "删除“{{name}}”？",
+            "deleteDescription": "此标签将从所有项目中移除。"
+        }
     }
 }

@@ -542,6 +542,20 @@
             "clearAll": "フィルターをクリア",
             "saveFailed": "タグフィルターを保存できませんでした。"
         },
-        "none": "タグなし"
+        "none": "タグなし",
+        "manage": {
+            "title": "タグを管理",
+            "newTag": "新しいタグ",
+            "name": "タグ名",
+            "save": "保存",
+            "add": "追加",
+            "usage": "プロジェクト数: {{count}}",
+            "duplicate": "この名前のタグは既に存在します。",
+            "edit": "名前を編集",
+            "description": "タグでプロジェクトを整理・絞り込みできます。",
+            "delete": "削除",
+            "deleteTitle": "「{{name}}」を削除しますか？",
+            "deleteDescription": "このタグはすべてのプロジェクトから削除されます。"
+        }
     }
 }

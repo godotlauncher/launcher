@@ -542,6 +542,20 @@
             "clearAll": "Clear filters",
             "saveFailed": "Could not save tag filters."
         },
-        "none": "No tags"
+        "none": "No tags",
+        "manage": {
+            "title": "Manage tags",
+            "newTag": "New tag",
+            "name": "Tag name",
+            "save": "Save",
+            "add": "Add",
+            "usage": "Projects: {{count}}",
+            "duplicate": "A tag with this name already exists.",
+            "edit": "Edit name",
+            "description": "Organise and filter your projects with tags.",
+            "delete": "Delete",
+            "deleteTitle": "Delete \"{{name}}\"?",
+            "deleteDescription": "This tag will be removed from all projects."
+        }
     }
 }
