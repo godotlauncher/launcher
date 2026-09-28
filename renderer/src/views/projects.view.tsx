@@ -8,7 +8,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appRoutePaths } from '../app.routes';
-import { ProjectTagFilter } from '../components/project-tags/project-tag-filter.component';
+import {
+    ProjectTagFilter,
+    type ProjectTagFilterHandle,
+} from '../components/project-tags/project-tag-filter.component';
 import {
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
@@ -128,7 +131,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const { addAlert, addCustomConfirm } = useAlerts();
     const navigate = useNavigate();
 
-    const { preferences, updatePreferences } = usePreferences();
+    const { preferences, updatePreferences, platform } = usePreferences();
+    const searchInput = useRef<HTMLInputElement>(null);
+    const tagFilterControl = useRef<ProjectTagFilterHandle>(null);
+    const shortcutModifier = platform === 'darwin' ? '⌘' : 'Ctrl';
+    const ariaShortcutModifier = platform === 'darwin' ? 'Meta' : 'Control';
     const selectedFilterTags = (preferences?.projects_tag_filter ?? []).flatMap(
         (id) => {
             const tag = tagSnapshot?.tags.find((tag) => tag.id === id);
@@ -466,6 +473,50 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     });
     const showEmptyState = viewState === 'empty';
 
+    useEffect(() => {
+        /** Routes Projects shortcuts unless another dialog owns keyboard input.
+         * @param event - Keyboard event from the active window.
+         */
+        const handleShortcut = (event: KeyboardEvent) => {
+            if (
+                showEmptyState ||
+                event.defaultPrevented ||
+                event.isComposing ||
+                event.repeat ||
+                event.altKey ||
+                event.shiftKey
+            )
+                return;
+            const modifier =
+                platform === 'darwin'
+                    ? event.metaKey && !event.ctrlKey
+                    : event.ctrlKey && !event.metaKey;
+            const key = event.key.toLowerCase();
+            if (!modifier || (key !== 't' && key !== 'k')) return;
+            const tagPanel = tagFilterControl.current?.getPanel();
+            const blocked = Array.from(
+                document.querySelectorAll<HTMLElement>(
+                    'dialog[open], [role="dialog"], [role="alertdialog"], :popover-open',
+                ),
+            ).some(
+                (element) =>
+                    element !== tagPanel &&
+                    element.getClientRects().length > 0 &&
+                    getComputedStyle(element).visibility !== 'hidden',
+            );
+            if (blocked) return;
+            event.preventDefault();
+            if (key === 't') tagFilterControl.current?.open();
+            else {
+                tagFilterControl.current?.close();
+                searchInput.current?.focus({ preventScroll: true });
+                searchInput.current?.select();
+            }
+        };
+        window.addEventListener('keydown', handleShortcut);
+        return () => window.removeEventListener('keydown', handleShortcut);
+    }, [platform, showEmptyState]);
+
     return (
         <>
             {/* biome-ignore lint/a11y/noStaticElementInteractions: Drag-and-drop requires event handlers on container */}
@@ -492,6 +543,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 {isDraggingOver && <ProjectsDropOverlay t={t} />}
                 {!showEmptyState && (
                     <ProjectsHeader
+                        searchInputRef={searchInput}
+                        searchShortcut={`${shortcutModifier} K`}
+                        searchAriaKeyShortcuts={`${ariaShortcutModifier}+K`}
                         viewMode={projectViewMode}
                         onViewModeChange={(mode) =>
                             void setProjectViewMode(mode)
@@ -501,6 +555,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         }
                         tagFilter={
                             <ProjectTagFilter
+                                controlRef={tagFilterControl}
+                                shortcut={`${shortcutModifier} T`}
+                                ariaKeyShortcuts={`${ariaShortcutModifier}+T`}
                                 tags={tagSnapshot?.tags ?? []}
                                 selected={selectedFilterTags}
                                 disabled={!preferences || !tagSnapshot}

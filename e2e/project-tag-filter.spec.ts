@@ -173,3 +173,59 @@ test('retains filters on save failure and blocks unfiltered results on load fail
     await expect(page.locator('[data-project-path]')).toHaveCount(3);
     await popup.getByRole('combobox').press('Escape');
 });
+
+test('shows OS shortcut badges and routes focus without interrupting settings', async () => {
+    test.setTimeout(120000);
+    for (const platform of ['darwin', 'win32', 'linux']) {
+        await app.evaluate(({ ipcMain }, platform) => {
+            ipcMain.removeHandler('app.getPlatform');
+            ipcMain.handle('app.getPlatform', () => ({ success: true, data: platform }));
+        }, platform);
+        await page.reload();
+        await page.getByTestId('btnProjects').click();
+        const modifier = platform === 'darwin' ? 'Meta' : 'Control';
+        const label = platform === 'darwin' ? '⌘' : 'Ctrl';
+        const search = page.getByTestId('inputProjectSearch');
+        const tagTrigger = page.getByTestId('btnFilterProjectTags');
+        const searchBadge = page.locator('kbd').filter({ hasText: `${label} K` });
+        const tagBadge = tagTrigger.locator('kbd');
+        await page.getByTestId('tabProjectCards').focus();
+        await expect(searchBadge).toBeVisible();
+        await expect(tagBadge).toHaveText(`${label} T`);
+        await expect(tagBadge).toBeVisible();
+        await page.keyboard.press(`${modifier}+k`);
+        await expect(search).toBeFocused();
+        await expect(searchBadge).toBeHidden();
+        await search.fill('Game');
+        await page.keyboard.press(`${modifier}+k`);
+        expect(await search.evaluate((element: HTMLInputElement) => [element.selectionStart, element.selectionEnd])).toEqual([0, 4]);
+        await page.keyboard.press(`${modifier}+t`);
+        const popup = page.getByRole('dialog', { name: 'Tags', exact: true });
+        await expect(popup.getByRole('combobox')).toBeFocused();
+        await expect(tagBadge).toBeHidden();
+        await expect(searchBadge).toBeVisible();
+        await page.keyboard.press(`${modifier}+t`);
+        await expect(popup.getByRole('combobox')).toBeFocused();
+        await page.keyboard.press(`${modifier}+k`);
+        await expect(popup).toBeHidden();
+        await expect(search).toBeFocused();
+        await expect(tagBadge).toBeVisible();
+        await search.fill('');
+        await page.getByTestId('btnProjectSettings').first().click();
+        const drawer = page.getByRole('dialog').filter({ has: page.getByRole('combobox', { name: 'Tags', exact: true }) });
+        const name = drawer.locator('#projectEditName');
+        const originalName = await name.inputValue();
+        await name.focus();
+        await page.keyboard.press(`${modifier}+t`);
+        await expect(popup).toBeHidden();
+        await expect(name).toBeFocused();
+        await page.keyboard.press(`${modifier}+k`);
+        await expect(name).toBeFocused();
+        // macOS text-editing shortcuts can still act when simulating Control on other platforms.
+        await name.fill(originalName);
+        await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(drawer).toBeHidden();
+        await page.getByTestId('tabProjectCards').focus();
+        await page.screenshot({ path: test.info().outputPath(`project-shortcuts-${platform}.png`) });
+    }
+});

@@ -2,9 +2,11 @@ import type { ProjectTag } from '@shared/contracts';
 import { ChevronDown, X } from 'lucide-react';
 import {
     type KeyboardEvent,
+    type Ref,
     useCallback,
     useEffect,
     useId,
+    useImperativeHandle,
     useLayoutEffect,
     useRef,
     useState,
@@ -14,7 +16,16 @@ import { Tooltip } from '../ui/tooltip.component';
 import { projectTagColours } from './project-tag.model';
 import { ProjectTagPills } from './project-tag-pills.component';
 
+export type ProjectTagFilterHandle = {
+    open: () => void;
+    close: () => void;
+    getPanel: () => HTMLDivElement | null;
+};
+
 type ProjectTagFilterProps = {
+    controlRef?: Ref<ProjectTagFilterHandle>;
+    shortcut?: string;
+    ariaKeyShortcuts?: string;
     tags: ProjectTag[];
     selected: ProjectTag[];
     disabled: boolean;
@@ -30,6 +41,9 @@ type ProjectTagFilterProps = {
 export function ProjectTagFilter({
     tags,
     selected,
+    controlRef,
+    shortcut,
+    ariaKeyShortcuts,
     disabled,
     saving,
     loadFailed,
@@ -62,6 +76,19 @@ export function ProjectTagFilter({
         panel.current?.hidePopover();
         if (restoreFocus) trigger.current?.focus({ preventScroll: true });
     };
+    useImperativeHandle(controlRef, () => ({
+        /** Opens the picker without toggling an already open panel. */
+        open: () => {
+            if (trigger.current?.disabled) return;
+            trigger.current?.focus({ preventScroll: true });
+            panel.current?.showPopover();
+            input.current?.focus({ preventScroll: true });
+        },
+        /** Dismisses the picker before focusing another project control. */
+        close: () => panel.current?.hidePopover(),
+        /** Identifies the tag popup when checking for blocking dialogs. */
+        getPanel: () => panel.current,
+    }));
     /** Keeps the picker within the available window space. */
     const reposition = useCallback(() => {
         if (!trigger.current || !panel.current) return;
@@ -158,10 +185,11 @@ export function ProjectTagFilter({
                     data-testid="btnFilterProjectTags"
                     disabled={disabled && !loadFailed}
                     aria-label={t('tags.label')}
+                    aria-keyshortcuts={ariaKeyShortcuts}
                     aria-expanded={open}
                     aria-controls={id}
                     aria-haspopup="dialog"
-                    className="btn btn-sm btn-ghost gap-1.5 border border-base-content/20 text-base"
+                    className="group/tag-filter btn btn-sm btn-ghost gap-1.5 border border-base-content/20 text-base"
                     popoverTarget={id}
                 >
                     {t('tags.label')}
@@ -184,6 +212,13 @@ export function ProjectTagFilter({
                         <span className="rounded-sm bg-base-content/10 px-1.5 text-xs">
                             {selected.length}
                         </span>
+                    )}
+                    {shortcut && (
+                        <kbd
+                            className={`rounded border border-base-content/15 px-1 text-xs font-normal text-base-content/50 group-focus/tag-filter:invisible ${open ? 'invisible' : ''}`}
+                        >
+                            {shortcut}
+                        </kbd>
                     )}
                     <ChevronDown size={14} aria-hidden="true" />
                 </button>

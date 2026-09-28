@@ -5,6 +5,9 @@ import { useEffect, useRef } from 'react';
 
 type SearchFieldProps = {
     id?: string;
+    inputRef?: React.RefObject<HTMLInputElement | null>;
+    shortcut?: string;
+    ariaKeyShortcuts?: string;
     value: string;
     onChange: (value: string) => void;
     placeholder: string;
@@ -24,6 +27,9 @@ type SearchFieldProps = {
  */
 export const SearchField: React.FC<SearchFieldProps> = ({
     id,
+    inputRef: externalInputRef,
+    shortcut,
+    ariaKeyShortcuts,
     value,
     onChange,
     placeholder,
@@ -34,23 +40,28 @@ export const SearchField: React.FC<SearchFieldProps> = ({
     disabled = false,
     'data-testid': dataTestId,
 }) => {
-    const inputRef = useRef<HTMLInputElement>(null);
+    const localInputRef = useRef<HTMLInputElement>(null);
+    const inputRef = externalInputRef ?? localInputRef;
 
     useEffect(() => {
         if (focusOnMount) {
             inputRef.current?.focus();
         }
-    }, [focusOnMount]);
+    }, [focusOnMount, inputRef]);
 
     return (
-        <div className={clsx('relative w-full max-w-xs', className)}>
+        <div
+            className={clsx('group/search relative w-full max-w-xs', className)}
+        >
             <input
                 ref={inputRef}
                 id={id}
+                aria-keyshortcuts={ariaKeyShortcuts}
                 type="text"
                 placeholder={placeholder}
                 className={clsx(
                     'input input-sm w-full pr-8 text-base',
+                    shortcut && (value.length ? 'pr-28' : 'pr-20'),
                     inputClassName,
                 )}
                 onChange={(event) => onChange(event.target.value)}
@@ -58,6 +69,16 @@ export const SearchField: React.FC<SearchFieldProps> = ({
                 disabled={disabled}
                 data-testid={dataTestId}
             />
+            {shortcut && !disabled && (
+                <kbd
+                    className={clsx(
+                        'pointer-events-none absolute top-1/2 -translate-y-1/2 rounded border border-base-content/15 px-1 text-xs text-base-content/50 group-focus-within/search:invisible',
+                        value.length ? 'right-9' : 'right-2',
+                    )}
+                >
+                    {shortcut}
+                </kbd>
+            )}
             {!disabled && value.length > 0 && (
                 <button
                     type="button"
