@@ -1,6 +1,13 @@
 import type { ProjectTag, ProjectTagSelection } from '@shared/contracts';
 import { Plus, X } from 'lucide-react';
-import { type KeyboardEvent, useEffect, useId, useRef, useState } from 'react';
+import {
+    type KeyboardEvent,
+    type RefObject,
+    useEffect,
+    useId,
+    useRef,
+    useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     getProjectTagOptions,
@@ -12,6 +19,7 @@ import { ProjectTagColourPicker } from './project-tag-colour-picker.component';
 
 type ProjectTagPickerProps = {
     tags: ProjectTag[];
+    inputRef?: RefObject<HTMLInputElement | null>;
     selection: ProjectTagSelection[];
     disabled?: boolean;
     changed: boolean;
@@ -23,6 +31,7 @@ type ProjectTagPickerProps = {
  */
 export function ProjectTagPicker({
     tags,
+    inputRef,
     selection,
     disabled = false,
     changed,
@@ -30,7 +39,8 @@ export function ProjectTagPicker({
 }: ProjectTagPickerProps) {
     const { t } = useTranslation('projects');
     const id = useId();
-    const input = useRef<HTMLInputElement>(null);
+    const localInput = useRef<HTMLInputElement>(null);
+    const input = inputRef ?? localInput;
     const optionsRef = useRef<HTMLDivElement>(null);
     const [query, setQuery] = useState('');
     const [open, setOpen] = useState(false);
@@ -43,12 +53,18 @@ export function ProjectTagPicker({
     ];
     const activeIndex = Math.min(active, options.length - 1);
     useEffect(() => {
-        if (open)
-            optionsRef.current
-                ?.querySelector(
-                    `[id="${CSS.escape(`${id}-option-${activeIndex}`)}"]`,
-                )
-                ?.scrollIntoView({ block: 'nearest' });
+        const list = optionsRef.current;
+        if (!open || !list) return;
+        const option = list.querySelector<HTMLElement>(
+            `[id="${CSS.escape(`${id}-option-${activeIndex}`)}"]`,
+        );
+        if (!option) return;
+        // Scroll only the options, leaving the drawer's opening animation intact.
+        const top = option.offsetTop;
+        const bottom = top + option.offsetHeight;
+        if (top < list.scrollTop) list.scrollTop = top;
+        else if (bottom > list.scrollTop + list.clientHeight)
+            list.scrollTop = bottom - list.clientHeight;
     }, [activeIndex, id, open]);
 
     /** Adds one option while keeping typing focus in the picker.

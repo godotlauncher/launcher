@@ -17,6 +17,7 @@ import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overla
 import { useAlerts } from '../hooks/alerts.hook';
 import { useAppNavigation } from '../hooks/app-navigation.hook';
 import { usePreferences } from '../hooks/preferences.hook';
+import { useProjectTags } from '../hooks/project-tags.hook';
 import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
 import { useToolIntegrations } from '../hooks/tool-integrations.hook';
@@ -91,6 +92,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setLocalCreateOpen(open);
     };
 
+    const { snapshot: tagSnapshot } = useProjectTags();
+    const [focusTags, setFocusTags] = useState(false);
     const [editProjectFor, setEditProjectFor] = useState<ProjectDetails | null>(
         null,
     );
@@ -605,7 +608,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 });
                             }}
                             onTogglePinned={handleToggleProjectPinned}
-                            onProjectSettings={setEditProjectFor}
+                            tagSnapshot={tagSnapshot}
+                            onProjectSettings={(project, tags = false) => {
+                                setFocusTags(tags);
+                                setEditProjectFor(project);
+                            }}
                             onProjectMoreOptions={(event, project) => {
                                 setProjectFoldersMenu(null);
                                 void onProjectMoreOptions(event, project);
@@ -658,9 +665,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     ) ?? editProjectFor
                 }
                 open={Boolean(editProjectFor)}
+                focusTags={focusTags}
                 onOpenChange={(open) => {
                     if (!open) {
                         setEditProjectFor(null);
+                        setFocusTags(false);
                     }
                 }}
                 onRenameProject={renameProject}

@@ -46,7 +46,7 @@ type ProjectSettingsProjectSectionProps = {
 };
 
 /**
- * Renders the staged project name, Godot name and editor fields.
+ * Renders the project name, Godot name, editor and tags in priority order.
  *
  * @param props - The current form values and editor catalogue actions.
  * @returns The project settings fields.
@@ -147,7 +147,6 @@ export function ProjectSettingsProjectSection({
                     )}
                 </span>
             </label>
-            {tagsField}
             <ContentDivider />
             <div className="flex flex-col gap-2">
                 <div>
@@ -176,6 +175,8 @@ export function ProjectSettingsProjectSection({
                     onRetryCatalogue={onRetryCatalogue}
                 />
             </div>
+            {tagsField && <ContentDivider />}
+            {tagsField}
         </div>
     );
 }

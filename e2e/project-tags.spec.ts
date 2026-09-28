@@ -264,3 +264,103 @@ test('stages named colours, discards changes, and shares saved colours across pr
         await expect(drawer).toBeHidden();
     }
 });
+
+test('shows compact indicators in both views and opens the tag editor', async () => {
+    test.setTimeout(90000);
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: SAMPLE_PROJECTS.map(project => ({
+            ...project,
+            name: project.name === 'My Prototype'
+                ? 'My Prototype with a very long project name for the compact list layout'
+                : project.name,
+        })),
+    });
+    await page.getByTestId('btnProjects').click();
+    await page.setViewportSize({ width: 1024, height: 600 });
+    await page.getByTestId('tabProjectCards').click();
+    const rows = page.locator('[data-project-path]');
+    const projectPath = await rows.first().getAttribute('data-project-path');
+    const row = rows.first();
+    // Record the existing height before adding indicators.
+    const cardHeight = (await row.boundingBox())!.height;
+    await page.getByTestId('tabProjectList').click();
+    const listHeight = (await row.boundingBox())!.height;
+    let drawer = await openSettings();
+    // Keep this test independent of earlier tag scenarios in the same file.
+    const removals = drawer.getByRole('button', { name: /^Remove / });
+    while (await removals.count()) await removals.first().click();
+    const names = ['Prototype', 'Game Jam', 'Release candidate', 'Archived', 'Multiplayer'];
+    let input = drawer.getByRole('combobox', { name: 'Tags', exact: true });
+    for (const name of names) {
+        await input.fill(name);
+        await input.press('Enter');
+    }
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    // An available option exercises picker scrolling during drawer animation.
+    drawer = await openSettings(1);
+    input = drawer.getByRole('combobox', { name: 'Tags', exact: true });
+    await input.fill('Available for another project');
+    await input.press('Enter');
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    for (const mode of ['Cards', 'List']) {
+        await page.getByTestId(`tabProject${mode}`).click();
+        expect(await row.getAttribute('data-project-path')).toBe(projectPath);
+        const indicator = row.getByTestId('btnProjectTags');
+        await expect(indicator.getByTestId('projectTagDot')).toHaveCount(3);
+        await expect(indicator).toHaveText('+2');
+        await expect(indicator).toBeInViewport({ ratio: 1 });
+        await expect(indicator).toHaveAccessibleName(`Tags: ${names.join(', ')}`);
+        expect((await row.boundingBox())!.height).toBe(mode === 'Cards' ? cardHeight : listHeight);
+        for (const theme of ['dark', 'light']) {
+            await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+            await indicator.hover();
+            await expect(page.getByRole('tooltip').getByRole('listitem')).toHaveText(names);
+            await expect(page.getByRole('tooltip')).toBeVisible();
+            await page.screenshot({ path: test.info().outputPath(`tag-indicators-${mode.toLowerCase()}-${theme}.png`) });
+            await page.mouse.move(0, 0);
+            await expect(page.getByRole('tooltip')).toBeHidden();
+        }
+        // Keyboard activation targets Tags without launching the project.
+        await indicator.focus();
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Shift+Tab');
+        await expect(indicator).toBeFocused();
+        await expect(page.getByRole('tooltip').getByRole('listitem')).toHaveText(names);
+        await expect(page.getByRole('tooltip')).toBeVisible();
+        await page.evaluate(() => {
+            const probe = window as typeof window & { tagOpeningScroll: number[] };
+            probe.tagOpeningScroll = [];
+            document.addEventListener('scroll', (event) => {
+                if (event.target instanceof HTMLElement) probe.tagOpeningScroll.push(event.target.scrollLeft);
+            }, { capture: true });
+        });
+        await page.keyboard.press('Enter');
+        drawer = page.getByRole('dialog');
+        input = drawer.getByRole('combobox', { name: 'Tags', exact: true });
+        await expect(input).toBeFocused();
+        await expect(drawer.getByRole('option', { name: 'Available for another project', exact: true })).toBeVisible();
+        expect(await page.evaluate(() => (window as typeof window & { tagOpeningScroll: number[] }).tagOpeningScroll.every(left => left === 0))).toBe(true);
+        await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeDisabled();
+        await input.press('Escape');
+        await expect(drawer).toBeVisible();
+        await input.press('Escape');
+        await expect(drawer).toBeHidden();
+        await expect(indicator).toBeFocused();
+        // Pointer activation follows the same route after another settings tab was used.
+        await row.getByTestId('btnProjectSettings').click();
+        await page.getByTestId('tabProjectSettings_launch').click();
+        await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(drawer).toBeHidden();
+        await indicator.click();
+        await expect(input).toBeFocused();
+        await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(drawer).toBeHidden();
+    }
+    await row.getByTestId('btnProjectTags').click();
+    while (await removals.count()) await removals.first().click();
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    await expect(row.getByTestId('btnProjectTags')).toHaveCount(0);
+});

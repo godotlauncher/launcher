@@ -21,6 +21,10 @@ vi.mock('react-router', async (importOriginal) => ({
     useNavigate: () => navigate,
 }));
 
+vi.mock('../hooks/project-tags.hook', () => ({
+    useProjectTags: () => ({ snapshot: null }),
+}));
+
 vi.mock('../hooks/alerts.hook', () => ({
     useAlerts: () => ({
         addAlert: vi.fn(),

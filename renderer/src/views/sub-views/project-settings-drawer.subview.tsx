@@ -67,6 +67,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
     const {
         project,
         open,
+        focusTags = false,
         installedReleases,
         onOpenChange,
         onRenameProject,
@@ -98,6 +99,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
     const [confirmingTemplateClose, setConfirmingTemplateClose] =
         useState(false);
     const submitting = useRef(false);
+    const tagInput = useRef<HTMLInputElement>(null);
     const templateFiles = useRef<ProjectTemplateFilesHandle>(null);
     const jobs = useTemplateJobs();
     const templateBusy = jobs.some(
@@ -421,6 +423,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                 if (!next) requestClose();
                 else onOpenChange(next);
             }}
+            initialFocusRef={focusTags ? tagInput : undefined}
             side="right"
             ariaLabel={title}
             width={860}
@@ -518,6 +521,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                                     tagsField={
                                         <>
                                             <ProjectTagPicker
+                                                inputRef={tagInput}
                                                 tags={tags.tags}
                                                 selection={tags.selection}
                                                 changed={tags.changed}

@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ProjectTagsSnapshot,
     ReleaseSummary,
 } from '@shared/contracts';
 import type React from 'react';
@@ -11,6 +12,7 @@ export type ProjectSectionKey = 'new' | 'pinned' | 'recents';
 
 export type ProjectsListProps = {
     viewMode?: ProjectViewMode;
+    tagSnapshot?: ProjectTagsSnapshot | null;
     sections: ProjectSections;
     projectGitHubUrls: ReadonlyMap<string, string>;
     loading: boolean;
@@ -39,7 +41,7 @@ export type ProjectsListProps = {
         project: ProjectDetails,
     ) => void;
     onTogglePinned: (project: ProjectDetails) => void;
-    onProjectSettings: (project: ProjectDetails) => void;
+    onProjectSettings: (project: ProjectDetails, focusTags?: boolean) => void;
     onProjectMoreOptions: (
         event: React.MouseEvent,
         project: ProjectDetails,
@@ -71,6 +73,7 @@ export type ProjectPresentationProps = Pick<
 > & {
     actions: React.ReactNode;
     badges: React.ReactNode;
+    tagIndicators: React.ReactNode;
     launchDisabled: boolean;
     lastOpened: string;
 };

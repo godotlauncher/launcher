@@ -1,4 +1,5 @@
 import type React from 'react';
+import { ProjectTagIndicators } from '../../../components/project-tags/project-tag-indicators.component';
 import { formatRelativeTime } from '../../../i18n/relative-time.util';
 import { ProjectActions } from './project-actions.component';
 import { ProjectBadges } from './project-badges.component';
@@ -12,6 +13,7 @@ import type { ProjectListItemProps } from './project-list.types';
  */
 export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     viewMode = 'cards',
+    tagSnapshot,
     project,
     sectionKey,
     highlighted,
@@ -112,6 +114,20 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
         t,
         actions,
         badges,
+        tagIndicators: (
+            <ProjectTagIndicators
+                tags={(tagSnapshot?.assignments[project.path] ?? []).flatMap(
+                    (id) => {
+                        const tag = tagSnapshot?.tags.find(
+                            (candidate) => candidate.id === id,
+                        );
+                        return tag ? [tag] : [];
+                    },
+                )}
+                label={t('tags.label')}
+                onEdit={() => onProjectSettings(project, true)}
+            />
+        ),
         launchDisabled,
         lastOpened,
     };
