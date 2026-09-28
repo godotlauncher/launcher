@@ -1,4 +1,6 @@
 import type { ProjectTag } from '@shared/contracts';
+import { Tag } from 'lucide-react';
+import type { RefObject } from 'react';
 import { Tooltip } from '../ui/tooltip.component';
 import { projectTagColours } from './project-tag.model';
 import { ProjectTagPills } from './project-tag-pills.component';
@@ -6,7 +8,10 @@ import { ProjectTagPills } from './project-tag-pills.component';
 type ProjectTagIndicatorsProps = {
     tags: ProjectTag[];
     label: string;
-    onEdit: () => void;
+    triggerRef: RefObject<HTMLButtonElement | null>;
+    popoverId: string;
+    open: boolean;
+    disabled?: boolean;
 };
 
 /** Shows compact tag colours with tag pills on hover and keyboard focus.
@@ -15,23 +20,36 @@ type ProjectTagIndicatorsProps = {
 export function ProjectTagIndicators({
     tags,
     label,
-    onEdit,
+    triggerRef,
+    popoverId,
+    open,
+    disabled,
 }: ProjectTagIndicatorsProps) {
-    if (tags.length === 0) return null;
     const names = tags.map((tag) => tag.name).join(', ');
     return (
         <Tooltip
-            tip={<ProjectTagPills tags={tags} />}
+            variant={tags.length ? 'panel' : 'default'}
+            tip={tags.length ? <ProjectTagPills tags={tags} /> : label}
             placement="top"
             className="shrink-0"
         >
             <button
+                ref={triggerRef}
                 type="button"
+                disabled={disabled}
+                popoverTarget={popoverId}
+                aria-haspopup="dialog"
+                aria-controls={popoverId}
+                aria-expanded={open}
                 data-testid="btnProjectTags"
-                aria-label={`${label}: ${names}`}
-                onClick={onEdit}
+                aria-label={names ? `${label}: ${names}` : label}
                 className="inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-1.5 hover:bg-base-content/10 focus-visible:outline-2 focus-visible:outline-primary"
             >
+                <Tag
+                    size={14}
+                    aria-hidden="true"
+                    className="mr-0.5 text-base-content/60"
+                />
                 {tags.slice(0, 3).map((tag) => (
                     <span
                         key={tag.id}

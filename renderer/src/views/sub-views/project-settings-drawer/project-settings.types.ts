@@ -22,7 +22,6 @@ export type ProjectSettingsTab =
 export type ProjectSettingsDrawerProps = {
     project: ProjectDetails | null;
     open: boolean;
-    focusTags?: boolean;
     installedReleases: InstalledRelease[];
     onOpenChange: (open: boolean) => void;
     onRenameProject: (

@@ -541,6 +541,7 @@
             "clear": "Neħħi t-tikketti",
             "clearAll": "Neħħi l-filtri",
             "saveFailed": "Ma setgħux jiġu ssejvjati l-filtri tat-tikketti."
-        }
+        },
+        "none": "Ebda tikketta"
     }
 }

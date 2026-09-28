@@ -541,6 +541,7 @@
             "clear": "Limpar tags",
             "clearAll": "Limpar filtros",
             "saveFailed": "Não foi possível salvar os filtros de tags."
-        }
+        },
+        "none": "Sem tags"
     }
 }

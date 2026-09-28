@@ -16,7 +16,7 @@ type ProjectTagColourPickerProps = {
     colour: number;
     disabled?: boolean;
     onOpen: () => void;
-    onChange: (colour: number) => void;
+    onChange: (colour: number) => unknown;
 };
 
 /** Displays a named preset palette anchored to a tag's swatch.
@@ -190,9 +190,20 @@ export function ProjectTagColourPicker({
                                 className="flex size-7 items-center justify-center rounded-md border border-black/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-base-content"
                                 style={{ backgroundColor: value }}
                                 onFocus={() => setActive(index)}
-                                onClick={() => {
-                                    onChange(index);
+                                onClick={async () => {
+                                    const result = onChange(index);
                                     close(true);
+                                    await result;
+                                    window.requestAnimationFrame(() => {
+                                        if (
+                                            trigger.current?.closest(
+                                                ':popover-open',
+                                            )
+                                        )
+                                            trigger.current.focus({
+                                                preventScroll: true,
+                                            });
+                                    });
                                 }}
                             >
                                 {index === colour && (

@@ -541,6 +541,7 @@
             "clear": "Etiketleri temizle",
             "clearAll": "Filtreleri temizle",
             "saveFailed": "Etiket filtreleri kaydedilemedi."
-        }
+        },
+        "none": "Etiket yok"
     }
 }

@@ -541,6 +541,7 @@
             "clear": "Cancella tag",
             "clearAll": "Cancella filtri",
             "saveFailed": "Impossibile salvare i filtri dei tag."
-        }
+        },
+        "none": "Nessun tag"
     }
 }

@@ -541,6 +541,7 @@
             "clear": "Clear tags",
             "clearAll": "Clear filters",
             "saveFailed": "Could not save tag filters."
-        }
+        },
+        "none": "No tags"
     }
 }

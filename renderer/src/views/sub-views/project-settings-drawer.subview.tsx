@@ -11,7 +11,7 @@ import {
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ProjectTagPicker } from '../../components/project-tags/project-tag-picker.component';
+import { ProjectTagPopover } from '../../components/project-tags/project-tag-popover.component';
 import { CopyBadge } from '../../components/ui/copy-badge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { VerticalTabMenu } from '../../components/ui/vertical-tab-menu.component';
@@ -67,7 +67,6 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
     const {
         project,
         open,
-        focusTags = false,
         installedReleases,
         onOpenChange,
         onRenameProject,
@@ -99,7 +98,6 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
     const [confirmingTemplateClose, setConfirmingTemplateClose] =
         useState(false);
     const submitting = useRef(false);
-    const tagInput = useRef<HTMLInputElement>(null);
     const templateFiles = useRef<ProjectTemplateFilesHandle>(null);
     const jobs = useTemplateJobs();
     const templateBusy = jobs.some(
@@ -423,7 +421,6 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                 if (!next) requestClose();
                 else onOpenChange(next);
             }}
-            initialFocusRef={focusTags ? tagInput : undefined}
             side="right"
             ariaLabel={title}
             width={860}
@@ -519,45 +516,17 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                                         form.name.trim() !== form.initialName
                                     }
                                     tagsField={
-                                        <>
-                                            <ProjectTagPicker
-                                                inputRef={tagInput}
-                                                tags={tags.tags}
-                                                selection={tags.selection}
-                                                changed={tags.changed}
-                                                disabled={
-                                                    isSubmitting ||
-                                                    !tags.ready ||
-                                                    tags.loadFailed
-                                                }
-                                                onChange={tags.change}
-                                            />
-                                            {tags.loadFailed ? (
-                                                <div
-                                                    className="flex items-center gap-2"
-                                                    role="alert"
-                                                >
-                                                    <span>
-                                                        {t('tags.loadFailed')}
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-sm btn-ghost"
-                                                        onClick={() =>
-                                                            void tags.reload()
-                                                        }
-                                                    >
-                                                        {t('tags.retry')}
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                !tags.ready && (
-                                                    <p role="status">
-                                                        {t('tags.loading')}
-                                                    </p>
-                                                )
-                                            )}
-                                        </>
+                                        <ProjectTagPopover
+                                            variant="field"
+                                            tags={tags.tags}
+                                            selection={tags.selection}
+                                            changed={tags.changed}
+                                            disabled={isSubmitting}
+                                            loading={!tags.ready}
+                                            loadFailed={tags.loadFailed}
+                                            onRetry={tags.reload}
+                                            onChange={tags.change}
+                                        />
                                     }
                                     editorChanged={form.hasReleaseChanges}
                                     nameError={form.nameError}

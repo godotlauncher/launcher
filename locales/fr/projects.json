@@ -541,6 +541,7 @@
             "clear": "Effacer les étiquettes",
             "clearAll": "Effacer les filtres",
             "saveFailed": "Impossible d’enregistrer les filtres d’étiquettes."
-        }
+        },
+        "none": "Aucune étiquette"
     }
 }

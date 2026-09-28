@@ -541,6 +541,7 @@
             "clear": "Wyczyść tagi",
             "clearAll": "Wyczyść filtry",
             "saveFailed": "Nie udało się zapisać filtrów tagów."
-        }
+        },
+        "none": "Brak tagów"
     }
 }

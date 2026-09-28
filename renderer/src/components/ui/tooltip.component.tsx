@@ -34,6 +34,7 @@ type TooltipProps = {
     children: ReactNode;
     placement?: TooltipPlacement;
     tone?: TooltipTone;
+    variant?: 'default' | 'panel';
     delay?: number;
     className?: string;
     ariaLabel?: string;
@@ -65,6 +66,7 @@ export const Tooltip: FC<TooltipProps> = ({
     children,
     placement = 'right',
     tone = 'default',
+    variant = 'default',
     delay = defaultDelay,
     className,
     ariaLabel,
@@ -307,8 +309,13 @@ export const Tooltip: FC<TooltipProps> = ({
                         role="tooltip"
                         data-side={position?.side ?? placement}
                         className={clsx(
-                            'tooltip tooltip-open pointer-events-none fixed z-70 w-max after:hidden',
-                            tooltipToneClassNames[tone],
+                            'pointer-events-none fixed z-70 w-max',
+                            variant === 'panel'
+                                ? 'rounded-lg border border-base-content/15 bg-base-100 text-base-content shadow-lg'
+                                : [
+                                      'tooltip tooltip-open after:hidden',
+                                      tooltipToneClassNames[tone],
+                                  ],
                         )}
                         style={{
                             left: position?.x ?? 0,
@@ -317,10 +324,16 @@ export const Tooltip: FC<TooltipProps> = ({
                             visibility: position ? 'visible' : 'hidden',
                         }}
                     >
-                        <div className="tooltip-content relative inset-auto max-w-full transform-none text-base leading-normal">
+                        <div
+                            className={
+                                variant === 'panel'
+                                    ? 'max-w-full p-3 text-sm leading-normal'
+                                    : 'tooltip-content relative inset-auto max-w-full transform-none text-base leading-normal'
+                            }
+                        >
                             {tip}
                         </div>
-                        {position && (
+                        {position && variant !== 'panel' && (
                             <span
                                 aria-hidden="true"
                                 className="absolute size-2 rotate-45 bg-[var(--tt-bg)]"

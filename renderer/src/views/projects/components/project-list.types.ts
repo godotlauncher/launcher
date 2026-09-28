@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ProjectTagSelection,
     ProjectTagsSnapshot,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -13,6 +14,12 @@ export type ProjectSectionKey = 'new' | 'pinned' | 'recents';
 export type ProjectsListProps = {
     viewMode?: ProjectViewMode;
     tagSnapshot?: ProjectTagsSnapshot | null;
+    tagsLoadFailed?: boolean;
+    onRetryTags?: () => Promise<void>;
+    onSetProjectTags?: (
+        path: string,
+        selection: ProjectTagSelection[],
+    ) => Promise<unknown>;
     sections: ProjectSections;
     projectGitHubUrls: ReadonlyMap<string, string>;
     loading: boolean;
@@ -42,7 +49,7 @@ export type ProjectsListProps = {
         project: ProjectDetails,
     ) => void;
     onTogglePinned: (project: ProjectDetails) => void;
-    onProjectSettings: (project: ProjectDetails, focusTags?: boolean) => void;
+    onProjectSettings: (project: ProjectDetails) => void;
     onProjectMoreOptions: (
         event: React.MouseEvent,
         project: ProjectDetails,

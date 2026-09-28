@@ -541,6 +541,7 @@
             "clear": "Tags zurücksetzen",
             "clearAll": "Filter zurücksetzen",
             "saveFailed": "Tag-Filter konnten nicht gespeichert werden."
-        }
+        },
+        "none": "Keine Tags"
     }
 }

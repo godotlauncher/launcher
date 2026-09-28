@@ -169,6 +169,7 @@ export function ProjectTagFilter({
     return (
         <>
             <Tooltip
+                variant={selected.length ? 'panel' : 'default'}
                 tip={
                     selected.length ? (
                         <ProjectTagPills tags={selected} />

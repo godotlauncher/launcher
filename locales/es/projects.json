@@ -541,6 +541,7 @@
             "clear": "Borrar etiquetas",
             "clearAll": "Borrar filtros",
             "saveFailed": "No se pudieron guardar los filtros de etiquetas."
-        }
+        },
+        "none": "Sin etiquetas"
     }
 }

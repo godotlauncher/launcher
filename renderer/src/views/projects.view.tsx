@@ -100,10 +100,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         snapshot: tagSnapshot,
         loadFailed: tagsLoadFailed,
         reload: reloadTags,
+        save: saveProjectTags,
     } = useProjectTags();
     const [savingTagFilter, setSavingTagFilter] = useState(false);
     const savingTagFilterRef = useRef(false);
-    const [focusTags, setFocusTags] = useState(false);
     const [editProjectFor, setEditProjectFor] = useState<ProjectDetails | null>(
         null,
     );
@@ -767,10 +767,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 }}
                                 onTogglePinned={handleToggleProjectPinned}
                                 tagSnapshot={tagSnapshot}
-                                onProjectSettings={(project, tags = false) => {
-                                    setFocusTags(tags);
-                                    setEditProjectFor(project);
-                                }}
+                                tagsLoadFailed={tagsLoadFailed}
+                                onRetryTags={reloadTags}
+                                onSetProjectTags={saveProjectTags}
+                                onProjectSettings={setEditProjectFor}
                                 onProjectMoreOptions={(event, project) => {
                                     setProjectFoldersMenu(null);
                                     void onProjectMoreOptions(event, project);
@@ -824,11 +824,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     ) ?? editProjectFor
                 }
                 open={Boolean(editProjectFor)}
-                focusTags={focusTags}
                 onOpenChange={(open) => {
                     if (!open) {
                         setEditProjectFor(null);
-                        setFocusTags(false);
                     }
                 }}
                 onRenameProject={renameProject}

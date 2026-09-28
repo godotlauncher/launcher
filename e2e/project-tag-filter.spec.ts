@@ -212,7 +212,7 @@ test('shows OS shortcut badges and routes focus without interrupting settings', 
         await expect(tagBadge).toBeVisible();
         await search.fill('');
         await page.getByTestId('btnProjectSettings').first().click();
-        const drawer = page.getByRole('dialog').filter({ has: page.getByRole('combobox', { name: 'Tags', exact: true }) });
+        const drawer = page.getByRole('dialog').filter({ has: page.getByTestId('btnProjectTagsField') });
         const name = drawer.locator('#projectEditName');
         const originalName = await name.inputValue();
         await name.focus();
