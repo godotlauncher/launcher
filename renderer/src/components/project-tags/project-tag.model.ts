@@ -34,6 +34,40 @@ export const projectTagColours = [
     '#a21caf',
 ] as const;
 
+/** Stable preset names in the same order as the persisted colour IDs. */
+export const projectTagColourNames = [
+    'red',
+    'orange',
+    'yellow',
+    'lime',
+    'green',
+    'teal',
+    'cyan',
+    'blue',
+    'violet',
+    'fuchsia',
+    'rose',
+    'apricot',
+    'lemon',
+    'lightLime',
+    'mint',
+    'turquoise',
+    'aqua',
+    'sky',
+    'lavender',
+    'orchid',
+    'darkRed',
+    'rust',
+    'ochre',
+    'olive',
+    'forest',
+    'darkTeal',
+    'darkCyan',
+    'darkBlue',
+    'darkViolet',
+    'darkFuchsia',
+] as const;
+
 /** Resolves staged creations and existing selections for display.
  * @param selection - Ordered draft selections.
  * @param tags - Persisted tag catalogue.
@@ -46,32 +80,59 @@ export function getSelectedProjectTags(
     return selection.flatMap((item) => {
         if ('id' in item) {
             const tag = tags.find((candidate) => candidate.id === item.id);
-            return tag ? [tag] : [];
+            return tag ? [{ ...tag, colour: item.colour ?? tag.colour }] : [];
         }
         const existing = tags.find(
             (tag) => tag.name.toLowerCase() === item.name.toLowerCase(),
         );
-        return [
-            existing ?? {
-                id: `draft:${item.name.toLowerCase()}`,
-                name: item.name,
-                colour: (tags.length + created++) % projectTagColours.length,
-            },
-        ];
+        const tag = existing ?? {
+            id: `draft:${item.name.toLowerCase()}`,
+            name: item.name,
+            colour: (tags.length + created++) % projectTagColours.length,
+        };
+        return [{ ...tag, colour: item.colour ?? tag.colour }];
     });
+}
+
+/** Stages one colour override, omitting a return to the persisted colour.
+ * @param item - Existing tag or provisional creation being edited.
+ * @param colour - Chosen preset ID.
+ * @param tags - Latest persisted catalogue.
+ */
+export function withProjectTagColour(
+    item: ProjectTagSelection,
+    colour: number,
+    tags: ProjectTag[],
+): ProjectTagSelection {
+    const existing = tags.find((tag) =>
+        'id' in item
+            ? tag.id === item.id
+            : tag.name.toLowerCase() === item.name.toLowerCase(),
+    );
+    const identity = 'id' in item ? { id: item.id } : { name: item.name };
+    return existing?.colour === colour ? identity : { ...identity, colour };
 }
 
 /** Compares membership independently of pill order.
  * @param left - Initial assignment IDs.
  * @param right - Current draft selection.
+ * @param tags - Latest catalogue used to compare explicit colour edits.
  */
 export function hasProjectTagChanges(
     left: string[],
     right: ProjectTagSelection[],
+    tags: ProjectTag[] = [],
 ): boolean {
     return (
         left.length !== right.length ||
-        right.some((item) => !('id' in item) || !left.includes(item.id))
+        right.some(
+            (item) =>
+                !('id' in item) ||
+                !left.includes(item.id) ||
+                (item.colour !== undefined &&
+                    item.colour !==
+                        tags.find((tag) => tag.id === item.id)?.colour),
+        )
     );
 }
 

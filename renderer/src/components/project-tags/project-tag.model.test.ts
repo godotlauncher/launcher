@@ -3,6 +3,7 @@ import {
     getProjectTagOptions,
     getSelectedProjectTags,
     hasProjectTagChanges,
+    withProjectTagColour,
 } from './project-tag.model';
 
 const tags = [
@@ -51,5 +52,50 @@ describe('project tag draft', () => {
             ),
         ).toBe(false);
         expect(hasProjectTagChanges(['jam'], [])).toBe(true);
+    });
+});
+
+describe('project tag colour drafts', () => {
+    it('previews existing and new colours without changing the catalogue', () => {
+        expect(
+            getSelectedProjectTags(
+                [
+                    { id: 'jam', colour: 0 },
+                    { name: 'Prototype', colour: 8 },
+                ],
+                tags,
+            ),
+        ).toEqual([
+            { ...tags[0], colour: 0 },
+            { id: 'draft:prototype', name: 'Prototype', colour: 8 },
+        ]);
+        expect(tags[0].colour).toBe(2);
+    });
+    it('detects a colour-only change and accepts reverting it', () => {
+        expect(
+            hasProjectTagChanges(['jam'], [{ id: 'jam', colour: 0 }], tags),
+        ).toBe(true);
+        const restored = withProjectTagColour(
+            { id: 'jam', colour: 0 },
+            2,
+            tags,
+        );
+        expect(restored).toEqual({ id: 'jam' });
+        expect(hasProjectTagChanges(['jam'], [restored], tags)).toBe(false);
+    });
+    it('uses current catalogue colours for selections without overrides', () => {
+        const recoloured = [{ ...tags[0], colour: 7 }, tags[1]];
+        expect(
+            getSelectedProjectTags([{ id: 'jam' }], recoloured)[0].colour,
+        ).toBe(7);
+        expect(hasProjectTagChanges(['jam'], [{ id: 'jam' }], recoloured)).toBe(
+            false,
+        );
+    });
+    it('preserves explicit colour zero for a provisional creation', () => {
+        expect(withProjectTagColour({ name: 'Prototype' }, 0, tags)).toEqual({
+            name: 'Prototype',
+            colour: 0,
+        });
     });
 });

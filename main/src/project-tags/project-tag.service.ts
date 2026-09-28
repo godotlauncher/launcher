@@ -69,7 +69,7 @@ export class ProjectTagService {
     /**
      * Resolves and saves all tags for a registered project together.
      * @param projectPath - Exact registered project path.
-     * @param selection - Existing IDs and names to create or reuse.
+     * @param selection - Existing IDs and names to create or reuse, with optional preset colours.
      */
     async setProjectTags(
         projectPath: string,
@@ -98,24 +98,36 @@ export class ProjectTagService {
             ) {
                 throw new ProjectTagError('invalid-project');
             }
-            const tags = [...current.tags];
+            const tags = current.tags.map((tag) => ({ ...tag }));
             const ids: string[] = [];
             const selected = new Set<string>();
             for (const item of selection) {
-                if (!item || typeof item !== 'object')
+                if (!item || typeof item !== 'object' || Array.isArray(item))
                     throw new ProjectTagError('invalid-selection');
+                const keys = Object.keys(item);
+                const hasColour = keys.includes('colour');
+                if (
+                    hasColour &&
+                    (!Number.isInteger(item.colour) ||
+                        (item.colour as number) < 0 ||
+                        (item.colour as number) > 29)
+                ) {
+                    throw new ProjectTagError('invalid-colour');
+                }
                 let tag: ProjectTag | undefined;
                 if (
                     'id' in item &&
+                    keys.includes('id') &&
                     typeof item.id === 'string' &&
-                    Object.keys(item).length === 1
+                    keys.length === (hasColour ? 2 : 1)
                 ) {
                     tag = tags.find((candidate) => candidate.id === item.id);
                     if (!tag) throw new ProjectTagError('unknown-tag');
                 } else if (
                     'name' in item &&
+                    keys.includes('name') &&
                     typeof item.name === 'string' &&
-                    Object.keys(item).length === 1
+                    keys.length === (hasColour ? 2 : 1)
                 ) {
                     const name = item.name.trim();
                     if (!name) throw new ProjectTagError('blank-name');
@@ -127,13 +139,16 @@ export class ProjectTagService {
                         tag = {
                             id: randomUUID(),
                             name,
-                            colour: tags.length % 30,
+                            colour: hasColour
+                                ? (item.colour as number)
+                                : tags.length % 30,
                         };
                         tags.push(tag);
                     }
                 } else {
                     throw new ProjectTagError('invalid-selection');
                 }
+                if (hasColour) tag.colour = item.colour as number;
                 if (!selected.has(tag.id)) {
                     selected.add(tag.id);
                     ids.push(tag.id);

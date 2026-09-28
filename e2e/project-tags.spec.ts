@@ -161,3 +161,106 @@ test('stages tags, supports keyboard selection and discard, and persists through
     expect((await readTags()).tags).toHaveLength(10);
 
 });
+
+test('stages named colours, discards changes, and shares saved colours across projects', async () => {
+    test.setTimeout(90000);
+    let drawer = await openSettings();
+    const input = drawer.getByRole('combobox', { name: 'Tags', exact: true });
+    await input.fill('Colour review');
+    await input.press('Enter');
+    let swatch = drawer.getByRole('button', { name: 'Colour for Colour review', exact: true });
+    await swatch.click();
+    let palette = page.getByRole('dialog', { name: 'Colour for Colour review', exact: true });
+    await expect(palette.getByRole('option')).toHaveCount(30);
+    await palette.getByText('Colour for Colour review', { exact: true }).click();
+    await expect(palette).toBeVisible();
+    await palette.getByRole('option', { name: 'Blue', exact: true }).click();
+    await expect(palette).toBeHidden();
+    await expect(swatch).toBeFocused();
+    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await swatch.click();
+    await expect(palette.getByRole('option', { name: 'Blue', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await expect(palette.getByRole('option', { name: 'Blue', exact: true })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(palette.getByRole('option', { name: 'Violet', exact: true })).toBeFocused();
+    await expect(palette.getByRole('option', { name: 'Blue', exact: true })).toHaveAttribute('aria-selected', 'true');
+    await page.keyboard.press('Enter');
+    await expect(palette).toBeHidden();
+    const beforeSave = await readTags().catch(() => ({ tags: [], assignments: {} }));
+    expect(beforeSave.tags.find(tag => tag.name === 'Colour review')).toBeUndefined();
+    for (const theme of ['dark', 'light']) {
+        await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+        await page.setViewportSize({ width: 1024, height: 600 });
+        await swatch.click();
+        await expect(palette.getByRole('option', { name: 'Violet', exact: true })).toHaveAttribute('aria-selected', 'true');
+        await expect(palette).toBeInViewport({ ratio: 1 });
+        await page.screenshot({ path: test.info().outputPath(`tag-colours-${theme}.png`) });
+        await page.keyboard.press('Escape');
+        await expect(palette).toBeHidden();
+        await expect(drawer).toBeVisible();
+        await expect(swatch).toBeFocused();
+    }
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    let stored = await readTags();
+    const tag = stored.tags.find(tag => tag.name === 'Colour review');
+    expect(tag?.colour).toBe(8);
+
+    drawer = await openSettings(1);
+    const otherInput = drawer.getByRole('combobox', { name: 'Tags', exact: true });
+    await otherInput.fill('Colour review');
+    await otherInput.press('Enter');
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    stored = await readTags();
+    const assignmentPaths = Object.entries(stored.assignments).filter(([, ids]) => ids.includes(tag!.id)).map(([projectPath]) => projectPath).sort();
+    expect(assignmentPaths).toHaveLength(2);
+
+    drawer = await openSettings();
+    swatch = drawer.getByRole('button', { name: 'Colour for Colour review', exact: true });
+    await swatch.click();
+    palette = page.getByRole('dialog', { name: 'Colour for Colour review', exact: true });
+    // Moving focus and dismissing the palette does not edit the colour.
+    await page.keyboard.press('Home');
+    await expect(palette.getByRole('option', { name: 'Red', exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeDisabled();
+    await swatch.click();
+    await page.keyboard.press('Tab');
+    await expect(palette).toBeHidden();
+    await expect(drawer.getByRole('button', { name: 'Remove Colour review', exact: true })).toBeFocused();
+    await swatch.click();
+    await palette.getByRole('option', { name: 'Red', exact: true }).click();
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeEnabled();
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+    await page.getByRole('button', { name: 'Discard', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    expect((await readTags()).tags.find(candidate => candidate.id === tag!.id)?.colour).toBe(8);
+
+    drawer = await openSettings();
+    swatch = drawer.getByRole('button', { name: 'Colour for Colour review', exact: true });
+    await swatch.click();
+    await palette.getByRole('option', { name: 'Green', exact: true }).click();
+    await swatch.click();
+    await palette.getByRole('option', { name: 'Violet', exact: true }).click();
+    await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeDisabled();
+    await swatch.click();
+    await palette.getByRole('option', { name: 'Green', exact: true }).click();
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    stored = await readTags();
+    expect(stored.tags.find(candidate => candidate.id === tag!.id)?.colour).toBe(4);
+    expect(Object.entries(stored.assignments).filter(([, ids]) => ids.includes(tag!.id)).map(([projectPath]) => projectPath).sort()).toEqual(assignmentPaths);
+    await electronApp.close();
+    await launch();
+    palette = page.getByRole('dialog', { name: 'Colour for Colour review', exact: true });
+    for (const projectIndex of [0, 1]) {
+        drawer = await openSettings(projectIndex);
+        swatch = drawer.getByRole('button', { name: 'Colour for Colour review', exact: true });
+        await swatch.click();
+        await expect(palette.getByRole('option', { name: 'Green', exact: true })).toHaveAttribute('aria-selected', 'true');
+        await page.keyboard.press('Escape');
+        await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(drawer).toBeHidden();
+    }
+});

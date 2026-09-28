@@ -53,7 +53,9 @@ export function useProjectSettingsTags(
     );
     const selection = ready && draft ? draft.selection : [];
     const changed =
-        ready && !!draft && hasProjectTagChanges(draft.initial, selection);
+        ready &&
+        !!draft &&
+        hasProjectTagChanges(draft.initial, selection, snapshot?.tags ?? []);
     /** Changes the active draft without writing to disk.
      * @param next - Current picker membership.
      */

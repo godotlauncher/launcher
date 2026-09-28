@@ -57,6 +57,92 @@ describe('ProjectTagService', () => {
         expect(second.assignments[otherPath]).toEqual([first.tags[0].id]);
     });
 
+    it('recolours an existing tag for every assigned project without changing IDs', async () => {
+        const first = await service.setProjectTags(projectPath, [
+            { name: 'Art' },
+            { name: 'Music' },
+        ]);
+        await service.setProjectTags(otherPath, [{ id: first.tags[0].id }]);
+
+        const changed = await service.setProjectTags(projectPath, [
+            { id: first.tags[0].id, colour: 12 },
+            { id: first.tags[1].id },
+        ]);
+        expect(changed.tags).toEqual([
+            { ...first.tags[0], colour: 12 },
+            first.tags[1],
+        ]);
+        expect(changed.assignments[projectPath]).toEqual(
+            first.assignments[projectPath],
+        );
+        expect(changed.assignments[otherPath]).toEqual([first.tags[0].id]);
+        expect(await store.snapshot()).toEqual(changed);
+    });
+
+    it('uses explicit preset colour zero for a new tag and preserves it when omitted', async () => {
+        const created = await service.setProjectTags(projectPath, [
+            { name: 'Art', colour: 0 },
+            { name: 'Music', colour: 23 },
+        ]);
+        expect(created.tags.map((tag) => tag.colour)).toEqual([0, 23]);
+
+        const recoloured = await service.setProjectTags(projectPath, [
+            { name: 'ART', colour: 7 },
+            { id: created.tags[1].id },
+        ]);
+        const unchanged = await service.setProjectTags(otherPath, [
+            { name: 'art' },
+        ]);
+        expect(recoloured.tags.map((tag) => tag.colour)).toEqual([7, 23]);
+        expect(unchanged.tags.map((tag) => tag.colour)).toEqual([7, 23]);
+    });
+
+    it.each([NaN, null, 1.5, -1, 30, '3', undefined])(
+        'rejects invalid preset colour %s without writing',
+        async (colour) => {
+            await expect(
+                service.setProjectTags(projectPath, [
+                    { name: 'Art', colour } as never,
+                ]),
+            ).rejects.toMatchObject({ code: 'invalid-colour' });
+            expect(await store.snapshot()).toEqual({
+                tags: [],
+                assignments: {},
+            });
+            await expect(fs.stat(filePath)).rejects.toMatchObject({
+                code: 'ENOENT',
+            });
+        },
+    );
+
+    it('rolls back earlier creation and recolouring when a later item is malformed', async () => {
+        const original = await service.setProjectTags(otherPath, [
+            { name: 'Art' },
+        ]);
+        await expect(
+            service.setProjectTags(projectPath, [
+                { id: original.tags[0].id, colour: 18 },
+                { name: 'Music', colour: 4 },
+                { name: 'Broken', colour: 30 },
+            ]),
+        ).rejects.toMatchObject({ code: 'invalid-colour' });
+        expect(await store.snapshot()).toEqual(original);
+    });
+
+    it('rejects extra selection fields and mixed IDs and names', async () => {
+        await expect(
+            service.setProjectTags(projectPath, [
+                { name: 'Art', colour: 2, extra: true } as never,
+            ]),
+        ).rejects.toMatchObject({ code: 'invalid-selection' });
+        await expect(
+            service.setProjectTags(projectPath, [
+                { id: 'x', name: 'Art' } as never,
+            ]),
+        ).rejects.toMatchObject({ code: 'invalid-selection' });
+        expect(await store.snapshot()).toEqual({ tags: [], assignments: {} });
+    });
+
     it('rejects invalid input without saving provisional tags or assignments', async () => {
         await expect(
             service.setProjectTags(projectPath, [

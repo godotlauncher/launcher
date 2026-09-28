@@ -6,7 +6,9 @@ import {
     getProjectTagOptions,
     getSelectedProjectTags,
     projectTagColours,
+    withProjectTagColour,
 } from './project-tag.model';
+import { ProjectTagColourPicker } from './project-tag-colour-picker.component';
 
 type ProjectTagPickerProps = {
     tags: ProjectTag[];
@@ -117,13 +119,24 @@ export function ProjectTagPicker({
                             key={tag.id}
                             className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-base-content/10 py-1 pl-2 pr-1 text-sm"
                         >
-                            <span
-                                aria-hidden="true"
-                                className="size-2.5 shrink-0 rounded-full"
-                                style={{
-                                    backgroundColor:
-                                        projectTagColours[tag.colour],
-                                }}
+                            <ProjectTagColourPicker
+                                name={tag.name}
+                                colour={tag.colour}
+                                disabled={disabled}
+                                onOpen={() => setOpen(false)}
+                                onChange={(colour) =>
+                                    onChange(
+                                        selection.map((item, position) =>
+                                            position === index
+                                                ? withProjectTagColour(
+                                                      item,
+                                                      colour,
+                                                      tags,
+                                                  )
+                                                : item,
+                                        ),
+                                    )
+                                }
                             />
                             <span className="break-all">{tag.name}</span>
                             <button
