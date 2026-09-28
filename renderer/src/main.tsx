@@ -8,6 +8,7 @@ import { AlertsProvider } from './hooks/alerts.hook.tsx';
 import { AppProvider } from './hooks/app.hook.tsx';
 import { AppNavigationProvider } from './hooks/app-navigation.hook.tsx';
 import { PreferencesProvider } from './hooks/preferences.hook.tsx';
+import { ProjectTagsProvider } from './hooks/project-tags.hook.tsx';
 import { ProjectsProvider } from './hooks/projects.hook.tsx';
 import { ReleaseProvider } from './hooks/release.hook.tsx';
 import { ThemeProvider } from './hooks/theme.hook.tsx';
@@ -29,7 +30,9 @@ ReactDOM.createRoot(rootElement).render(
                                 <ReleaseProvider>
                                     <AlertsProvider>
                                         <ProjectsProvider>
-                                            <App />
+                                            <ProjectTagsProvider>
+                                                <App />
+                                            </ProjectTagsProvider>
                                         </ProjectsProvider>
                                     </AlertsProvider>
                                 </ReleaseProvider>

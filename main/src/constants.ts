@@ -7,6 +7,7 @@ export const TEMPLATE_DIR_NAME = 'templates';
 export const PROJECT_RESOURCES_DIRNAME = 'project_resources';
 
 export const PROJECTS_FILENAME = 'projects.json';
+export const PROJECT_TAGS_FILENAME = 'project-tags.json';
 export const PREFS_FILENAME = 'prefs.json';
 export const RELEASES_FILENAME = 'releases.json';
 export const INSTALLED_RELEASES_FILENAME = 'installed-releases.json';

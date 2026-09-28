@@ -27,6 +27,8 @@ import { AppIntegrationsModule } from '../app-integrations/app-integrations.modu
 import type { AppConfig } from '../config/index.js';
 import { EditorCatalogModule } from '../editor-catalog/editor-catalog.module.js';
 import { EditorProjectRepairAdapter } from '../editor-installs/editor-project-repair.adapter.js';
+import { ProjectTagService } from '../project-tags/project-tag.service.js';
+import { ProjectTagsController } from '../project-tags/project-tags.controller.js';
 import { TrayAvailabilityService } from '../services/tray-availability.service.js';
 import { ToolIntegrationModule } from '../tool-integration/tool-integration.module.js';
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
@@ -73,12 +75,22 @@ describe('ProjectsModule', () => {
         expect(application.get(ProjectsController)).toBeInstanceOf(
             ProjectsController,
         );
+        expect(application.get(ProjectTagsController)).toBeInstanceOf(
+            ProjectTagsController,
+        );
         expect(
             application.get(ProjectRepositoryOriginIndexService),
         ).toBeInstanceOf(ProjectRepositoryOriginIndexService);
         expect(application.get(ProjectsStore)).toBe(
             application.get(ProjectsStore),
         );
+        expect(
+            (
+                application.get(ProjectTagService) as unknown as {
+                    projects: ProjectsStore;
+                }
+            ).projects,
+        ).toBe(application.get(ProjectsStore));
         expect(
             (
                 application.get(EditorProjectRepairAdapter) as unknown as {

@@ -488,5 +488,18 @@
             "projectNotFound": "找不到專案",
             "initFailed": "初始化 Git 儲存庫失敗。"
         }
+    },
+    "tags": {
+        "label": "標籤",
+        "placeholder": "搜尋或建立標籤",
+        "remove": "移除 {{name}}",
+        "create": "建立「{{name}}」",
+        "alreadySelected": "已選取此標籤。",
+        "empty": "輸入名稱以建立標籤。",
+        "unsaved": "未儲存的變更",
+        "loading": "正在載入標籤...",
+        "loadFailed": "無法載入標籤。",
+        "retry": "重試",
+        "saveFailed": "無法儲存標籤。請重試。"
     }
 }

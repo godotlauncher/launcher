@@ -1,5 +1,6 @@
 import type { AppUpdateMessage } from '../app/index.js';
 import type { CodeEditorIntegrationSettings } from '../codeEditorIntegration/index.js';
+import type { ProjectTagsSnapshot } from '../project-tags/index.js';
 import type {
     LaunchProjectResult,
     ProjectDetails,
@@ -13,6 +14,7 @@ import type {
 export type AppEventMap = {
     'app-updates': AppUpdateMessage;
     'projects-updated': ProjectDetails[];
+    'project-tags-updated': ProjectTagsSnapshot;
     'remote-project-import-progress': RemoteProjectImportProgress;
     'code-editor-integrations-updated': CodeEditorIntegrationSettings[];
     'project-launch-code-editor-warning': {

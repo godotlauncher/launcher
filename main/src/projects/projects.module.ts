@@ -3,6 +3,7 @@ import { AppIntegrationsModule } from '../app-integrations/app-integrations.modu
 import { CodeEditorIntegrationModule } from '../codeEditorIntegration/codeEditorIntegration.module.js';
 import { EditorCatalogModule } from '../editor-catalog/editor-catalog.module.js';
 import { EditorInstallsModule } from '../editor-installs/editor-installs.module.js';
+import { ProjectTagsModule } from '../project-tags/project-tags.module.js';
 import { TrayAvailabilityModule } from '../services/tray-availability.module.js';
 import { GitModule } from '../tool-integration/integrations/git/git.module.js';
 import { GitLfsModule } from '../tool-integration/integrations/git-lfs/git-lfs.module.js';
@@ -23,6 +24,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
 @Module({
     imports: [
         ProjectsStoreModule,
+        ProjectTagsModule,
         AppIntegrationsModule,
         CodeEditorIntegrationModule,
         EditorInstallsModule,

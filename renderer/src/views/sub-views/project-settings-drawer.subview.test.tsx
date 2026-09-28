@@ -63,6 +63,15 @@ vi.mock('react-i18next', () => {
     };
 });
 
+vi.mock('../../hooks/project-tags.hook', () => ({
+    useProjectTags: () => ({
+        snapshot: { tags: [], assignments: {} },
+        loadFailed: false,
+        reload: vi.fn(),
+        save: vi.fn(),
+    }),
+}));
+
 vi.mock('../export-templates/hooks/template-jobs.hook', () => ({
     useTemplateJobs: () => [],
 }));

@@ -145,6 +145,9 @@ describe('ProjectsService', () => {
         snapshot: vi.fn(),
         update: vi.fn(),
     };
+    const projectTags = {
+        removeProjectAssignments: vi.fn().mockResolvedValue(undefined),
+    };
     const remoteSources = {
         inspectPublicGitSource: vi.fn(),
         listConnectedRepositories: vi.fn(),
@@ -195,6 +198,7 @@ describe('ProjectsService', () => {
             remoteImport as never,
             projectPublication as never,
             projectOrigins as never,
+            projectTags as never,
         );
     });
 
@@ -666,7 +670,24 @@ describe('ProjectsService', () => {
         expect(mocks.writeProjectLauncherConfig).not.toHaveBeenCalled();
         expect(mocks.removeProjectEditor).toHaveBeenCalledWith(project);
         expect(store.remove).toHaveBeenCalledWith(project.path);
+        expect(projectTags.removeProjectAssignments).toHaveBeenCalledWith(
+            project.path,
+        );
         expect(mocks.ipcWebContentsSend).toHaveBeenCalledOnce();
+    });
+
+    it('publishes successful removal even when tag cleanup fails', async () => {
+        const project = { path: '/projects/game' } as ProjectDetails;
+        store.remove.mockResolvedValueOnce([]);
+        projectTags.removeProjectAssignments.mockRejectedValueOnce(
+            new Error('write failed'),
+        );
+        await expect(service.removeProject(project)).resolves.toEqual([]);
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            expect.anything(),
+            [],
+        );
     });
 
     it('persists an uninstalled official editor without installed-only setup', async () => {

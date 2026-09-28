@@ -488,5 +488,18 @@
             "projectNotFound": "Nie znaleziono projektu",
             "initFailed": "Nie udało się zainicjować repozytorium Git."
         }
+    },
+    "tags": {
+        "label": "Tagi",
+        "placeholder": "Wyszukaj lub utwórz tag",
+        "remove": "Usuń {{name}}",
+        "create": "Utwórz \"{{name}}\"",
+        "alreadySelected": "Ten tag jest już wybrany.",
+        "empty": "Wpisz nazwę, aby utworzyć tag.",
+        "unsaved": "Niezapisane zmiany",
+        "loading": "Ładowanie tagów...",
+        "loadFailed": "Nie udało się wczytać tagów.",
+        "retry": "Spróbuj ponownie",
+        "saveFailed": "Nie udało się zapisać tagów. Spróbuj ponownie."
     }
 }

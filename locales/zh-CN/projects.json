@@ -488,5 +488,18 @@
             "projectNotFound": "未找到项目",
             "initFailed": "初始化 Git 仓库失败。"
         }
+    },
+    "tags": {
+        "label": "标签",
+        "placeholder": "搜索或创建标签",
+        "remove": "移除 {{name}}",
+        "create": "创建“{{name}}”",
+        "alreadySelected": "已选择此标签。",
+        "empty": "输入名称以创建标签。",
+        "unsaved": "未保存的更改",
+        "loading": "正在加载标签...",
+        "loadFailed": "无法加载标签。",
+        "retry": "重试",
+        "saveFailed": "无法保存标签。请重试。"
     }
 }

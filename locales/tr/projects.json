@@ -488,5 +488,18 @@
             "projectNotFound": "Proje bulunamadı",
             "initFailed": "Git deposu başlatılamadı."
         }
+    },
+    "tags": {
+        "label": "Etiketler",
+        "placeholder": "Etiket ara veya oluştur",
+        "remove": "{{name}} etiketini kaldır",
+        "create": "\"{{name}}\" oluştur",
+        "alreadySelected": "Bu etiket zaten seçili.",
+        "empty": "Etiket oluşturmak için bir ad yazın.",
+        "unsaved": "Kaydedilmemiş değişiklikler",
+        "loading": "Etiketler yükleniyor...",
+        "loadFailed": "Etiketler yüklenemedi.",
+        "retry": "Yeniden dene",
+        "saveFailed": "Etiketler kaydedilemedi. Yeniden deneyin."
     }
 }

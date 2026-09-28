@@ -488,5 +488,18 @@
             "projectNotFound": "Projekt nicht gefunden",
             "initFailed": "Git-Repository konnte nicht initialisiert werden."
         }
+    },
+    "tags": {
+        "label": "Tags",
+        "placeholder": "Tag suchen oder erstellen",
+        "remove": "{{name}} entfernen",
+        "create": "\"{{name}}\" erstellen",
+        "alreadySelected": "Dieser Tag ist bereits ausgewählt.",
+        "empty": "Gib einen Namen ein, um einen Tag zu erstellen.",
+        "unsaved": "Ungespeicherte Änderungen",
+        "loading": "Tags werden geladen...",
+        "loadFailed": "Tags konnten nicht geladen werden.",
+        "retry": "Erneut versuchen",
+        "saveFailed": "Tags konnten nicht gespeichert werden. Versuche es erneut."
     }
 }

@@ -488,5 +488,18 @@
             "projectNotFound": "Proyecto no encontrado",
             "initFailed": "No se pudo inicializar el repositorio Git."
         }
+    },
+    "tags": {
+        "label": "Etiquetas",
+        "placeholder": "Buscar o crear una etiqueta",
+        "remove": "Quitar {{name}}",
+        "create": "Crear \"{{name}}\"",
+        "alreadySelected": "Esta etiqueta ya está seleccionada.",
+        "empty": "Escribe un nombre para crear una etiqueta.",
+        "unsaved": "Cambios sin guardar",
+        "loading": "Cargando etiquetas...",
+        "loadFailed": "No se pudieron cargar las etiquetas.",
+        "retry": "Reintentar",
+        "saveFailed": "No se pudieron guardar las etiquetas. Inténtalo de nuevo."
     }
 }

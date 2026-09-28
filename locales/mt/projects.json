@@ -488,5 +488,18 @@
             "projectNotFound": "Il-proġett ma nstabx",
             "initFailed": "Il-bidu tar-repositorju Git falla."
         }
+    },
+    "tags": {
+        "label": "Tikketti",
+        "placeholder": "Fittex jew oħloq tikketta",
+        "remove": "Neħħi {{name}}",
+        "create": "Oħloq \"{{name}}\"",
+        "alreadySelected": "Din it-tikketta diġà magħżula.",
+        "empty": "Ikteb isem biex toħloq tikketta.",
+        "unsaved": "Bidliet mhux issejvjati",
+        "loading": "Qed jitgħabbew it-tikketti...",
+        "loadFailed": "Ma setgħux jitgħabbew it-tikketti.",
+        "retry": "Erġa’ pprova",
+        "saveFailed": "Ma setgħux jiġu ssejvjati t-tikketti. Erġa’ pprova."
     }
 }

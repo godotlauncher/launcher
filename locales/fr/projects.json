@@ -488,5 +488,18 @@
             "projectNotFound": "Projet introuvable",
             "initFailed": "Échec de l'initialisation du dépôt Git."
         }
+    },
+    "tags": {
+        "label": "Étiquettes",
+        "placeholder": "Rechercher ou créer une étiquette",
+        "remove": "Retirer {{name}}",
+        "create": "Créer \"{{name}}\"",
+        "alreadySelected": "Cette étiquette est déjà sélectionnée.",
+        "empty": "Saisissez un nom pour créer une étiquette.",
+        "unsaved": "Modifications non enregistrées",
+        "loading": "Chargement des étiquettes...",
+        "loadFailed": "Impossible de charger les étiquettes.",
+        "retry": "Réessayer",
+        "saveFailed": "Impossible d’enregistrer les étiquettes. Réessayez."
     }
 }
