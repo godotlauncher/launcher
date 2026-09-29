@@ -8,6 +8,10 @@ import { ProjectViewToggle } from './project-view-toggle.component';
 
 type ProjectsHeaderProps = {
     viewMode: ProjectViewMode;
+    tagFilter?: React.ReactNode;
+    searchInputRef?: React.RefObject<HTMLInputElement | null>;
+    searchShortcut?: string;
+    searchAriaKeyShortcuts?: string;
     viewModeDisabled?: boolean;
     onViewModeChange: (mode: ProjectViewMode) => void;
     cardsViewLabel: string;
@@ -35,6 +39,10 @@ type ProjectsHeaderProps = {
  */
 export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     viewMode,
+    tagFilter,
+    searchInputRef,
+    searchShortcut,
+    searchAriaKeyShortcuts,
     viewModeDisabled,
     onViewModeChange,
     cardsViewLabel,
@@ -107,13 +115,19 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                     cardsLabel={cardsViewLabel}
                     listLabel={listViewLabel}
                 />
-                <SearchField
-                    placeholder={searchPlaceholder}
-                    value={searchValue}
-                    onChange={onSearchChange}
-                    focusOnMount
-                    data-testid="inputProjectSearch"
-                />
+                <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
+                    {tagFilter}
+                    <SearchField
+                        inputRef={searchInputRef}
+                        shortcut={searchShortcut}
+                        ariaKeyShortcuts={searchAriaKeyShortcuts}
+                        placeholder={searchPlaceholder}
+                        value={searchValue}
+                        onChange={onSearchChange}
+                        focusOnMount
+                        data-testid="inputProjectSearch"
+                    />
+                </div>
             </div>
         )}
     </div>

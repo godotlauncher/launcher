@@ -1,4 +1,5 @@
 import type React from 'react';
+import { ProjectTagPopover } from '../../../components/project-tags/project-tag-popover.component';
 import { formatRelativeTime } from '../../../i18n/relative-time.util';
 import { ProjectActions } from './project-actions.component';
 import { ProjectBadges } from './project-badges.component';
@@ -12,6 +13,10 @@ import type { ProjectListItemProps } from './project-list.types';
  */
 export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     viewMode = 'cards',
+    tagSnapshot,
+    tagsLoadFailed,
+    onRetryTags,
+    onSetProjectTags,
     project,
     sectionKey,
     highlighted,
@@ -112,6 +117,22 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
         t,
         actions,
         badges,
+        tagIndicators: (
+            <ProjectTagPopover
+                projectName={project.name}
+                tags={tagSnapshot?.tags ?? []}
+                selection={(tagSnapshot?.assignments[project.path] ?? []).map(
+                    (id) => ({ id }),
+                )}
+                loading={!tagSnapshot}
+                loadFailed={tagsLoadFailed}
+                disabled={!onSetProjectTags}
+                onRetry={onRetryTags}
+                onChange={(selection) =>
+                    onSetProjectTags?.(project.path, selection)
+                }
+            />
+        ),
         launchDisabled,
         lastOpened,
     };

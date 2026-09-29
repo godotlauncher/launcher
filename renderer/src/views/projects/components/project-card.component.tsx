@@ -17,6 +17,7 @@ export function ProjectCard({
     t,
     actions,
     badges,
+    tagIndicators,
     launchDisabled,
     lastOpened,
 }: ProjectCardProps) {
@@ -49,6 +50,7 @@ export function ProjectCard({
                         <h3 className="truncate text-base font-semibold">
                             {project.name}
                         </h3>
+                        {tagIndicators}
                     </div>
                     <CopyBadge
                         value={project.path}

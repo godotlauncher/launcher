@@ -149,3 +149,48 @@ describe('getProjectsViewState', () => {
         ).toBe('loading');
     });
 });
+
+describe('project tag filtering', () => {
+    it('matches any selected tag and intersects the project name search', () => {
+        const alpha = project('Alpha', { pinned: true });
+        const beta = project('Beta');
+        const untagged = project('Untagged');
+        const assignments = {
+            [alpha.path]: ['red'],
+            [beta.path]: ['blue', 'red'],
+        };
+        const projects = [alpha, beta, untagged];
+        const either = getProjectSections(
+            projects,
+            '',
+            ['blue', 'red'],
+            assignments,
+        );
+        expect(either.pinnedProjects).toEqual([alpha]);
+        expect(either.newProjects).toEqual([beta]);
+        const searched = getProjectSections(
+            projects,
+            ' BETA ',
+            ['red'],
+            assignments,
+        );
+        expect(searched.pinnedProjects).toEqual([]);
+        expect(searched.newProjects).toEqual([beta]);
+        expect(
+            getProjectSections(projects, '', ['unused'], assignments),
+        ).toEqual({ newProjects: [], pinnedProjects: [], recentProjects: [] });
+        expect(
+            getProjectSections(projects, '', [], assignments).newProjects,
+        ).toContain(untagged);
+    });
+    it('keeps an active filter accessible when there are no projects', () => {
+        expect(
+            getProjectsViewState({
+                projectCount: 0,
+                textSearch: '',
+                projectsLoading: false,
+                tagFilterActive: true,
+            }),
+        ).toBe('list');
+    });
+});

@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "重新排序 {{project}}",
-            "disabledSearch": "清除搜索后可重新排序已固定的项目。",
+            "disabledSearch": "清除筛选以重新排序置顶项目。",
             "instructions": "按空格键或回车键选取已固定的项目。使用方向键移动，按空格键或回车键放下，按 Escape 键取消。",
             "announcements": {
                 "pickedUp": "已选取 {{project}}，位置 {{position}}，共 {{count}} 个。",
@@ -487,6 +487,75 @@
         "errors": {
             "projectNotFound": "未找到项目",
             "initFailed": "初始化 Git 仓库失败。"
+        }
+    },
+    "tags": {
+        "label": "标签",
+        "placeholder": "搜索或创建标签",
+        "remove": "移除 {{name}}",
+        "create": "创建“{{name}}”",
+        "alreadySelected": "已选择此标签。",
+        "empty": "输入名称以创建标签。",
+        "unsaved": "未保存的更改",
+        "loading": "正在加载标签...",
+        "loadFailed": "无法加载标签。",
+        "retry": "重试",
+        "saveFailed": "无法保存标签。请重试。",
+        "colour": "颜色",
+        "colourFor": "{{name}} 的颜色",
+        "colours": {
+            "red": "红色",
+            "orange": "橙色",
+            "yellow": "黄色",
+            "lime": "青柠色",
+            "green": "绿色",
+            "teal": "蓝绿色",
+            "cyan": "青色",
+            "blue": "蓝色",
+            "violet": "紫色",
+            "fuchsia": "品红色",
+            "rose": "玫瑰色",
+            "apricot": "杏色",
+            "lemon": "柠檬色",
+            "lightLime": "浅青柠色",
+            "mint": "薄荷色",
+            "turquoise": "绿松石色",
+            "aqua": "水蓝色",
+            "sky": "天蓝色",
+            "lavender": "薰衣草色",
+            "orchid": "兰花色",
+            "darkRed": "深红色",
+            "rust": "铁锈色",
+            "ochre": "赭色",
+            "olive": "橄榄色",
+            "forest": "森林绿",
+            "darkTeal": "深蓝绿色",
+            "darkCyan": "深青色",
+            "darkBlue": "深蓝色",
+            "darkViolet": "深紫色",
+            "darkFuchsia": "深品红色"
+        },
+        "filter": {
+            "search": "搜索标签",
+            "noMatches": "没有匹配的标签",
+            "clear": "清除标签",
+            "clearAll": "清除筛选",
+            "saveFailed": "无法保存标签筛选。"
+        },
+        "none": "无标签",
+        "manage": {
+            "title": "管理标签",
+            "newTag": "新建标签",
+            "name": "标签名称",
+            "save": "保存",
+            "add": "添加",
+            "usage": "项目数：{{count}}",
+            "duplicate": "已存在同名标签。",
+            "edit": "编辑名称",
+            "description": "使用标签整理和筛选项目。",
+            "delete": "删除",
+            "deleteTitle": "删除“{{name}}”？",
+            "deleteDescription": "此标签将从所有项目中移除。"
         }
     }
 }

@@ -11,6 +11,7 @@ import {
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ProjectTagPopover } from '../../components/project-tags/project-tag-popover.component';
 import { CopyBadge } from '../../components/ui/copy-badge.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { VerticalTabMenu } from '../../components/ui/vertical-tab-menu.component';
@@ -27,6 +28,7 @@ import { ProjectSettingsSourceControlSection } from './project-settings-drawer/c
 import type { ProjectTemplateFilesHandle } from './project-settings-drawer/components/project-template-files.component';
 import { useProjectSettingsForm } from './project-settings-drawer/hooks/project-settings-form.hook';
 import { useProjectSettingsSourceControl } from './project-settings-drawer/hooks/project-settings-source-control.hook';
+import { useProjectSettingsTags } from './project-settings-drawer/hooks/project-settings-tags.hook';
 import {
     hasProjectCodeEditorChanges,
     hasProjectRenameChanges,
@@ -114,6 +116,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         clearSettingsSave,
         t,
     });
+    const tags = useProjectSettingsTags(project?.path, open);
     const sourceControl = useProjectSettingsSourceControl({
         open,
         project,
@@ -349,6 +352,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                 current = await onSetProjectWindowed(current, form.windowed);
                 form.acceptWindowed(form.windowed);
             }
+            if (tags.changed) await tags.submit();
             clearSettingsSave(project.path);
             if (gitDirty) setActiveTab('sourceControl');
             else onOpenChange(false);
@@ -390,9 +394,11 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         form.hasCodeEditorChanges ||
         form.hasReleaseChanges ||
         form.hasWindowedChanges ||
-        templatesDirty;
+        templatesDirty ||
+        tags.changed;
     const pendingTabs: Record<ProjectSettingsTab, boolean> = {
-        project: form.hasRenameChanges || form.hasReleaseChanges,
+        project:
+            form.hasRenameChanges || form.hasReleaseChanges || tags.changed,
         sourceControl: gitDirty,
         codeEditor: form.hasCodeEditorChanges,
         launch: form.hasWindowedChanges,
@@ -508,6 +514,19 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                                     name={form.name}
                                     nameChanged={
                                         form.name.trim() !== form.initialName
+                                    }
+                                    tagsField={
+                                        <ProjectTagPopover
+                                            variant="field"
+                                            tags={tags.tags}
+                                            selection={tags.selection}
+                                            changed={tags.changed}
+                                            disabled={isSubmitting}
+                                            loading={!tags.ready}
+                                            loadFailed={tags.loadFailed}
+                                            onRetry={tags.reload}
+                                            onChange={tags.change}
+                                        />
                                     }
                                     editorChanged={form.hasReleaseChanges}
                                     nameError={form.nameError}

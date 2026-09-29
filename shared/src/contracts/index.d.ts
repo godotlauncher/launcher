@@ -9,6 +9,7 @@ export type * from './git/index.js';
 export type * from './git-lfs/index.js';
 export type * from './ipc/index.js';
 export type * from './preferences/index.js';
+export type * from './project-tags/index.js';
 export type * from './projects/index.js';
 export type * from './releases/index.js';
 export type * from './terminal/index.js';

@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Reordenar {{project}}",
-            "disabledSearch": "Limpe a pesquisa para reordenar os projetos fixados.",
+            "disabledSearch": "Limpe os filtros para reordenar os projetos afixados.",
             "instructions": "Para selecionar um projeto fixado, prima Espaço ou Enter. Use as setas para o mover, Espaço ou Enter para o largar e Escape para cancelar.",
             "announcements": {
                 "pickedUp": "{{project}} selecionado, posição {{position}} de {{count}}.",
@@ -487,6 +487,75 @@
         "errors": {
             "projectNotFound": "Projeto não encontrado",
             "initFailed": "Falha ao inicializar o repositório Git."
+        }
+    },
+    "tags": {
+        "label": "Etiquetas",
+        "placeholder": "Pesquisar ou criar uma etiqueta",
+        "remove": "Remover {{name}}",
+        "create": "Criar \"{{name}}\"",
+        "alreadySelected": "Esta etiqueta já está selecionada.",
+        "empty": "Escreve um nome para criar uma etiqueta.",
+        "unsaved": "Alterações por guardar",
+        "loading": "A carregar etiquetas...",
+        "loadFailed": "Não foi possível carregar as etiquetas.",
+        "retry": "Tentar novamente",
+        "saveFailed": "Não foi possível guardar as etiquetas. Tenta novamente.",
+        "colour": "Cor",
+        "colourFor": "Cor de {{name}}",
+        "colours": {
+            "red": "Vermelho",
+            "orange": "Laranja",
+            "yellow": "Amarelo",
+            "lime": "Lima",
+            "green": "Verde",
+            "teal": "Verde azulado",
+            "cyan": "Ciano",
+            "blue": "Azul",
+            "violet": "Violeta",
+            "fuchsia": "Fúcsia",
+            "rose": "Rosa",
+            "apricot": "Alperce",
+            "lemon": "Limão",
+            "lightLime": "Lima claro",
+            "mint": "Menta",
+            "turquoise": "Turquesa",
+            "aqua": "Água",
+            "sky": "Azul céu",
+            "lavender": "Lavanda",
+            "orchid": "Orquídea",
+            "darkRed": "Vermelho escuro",
+            "rust": "Ferrugem",
+            "ochre": "Ocre",
+            "olive": "Azeitona",
+            "forest": "Verde floresta",
+            "darkTeal": "Verde azulado escuro",
+            "darkCyan": "Ciano escuro",
+            "darkBlue": "Azul escuro",
+            "darkViolet": "Violeta escuro",
+            "darkFuchsia": "Fúcsia escuro"
+        },
+        "filter": {
+            "search": "Pesquisar etiquetas",
+            "noMatches": "Nenhuma etiqueta correspondente",
+            "clear": "Limpar etiquetas",
+            "clearAll": "Limpar filtros",
+            "saveFailed": "Não foi possível guardar os filtros de etiquetas."
+        },
+        "none": "Sem etiquetas",
+        "manage": {
+            "title": "Gerir etiquetas",
+            "newTag": "Nova etiqueta",
+            "name": "Nome da etiqueta",
+            "save": "Guardar",
+            "add": "Adicionar",
+            "usage": "Projetos: {{count}}",
+            "duplicate": "Já existe uma etiqueta com este nome.",
+            "edit": "Editar nome",
+            "description": "Organize e filtre os seus projetos com etiquetas.",
+            "delete": "Eliminar",
+            "deleteTitle": "Eliminar \"{{name}}\"?",
+            "deleteDescription": "Esta etiqueta será removida de todos os projetos."
         }
     }
 }

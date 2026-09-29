@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Riordina {{project}}",
-            "disabledSearch": "Cancella la ricerca per riordinare i progetti fissati.",
+            "disabledSearch": "Cancella i filtri per riordinare i progetti fissati.",
             "instructions": "Per prendere un progetto fissato, premi Spazio o Invio. Usa i tasti freccia per spostarlo, Spazio o Invio per rilasciarlo ed Esc per annullare.",
             "announcements": {
                 "pickedUp": "{{project}} selezionato, posizione {{position}} di {{count}}.",
@@ -487,6 +487,75 @@
         "errors": {
             "projectNotFound": "Progetto non trovato",
             "initFailed": "Impossibile inizializzare il repository Git."
+        }
+    },
+    "tags": {
+        "label": "Tag",
+        "placeholder": "Cerca o crea un tag",
+        "remove": "Rimuovi {{name}}",
+        "create": "Crea \"{{name}}\"",
+        "alreadySelected": "Questo tag è già selezionato.",
+        "empty": "Digita un nome per creare un tag.",
+        "unsaved": "Modifiche non salvate",
+        "loading": "Caricamento dei tag...",
+        "loadFailed": "Impossibile caricare i tag.",
+        "retry": "Riprova",
+        "saveFailed": "Impossibile salvare i tag. Riprova.",
+        "colour": "Colore",
+        "colourFor": "Colore di {{name}}",
+        "colours": {
+            "red": "Rosso",
+            "orange": "Arancione",
+            "yellow": "Giallo",
+            "lime": "Lime",
+            "green": "Verde",
+            "teal": "Verde petrolio",
+            "cyan": "Ciano",
+            "blue": "Blu",
+            "violet": "Viola",
+            "fuchsia": "Fucsia",
+            "rose": "Rosa",
+            "apricot": "Albicocca",
+            "lemon": "Limone",
+            "lightLime": "Lime chiaro",
+            "mint": "Menta",
+            "turquoise": "Turchese",
+            "aqua": "Acquamarina",
+            "sky": "Celeste",
+            "lavender": "Lavanda",
+            "orchid": "Orchidea",
+            "darkRed": "Rosso scuro",
+            "rust": "Ruggine",
+            "ochre": "Ocra",
+            "olive": "Oliva",
+            "forest": "Verde bosco",
+            "darkTeal": "Verde petrolio scuro",
+            "darkCyan": "Ciano scuro",
+            "darkBlue": "Blu scuro",
+            "darkViolet": "Viola scuro",
+            "darkFuchsia": "Fucsia scuro"
+        },
+        "filter": {
+            "search": "Cerca tag",
+            "noMatches": "Nessun tag corrispondente",
+            "clear": "Cancella tag",
+            "clearAll": "Cancella filtri",
+            "saveFailed": "Impossibile salvare i filtri dei tag."
+        },
+        "none": "Nessun tag",
+        "manage": {
+            "title": "Gestisci tag",
+            "newTag": "Nuovo tag",
+            "name": "Nome del tag",
+            "save": "Salva",
+            "add": "Aggiungi",
+            "usage": "Progetti: {{count}}",
+            "duplicate": "Esiste già un tag con questo nome.",
+            "edit": "Modifica nome",
+            "description": "Organizza e filtra i tuoi progetti con i tag.",
+            "delete": "Elimina",
+            "deleteTitle": "Eliminare \"{{name}}\"?",
+            "deleteDescription": "Questo tag verrà rimosso da tutti i progetti."
         }
     }
 }

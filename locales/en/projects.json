@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Reorder {{project}}",
-            "disabledSearch": "Clear search to reorder pinned projects.",
+            "disabledSearch": "Clear filters to reorder pinned projects.",
             "instructions": "To pick up a pinned project, press Space or Enter. Use the arrow keys to move it, Space or Enter to drop it, and Escape to cancel.",
             "announcements": {
                 "pickedUp": "Picked up {{project}}, position {{position}} of {{count}}.",
@@ -487,6 +487,75 @@
         "errors": {
             "projectNotFound": "Project not found",
             "initFailed": "Failed to initialize Git repository."
+        }
+    },
+    "tags": {
+        "label": "Tags",
+        "placeholder": "Search or create a tag",
+        "remove": "Remove {{name}}",
+        "create": "Create \"{{name}}\"",
+        "alreadySelected": "This tag is already selected.",
+        "empty": "Type a name to create a tag.",
+        "unsaved": "Unsaved changes",
+        "loading": "Loading tags...",
+        "loadFailed": "Could not load tags.",
+        "retry": "Retry",
+        "saveFailed": "Could not save tags. Try again.",
+        "colour": "Colour",
+        "colourFor": "Colour for {{name}}",
+        "colours": {
+            "red": "Red",
+            "orange": "Orange",
+            "yellow": "Yellow",
+            "lime": "Lime",
+            "green": "Green",
+            "teal": "Teal",
+            "cyan": "Cyan",
+            "blue": "Blue",
+            "violet": "Violet",
+            "fuchsia": "Fuchsia",
+            "rose": "Rose",
+            "apricot": "Apricot",
+            "lemon": "Lemon",
+            "lightLime": "Light lime",
+            "mint": "Mint",
+            "turquoise": "Turquoise",
+            "aqua": "Aqua",
+            "sky": "Sky",
+            "lavender": "Lavender",
+            "orchid": "Orchid",
+            "darkRed": "Dark red",
+            "rust": "Rust",
+            "ochre": "Ochre",
+            "olive": "Olive",
+            "forest": "Forest",
+            "darkTeal": "Dark teal",
+            "darkCyan": "Dark cyan",
+            "darkBlue": "Dark blue",
+            "darkViolet": "Dark violet",
+            "darkFuchsia": "Dark fuchsia"
+        },
+        "filter": {
+            "search": "Search tags",
+            "noMatches": "No matching tags",
+            "clear": "Clear tags",
+            "clearAll": "Clear filters",
+            "saveFailed": "Could not save tag filters."
+        },
+        "none": "No tags",
+        "manage": {
+            "title": "Manage tags",
+            "newTag": "New tag",
+            "name": "Tag name",
+            "save": "Save",
+            "add": "Add",
+            "usage": "Projects: {{count}}",
+            "duplicate": "A tag with this name already exists.",
+            "edit": "Edit name",
+            "description": "Organise and filter your projects with tags.",
+            "delete": "Delete",
+            "deleteTitle": "Delete \"{{name}}\"?",
+            "deleteDescription": "This tag will be removed from all projects."
         }
     }
 }

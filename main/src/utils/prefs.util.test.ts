@@ -220,6 +220,7 @@ suite('prefs.util', (_test) => {
             expect(prefs).toEqual({
                 prefs_version: 4,
                 projects_view_mode: 'cards',
+                projects_tag_filter: [],
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -266,6 +267,7 @@ suite('prefs.util', (_test) => {
             expect(prefs).toEqual({
                 prefs_version: 4,
                 projects_view_mode: 'cards',
+                projects_tag_filter: [],
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
                 projects_location: defaultDirs.projectDir,
@@ -328,6 +330,51 @@ suite('prefs.util', (_test) => {
         },
     );
 
+    it('normalises saved project tag filters without changing valid IDs', async () => {
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify({
+                projects_tag_filter: [
+                    'tag-1',
+                    ' ',
+                    'tag-1',
+                    7,
+                    null,
+                    ' tag-1 ',
+                    'tag-2',
+                ],
+            }),
+        );
+
+        const prefs = await readPrefsFromDisk(
+            '/home/user/.godot/prefs.json',
+            await getDefaultPrefs(),
+        );
+
+        expect(prefs.projects_tag_filter).toEqual([
+            'tag-1',
+            ' tag-1 ',
+            'tag-2',
+        ]);
+    });
+
+    it.each([undefined, null, 'tag-1', { id: 'tag-1' }])(
+        'defaults invalid saved project tag filter %s to empty',
+        async (storedTagFilter) => {
+            fsMock.existsSync.mockReturnValueOnce(true);
+            fsPromisesMock.readFile.mockResolvedValueOnce(
+                JSON.stringify({ projects_tag_filter: storedTagFilter }),
+            );
+
+            const prefs = await readPrefsFromDisk(
+                '/home/user/.godot/prefs.json',
+                await getDefaultPrefs(),
+            );
+
+            expect(prefs.projects_tag_filter).toEqual([]);
+        },
+    );
+
     it('should read prefs from disk', async () => {
         fsMock.existsSync.mockReturnValueOnce(true);
         fsPromisesMock.readFile.mockResolvedValueOnce(JSON.stringify({ a: 1 }));
@@ -337,6 +384,7 @@ suite('prefs.util', (_test) => {
         expect(prefs).toEqual({
             a: 1,
             projects_view_mode: 'cards',
+            projects_tag_filter: [],
             linux_credential_storage: 'automatic',
         });
     });
@@ -372,6 +420,7 @@ suite('prefs.util', (_test) => {
         expect(prefs).toEqual({
             a: 1,
             projects_view_mode: 'cards',
+            projects_tag_filter: [],
             linux_credential_storage: 'automatic',
         });
     });
@@ -387,6 +436,7 @@ suite('prefs.util', (_test) => {
         expect(prefs).toEqual({
             a: 1,
             projects_view_mode: 'cards',
+            projects_tag_filter: [],
             linux_credential_storage: 'automatic',
         });
         expect(dialog.showMessageBox).not.toHaveBeenCalled();

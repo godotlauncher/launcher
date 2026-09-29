@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Ibdel l-ordni ta' {{project}}",
-            "disabledSearch": "Neħħi t-tfittxija biex tibdel l-ordni tal-proġetti mwaħħlin.",
+            "disabledSearch": "Neħħi l-filtri biex tibdel l-ordni tal-proġetti mwaħħla.",
             "instructions": "Biex taqbad proġett imwaħħal, agħfas Space jew Enter. Uża l-vleġeġ biex tmexxih, Space jew Enter biex tpoġġih, u Escape biex tikkanċella.",
             "announcements": {
                 "pickedUp": "Inqabad {{project}}, pożizzjoni {{position}} minn {{count}}.",
@@ -487,6 +487,75 @@
         "errors": {
             "projectNotFound": "Il-proġett ma nstabx",
             "initFailed": "Il-bidu tar-repositorju Git falla."
+        }
+    },
+    "tags": {
+        "label": "Tikketti",
+        "placeholder": "Fittex jew oħloq tikketta",
+        "remove": "Neħħi {{name}}",
+        "create": "Oħloq \"{{name}}\"",
+        "alreadySelected": "Din it-tikketta diġà magħżula.",
+        "empty": "Ikteb isem biex toħloq tikketta.",
+        "unsaved": "Bidliet mhux issejvjati",
+        "loading": "Qed jitgħabbew it-tikketti...",
+        "loadFailed": "Ma setgħux jitgħabbew it-tikketti.",
+        "retry": "Erġa’ pprova",
+        "saveFailed": "Ma setgħux jiġu ssejvjati t-tikketti. Erġa’ pprova.",
+        "colour": "Kulur",
+        "colourFor": "Kulur għal {{name}}",
+        "colours": {
+            "red": "Aħmar",
+            "orange": "Oranġjo",
+            "yellow": "Isfar",
+            "lime": "Ġir",
+            "green": "Aħdar",
+            "teal": "Aħdar blu",
+            "cyan": "Ċjan",
+            "blue": "Blu",
+            "violet": "Vjola",
+            "fuchsia": "Fuksja",
+            "rose": "Roża",
+            "apricot": "Berquq",
+            "lemon": "Lumi",
+            "lightLime": "Ġir ċar",
+            "mint": "Nagħniegħ",
+            "turquoise": "Torkiż",
+            "aqua": "Akkwa",
+            "sky": "Sema",
+            "lavender": "Lavanda",
+            "orchid": "Orkidea",
+            "darkRed": "Aħmar skur",
+            "rust": "Sadid",
+            "ochre": "Okra",
+            "olive": "Żebbuġa",
+            "forest": "Foresta",
+            "darkTeal": "Aħdar blu skur",
+            "darkCyan": "Ċjan skur",
+            "darkBlue": "Blu skur",
+            "darkViolet": "Vjola skur",
+            "darkFuchsia": "Fuksja skura"
+        },
+        "filter": {
+            "search": "Fittex tikketti",
+            "noMatches": "Ebda tikketta taqbel",
+            "clear": "Neħħi t-tikketti",
+            "clearAll": "Neħħi l-filtri",
+            "saveFailed": "Ma setgħux jiġu ssejvjati l-filtri tat-tikketti."
+        },
+        "none": "Ebda tikketta",
+        "manage": {
+            "title": "Immaniġġja t-tags",
+            "newTag": "Tag ġdid",
+            "name": "Isem tat-tag",
+            "save": "Issejvja",
+            "add": "Żid",
+            "usage": "Proġetti: {{count}}",
+            "duplicate": "Diġà jeżisti tag b’dan l-isem.",
+            "edit": "Editja l-isem",
+            "description": "Organizza u ffiltra l-proġetti tiegħek bit-tags.",
+            "delete": "Ħassar",
+            "deleteTitle": "Tħassar \"{{name}}\"?",
+            "deleteDescription": "Dan it-tag jitneħħa mill-proġetti kollha."
         }
     }
 }

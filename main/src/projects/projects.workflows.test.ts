@@ -305,6 +305,7 @@ function createProjectsService(
         } as unknown as import('./project-remote-import.service.js').ProjectRemoteImportService,
         {} as import('./project-publication.service.js').ProjectPublicationService,
         {} as import('./project-repository-origin-index.service.js').ProjectRepositoryOriginIndexService,
+        { removeProjectAssignments: vi.fn() } as never,
     );
 }
 

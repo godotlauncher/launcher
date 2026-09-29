@@ -17,6 +17,7 @@ export const editorInstallsBridge = rendererBridge.editorInstalls;
 export const gitBridge = rendererBridge.git;
 export const gitLfsBridge = rendererBridge.gitLfs;
 export const projectsBridge = rendererBridge.projects;
+export const projectTagsBridge = rendererBridge.projectTags;
 export const toolIntegrationBridge = rendererBridge.toolIntegration;
 export const terminalBridge = rendererBridge.terminal;
 

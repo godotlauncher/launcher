@@ -1,6 +1,7 @@
 import type { InstalledRelease } from '@shared/contracts';
 import clsx from 'clsx';
 import type { TFunction } from 'i18next';
+import type { ReactNode } from 'react';
 import { ContentDivider } from '../../../../components/ui/content-divider.component';
 import { TextField } from '../../../../components/ui/text-field.component';
 import { CreateProjectEditorPicker } from '../../create-project/components/create-project-editor-picker.component';
@@ -10,6 +11,7 @@ import { PendingChangesIndicator } from './pending-changes-indicator.component';
 
 type ProjectSettingsProjectSectionProps = {
     t: TFunction;
+    tagsField?: ReactNode;
     open: boolean;
     disabled: boolean;
     name: string;
@@ -44,13 +46,14 @@ type ProjectSettingsProjectSectionProps = {
 };
 
 /**
- * Renders the staged project name, Godot name and editor fields.
+ * Renders the project name, Godot name, editor and tags in priority order.
  *
  * @param props - The current form values and editor catalogue actions.
  * @returns The project settings fields.
  */
 export function ProjectSettingsProjectSection({
     t,
+    tagsField,
     open,
     disabled,
     name,
@@ -172,6 +175,8 @@ export function ProjectSettingsProjectSection({
                     onRetryCatalogue={onRetryCatalogue}
                 />
             </div>
+            {tagsField && <ContentDivider />}
+            {tagsField}
         </div>
     );
 }

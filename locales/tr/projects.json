@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "{{project}} projesini yeniden sırala",
-            "disabledSearch": "Sabitlenen projeleri yeniden sıralamak için aramayı temizleyin.",
+            "disabledSearch": "Sabitlenmiş projeleri yeniden sıralamak için filtreleri temizleyin.",
             "instructions": "Sabitlenen bir projeyi almak için Boşluk veya Enter tuşuna basın. Taşımak için ok tuşlarını, bırakmak için Boşluk veya Enter tuşunu, iptal etmek için Escape tuşunu kullanın.",
             "announcements": {
                 "pickedUp": "{{project}} alındı, {{count}} içinde {{position}}. konum.",
@@ -487,6 +487,75 @@
         "errors": {
             "projectNotFound": "Proje bulunamadı",
             "initFailed": "Git deposu başlatılamadı."
+        }
+    },
+    "tags": {
+        "label": "Etiketler",
+        "placeholder": "Etiket ara veya oluştur",
+        "remove": "{{name}} etiketini kaldır",
+        "create": "\"{{name}}\" oluştur",
+        "alreadySelected": "Bu etiket zaten seçili.",
+        "empty": "Etiket oluşturmak için bir ad yazın.",
+        "unsaved": "Kaydedilmemiş değişiklikler",
+        "loading": "Etiketler yükleniyor...",
+        "loadFailed": "Etiketler yüklenemedi.",
+        "retry": "Yeniden dene",
+        "saveFailed": "Etiketler kaydedilemedi. Yeniden deneyin.",
+        "colour": "Renk",
+        "colourFor": "{{name}} etiketi rengi",
+        "colours": {
+            "red": "Kırmızı",
+            "orange": "Turuncu",
+            "yellow": "Sarı",
+            "lime": "Limon yeşili",
+            "green": "Yeşil",
+            "teal": "Petrol yeşili",
+            "cyan": "Camgöbeği",
+            "blue": "Mavi",
+            "violet": "Mor",
+            "fuchsia": "Fuşya",
+            "rose": "Gül",
+            "apricot": "Kayısı",
+            "lemon": "Limon",
+            "lightLime": "Açık limon yeşili",
+            "mint": "Nane",
+            "turquoise": "Turkuaz",
+            "aqua": "Su yeşili",
+            "sky": "Gök mavisi",
+            "lavender": "Lavanta",
+            "orchid": "Orkide",
+            "darkRed": "Koyu kırmızı",
+            "rust": "Pas",
+            "ochre": "Toprak sarısı",
+            "olive": "Zeytin",
+            "forest": "Orman yeşili",
+            "darkTeal": "Koyu petrol yeşili",
+            "darkCyan": "Koyu camgöbeği",
+            "darkBlue": "Koyu mavi",
+            "darkViolet": "Koyu mor",
+            "darkFuchsia": "Koyu fuşya"
+        },
+        "filter": {
+            "search": "Etiket ara",
+            "noMatches": "Eşleşen etiket yok",
+            "clear": "Etiketleri temizle",
+            "clearAll": "Filtreleri temizle",
+            "saveFailed": "Etiket filtreleri kaydedilemedi."
+        },
+        "none": "Etiket yok",
+        "manage": {
+            "title": "Etiketleri yönet",
+            "newTag": "Yeni etiket",
+            "name": "Etiket adı",
+            "save": "Kaydet",
+            "add": "Ekle",
+            "usage": "Projeler: {{count}}",
+            "duplicate": "Bu ada sahip bir etiket zaten var.",
+            "edit": "Adı düzenle",
+            "description": "Projelerinizi etiketlerle düzenleyin ve filtreleyin.",
+            "delete": "Sil",
+            "deleteTitle": "\"{{name}}\" silinsin mi?",
+            "deleteDescription": "Bu etiket tüm projelerden kaldırılacak."
         }
     }
 }

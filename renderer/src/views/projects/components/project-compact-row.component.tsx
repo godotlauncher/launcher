@@ -21,6 +21,7 @@ export function ProjectCompactRow({
     t,
     actions,
     badges,
+    tagIndicators,
     launchDisabled,
     lastOpened,
     editorMissing,
@@ -74,6 +75,7 @@ export function ProjectCompactRow({
                                 {compactLaunchButton}
                             </Tooltip>
                         )}
+                        {tagIndicators}
                         {!project.valid &&
                             project.invalid_reason !== 'missing_editor' && (
                                 <Tooltip

@@ -50,6 +50,20 @@ function clonePrefs<T>(prefs: T): T {
 }
 
 /**
+ * Keeps unique nonblank project tag IDs without changing their stored values.
+ * @param value - Saved project tag filter value.
+ */
+function normaliseProjectTagFilter(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return [
+        ...new Set(value.filter((id) => typeof id === 'string' && id.trim())),
+    ];
+}
+
+/**
  * Merges saved preferences and normalises optional project and credential-storage preferences.
  * @param defaultPrefs - Defaults for missing preferences.
  * @param prefs - Saved preference values.
@@ -66,6 +80,9 @@ function mergeWithDefaults(
         ...runtimePrefs,
         projects_view_mode:
             runtimePrefs.projects_view_mode === 'list' ? 'list' : 'cards',
+        projects_tag_filter: normaliseProjectTagFilter(
+            runtimePrefs.projects_tag_filter,
+        ),
         linux_credential_storage: isLinuxCredentialStoragePreference(
             runtimePrefs.linux_credential_storage,
         )
@@ -146,6 +163,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     return {
         prefs_version: 4,
         projects_view_mode: 'cards',
+        projects_tag_filter: [],
         install_location: pathModule.resolve(defaultPrefs.dataDir),
         config_location: pathModule.resolve(defaultPrefs.configDir),
         projects_location: pathModule.resolve(defaultPrefs.projectDir),

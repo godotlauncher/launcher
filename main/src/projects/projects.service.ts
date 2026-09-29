@@ -57,6 +57,8 @@ import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
 import { getMainWindow } from '../mainWindow.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectTagService } from '../project-tags/project-tag.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TrayAvailabilityService } from '../services/tray-availability.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from '../tool-integration/integrations/git/git.service.js';
@@ -164,6 +166,7 @@ export class ProjectsService {
      * @param remoteImport - Cancellable remote clone transaction boundary.
      * @param projectPublication - Follow-on remote publication and retry workflow.
      * @param projectOrigins - Process-local stored-project origin index.
+     * @param projectTags - Launcher-owned project tag assignments.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -177,6 +180,7 @@ export class ProjectsService {
         private readonly remoteImport: ProjectRemoteImportService,
         private readonly projectPublication: ProjectPublicationService,
         private readonly projectOrigins: ProjectRepositoryOriginIndexService,
+        private readonly projectTags: ProjectTagService,
     ) {}
 
     /**
@@ -445,6 +449,15 @@ export class ProjectsService {
     async removeProject(project: ProjectDetails) {
         await removeProjectEditor(project);
         const projects = await this.store.remove(project.path);
+        try {
+            await this.projectTags.removeProjectAssignments(project.path);
+        } catch (error) {
+            // Project removal has already succeeded; tag reads retry orphan cleanup.
+            logger.warn(
+                'Could not clean up removed project tag assignments',
+                error,
+            );
+        }
         this.publishProjects(projects);
 
         if (process.platform === 'linux') {

@@ -15,10 +15,22 @@ const releaseState = vi.hoisted(() => ({
     initialized: true,
 }));
 const navigate = vi.hoisted(() => vi.fn());
+const tagFilterState = vi.hoisted(() => ({
+    ids: [] as string[],
+    loadFailed: false,
+}));
 
 vi.mock('react-router', async (importOriginal) => ({
     ...(await importOriginal<typeof import('react-router')>()),
     useNavigate: () => navigate,
+}));
+
+vi.mock('../hooks/project-tags.hook', () => ({
+    useProjectTags: () => ({
+        snapshot: null,
+        loadFailed: tagFilterState.loadFailed,
+        reload: vi.fn(),
+    }),
 }));
 
 vi.mock('../hooks/alerts.hook', () => ({
@@ -39,6 +51,7 @@ vi.mock('../hooks/preferences.hook', () => ({
     usePreferences: () => ({
         preferences: {
             projects_location: '/Users/test/GodotProjects',
+            projects_tag_filter: tagFilterState.ids,
             confirm_project_remove: true,
         },
         updatePreferences: vi.fn(),
@@ -173,12 +186,24 @@ vi.mock('react-i18next', () => {
 describe('ProjectsView', () => {
     beforeEach(() => {
         navigate.mockClear();
+        tagFilterState.ids = [];
+        tagFilterState.loadFailed = false;
         projectState.projects = [];
         projectState.loading = false;
         releaseState.installedReleases = [];
         releaseState.downloadingReleases = [];
         releaseState.loading = false;
         releaseState.initialized = true;
+    });
+
+    it('keeps saved-filter recovery visible even without projects', () => {
+        tagFilterState.ids = ['saved-tag'];
+        tagFilterState.loadFailed = true;
+        const html = renderToStaticMarkup(<ProjectsView />);
+        expect(html).toContain('role="alert"');
+        expect(html).toContain('tags.loadFailed');
+        expect(html).toContain('tags.retry');
+        expect(html).not.toContain('Add or create a project');
     });
 
     it('shows the editor-independent welcome experience when projects are empty', () => {

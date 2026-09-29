@@ -1,6 +1,8 @@
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ProjectTagSelection,
+    ProjectTagsSnapshot,
     ReleaseSummary,
 } from '@shared/contracts';
 import type React from 'react';
@@ -11,11 +13,19 @@ export type ProjectSectionKey = 'new' | 'pinned' | 'recents';
 
 export type ProjectsListProps = {
     viewMode?: ProjectViewMode;
+    tagSnapshot?: ProjectTagsSnapshot | null;
+    tagsLoadFailed?: boolean;
+    onRetryTags?: () => Promise<void>;
+    onSetProjectTags?: (
+        path: string,
+        selection: ProjectTagSelection[],
+    ) => Promise<unknown>;
     sections: ProjectSections;
     projectGitHubUrls: ReadonlyMap<string, string>;
     loading: boolean;
     searchQuery?: string;
     onClearSearch?: () => void;
+    clearSearchLabel?: string;
     locale: string;
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];
@@ -71,6 +81,7 @@ export type ProjectPresentationProps = Pick<
 > & {
     actions: React.ReactNode;
     badges: React.ReactNode;
+    tagIndicators: React.ReactNode;
     launchDisabled: boolean;
     lastOpened: string;
 };

@@ -66,7 +66,7 @@
     "pinning": {
         "reorder": {
             "label": "Reihenfolge von {{project}} ändern",
-            "disabledSearch": "Leeren Sie die Suche, um angeheftete Projekte neu anzuordnen.",
+            "disabledSearch": "Filter zurücksetzen, um angeheftete Projekte neu anzuordnen.",
             "instructions": "Drücken Sie die Leertaste oder Eingabetaste, um ein angeheftetes Projekt aufzunehmen. Verschieben Sie es mit den Pfeiltasten, legen Sie es mit der Leertaste oder Eingabetaste ab und brechen Sie mit Escape ab.",
             "announcements": {
                 "pickedUp": "{{project}} aufgenommen, Position {{position}} von {{count}}.",
@@ -487,6 +487,75 @@
         "errors": {
             "projectNotFound": "Projekt nicht gefunden",
             "initFailed": "Git-Repository konnte nicht initialisiert werden."
+        }
+    },
+    "tags": {
+        "label": "Tags",
+        "placeholder": "Tag suchen oder erstellen",
+        "remove": "{{name}} entfernen",
+        "create": "\"{{name}}\" erstellen",
+        "alreadySelected": "Dieser Tag ist bereits ausgewählt.",
+        "empty": "Gib einen Namen ein, um einen Tag zu erstellen.",
+        "unsaved": "Ungespeicherte Änderungen",
+        "loading": "Tags werden geladen...",
+        "loadFailed": "Tags konnten nicht geladen werden.",
+        "retry": "Erneut versuchen",
+        "saveFailed": "Tags konnten nicht gespeichert werden. Versuche es erneut.",
+        "colour": "Farbe",
+        "colourFor": "Farbe für {{name}}",
+        "colours": {
+            "red": "Rot",
+            "orange": "Orange",
+            "yellow": "Gelb",
+            "lime": "Limette",
+            "green": "Grün",
+            "teal": "Blaugrün",
+            "cyan": "Cyan",
+            "blue": "Blau",
+            "violet": "Violett",
+            "fuchsia": "Fuchsia",
+            "rose": "Rosé",
+            "apricot": "Aprikose",
+            "lemon": "Zitrone",
+            "lightLime": "Helles Limettengrün",
+            "mint": "Minze",
+            "turquoise": "Türkis",
+            "aqua": "Aqua",
+            "sky": "Himmelblau",
+            "lavender": "Lavendel",
+            "orchid": "Orchidee",
+            "darkRed": "Dunkelrot",
+            "rust": "Rost",
+            "ochre": "Ocker",
+            "olive": "Olive",
+            "forest": "Waldgrün",
+            "darkTeal": "Dunkles Blaugrün",
+            "darkCyan": "Dunkles Cyan",
+            "darkBlue": "Dunkelblau",
+            "darkViolet": "Dunkelviolett",
+            "darkFuchsia": "Dunkles Fuchsia"
+        },
+        "filter": {
+            "search": "Tags suchen",
+            "noMatches": "Keine passenden Tags",
+            "clear": "Tags zurücksetzen",
+            "clearAll": "Filter zurücksetzen",
+            "saveFailed": "Tag-Filter konnten nicht gespeichert werden."
+        },
+        "none": "Keine Tags",
+        "manage": {
+            "title": "Tags verwalten",
+            "newTag": "Neuer Tag",
+            "name": "Tag-Name",
+            "save": "Speichern",
+            "add": "Hinzufügen",
+            "usage": "Projekte: {{count}}",
+            "duplicate": "Ein Tag mit diesem Namen existiert bereits.",
+            "edit": "Namen bearbeiten",
+            "description": "Organisiere und filtere deine Projekte mit Tags.",
+            "delete": "Löschen",
+            "deleteTitle": "\"{{name}}\" löschen?",
+            "deleteDescription": "Dieser Tag wird aus allen Projekten entfernt."
         }
     }
 }
