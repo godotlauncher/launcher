@@ -275,7 +275,7 @@ test('stages named colours, discards changes, and shares saved colours across pr
     }
 });
 
-test('shows the tag action in both views and opens its popover', async () => {
+test('shows the tag action in all views and opens its popover', async () => {
     test.setTimeout(90000);
     await prepareAppWithStubbedData(page, electronApp, {
         projects: SAMPLE_PROJECTS.map(project => ({
@@ -295,6 +295,8 @@ test('shows the tag action in both views and opens its popover', async () => {
     const cardHeight = (await row.boundingBox())!.height;
     await page.getByTestId('tabProjectList').click();
     const listHeight = (await row.boundingBox())!.height;
+    await page.getByTestId('tabProjectDenseList').click();
+    const denseHeight = (await row.boundingBox())!.height;
     let drawer = await openSettings();
     // Keep this test independent of earlier tag scenarios in the same file.
     const removals = drawer.getByRole('button', { name: /^Remove / });
@@ -318,7 +320,7 @@ test('shows the tag action in both views and opens its popover', async () => {
     await expect(emptyIndicator).toBeVisible();
     await expect(emptyIndicator.getByTestId('projectTagDot')).toHaveCount(0);
     await expect(emptyIndicator).toHaveAccessibleName('Tags');
-    for (const mode of ['Cards', 'List']) {
+    for (const mode of ['Cards', 'List', 'DenseList']) {
         await page.getByTestId(`tabProject${mode}`).click();
         expect(await row.getAttribute('data-project-path')).toBe(projectPath);
         const indicator = row.getByTestId('btnProjectTags');
@@ -326,13 +328,14 @@ test('shows the tag action in both views and opens its popover', async () => {
         await expect(indicator).toHaveText('+2');
         await expect(indicator).toBeInViewport({ ratio: 1 });
         await expect(indicator).toHaveAccessibleName(`Tags: ${names.join(', ')}`);
-        expect((await row.boundingBox())!.height).toBe(mode === 'Cards' ? cardHeight : listHeight);
+        expect((await row.boundingBox())!.height).toBe(mode === 'Cards' ? cardHeight : mode === 'List' ? listHeight : denseHeight);
         for (const theme of ['dark', 'light']) {
             await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
             await page.mouse.move(0, 0);
             await indicator.hover();
             await expect(page.getByRole('tooltip').getByRole('listitem')).toHaveText(names);
             await expect(page.getByRole('tooltip')).toBeVisible();
+            await expect(page.getByRole('tooltip').locator('button, input')).toHaveCount(0);
             await page.screenshot({ path: test.info().outputPath(`tag-indicators-${mode.toLowerCase()}-${theme}.png`) });
             await page.mouse.move(0, 0);
             await expect(page.getByRole('tooltip')).toBeHidden();
@@ -374,7 +377,7 @@ test('shows the tag action in both views and opens its popover', async () => {
         await input.press('Escape');
         await expect(popover).toBeHidden();
     }
-    await page.getByTestId('tabProjectList').click();
+    await page.getByTestId('tabProjectDenseList').click();
     await emptyIndicator.click();
     const emptyPopover = page.getByRole('dialog', { name: 'Tags', exact: true });
     await expect(emptyPopover.getByRole('combobox', { name: 'Tags', exact: true })).toBeFocused();
@@ -382,6 +385,23 @@ test('shows the tag action in both views and opens its popover', async () => {
     await page.keyboard.press('Escape');
     await expect(emptyPopover).toBeHidden();
     await expect(emptyIndicator).toBeVisible();
+    // One and exactly three tags need no overflow count in the dense row.
+    for (const selectedCount of [1, 3]) {
+        await emptyIndicator.click();
+        const tagInput = emptyPopover.getByRole('combobox', { name: 'Tags', exact: true });
+        for (const name of names.slice(selectedCount === 1 ? 0 : 1, selectedCount)) {
+            await tagInput.fill(name);
+            await tagInput.press('Enter');
+        }
+        await tagInput.press('Escape');
+        await expect(emptyIndicator.getByTestId('projectTagDot')).toHaveCount(selectedCount);
+        await expect(emptyIndicator).toHaveText('');
+        await page.getByTestId('inputProjectSearch').click();
+        await emptyIndicator.hover();
+        await expect(page.getByRole('tooltip').getByRole('listitem')).toHaveText(names.slice(0, selectedCount));
+        await page.mouse.move(0, 0);
+        await expect(page.getByRole('tooltip')).toBeHidden();
+    }
 });
 
 test('saves row edits immediately and keeps failed changes available to retry', async () => {

@@ -57,7 +57,7 @@ export function ProjectActions({
                         type="button"
                         data-testid="btnInstallRequiredProjectEditor"
                         disabled={editorDownloading}
-                        className="btn btn-sm btn-ghost btn-square text-primary"
+                        className="btn btn-sm btn-ghost btn-square text-warning/80 hover:text-warning hover:bg-warning/20 hover:border-transparent"
                         aria-label={t('card.installRequiredEditor')}
                         onClick={() =>
                             onInstallRequiredProjectEditor(

@@ -3,6 +3,7 @@ import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { getInvalidProjectTableKey } from '../projects-view.model';
 import type { ProjectPresentationProps } from './project-list.types';
+import { ProjectStatusTooltip } from './project-status-tooltip.component';
 
 type ProjectCompactRowProps = ProjectPresentationProps & {
     editorMissing: boolean;
@@ -78,17 +79,17 @@ export function ProjectCompactRow({
                         {tagIndicators}
                         {!project.valid &&
                             project.invalid_reason !== 'missing_editor' && (
-                                <Tooltip
+                                <ProjectStatusTooltip
                                     placement="top"
                                     tip={t(getInvalidProjectTableKey(project))}
                                     role="img"
                                     ariaLabel={t(
                                         getInvalidProjectTableKey(project),
                                     )}
-                                    tone="warning"
+                                    warning
                                 >
                                     <TriangleAlert className="size-5 shrink-0 text-warning" />
-                                </Tooltip>
+                                </ProjectStatusTooltip>
                             )}
                         {badges}
                     </div>
@@ -103,7 +104,7 @@ export function ProjectCompactRow({
                 <div className="flex min-w-0 max-w-80 flex-col items-end self-stretch justify-between gap-1">
                     {actions}
                     <div className="flex min-h-7 w-full min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1 text-sm text-base-content/60">
-                        <Tooltip
+                        <ProjectStatusTooltip
                             tip={
                                 editorMissing
                                     ? t('table.invalidReasons.missingEditor')
@@ -111,9 +112,9 @@ export function ProjectCompactRow({
                                           version: versionLabel,
                                       })
                             }
-                            tone={editorMissing ? 'warning' : 'default'}
+                            warning={editorMissing}
                             placement="top"
-                            className="min-w-0"
+                            className="w-fit min-w-0 max-w-full"
                         >
                             <span
                                 data-testid="compactProjectEditorVersion"
@@ -145,7 +146,7 @@ export function ProjectCompactRow({
                                     {versionLabel}
                                 </span>
                             </span>
-                        </Tooltip>
+                        </ProjectStatusTooltip>
                         <span className="inline-flex min-w-0 items-center gap-1">
                             <Clock
                                 size={12}

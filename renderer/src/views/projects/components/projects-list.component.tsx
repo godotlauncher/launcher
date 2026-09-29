@@ -32,7 +32,7 @@ type SortablePinnedProjectItemProps = Omit<
 };
 
 /**
- * Renders a pinned project with an exterior handle revealed on hover or focus.
+ * Reveals a pinned project's exterior handle on row hover and during a drag.
  * @param props - Project content and pinned sorting state.
  */
 const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
@@ -66,17 +66,18 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
             project={project}
             sectionKey="pinned"
             pinnedItemRef={setItemRef}
-            reorderStateClassName={`${isDragging ? 'z-[1] opacity-70' : ''} ${isDropTarget ? 'outline outline-primary' : ''}`}
+            reorderStateClassName={`${isDragging ? 'z-[1] [&>:not([data-project-drag-handle])]:opacity-70' : ''} ${isDropTarget ? 'outline outline-primary' : ''}`}
             reorderHandle={
                 <div
-                    className={`absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transition-opacity motion-reduce:transition-none ${isDragging ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover/project:pointer-events-auto group-hover/project:opacity-100 group-focus-within/project:pointer-events-auto group-focus-within/project:opacity-100'}`}
+                    data-project-drag-handle=""
+                    className={`absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transition-opacity motion-reduce:transition-none ${isDragging ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover/project:pointer-events-auto group-hover/project:opacity-100'}`}
                 >
                     <button
                         ref={handleRef}
                         type="button"
                         data-testid="btnReorderPinnedProject"
                         disabled={reorderingDisabled}
-                        className={`btn btn-sm h-10 w-8 p-0 transition-colors hover:border-primary hover:bg-primary/10 hover:text-primary focus-visible:border-primary focus-visible:bg-primary/10 focus-visible:text-primary active:border-primary active:bg-primary/10 active:text-primary active:cursor-grabbing motion-reduce:transition-none ${isDragging ? 'border-primary bg-primary/10 text-primary cursor-grabbing' : 'border-transparent bg-base-200 cursor-grab'}`}
+                        className={`btn btn-sm h-10 w-8 bg-base-200 p-0 shadow-none transition-colors motion-reduce:transition-none ${isDragging ? 'border-primary text-primary cursor-grabbing' : 'border-transparent cursor-grab hover:border-primary hover:text-primary focus-visible:border-primary focus-visible:text-primary active:border-primary active:text-primary active:cursor-grabbing'}`}
                         aria-label={t('pinning.reorder.label', {
                             project: project.name,
                         })}

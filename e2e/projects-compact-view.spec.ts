@@ -279,6 +279,107 @@ test('places the missing-editor warning beside the version without duplicate tit
     await mainPage.screenshot({ path: '.internal-docs/projects-compact-view/list-missing-editor.png' });
 });
 
+test('limits dense editor tooltips to the version and shows a subtle missing-editor panel', async () => {
+    test.setTimeout(60000);
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: 'dense' },
+        projects: [
+            { ...SAMPLE_PROJECTS[0], valid: false, invalid_reason: 'missing_editor', codeEditorId: null },
+            SAMPLE_PROJECTS[1],
+        ],
+        installedReleases: [SAMPLE_PROJECTS[1].release],
+    });
+    await setAppLanguage(mainPage, 'English');
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('inputProjectSearch').fill('');
+    const warning = mainPage.getByRole('tooltip', { name: 'Editor not found. Check the editor location.', exact: true });
+    const missingVersion = mainPage.locator(`[data-project-path="${SAMPLE_PROJECTS[0].path}"]`).getByTestId('denseProjectEditorVersion');
+    for (const theme of ['dark', 'light'] as const) {
+        await mainPage.getByTestId('btnSettings').click();
+        await mainPage.getByRole('tab', { name: 'Appearance', exact: true }).click();
+        await mainPage.getByTestId(theme === 'dark' ? 'themeDark' : 'themeLight').click();
+        await mainPage.getByTestId('btnProjects').click();
+        for (const width of [1024, 1920]) {
+            await mainPage.setViewportSize({ width, height: width === 1024 ? 600 : 900 });
+            for (const version of await mainPage.getByTestId('denseProjectEditorVersion').all()) {
+                const bounds = (await version.boundingBox())!;
+                // Empty space in the aligned editor column must not open help.
+                await mainPage.mouse.move(bounds.x + bounds.width + 12, bounds.y + bounds.height / 2);
+                await mainPage.waitForTimeout(1100);
+                await expect(mainPage.getByRole('tooltip')).toHaveCount(0);
+            }
+            await missingVersion.hover();
+            await mainPage.waitForTimeout(650);
+            await expect(warning).toHaveCount(0);
+            await expect(warning).toBeVisible();
+            await expect(warning.locator('svg')).toBeVisible();
+            await expect(missingVersion).toHaveAttribute('aria-describedby', (await warning.getAttribute('id'))!);
+            const bounds = (await warning.boundingBox())!;
+            expect(bounds.x).toBeGreaterThanOrEqual(0);
+            expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+            await mainPage.screenshot({ path: test.info().outputPath(`dense-editor-warning-${theme}-${width}.png`) });
+            await mainPage.mouse.move(0, 0);
+            await expect(warning).toHaveCount(0);
+        }
+    }
+});
+
+for (const mode of ['list', 'cards'] as const) {
+test(`shows neutral invalid-project and missing-editor tooltips in ${mode} view`, async () => {
+    const editorMessage = 'Editor not found. Check the editor location.';
+    const projectMessage = 'Project file not found. Check the project location.';
+    const projects = [
+        { ...SAMPLE_PROJECTS[0], valid: false, invalid_reason: 'missing_editor' as const, codeEditorId: null },
+        { ...SAMPLE_PROJECTS[1], valid: false, invalid_reason: 'missing_project_file' as const, codeEditorId: null },
+    ];
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: mode },
+        projects,
+        installedReleases: [SAMPLE_PROJECTS[1].release],
+    });
+    await setAppLanguage(mainPage, 'English');
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.getByTestId('inputProjectSearch').fill('');
+    await mainPage.setViewportSize({ width: 1024, height: 700 });
+    const missingEditorRow = mainPage.locator(`[data-project-path="${projects[0].path}"]`);
+    const invalidProjectRow = mainPage.locator(`[data-project-path="${projects[1].path}"]`);
+    const targets = [
+        { trigger: mode === 'list'
+            ? missingEditorRow.getByTestId('compactProjectEditorVersion')
+            : missingEditorRow.getByTestId('projectBadges').getByText(projects[0].version, { exact: true }), message: editorMessage, name: 'editor-version' },
+        { trigger: invalidProjectRow.getByRole('img', { name: projectMessage, exact: true }), message: projectMessage, name: 'invalid-project' },
+    ];
+    if (mode === 'cards') targets.push({ trigger: missingEditorRow.getByRole('img', { name: editorMessage, exact: true }), message: editorMessage, name: 'editor-icon' });
+    for (const theme of ['dark', 'light'] as const) {
+        await mainPage.getByTestId('btnSettings').click();
+        await mainPage.getByRole('tab', { name: 'Appearance', exact: true }).click();
+        await mainPage.getByTestId(theme === 'dark' ? 'themeDark' : 'themeLight').click();
+        await mainPage.getByTestId('btnProjects').click();
+        for (const { trigger, message, name } of targets) {
+            const bounds = await trigger.evaluate(element => {
+                const box = element.closest('[data-tooltip-trigger]')!.getBoundingClientRect();
+                return { right: box.right, y: box.y + box.height / 2 };
+            });
+            await mainPage.mouse.move(bounds.right + 2, bounds.y);
+            await mainPage.waitForTimeout(1100);
+            await expect(mainPage.getByRole('tooltip')).toHaveCount(0);
+            await mainPage.mouse.move(0, 0);
+            await trigger.hover();
+            await expect.poll(() => trigger.evaluate(element => element.matches(':hover'))).toBe(true);
+            const tooltip = mainPage.getByRole('tooltip', { name: message, exact: true });
+            await mainPage.waitForTimeout(650);
+            await expect(tooltip).toHaveCount(0);
+            await expect(tooltip).toBeVisible();
+            await expect(tooltip.locator('svg')).toBeVisible();
+            await expect(tooltip).toBeInViewport();
+            await mainPage.screenshot({ path: test.info().outputPath(`${mode}-${theme}-${name}.png`) });
+            await mainPage.mouse.move(0, 0);
+            await expect(tooltip).toHaveCount(0);
+        }
+    }
+});
+}
+
 test('previews cards with all badges and long version labels', async () => {
     await prepareAppWithStubbedData(mainPage, electronApp, {
         preferences: { ...SAMPLE_PREFS, projects_view_mode: 'cards' },
@@ -381,28 +482,64 @@ test('keeps selector icons unlabelled visually with delayed hover and keyboard t
     await search.focus();
 });
 
-test('fits dense long names and fixed controls in both themes at minimum and ordinary widths', async () => {
+test('keeps dense titles, tags and badges together at minimum and wide window widths', async () => {
+    const tags = ['Prototype', 'Game Jam', 'Release', '2D', 'Co-op'].map((name, index) => ({ name, colour: index + 4 }));
+    const projects = SAMPLE_PROJECTS.map((project, index) => ({
+        ...project,
+        name: index === 1 ? 'test' : `${project.name} - A deliberately long project title to check single-line truncation`,
+        open_windowed: index !== 1,
+        withGit: index !== 1,
+        valid: index !== 0,
+        invalid_reason: index === 0 ? 'missing_project_file' as const : undefined,
+        codeEditorId: index === 1 ? 'vscodium' as const : project.codeEditorId,
+        release: project.release.source === 'custom' ? { ...project.release, mono: true, prerelease: true } : project.release,
+    }));
+    projects.push({ ...projects[1], name: 'Minimal project', path: `${projects[1].path}-minimal`, codeEditorId: null });
     await prepareAppWithStubbedData(mainPage, electronApp, {
         preferences: { ...SAMPLE_PREFS, projects_view_mode: 'dense' },
-        projects: SAMPLE_PROJECTS.map(project => ({
-            ...project,
-            name: `${project.name} - A deliberately long project title to check single-line truncation`,
-            open_windowed: true,
-            withGit: true,
-        })),
+        projects,
+        installedReleases: projects.map(project => project.release),
+        codeEditorSettings: [SAMPLE_VSCODE_SETTINGS_AVAILABLE, {
+            ...SAMPLE_VSCODE_SETTINGS_AVAILABLE,
+            integration: { ...SAMPLE_VSCODE_SETTINGS_AVAILABLE.integration, id: 'vscodium', displayName: 'VSCodium' },
+            installation: { ...SAMPLE_VSCODE_SETTINGS_AVAILABLE.installation!, integrationId: 'vscodium' },
+        }],
     });
+    await electronApp.evaluate(({ ipcMain }, projectPath) => {
+        ipcMain.removeHandler('projects.refreshProjectGitHubLinks');
+        ipcMain.handle('projects.refreshProjectGitHubLinks', () => ({ success: true, data: [{ projectPath, url: 'https://github.com/example/project' }] }));
+    }, projects[0].path);
+    const tagResults = await mainPage.evaluate(async ({ paths, tags }) => {
+        const bridge = (window as unknown as { __di_electron__: { invoke: (channel: string, ...args: unknown[]) => Promise<{ success: boolean }> } }).__di_electron__;
+        return Promise.all(paths.map((projectPath, index) => bridge.invoke('projectTags.setProjectTags', projectPath, tags.slice(0, [5, 1, 3][index]))));
+    }, { paths: SAMPLE_PROJECTS.map(project => project.path), tags });
+    expect(tagResults.every(result => result.success)).toBe(true);
+    await mainPage.reload();
     await setAppLanguage(mainPage, 'English');
     await mainPage.getByTestId('btnProjects').click();
+    const customVersion = mainPage.locator(`[data-project-path="${projects[2].path}"]`).getByTestId('denseProjectEditorVersion');
+    await expect(customVersion.getByRole('img', { name: 'Custom', exact: true })).toBeVisible();
+    await expect(customVersion.getByRole('img', { name: 'Using a pre-release Godot editor version', exact: true })).toBeVisible();
+    await expect(customVersion).toHaveText('4.7.0-custom.1 (.NET)');
+    const busyRow = mainPage.locator(`[data-project-path="${projects[0].path}"]`);
+    await expect(busyRow.getByTestId('githubProjectIcon')).toBeVisible();
+    await expect(busyRow.getByTestId('gitProjectIcon')).toHaveCount(0);
+    await expect(busyRow.getByRole('img', { name: 'Project file not found. Check the project location.', exact: true })).toBeVisible();
+    await expect(busyRow.getByTestId('btnLaunchDenseProject')).toBeDisabled();
+    await expect(mainPage.locator(`[data-project-path="${projects[2].path}"]`).getByTestId('gitProjectIcon')).toBeVisible();
+    await expect(mainPage.getByRole('img', { name: 'Using VSCodium', exact: true })).toBeVisible();
+    await expect(busyRow.getByTestId('btnProjectTags')).toHaveText('+2');
+    await expect(busyRow.getByTestId('btnProjectTags').getByTestId('projectTagDot')).toHaveCount(3);
     await expect(mainPage.getByTestId('tabProjectDenseList')).toHaveAttribute('aria-selected', 'true');
     for (const theme of ['dark', 'light'] as const) {
         await mainPage.getByTestId('btnSettings').click();
         await mainPage.getByRole('tab', { name: 'Appearance', exact: true }).click();
         await mainPage.getByTestId(theme === 'dark' ? 'themeDark' : 'themeLight').click();
         await mainPage.getByTestId('btnProjects').click();
-        for (const width of [1024, 1440]) {
+        for (const width of [1024, 1920]) {
             await mainPage.setViewportSize({ width, height: width === 1024 ? 600 : 900 });
             const rows = mainPage.locator('[data-project-view="dense"]');
-            await expect(rows).toHaveCount(3);
+            await expect(rows).toHaveCount(4);
             for (const row of await rows.all()) {
                 await expect(row).toBeInViewport();
                 await expect(row.getByTestId('btnProjectMoreOptions')).toBeVisible();
@@ -412,32 +549,65 @@ test('fits dense long names and fixed controls in both themes at minimum and ord
                 const bounds = row.getBoundingClientRect();
                 const name = row.querySelector('[data-testid="btnLaunchDenseProject"] span') as HTMLElement;
                 const version = row.querySelector('[data-testid="denseProjectEditorVersion"]') as HTMLElement;
-                const versionText = version.querySelector('span:last-child') as HTMLElement;
+                const versionText = version.querySelector('[data-testid="denseProjectEditorVersionLabel"]') as HTMLElement;
+                const indicators = row.querySelector('[data-testid="denseProjectIndicators"]') as HTMLElement;
+                const tags = row.querySelector('[data-testid="btnProjectTags"]') as HTMLElement;
+                const more = row.querySelector('[data-testid="btnProjectMoreOptions"]') as HTMLElement;
+                const nameBounds = name.getBoundingClientRect();
+                const tagBounds = tags.getBoundingClientRect();
+                const indicatorBounds = indicators.getBoundingClientRect();
+                const versionBounds = version.getBoundingClientRect();
                 const actions = [...row.querySelectorAll('button')].filter(button => button.dataset.testid !== 'btnReorderPinnedProject');
                 return {
+                    project: row.getAttribute('data-project-path'),
+                    name: name.textContent,
                     height: bounds.height,
                     overflow: row.scrollWidth - row.clientWidth,
                     nameTruncated: name.scrollWidth > name.clientWidth,
                     nameHeight: name.getBoundingClientRect().height,
                     versionFits: versionText.scrollWidth <= versionText.clientWidth + 1,
+                    indicatorsFit: indicators.scrollWidth <= indicators.clientWidth + 1,
+                    nameToTagsGap: tagBounds.left - nameBounds.right,
+                    tagsToBadgesGap: indicatorBounds.left - tagBounds.right,
+                    badgesToVersionGap: versionBounds.left - indicatorBounds.right,
+                    controlsAligned: [versionBounds.left, more.getBoundingClientRect().right],
                     controlsFit: actions.every(button => {
                         const box = button.getBoundingClientRect();
                         return box.left >= bounds.left && box.right <= bounds.right + 1 && box.width >= 24;
                     }),
                 };
             }));
+            await mainPage.screenshot({ path: test.info().outputPath(`dense-${theme}-${width}.png`) });
             expect(layout.every(row => row.height <= 44 && row.height >= 36 && row.overflow <= 1)).toBe(true);
-            expect(layout.every(row => row.nameHeight < row.height && row.versionFits && row.controlsFit)).toBe(true);
-            if (width === 1024) expect(layout.every(row => row.nameTruncated)).toBe(true);
+            expect(layout.filter(row => row.nameHeight >= row.height || !row.versionFits || !row.indicatorsFit || !row.controlsFit)).toEqual([]);
+            for (const row of layout) {
+                expect(row.controlsAligned).toEqual(layout[0].controlsAligned);
+                expect(row.nameToTagsGap).toBeGreaterThanOrEqual(0);
+                expect(row.nameToTagsGap).toBeLessThanOrEqual(12);
+                expect(row.tagsToBadgesGap).toBeGreaterThanOrEqual(12);
+                expect(row.tagsToBadgesGap).toBeLessThanOrEqual(20);
+                expect(row.badgesToVersionGap).toBeGreaterThanOrEqual(12);
+                expect(row.nameTruncated).toBe(width === 1024 && row.name !== 'test' && row.name !== 'Minimal project');
+            }
+            const versionLabelBounds = (await customVersion.getByTestId('denseProjectEditorVersionLabel').boundingBox())!;
+            const prereleaseBounds = (await customVersion.getByRole('img', { name: 'Using a pre-release Godot editor version', exact: true }).boundingBox())!;
+            expect(prereleaseBounds.x).toBeGreaterThanOrEqual(versionLabelBounds.x + versionLabelBounds.width);
             const tabs = await mainPage.getByRole('tablist').getByRole('tab').all();
             for (const tab of tabs) {
                 const bounds = await tab.boundingBox();
                 expect(bounds?.width).toBeGreaterThanOrEqual(24);
                 expect(bounds?.height).toBeGreaterThanOrEqual(24);
             }
-            await mainPage.screenshot({ path: test.info().outputPath(`dense-${theme}-${width}.png`) });
         }
     }
+    // The existing tag filter also narrows the new presentation.
+    await mainPage.getByTestId('btnFilterProjectTags').click();
+    const filter = mainPage.getByRole('dialog', { name: 'Tags', exact: true });
+    await filter.getByRole('combobox').fill('Co-op');
+    await filter.getByRole('combobox').press('Enter');
+    await expect(mainPage.locator('[data-project-path]')).toHaveCount(1);
+    await expect(mainPage.locator('[data-project-path]')).toHaveAttribute('data-project-path', projects[0].path);
+    await filter.getByRole('combobox').press('Escape');
 });
 
 /** Returns launches recorded by the test's project handler. */
