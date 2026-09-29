@@ -2,6 +2,7 @@
     "view": {
         "cards": "Vista a schede",
         "list": "Vista a elenco",
+        "compact": "Vista compatta",
         "openProject": "Apri {{project}} in Godot",
         "saveFailed": "Impossibile salvare la vista dei progetti. Riprova."
     },

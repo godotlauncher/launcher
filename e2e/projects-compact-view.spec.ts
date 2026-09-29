@@ -66,7 +66,7 @@ test('switches accessibly, preserves search, and remembers the view after restar
     await expect(cards).toHaveAttribute('aria-selected', 'true');
     const originalPaths = await mainPage.locator('[data-project-path]').evaluateAll(rows => rows.map(row => row.getAttribute('data-project-path')));
     await cards.focus();
-    await cards.press('ArrowRight');
+    await cards.press('ArrowLeft');
     await expect(list).toHaveAttribute('aria-selected', 'true');
     await expect(list).toBeFocused();
     await expect(mainPage.getByTestId('btnEditProjectInGodot')).toHaveCount(0);
@@ -99,6 +99,34 @@ test('switches accessibly, preserves search, and remembers the view after restar
     await mainPage.getByTestId('btnProjects').click();
     await expect(mainPage.getByTestId('tabProjectList')).toHaveAttribute('aria-selected', 'true');
 
+    const dense = mainPage.getByTestId('tabProjectDenseList');
+    await mainPage.getByTestId('tabProjectList').press('Home');
+    await expect(dense).toHaveAttribute('aria-selected', 'true');
+    await expect(dense).toBeFocused();
+    await dense.press('End');
+    await expect(mainPage.getByTestId('tabProjectCards')).toHaveAttribute('aria-selected', 'true');
+    await expect(mainPage.getByTestId('tabProjectCards')).toBeFocused();
+    await mainPage.getByTestId('tabProjectCards').press('ArrowRight');
+    await expect(dense).toHaveAttribute('aria-selected', 'true');
+    await mainPage.getByTestId('btnSettings').click();
+    await mainPage.getByTestId('btnProjects').click();
+    await expect(dense).toHaveAttribute('aria-selected', 'true');
+    await mainPage.reload();
+    await expect(dense).toHaveAttribute('aria-selected', 'true');
+    await electronApp.close();
+    electronApp = await _electron.launch({
+        args: ['.', `--user-data-dir=${path.join(fixtureHome, 'electron-user-data')}`],
+        env: createIsolatedLaunchEnvironment(fixtureHome),
+    });
+    mainPage = await getMainWindow(electronApp);
+    await capturePreferences();
+    await prepareAppWithStubbedData(mainPage, electronApp);
+    await restorePreferences();
+    await mainPage.reload();
+    await mainPage.getByTestId('btnProjects').click();
+    await expect(mainPage.getByTestId('tabProjectDenseList')).toHaveAttribute('aria-selected', 'true');
+    await mainPage.getByTestId('tabProjectList').click();
+
     await fs.mkdir(path.resolve('.internal-docs/projects-compact-view'), { recursive: true });
     for (const theme of ['dark', 'light'] as const) {
         await mainPage.getByTestId('btnSettings').click();
@@ -115,7 +143,7 @@ test('switches accessibly, preserves search, and remembers the view after restar
             }
             const overflows = await rows.evaluateAll(elements => elements.map(element => element.scrollWidth - element.clientWidth));
             expect(overflows.every(overflow => overflow <= 1)).toBe(true);
-            const toggleBox = await mainPage.getByRole('tablist', { name: 'List view / Cards view' }).boundingBox();
+            const toggleBox = await mainPage.getByRole('tablist', { name: 'List view / Compact view / Cards view' }).boundingBox();
             const searchBox = await mainPage.getByTestId('inputProjectSearch').boundingBox();
             expect(toggleBox).not.toBeNull();
             expect(searchBox).not.toBeNull();
@@ -134,11 +162,13 @@ test('keeps the saved view when a preference write fails and allows retry', asyn
         ipcMain.removeHandler('app.setUserPreferences');
         ipcMain.handle('app.setUserPreferences', () => { throw new Error('Fixture write failure'); });
     });
-    await mainPage.getByTestId('tabProjectList').click();
+    await mainPage.getByTestId('tabProjectDenseList').click();
     await expect(mainPage.getByText('Could not save the project view. Please try again.')).toBeVisible();
     await expect(mainPage.getByTestId('tabProjectCards')).toHaveAttribute('aria-selected', 'true');
     await mainPage.getByRole('button', { name: 'Ok', exact: true }).click();
     await restorePreferences();
+    await mainPage.getByTestId('tabProjectDenseList').click();
+    await expect(mainPage.getByTestId('tabProjectDenseList')).toHaveAttribute('aria-selected', 'true');
     await mainPage.getByTestId('tabProjectList').click();
     await expect(mainPage.getByTestId('tabProjectList')).toHaveAttribute('aria-selected', 'true');
 });
@@ -167,6 +197,16 @@ test('launches only from the compact identity and keeps other actions independen
     const projectPath = await row.getAttribute('data-project-path');
     await row.getByTestId('btnLaunchCompactProject').click();
     await expect.poll(readLaunches).toEqual([projectPath]);
+    await mainPage.getByTestId('tabProjectDenseList').click();
+    await row.getByTestId('btnProjectFolders').click();
+    await mainPage.keyboard.press('Escape');
+    await row.getByTestId('btnProjectMoreOptions').click();
+    await mainPage.keyboard.press('Escape');
+    expect(await readLaunches()).toEqual([projectPath]);
+    await row.getByTestId('btnLaunchDenseProject').click();
+    await expect.poll(readLaunches).toEqual([projectPath, projectPath]);
+    await row.getByRole('button').first().click();
+    await expect.poll(readLaunches).toEqual([projectPath, projectPath, projectPath]);
 });
 
 test('fits long translated content, warnings and two additional action slots', async () => {
@@ -201,14 +241,18 @@ test('fits long translated content, warnings and two additional action slots', a
             }
         }
     });
-    const fits = await mainPage.locator('[data-project-path]').evaluateAll(rows => rows.every(row => {
+    const violations = await mainPage.locator('[data-project-path]').evaluateAll(rows => rows.flatMap(row => {
         const bounds = row.getBoundingClientRect();
-        return [...row.querySelectorAll('button')].every(button => {
+        return [...row.querySelectorAll('button')].flatMap(button => {
+            // The pinned grip intentionally sits halfway outside the row.
+            if (button.dataset.testid === 'btnReorderPinnedProject') return [];
             const rect = button.getBoundingClientRect();
-            return rect.left >= bounds.left && rect.right <= bounds.right && rect.width >= 20;
+            return rect.left >= bounds.left && rect.right <= bounds.right && rect.width >= 20
+                ? []
+                : [{ control: button.dataset.testid, name: button.getAttribute('aria-label'), width: rect.width, left: rect.left - bounds.left, right: rect.right - bounds.right }];
         });
     }));
-    expect(fits).toBe(true);
+    expect(violations).toEqual([]);
     await mainPage.screenshot({ path: '.internal-docs/projects-compact-view/list-long-content-de-1024.png' });
 });
 
@@ -287,6 +331,113 @@ test('keeps extreme custom version text within the card badge', async () => {
     expect(textBounds!.x + textBounds!.width).toBeLessThanOrEqual(badgeBounds!.x + badgeBounds!.width);
     await versionText.hover();
     await expect(mainPage.getByRole('tooltip').filter({ hasText: version })).toBeVisible();
+});
+
+test('keeps selector icons unlabelled visually with delayed hover and keyboard tooltips', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: 'cards' },
+    });
+    await setAppLanguage(mainPage, 'English');
+    await mainPage.getByTestId('btnProjects').click();
+    const search = mainPage.getByTestId('inputProjectSearch');
+    for (const [id, label] of [
+        ['tabProjectDenseList', 'List view'],
+        ['tabProjectList', 'Compact view'],
+        ['tabProjectCards', 'Cards view'],
+    ]) {
+        const tab = mainPage.getByTestId(id);
+        await expect(tab).toHaveAccessibleName(label);
+        await expect(tab).toHaveText('');
+        await search.click();
+        await mainPage.mouse.move(0, 0);
+        await tab.hover();
+        const tooltip = mainPage.getByRole('tooltip', { name: label, exact: true });
+        // A 500ms default would show too early; these controls require one second.
+        await mainPage.waitForTimeout(650);
+        await expect(tooltip).toHaveCount(0);
+        await expect(tooltip).toBeVisible();
+        await mainPage.mouse.move(0, 0);
+        await expect(tooltip).toHaveCount(0);
+    }
+
+    // Enter the selector with Tab, then use its actual roving keyboard controls.
+    await mainPage.getByTestId('btnProjectCreate').focus();
+    await mainPage.keyboard.press('Tab');
+    for (const [id, label] of [
+        ['tabProjectCards', 'Cards view'],
+        ['tabProjectDenseList', 'List view'],
+        ['tabProjectList', 'Compact view'],
+    ]) {
+        const tab = mainPage.getByTestId(id);
+        await expect(tab).toBeFocused();
+        await expect(tab).toHaveAttribute('aria-selected', 'true');
+        const tooltip = mainPage.getByRole('tooltip', { name: label, exact: true });
+        await mainPage.waitForTimeout(650);
+        await expect(tooltip).toHaveCount(0);
+        await expect(tooltip).toBeVisible();
+        await tab.press('ArrowRight');
+        await expect(tooltip).toHaveCount(0);
+    }
+    await search.focus();
+});
+
+test('fits dense long names and fixed controls in both themes at minimum and ordinary widths', async () => {
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: 'dense' },
+        projects: SAMPLE_PROJECTS.map(project => ({
+            ...project,
+            name: `${project.name} - A deliberately long project title to check single-line truncation`,
+            open_windowed: true,
+            withGit: true,
+        })),
+    });
+    await setAppLanguage(mainPage, 'English');
+    await mainPage.getByTestId('btnProjects').click();
+    await expect(mainPage.getByTestId('tabProjectDenseList')).toHaveAttribute('aria-selected', 'true');
+    for (const theme of ['dark', 'light'] as const) {
+        await mainPage.getByTestId('btnSettings').click();
+        await mainPage.getByRole('tab', { name: 'Appearance', exact: true }).click();
+        await mainPage.getByTestId(theme === 'dark' ? 'themeDark' : 'themeLight').click();
+        await mainPage.getByTestId('btnProjects').click();
+        for (const width of [1024, 1440]) {
+            await mainPage.setViewportSize({ width, height: width === 1024 ? 600 : 900 });
+            const rows = mainPage.locator('[data-project-view="dense"]');
+            await expect(rows).toHaveCount(3);
+            for (const row of await rows.all()) {
+                await expect(row).toBeInViewport();
+                await expect(row.getByTestId('btnProjectMoreOptions')).toBeVisible();
+                await expect(row.getByRole('button', { name: 'Copy path', exact: true })).toHaveCount(0);
+            }
+            const layout = await rows.evaluateAll(elements => elements.map(row => {
+                const bounds = row.getBoundingClientRect();
+                const name = row.querySelector('[data-testid="btnLaunchDenseProject"] span') as HTMLElement;
+                const version = row.querySelector('[data-testid="denseProjectEditorVersion"]') as HTMLElement;
+                const versionText = version.querySelector('span:last-child') as HTMLElement;
+                const actions = [...row.querySelectorAll('button')].filter(button => button.dataset.testid !== 'btnReorderPinnedProject');
+                return {
+                    height: bounds.height,
+                    overflow: row.scrollWidth - row.clientWidth,
+                    nameTruncated: name.scrollWidth > name.clientWidth,
+                    nameHeight: name.getBoundingClientRect().height,
+                    versionFits: versionText.scrollWidth <= versionText.clientWidth + 1,
+                    controlsFit: actions.every(button => {
+                        const box = button.getBoundingClientRect();
+                        return box.left >= bounds.left && box.right <= bounds.right + 1 && box.width >= 24;
+                    }),
+                };
+            }));
+            expect(layout.every(row => row.height <= 44 && row.height >= 36 && row.overflow <= 1)).toBe(true);
+            expect(layout.every(row => row.nameHeight < row.height && row.versionFits && row.controlsFit)).toBe(true);
+            if (width === 1024) expect(layout.every(row => row.nameTruncated)).toBe(true);
+            const tabs = await mainPage.getByRole('tablist').getByRole('tab').all();
+            for (const tab of tabs) {
+                const bounds = await tab.boundingBox();
+                expect(bounds?.width).toBeGreaterThanOrEqual(24);
+                expect(bounds?.height).toBeGreaterThanOrEqual(24);
+            }
+            await mainPage.screenshot({ path: test.info().outputPath(`dense-${theme}-${width}.png`) });
+        }
+    }
 });
 
 /** Returns launches recorded by the test's project handler. */

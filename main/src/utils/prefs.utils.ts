@@ -79,7 +79,10 @@ function mergeWithDefaults(
         ...clonePrefs(defaultPrefs),
         ...runtimePrefs,
         projects_view_mode:
-            runtimePrefs.projects_view_mode === 'list' ? 'list' : 'cards',
+            runtimePrefs.projects_view_mode === 'list' ||
+            runtimePrefs.projects_view_mode === 'dense'
+                ? runtimePrefs.projects_view_mode
+                : 'cards',
         projects_tag_filter: normaliseProjectTagFilter(
             runtimePrefs.projects_tag_filter,
         ),

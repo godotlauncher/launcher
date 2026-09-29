@@ -75,7 +75,7 @@ const downloadableRelease: ReleaseSummary = {
 };
 
 type RenderOptions = {
-    viewMode?: 'cards' | 'list';
+    viewMode?: 'cards' | 'list' | 'dense';
     isInstalledRelease?: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading?: (project: ProjectDetails) => boolean;
     getDownloadableProjectEditor?: (
@@ -153,6 +153,62 @@ function renderProjectsList(
 }
 
 describe('ProjectsList', () => {
+    it('renders dense identity, version and actions without the compact path line', () => {
+        const html = renderProjectsList(
+            { newProjects: [baseProject] },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { viewMode: 'dense' },
+        );
+        expect(html).toContain('data-project-view="dense"');
+        expect(html).toContain('Sample Project');
+        expect(html).toContain('4.3-stable');
+        expect(html).toContain('btnLaunchDenseProject');
+        for (const action of [
+            'btnToggleProjectPinned',
+            'btnProjectTerminal',
+            'btnProjectFolders',
+            'btnProjectSettings',
+            'btnProjectMoreOptions',
+        ]) {
+            expect(html).toContain(action);
+        }
+        expect(html).not.toContain('btnLaunchCompactProject');
+        expect(html).not.toContain('btnCopyProjectPath_');
+        expect(html).not.toContain('card.notOpened');
+    });
+
+    it.each(['missing', 'downloading'] as const)(
+        'keeps dense launch disabled when the editor is %s',
+        (state) => {
+            const html = renderProjectsList(
+                { newProjects: [baseProject] },
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                {
+                    viewMode: 'dense',
+                    isInstalledRelease: () => state !== 'missing',
+                    isProjectEditorDownloading: () => state === 'downloading',
+                    getDownloadableProjectEditor: () => downloadableRelease,
+                },
+            );
+            expect(html).toMatch(
+                /data-testid="btnLaunchDenseProject"[^>]*disabled/,
+            );
+            expect(html).toContain('4.3-stable');
+            if (state === 'missing') {
+                expect(html).toContain('btnInstallRequiredProjectEditor');
+                expect(html).toContain('table.invalidReasons.missingEditor');
+            }
+        },
+    );
+
     it('keeps compact identity launch separate from path and action controls', () => {
         const html = renderProjectsList(
             { newProjects: [baseProject] },

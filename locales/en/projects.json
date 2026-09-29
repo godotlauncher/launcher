@@ -2,6 +2,7 @@
     "view": {
         "cards": "Cards view",
         "list": "List view",
+        "compact": "Compact view",
         "openProject": "Open {{project}} in Godot",
         "saveFailed": "Could not save the project view. Please try again."
     },

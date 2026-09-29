@@ -2,6 +2,7 @@
     "view": {
         "cards": "Visualização em cartões",
         "list": "Visualização em lista",
+        "compact": "Visualização compacta",
         "openProject": "Abrir {{project}} no Godot",
         "saveFailed": "Não foi possível salvar a visualização dos projetos. Tente novamente."
     },

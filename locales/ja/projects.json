@@ -2,6 +2,7 @@
     "view": {
         "cards": "カード表示",
         "list": "リスト表示",
+        "compact": "コンパクト表示",
         "openProject": "{{project}} を Godot で開く",
         "saveFailed": "プロジェクトの表示設定を保存できませんでした。もう一度お試しください。"
     },
