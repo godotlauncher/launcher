@@ -83,6 +83,7 @@ describe('ProjectFoldersMenu', () => {
         renderToStaticMarkup(
             <ProjectFoldersMenu
                 project={project}
+                showCopyProjectPath
                 anchorRect={null}
                 t={(key) => key}
                 onClose={vi.fn()}
@@ -108,6 +109,7 @@ describe('ProjectFoldersMenu', () => {
         renderToStaticMarkup(
             <ProjectFoldersMenu
                 project={project}
+                showCopyProjectPath
                 anchorRect={null}
                 t={(key) => key}
                 onClose={vi.fn()}
@@ -146,6 +148,7 @@ describe('ProjectFoldersMenu', () => {
             />,
         );
 
+        expect(html).not.toContain('menus:project.copyProjectPath');
         expect(html).toContain('project.openProjectFolder');
         expect(html).toContain('project.openEditorSettingsFolder');
         expect(html).not.toContain('project.openTerminal');

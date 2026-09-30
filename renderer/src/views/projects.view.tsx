@@ -786,6 +786,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 )}
             </div>
             <ProjectFoldersMenu
+                showCopyProjectPath={projectViewMode === 'dense'}
                 project={projectFoldersMenu?.project ?? null}
                 anchorRect={projectFoldersMenu?.anchorRect ?? null}
                 githubUrl={projectFoldersMenu?.githubUrl ?? null}

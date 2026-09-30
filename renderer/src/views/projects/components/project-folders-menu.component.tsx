@@ -17,6 +17,7 @@ type ProjectFoldersMenuProps = {
     project: ProjectDetails | null;
     anchorRect: ActionMenuAnchorRect | null;
     githubUrl: string | null;
+    showCopyProjectPath?: boolean;
     t: Translate;
     onClose: () => void;
     onOpenProjectFolder: (project: ProjectDetails) => void;
@@ -31,6 +32,7 @@ export const ProjectFoldersMenu: React.FC<ProjectFoldersMenuProps> = ({
     project,
     anchorRect,
     githubUrl,
+    showCopyProjectPath = false,
     t,
     onClose,
     onOpenProjectFolder,
@@ -91,31 +93,37 @@ export const ProjectFoldersMenu: React.FC<ProjectFoldersMenuProps> = ({
             : githubInvertocatBlack;
     const items: ActionMenuItem[] = project
         ? [
-              {
-                  key: 'copy-project-path',
-                  label: t(
-                      copyStatus === 'copied'
-                          ? 'common:success'
-                          : copyStatus === 'error'
-                            ? 'common:error'
-                            : 'menus:project.copyProjectPath',
-                  ),
-                  icon:
-                      copyStatus === 'copied' ? (
-                          <Check className={`${iconClassName} text-success`} />
-                      ) : (
-                          <Copy
-                              className={`${iconClassName} ${copyStatus === 'error' ? 'text-error' : ''}`}
-                          />
-                      ),
-                  testId: 'btnCopyProjectPathMenu',
-                  closeOnSelect: false,
-                  onSelect: () => copyProjectPath(project.path),
-              },
-              {
-                  type: 'separator',
-                  key: 'copy-separator',
-              },
+              ...(showCopyProjectPath
+                  ? [
+                        {
+                            key: 'copy-project-path',
+                            label: t(
+                                copyStatus === 'copied'
+                                    ? 'common:success'
+                                    : copyStatus === 'error'
+                                      ? 'common:error'
+                                      : 'menus:project.copyProjectPath',
+                            ),
+                            icon:
+                                copyStatus === 'copied' ? (
+                                    <Check
+                                        className={`${iconClassName} text-success`}
+                                    />
+                                ) : (
+                                    <Copy
+                                        className={`${iconClassName} ${copyStatus === 'error' ? 'text-error' : ''}`}
+                                    />
+                                ),
+                            testId: 'btnCopyProjectPathMenu',
+                            closeOnSelect: false,
+                            onSelect: () => copyProjectPath(project.path),
+                        },
+                        {
+                            type: 'separator' as const,
+                            key: 'copy-separator',
+                        },
+                    ]
+                  : []),
               {
                   key: 'open-project-folder',
                   label: t('project.openProjectFolder', { ns: 'menus' }),

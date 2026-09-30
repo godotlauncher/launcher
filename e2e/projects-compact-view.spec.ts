@@ -741,6 +741,10 @@ test('copies the exact project path from Folders with feedback, retry and focus 
         for (const tab of ['tabProjectList', 'tabProjectCards']) {
             await mainPage.getByTestId(tab).click();
             await expect(mainPage.locator('[data-project-path]').getByRole('button', { name: 'Copy path', exact: true })).toBeVisible();
+            await mainPage.getByTestId('btnProjectFolders').click();
+            await expect(menu).toBeVisible();
+            await expect(menu.getByTestId('btnCopyProjectPathMenu')).toHaveCount(0);
+            await mainPage.keyboard.press('Escape');
         }
     } finally {
         await mainPage.evaluate(() => { delete (navigator.clipboard as unknown as { writeText?: unknown }).writeText; });
