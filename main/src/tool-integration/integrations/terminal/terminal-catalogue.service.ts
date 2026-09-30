@@ -3,6 +3,7 @@ import type { TerminalSummary } from '@shared/contracts';
 import logger from 'electron-log';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ToolIntegrationStore } from '../../tool-integration.store.js';
+import type { TerminalTarget } from './terminal.types.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TerminalAdapterService } from './terminal-adapter.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -55,13 +56,23 @@ export class TerminalCatalogueService {
         return flight;
     }
 
-    /** Discovers installations and applies only the current platform preference. */
-    private async scan(): Promise<TerminalSummary> {
-        const [configuration, settings, targets] = await Promise.all([
-            this.configuration.get(),
-            this.store.get('terminal'),
-            this.adapters.discover(),
-        ]);
+    /** Resolves the editor terminal independently of Open Terminal Here's enabled state. */
+    async getEditorLaunchTarget(): Promise<TerminalTarget | undefined> {
+        const summary = await this.get(true);
+        return summary.configurationValid
+            ? this.selectTarget(summary.selection, summary.targets)
+            : undefined;
+    }
+
+    /**
+     * Applies explicit selection or the automatic desktop preference.
+     * @param selection - Current platform terminal preference.
+     * @param targets - Available compiled terminal candidates.
+     */
+    private selectTarget(
+        selection: string,
+        targets: TerminalTarget[],
+    ): TerminalTarget | undefined {
         const ordered = [...targets];
         if (
             process.platform === 'linux' &&
@@ -72,12 +83,19 @@ export class TerminalCatalogueService {
                     Number(b.id === 'konsole') - Number(a.id === 'konsole'),
             );
         }
-        const selected =
-            configuration.selection === 'automatic'
-                ? ordered[0]
-                : targets.find(
-                      (target) => target.id === configuration.selection,
-                  );
+        return selection === 'automatic'
+            ? ordered[0]
+            : targets.find((target) => target.id === selection);
+    }
+
+    /** Discovers installations and applies only the current platform preference. */
+    private async scan(): Promise<TerminalSummary> {
+        const [configuration, settings, targets] = await Promise.all([
+            this.configuration.get(),
+            this.store.get('terminal'),
+            this.adapters.discover(),
+        ]);
+        const selected = this.selectTarget(configuration.selection, targets);
         if (process.platform === 'linux')
             logger.info('[Terminal] Linux terminal selection', {
                 selection: configuration.selection,

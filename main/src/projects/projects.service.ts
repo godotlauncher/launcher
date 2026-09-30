@@ -62,6 +62,8 @@ import { ProjectTagService } from '../project-tags/project-tag.service.js';
 import { TrayAvailabilityService } from '../services/tray-availability.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from '../tool-integration/integrations/git/git.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { TerminalService } from '../tool-integration/integrations/terminal/terminal.service.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
@@ -87,10 +89,11 @@ import { ProjectRemoteImportService } from './project-remote-import.service.js';
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
+import { createMacOSTerminalLaunchScript } from './project-terminal-launch.macos.util.js';
 import {
-    createMacOSTerminalLaunchScript,
-    removeMacOSTerminalLaunchScript,
-} from './project-terminal-launch.macos.util.js';
+    createPosixTerminalLaunchScript,
+    removePosixTerminalLaunchScript,
+} from './project-terminal-launch.posix.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
@@ -171,6 +174,7 @@ export class ProjectsService {
      * @param projectPublication - Follow-on remote publication and retry workflow.
      * @param projectOrigins - Process-local stored-project origin index.
      * @param projectTags - Launcher-owned project tag assignments.
+     * @param terminals - Native terminal launch boundary.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -185,6 +189,7 @@ export class ProjectsService {
         private readonly projectPublication: ProjectPublicationService,
         private readonly projectOrigins: ProjectRepositoryOriginIndexService,
         private readonly projectTags: ProjectTagService,
+        private readonly terminals: TerminalService,
     ) {}
 
     /**
@@ -1251,7 +1256,10 @@ export class ProjectsService {
         if (areTemplatesMutating())
             throw new Error(t('exportTemplates:errors.busy'));
         const command = project.launch_path;
-        let editor: ChildProcess | ChildProcessByStdio<null, null, null>;
+        let editor:
+            | ChildProcess
+            | ChildProcessByStdio<null, null, null>
+            | undefined;
         let terminalScriptPath: string | undefined;
 
         if (process.platform === 'darwin' && project.launch_with_console) {
@@ -1272,6 +1280,35 @@ export class ProjectsService {
                     stdio: 'ignore',
                 },
             );
+        } else if (
+            process.platform === 'linux' &&
+            project.launch_with_console
+        ) {
+            terminalScriptPath = await createPosixTerminalLaunchScript(
+                command,
+                project.path,
+                Boolean(project.open_windowed),
+                'sh',
+            );
+            try {
+                const result = await this.terminals.launchEditorScript(
+                    project.path,
+                    terminalScriptPath,
+                );
+                if (!result.success)
+                    throw new Error(
+                        t(`projects:terminal.errors.${result.reason}`),
+                    );
+            } catch (error) {
+                await removePosixTerminalLaunchScript(terminalScriptPath).catch(
+                    (cleanupError: unknown) =>
+                        logger.warn(
+                            'Failed to remove unused terminal launch script',
+                            cleanupError,
+                        ),
+                );
+                throw error;
+            }
         } else if (process.platform === 'darwin') {
             const launchArguments = [
                 command,
@@ -1301,7 +1338,7 @@ export class ProjectsService {
         /** Removes the script if Terminal could not accept the launch. */
         const removeUnusedTerminalScript = () => {
             if (terminalScriptPath) {
-                void removeMacOSTerminalLaunchScript(terminalScriptPath).catch(
+                void removePosixTerminalLaunchScript(terminalScriptPath).catch(
                     (cleanupError: unknown) =>
                         logger.warn(
                             'Failed to remove unused terminal launch script',
@@ -1311,21 +1348,23 @@ export class ProjectsService {
             }
         };
 
-        editor.on('error', (error: Error) => {
-            logger.error(`Failed to start process: ${error.message}`);
-            removeUnusedTerminalScript();
-        });
-        editor.on('exit', (code: number, signal: NodeJS.Signals | null) => {
-            if (code !== 0 && code !== null) {
-                logger.error(`Editor exited with error code ${code}`);
-                logger.error(editor.stderr);
+        if (editor) {
+            editor.on('error', (error: Error) => {
+                logger.error(`Failed to start process: ${error.message}`);
                 removeUnusedTerminalScript();
-            } else if (signal) {
-                logger.error(`Editor was killed by signal: ${signal}`);
-                removeUnusedTerminalScript();
-            }
-        });
-        editor.unref();
+            });
+            editor.on('exit', (code: number, signal: NodeJS.Signals | null) => {
+                if (code !== 0 && code !== null) {
+                    logger.error(`Editor exited with error code ${code}`);
+                    logger.error(editor?.stderr);
+                    removeUnusedTerminalScript();
+                } else if (signal) {
+                    logger.error(`Editor was killed by signal: ${signal}`);
+                    removeUnusedTerminalScript();
+                }
+            });
+            editor.unref();
+        }
 
         const currentMainWindow = getMainWindow();
         switch (prefs.post_launch_action) {

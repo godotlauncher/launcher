@@ -1,3 +1,8 @@
+vi.mock(
+    '../tool-integration/integrations/terminal/terminal.service.js',
+    () => ({ TerminalService: class {} }),
+);
+
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -199,6 +204,7 @@ describe('ProjectsService', () => {
             projectPublication as never,
             projectOrigins as never,
             projectTags as never,
+            {} as never,
         );
     });
 

@@ -73,6 +73,66 @@ describe('TerminalAdapterService', () => {
         });
     });
 
+    it.each([
+        ['gnome-terminal', '--'],
+        ['konsole', '-e'],
+        ['foot', '--'],
+        ['alacritty', '-e'],
+        ['ghostty', '-e'],
+        ['kitty', '--'],
+    ] as const)(
+        'runs an editor script in %s using literal path arguments',
+        async (id, separator) => {
+            vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+            const child = new EventEmitter() as EventEmitter & {
+                unref: ReturnType<typeof vi.fn>;
+            };
+            child.unref = vi.fn();
+            mocks.spawn.mockImplementation(() => {
+                queueMicrotask(() => {
+                    child.emit('spawn');
+                    if (id === 'gnome-terminal') child.emit('exit', 0);
+                });
+                return child;
+            });
+            const target = targets.find((candidate) => candidate.id === id);
+            if (!target) throw new Error(`Missing fixture: ${id}`);
+            const script = "/tmp/artist's launch/launch.sh";
+            expect(
+                await new TerminalAdapterService().launch(
+                    target,
+                    '/project with spaces',
+                    script,
+                ),
+            ).toEqual({ success: true });
+            expect(mocks.spawn.mock.calls[0][1].slice(-3)).toEqual([
+                separator,
+                '/bin/sh',
+                script,
+            ]);
+            expect(mocks.spawn.mock.calls[0][2]).toMatchObject({
+                shell: false,
+                cwd: '/project with spaces',
+            });
+            vi.restoreAllMocks();
+        },
+    );
+    it('rejects an unreadable editor script before spawning', async () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+        mocks.access.mockImplementation(async (file: string) => {
+            if (file.endsWith('launch.sh')) throw new Error('Not readable');
+        });
+        expect(
+            await new TerminalAdapterService().launch(
+                targets[3],
+                '/project',
+                '/tmp/launch.sh',
+            ),
+        ).toEqual({ success: false, reason: 'launch-failed' });
+        expect(mocks.spawn).not.toHaveBeenCalled();
+        vi.restoreAllMocks();
+    });
+
     it('discovers Windows Terminal before the system Command Prompt without using PATH', async () => {
         vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
         vi.stubEnv('LOCALAPPDATA', 'C:\\Users\\fixture\\AppData\\Local');

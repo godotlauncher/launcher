@@ -18,10 +18,8 @@ vi.mock('electron', () => ({
     app: { getPath: vi.fn(() => '/tmp') },
 }));
 
-import {
-    createMacOSTerminalLaunchScript,
-    removeMacOSTerminalLaunchScript,
-} from './project-terminal-launch.macos.util.js';
+import { createMacOSTerminalLaunchScript } from './project-terminal-launch.macos.util.js';
+import { removePosixTerminalLaunchScript } from './project-terminal-launch.posix.util.js';
 
 describe('macOS terminal launch script', () => {
     beforeEach(() => {
@@ -124,7 +122,7 @@ describe('macOS terminal launch script', () => {
     });
 
     it('removes an unused script directory when Terminal cannot start', async () => {
-        await removeMacOSTerminalLaunchScript(
+        await removePosixTerminalLaunchScript(
             '/tmp/godot-launch-123456/launch.command',
         );
         expect(fileMocks.rm).toHaveBeenCalledWith('/tmp/godot-launch-123456', {

@@ -26,10 +26,20 @@ const childProcessMocks = vi.hoisted(() => ({
 
 const macTerminalMocks = vi.hoisted(() => ({
     createMacOSTerminalLaunchScript: vi.fn(),
-    removeMacOSTerminalLaunchScript: vi.fn(),
 }));
 
 vi.mock('./project-terminal-launch.macos.util.js', () => macTerminalMocks);
+
+const posixTerminalMocks = vi.hoisted(() => ({
+    createPosixTerminalLaunchScript: vi.fn(),
+    removePosixTerminalLaunchScript: vi.fn(),
+}));
+const terminals = vi.hoisted(() => ({ launchEditorScript: vi.fn() }));
+vi.mock('./project-terminal-launch.posix.util.js', () => posixTerminalMocks);
+vi.mock(
+    '../tool-integration/integrations/terminal/terminal.service.js',
+    () => ({ TerminalService: class {} }),
+);
 
 const checksMocks = vi.hoisted(() => ({
     checkProjectHealth: vi.fn(async (project: ProjectDetails) => project),
@@ -313,6 +323,7 @@ function createProjectsService(
         {} as import('./project-publication.service.js').ProjectPublicationService,
         {} as import('./project-repository-origin-index.service.js').ProjectRepositoryOriginIndexService,
         { removeProjectAssignments: vi.fn() } as never,
+        terminals as never,
     );
 }
 
@@ -459,9 +470,13 @@ describe('launchProject', () => {
         macTerminalMocks.createMacOSTerminalLaunchScript.mockResolvedValue(
             '/tmp/godot-launch-test/launch.command',
         );
-        macTerminalMocks.removeMacOSTerminalLaunchScript.mockResolvedValue(
+        posixTerminalMocks.createPosixTerminalLaunchScript.mockResolvedValue(
+            '/tmp/godot-launch-test/launch.sh',
+        );
+        posixTerminalMocks.removePosixTerminalLaunchScript.mockResolvedValue(
             undefined,
         );
+        terminals.launchEditorScript.mockResolvedValue({ success: true });
         trayAvailabilityService.isAvailable.mockResolvedValue(true);
         storeProjectsList.mockImplementation(
             async (_path, projects, _options) => projects,
@@ -587,6 +602,83 @@ describe('launchProject', () => {
             expect.objectContaining({ detached: true, stdio: 'ignore' }),
         );
     });
+
+    it('launches a Linux editor script with the project windowed preference', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'linux',
+        });
+        const project = createProjectDetails({
+            launch_with_console: true,
+            open_windowed: true,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        await expect(launchProject(project)).resolves.toEqual({
+            launched: true,
+        });
+        expect(
+            posixTerminalMocks.createPosixTerminalLaunchScript,
+        ).toHaveBeenCalledWith(project.launch_path, project.path, true, 'sh');
+        expect(terminals.launchEditorScript).toHaveBeenCalledWith(
+            project.path,
+            '/tmp/godot-launch-test/launch.sh',
+        );
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+    });
+
+    it('preserves direct Linux launching when console is off', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'linux',
+        });
+        const project = createProjectDetails({
+            launch_with_console: false,
+            open_windowed: true,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        await launchProject(project);
+        expect(terminals.launchEditorScript).not.toHaveBeenCalled();
+        expect(childProcessMocks.spawn).toHaveBeenCalledWith(
+            project.launch_path,
+            ['--path', project.path, '-e', '-w'],
+            expect.any(Object),
+        );
+    });
+
+    it.each(['result', 'exception'])(
+        'cleans the Linux script and rejects a terminal launch failure (%s)',
+        async (failure) => {
+            Object.defineProperty(process, 'platform', {
+                configurable: true,
+                value: 'linux',
+            });
+            const project = createProjectDetails({ launch_with_console: true });
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            if (failure === 'result')
+                terminals.launchEditorScript.mockResolvedValue({
+                    success: false,
+                    reason: 'unavailable',
+                });
+            else
+                terminals.launchEditorScript.mockRejectedValue(
+                    new Error('Terminal failed'),
+                );
+            await expect(launchProject(project)).rejects.toThrow();
+            expect(
+                posixTerminalMocks.removePosixTerminalLaunchScript,
+            ).toHaveBeenCalledWith('/tmp/godot-launch-test/launch.sh');
+            expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+        },
+    );
 
     it('uses the existing macOS launch when console is off', async () => {
         const project = createProjectDetails({ launch_with_console: false });

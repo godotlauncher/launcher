@@ -7,6 +7,7 @@ import { ProjectTagsModule } from '../project-tags/project-tags.module.js';
 import { TrayAvailabilityModule } from '../services/tray-availability.module.js';
 import { GitModule } from '../tool-integration/integrations/git/git.module.js';
 import { GitLfsModule } from '../tool-integration/integrations/git-lfs/git-lfs.module.js';
+import { TerminalModule } from '../tool-integration/integrations/terminal/terminal.module.js';
 import { ProjectCreationService } from './project-creation.service.js';
 import { ProjectDiscoveryService } from './project-discovery.service.js';
 import { ProjectEditorChoiceService } from './project-editor-choice.service.js';
@@ -32,6 +33,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
         GitModule,
         GitLfsModule,
         TrayAvailabilityModule,
+        TerminalModule,
     ],
     providers: [
         ProjectCreationService,

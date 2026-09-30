@@ -109,10 +109,12 @@ export class TerminalAdapterService {
      * Opens an exact directory and records bounded Linux launch diagnostics.
      * @param target - Freshly resolved compiled terminal candidate.
      * @param directory - Validated absolute project directory.
+     * @param scriptPath - Optional private editor script to run on Linux.
      */
     async launch(
         target: TerminalTarget,
         directory: string,
+        scriptPath?: string,
     ): Promise<TerminalLaunchResult> {
         if (target.id === 'command-prompt' && /^\\\\/.test(directory)) {
             return { success: false, reason: 'unsupported-directory' };
@@ -157,6 +159,31 @@ export class TerminalAdapterService {
                 );
             return { success: false, reason: 'missing-directory' };
         }
+        if (scriptPath !== undefined) {
+            if (
+                !logLinux ||
+                ![
+                    'gnome-terminal',
+                    'konsole',
+                    'foot',
+                    'alacritty',
+                    'ghostty',
+                    'kitty',
+                ].includes(target.id)
+            )
+                return { success: false, reason: 'launch-failed' };
+            try {
+                if (
+                    !path.isAbsolute(scriptPath) ||
+                    !(await stat(scriptPath)).isFile()
+                )
+                    return { success: false, reason: 'launch-failed' };
+                await access(scriptPath, constants.R_OK);
+            } catch {
+                return { success: false, reason: 'launch-failed' };
+            }
+        }
+
         const dispatcher =
             target.id === 'macos-terminal' ||
             target.id === 'windows-terminal' ||
@@ -188,6 +215,18 @@ export class TerminalAdapterService {
         if (target.id === 'command-prompt') {
             // START gives CMD its own interactive console; the project stays in cwd.
             args.push('/d', '/c', `start "" "${executable}" /d`);
+        }
+        if (scriptPath !== undefined) {
+            // Command options must come last so script arguments bypass terminal option parsing.
+            args.push(
+                target.id === 'gnome-terminal' ||
+                    target.id === 'foot' ||
+                    target.id === 'kitty'
+                    ? '--'
+                    : '-e',
+                '/bin/sh',
+                scriptPath,
+            );
         }
         const startedAt = Date.now();
         if (logLinux)
