@@ -94,6 +94,7 @@ import {
     createPosixTerminalLaunchScript,
     removePosixTerminalLaunchScript,
 } from './project-terminal-launch.posix.util.js';
+import { launchWindowsTerminal } from './project-terminal-launch.windows.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
@@ -1280,6 +1281,21 @@ export class ProjectsService {
                     stdio: 'ignore',
                 },
             );
+        } else if (
+            process.platform === 'win32' &&
+            project.launch_with_console
+        ) {
+            try {
+                await launchWindowsTerminal(
+                    command,
+                    project.path,
+                    Boolean(project.open_windowed),
+                    project.release.console_path,
+                );
+            } catch (error) {
+                logger.warn('Windows terminal launch failed', error);
+                throw new Error(t('projects:terminal.errors.launch-failed'));
+            }
         } else if (
             process.platform === 'linux' &&
             project.launch_with_console

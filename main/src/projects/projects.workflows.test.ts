@@ -41,6 +41,14 @@ vi.mock(
     () => ({ TerminalService: class {} }),
 );
 
+const windowsTerminalMocks = vi.hoisted(() => ({
+    launchWindowsTerminal: vi.fn(),
+}));
+vi.mock(
+    './project-terminal-launch.windows.util.js',
+    () => windowsTerminalMocks,
+);
+
 const checksMocks = vi.hoisted(() => ({
     checkProjectHealth: vi.fn(async (project: ProjectDetails) => project),
     hasProjectHealthChanged: vi.fn(() => false),
@@ -477,6 +485,7 @@ describe('launchProject', () => {
             undefined,
         );
         terminals.launchEditorScript.mockResolvedValue({ success: true });
+        windowsTerminalMocks.launchWindowsTerminal.mockResolvedValue(undefined);
         trayAvailabilityService.isAvailable.mockResolvedValue(true);
         storeProjectsList.mockImplementation(
             async (_path, projects, _options) => projects,
@@ -601,6 +610,74 @@ describe('launchProject', () => {
             ],
             expect.objectContaining({ detached: true, stdio: 'ignore' }),
         );
+    });
+
+    it('launches the Windows console helper using the project editor and registered wrapper', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'win32',
+        });
+        const project = createProjectDetails({
+            launch_with_console: true,
+            open_windowed: true,
+        });
+        project.release.console_path = 'C:\\installed\\Godot_console.exe';
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        await expect(launchProject(project)).resolves.toEqual({
+            launched: true,
+        });
+        expect(windowsTerminalMocks.launchWindowsTerminal).toHaveBeenCalledWith(
+            project.launch_path,
+            project.path,
+            true,
+            project.release.console_path,
+        );
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+    });
+    it('preserves direct Windows launching when console is off', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'win32',
+        });
+        const project = createProjectDetails({ launch_with_console: false });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        await launchProject(project);
+        expect(
+            windowsTerminalMocks.launchWindowsTerminal,
+        ).not.toHaveBeenCalled();
+        expect(childProcessMocks.spawn).toHaveBeenCalledWith(
+            project.launch_path,
+            ['--path', project.path, '-e'],
+            expect.any(Object),
+        );
+    });
+    it('reports a Windows console dispatch failure without applying the post-launch action', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'win32',
+        });
+        const project = createProjectDetails({ launch_with_console: true });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getUserPreferences.mockResolvedValue({
+            post_launch_action: 'minimize',
+        });
+        windowsTerminalMocks.launchWindowsTerminal.mockRejectedValue(
+            new Error('Missing CMD'),
+        );
+        await expect(launchProject(project)).rejects.toThrow(
+            'projects:terminal.errors.launch-failed',
+        );
+        expect(windowMock.minimize).not.toHaveBeenCalled();
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
     });
 
     it('launches a Linux editor script with the project windowed preference', async () => {
