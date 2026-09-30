@@ -14,6 +14,7 @@
     "project": {
         "pinProject": "プロジェクトをピン留め",
         "unpinProject": "ピン留めを解除",
+        "copyProjectPath": "プロジェクトのパスをコピー",
         "openProjectFolder": "プロジェクトフォルダを開く",
         "openTerminal": "ここでターミナルを開く",
         "openInGitHub": "GitHub で開く",

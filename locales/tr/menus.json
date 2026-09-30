@@ -14,6 +14,7 @@
     "project": {
         "pinProject": "Projeyi sabitle",
         "unpinProject": "Projenin sabitlemesini kaldır",
+        "copyProjectPath": "Proje yolunu kopyala",
         "openProjectFolder": "Proje Klasörünü Aç",
         "openTerminal": "Terminali burada aç",
         "openInGitHub": "GitHub'da Aç",
