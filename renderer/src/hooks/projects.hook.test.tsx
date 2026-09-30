@@ -14,6 +14,7 @@ import { ProjectsProvider, useProjects } from './projects.hook.tsx';
 const mocks = vi.hoisted(() => ({
     createProject: vi.fn(),
     installRelease: vi.fn(),
+    launchProject: vi.fn(),
     setProjectEditor: vi.fn(),
     addAlert: vi.fn(),
 }));
@@ -31,6 +32,7 @@ vi.mock('../renderer.bridge.ts', () => ({
     codeEditorIntegrationBridge: {},
     projectsBridge: {
         createProject: mocks.createProject,
+        launchProject: mocks.launchProject,
         setProjectEditor: mocks.setProjectEditor,
     },
     subscribeAppEvent: vi.fn(() => () => {}),
@@ -77,6 +79,20 @@ describe('useProjects', () => {
         }
         return captured;
     }
+
+    it('shows a launch error when the terminal cannot be prepared', async () => {
+        const project = { path: '/project' } as ProjectDetails;
+        mocks.launchProject.mockRejectedValue(new Error('Invalid app bundle'));
+
+        await expect(renderHook().launchProject(project)).resolves.toBe(
+            project,
+        );
+
+        expect(mocks.addAlert).toHaveBeenCalledWith(
+            'common:error',
+            'Invalid app bundle',
+        );
+    });
 
     it('locks each pending project independently and allows retry after failure', async () => {
         const hook = renderHook();

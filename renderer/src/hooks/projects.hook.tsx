@@ -708,13 +708,20 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const launchProject = async (project: ProjectDetails) => {
-        const result = await projectsBridge.launchProject(project);
-        if (!result.launched) {
-            if (result.reason === 'code_editor_unavailable') {
-                showMissingCodeEditorWarning(project, result);
-                return project;
+        try {
+            const result = await projectsBridge.launchProject(project);
+            if (!result.launched) {
+                if (result.reason === 'code_editor_unavailable') {
+                    showMissingCodeEditorWarning(project, result);
+                    return project;
+                }
+                return result.project;
             }
-            return result.project;
+        } catch (error) {
+            addAlert(
+                t('common:error'),
+                error instanceof Error ? error.message : t('common:error'),
+            );
         }
 
         return project;

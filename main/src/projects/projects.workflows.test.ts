@@ -6,7 +6,7 @@ import type {
     ProjectDetails,
     RenameProjectOptions,
 } from '@shared/contracts';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import type { TrayAvailabilityService } from '../services/tray-availability.service.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
@@ -23,6 +23,13 @@ const childProcessMocks = vi.hoisted(() => ({
         stderr: null,
     })),
 }));
+
+const macTerminalMocks = vi.hoisted(() => ({
+    createMacOSTerminalLaunchScript: vi.fn(),
+    removeMacOSTerminalLaunchScript: vi.fn(),
+}));
+
+vi.mock('./project-terminal-launch.macos.util.js', () => macTerminalMocks);
 
 const checksMocks = vi.hoisted(() => ({
     checkProjectHealth: vi.fn(async (project: ProjectDetails) => project),
@@ -428,7 +435,16 @@ function createProjectDetails(
 }
 
 describe('launchProject', () => {
+    const originalPlatform = Object.getOwnPropertyDescriptor(
+        process,
+        'platform',
+    );
+
     beforeEach(() => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'darwin',
+        });
         vi.clearAllMocks();
         templateMocks.areTemplatesMutating.mockReturnValue(false);
         templateMocks.connectProjectTemplates.mockResolvedValue(undefined);
@@ -440,6 +456,12 @@ describe('launchProject', () => {
         };
         getMainWindow.mockReturnValue(windowMock);
         getUserPreferences.mockResolvedValue({ post_launch_action: 'none' });
+        macTerminalMocks.createMacOSTerminalLaunchScript.mockResolvedValue(
+            '/tmp/godot-launch-test/launch.command',
+        );
+        macTerminalMocks.removeMacOSTerminalLaunchScript.mockResolvedValue(
+            undefined,
+        );
         trayAvailabilityService.isAvailable.mockResolvedValue(true);
         storeProjectsList.mockImplementation(
             async (_path, projects, _options) => projects,
@@ -464,6 +486,12 @@ describe('launchProject', () => {
             },
             resolvedGodotExecPath: '/tools/code',
         });
+    });
+
+    afterEach(() => {
+        if (originalPlatform) {
+            Object.defineProperty(process, 'platform', originalPlatform);
+        }
     });
 
     it('writes project launcher config when launching a stored project', async () => {
@@ -526,6 +554,81 @@ describe('launchProject', () => {
             ]),
             expect.objectContaining({ expectedVersion: 'v1' }),
         );
+    });
+
+    it('opens a terminal script for a macOS project with console enabled', async () => {
+        const project = createProjectDetails({
+            launch_with_console: true,
+            open_windowed: true,
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+
+        await expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).resolves.toEqual({ launched: true });
+
+        expect(
+            macTerminalMocks.createMacOSTerminalLaunchScript,
+        ).toHaveBeenCalledWith(project.launch_path, project.path, true);
+        expect(childProcessMocks.spawn).toHaveBeenCalledWith(
+            '/usr/bin/open',
+            [
+                '-a',
+                '/System/Applications/Utilities/Terminal.app',
+                '/tmp/godot-launch-test/launch.command',
+            ],
+            expect.objectContaining({ detached: true, stdio: 'ignore' }),
+        );
+    });
+
+    it('uses the existing macOS launch when console is off', async () => {
+        const project = createProjectDetails({ launch_with_console: false });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+
+        await launchProject(
+            project,
+            codeEditorIntegrationService,
+            trayAvailabilityService as never,
+        );
+
+        expect(
+            macTerminalMocks.createMacOSTerminalLaunchScript,
+        ).not.toHaveBeenCalled();
+        expect(childProcessMocks.spawn).toHaveBeenCalledWith(
+            'open',
+            [project.launch_path, '--args', '--path', project.path, '-e'],
+            expect.any(Object),
+        );
+    });
+
+    it('does not open Godot if the macOS terminal script cannot be prepared', async () => {
+        const project = createProjectDetails({ launch_with_console: true });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        macTerminalMocks.createMacOSTerminalLaunchScript.mockRejectedValue(
+            new Error('Invalid app bundle'),
+        );
+
+        await expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).rejects.toThrow('Invalid app bundle');
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
     });
 
     it('still launches when the best-effort sidecar write fails', async () => {
