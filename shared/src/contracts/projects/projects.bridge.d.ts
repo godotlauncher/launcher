@@ -168,6 +168,12 @@ export type ProjectsBridge = {
         openWindowed: boolean,
     ): Promise<ProjectDetails>;
 
+    /** Changes whether a project launches with a visible console. */
+    setProjectLaunchWithConsole(
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ): Promise<ProjectDetails>;
+
     /** Changes whether a project is pinned. */
     setProjectPinned(
         project: ProjectDetails,

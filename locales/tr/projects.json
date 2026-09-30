@@ -421,9 +421,13 @@
         "launch": {
             "title": "Başlatma",
             "help": "Godot'nun bu projeyi nasıl açtığını seçin.",
+            "console": {
+                "label": "Terminalde başlat",
+                "help": "Godot kapandıktan sonra çıktıyı görünür tutun."
+            },
             "windowed": {
-                "label": "Pencereli modu kullan",
-                "help": "Godot editörünü normal bir pencerede açın."
+                "label": "Pencereli düzenleyici",
+                "help": "Godot'u --windowed ile başlatın."
             }
         },
         "pinned": {

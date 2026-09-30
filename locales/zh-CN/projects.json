@@ -421,9 +421,13 @@
         "launch": {
             "title": "启动",
             "help": "选择 Godot 打开此项目的方式。",
+            "console": {
+                "label": "在终端中启动",
+                "help": "Godot 退出后仍保留输出。"
+            },
             "windowed": {
-                "label": "使用窗口模式",
-                "help": "在普通窗口中打开 Godot 编辑器。"
+                "label": "窗口编辑器",
+                "help": "使用 --windowed 启动 Godot。"
             }
         },
         "pinned": {

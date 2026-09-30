@@ -333,6 +333,23 @@ export class ProjectsController implements ProjectsBridge {
     }
 
     /**
+     * Changes whether a project launches with a visible console.
+     *
+     * @param project - Project to update.
+     * @param launchWithConsole - Whether to request console mode.
+     */
+    @ProjectsHandler('setProjectLaunchWithConsole')
+    setProjectLaunchWithConsole(
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) {
+        return this.projects.setProjectLaunchWithConsole(
+            project,
+            launchWithConsole,
+        );
+    }
+
+    /**
      * Changes whether a project is pinned.
      *
      * @param project - Project to update.

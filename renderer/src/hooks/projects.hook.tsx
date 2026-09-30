@@ -89,6 +89,10 @@ interface ProjectsContext {
         project: ProjectDetails,
         openWindowed: boolean,
     ) => Promise<ProjectDetails>;
+    setProjectLaunchWithConsole: (
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) => Promise<ProjectDetails>;
     setProjectPinned: (
         project: ProjectDetails,
         pinned: boolean,
@@ -522,6 +526,23 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return updatedProject;
     };
 
+    /**
+     * Saves a project's console launch preference.
+     * @param project - Project to update.
+     * @param launchWithConsole - Whether to show a console on launch.
+     */
+    const setProjectLaunchWithConsole = async (
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) => {
+        const updatedProject = await projectsBridge.setProjectLaunchWithConsole(
+            project,
+            launchWithConsole,
+        );
+        updateProjectState(updatedProject);
+        return updatedProject;
+    };
+
     const setProjectPinned = async (
         project: ProjectDetails,
         pinned: boolean,
@@ -748,6 +769,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 setProjectEditor,
                 queueProjectEditorRepairs,
                 setProjectWindowed,
+                setProjectLaunchWithConsole,
                 setProjectPinned,
                 reorderPinnedProjects,
                 setProjectCodeEditor,

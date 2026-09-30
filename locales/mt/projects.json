@@ -421,9 +421,13 @@
         "launch": {
             "title": "Tnedija",
             "help": "Agħżel kif Godot jiftaħ dan il-proġett.",
+            "console": {
+                "label": "Niedi fit-terminal",
+                "help": "Żomm l-output viżibbli wara li joħroġ Godot."
+            },
             "windowed": {
-                "label": "Uża modalità ta' tieqa",
-                "help": "Iftaħ l-editur Godot f'tieqa normali."
+                "label": "Editur f'tieqa",
+                "help": "Niedi Godot b'--windowed."
             }
         },
         "pinned": {

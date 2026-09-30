@@ -854,6 +854,33 @@ export class ProjectsService {
     }
 
     /**
+     * Changes whether a project launches with a visible console.
+     *
+     * @param project - Project to update.
+     * @param launchWithConsole - Whether to request console mode.
+     */
+    async setProjectLaunchWithConsole(
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) {
+        const projects = await this.store.update((currentProjects) =>
+            currentProjects.map((candidate) =>
+                candidate.path === project.path
+                    ? { ...candidate, launch_with_console: launchWithConsole }
+                    : candidate,
+            ),
+        );
+        const updatedProject = projects.find(
+            (candidate) => candidate.path === project.path,
+        );
+        if (!updatedProject) {
+            throw new Error('Project not found');
+        }
+        this.publishProjects(projects);
+        return updatedProject;
+    }
+
+    /**
      * Changes whether a project is pinned.
      *
      * @param project - Project to update.

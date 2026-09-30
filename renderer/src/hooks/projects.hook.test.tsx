@@ -84,6 +84,7 @@ describe('useProjects', () => {
             name: 'Draft',
             renameGodotProject: false,
             windowed: true,
+            launchWithConsole: false,
             codeEditorId: null,
             codeEditorTouched: false,
             releaseSelection: {

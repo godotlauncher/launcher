@@ -5,6 +5,7 @@ export type ProjectSettingsDraft = {
     name: string;
     renameGodotProject: boolean;
     windowed: boolean;
+    launchWithConsole: boolean;
     codeEditorId: CodeEditorId | null;
     codeEditorTouched: boolean;
     releaseSelection: CreateProjectEditorSelection;

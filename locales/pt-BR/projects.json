@@ -421,9 +421,13 @@
         "launch": {
             "title": "Inicialização",
             "help": "Escolha como o Godot abre este projeto.",
+            "console": {
+                "label": "Iniciar no terminal",
+                "help": "Mantenha a saída visível após o encerramento do Godot."
+            },
             "windowed": {
-                "label": "Usar modo janela",
-                "help": "Abra o editor Godot em uma janela normal."
+                "label": "Editor em janela",
+                "help": "Inicie o Godot com --windowed."
             }
         },
         "pinned": {
