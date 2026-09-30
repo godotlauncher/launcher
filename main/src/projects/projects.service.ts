@@ -89,7 +89,10 @@ import { ProjectRemoteImportService } from './project-remote-import.service.js';
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
-import { createMacOSTerminalLaunchScript } from './project-terminal-launch.macos.util.js';
+import {
+    createMacOSTerminalLaunchScript,
+    openMacOSTerminalLaunchScript,
+} from './project-terminal-launch.macos.util.js';
 import {
     createPosixTerminalLaunchScript,
     removePosixTerminalLaunchScript,
@@ -1261,26 +1264,25 @@ export class ProjectsService {
             | ChildProcess
             | ChildProcessByStdio<null, null, null>
             | undefined;
-        let terminalScriptPath: string | undefined;
-
         if (process.platform === 'darwin' && project.launch_with_console) {
-            terminalScriptPath = await createMacOSTerminalLaunchScript(
+            const terminalScriptPath = await createMacOSTerminalLaunchScript(
                 command,
                 project.path,
                 Boolean(project.open_windowed),
             );
-            editor = spawn(
-                '/usr/bin/open',
-                [
-                    '-a',
-                    '/System/Applications/Utilities/Terminal.app',
-                    terminalScriptPath,
-                ],
-                {
-                    detached: true,
-                    stdio: 'ignore',
-                },
-            );
+            try {
+                await openMacOSTerminalLaunchScript(terminalScriptPath);
+            } catch (error) {
+                logger.warn('macOS terminal launch failed', error);
+                await removePosixTerminalLaunchScript(terminalScriptPath).catch(
+                    (cleanupError: unknown) =>
+                        logger.warn(
+                            'Failed to remove unused terminal launch script',
+                            cleanupError,
+                        ),
+                );
+                throw new Error(t('projects:terminal.errors.launch-failed'));
+            }
         } else if (
             process.platform === 'win32' &&
             project.launch_with_console
@@ -1300,7 +1302,7 @@ export class ProjectsService {
             process.platform === 'linux' &&
             project.launch_with_console
         ) {
-            terminalScriptPath = await createPosixTerminalLaunchScript(
+            const terminalScriptPath = await createPosixTerminalLaunchScript(
                 command,
                 project.path,
                 Boolean(project.open_windowed),
@@ -1351,32 +1353,16 @@ export class ProjectsService {
             });
         }
 
-        /** Removes the script if Terminal could not accept the launch. */
-        const removeUnusedTerminalScript = () => {
-            if (terminalScriptPath) {
-                void removePosixTerminalLaunchScript(terminalScriptPath).catch(
-                    (cleanupError: unknown) =>
-                        logger.warn(
-                            'Failed to remove unused terminal launch script',
-                            cleanupError,
-                        ),
-                );
-            }
-        };
-
         if (editor) {
             editor.on('error', (error: Error) => {
                 logger.error(`Failed to start process: ${error.message}`);
-                removeUnusedTerminalScript();
             });
             editor.on('exit', (code: number, signal: NodeJS.Signals | null) => {
                 if (code !== 0 && code !== null) {
                     logger.error(`Editor exited with error code ${code}`);
                     logger.error(editor?.stderr);
-                    removeUnusedTerminalScript();
                 } else if (signal) {
                     logger.error(`Editor was killed by signal: ${signal}`);
-                    removeUnusedTerminalScript();
                 }
             });
             editor.unref();

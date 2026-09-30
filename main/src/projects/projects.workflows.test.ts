@@ -26,6 +26,7 @@ const childProcessMocks = vi.hoisted(() => ({
 
 const macTerminalMocks = vi.hoisted(() => ({
     createMacOSTerminalLaunchScript: vi.fn(),
+    openMacOSTerminalLaunchScript: vi.fn(),
 }));
 
 vi.mock('./project-terminal-launch.macos.util.js', () => macTerminalMocks);
@@ -478,6 +479,9 @@ describe('launchProject', () => {
         macTerminalMocks.createMacOSTerminalLaunchScript.mockResolvedValue(
             '/tmp/godot-launch-test/launch.command',
         );
+        macTerminalMocks.openMacOSTerminalLaunchScript.mockResolvedValue(
+            undefined,
+        );
         posixTerminalMocks.createPosixTerminalLaunchScript.mockResolvedValue(
             '/tmp/godot-launch-test/launch.sh',
         );
@@ -601,14 +605,96 @@ describe('launchProject', () => {
         expect(
             macTerminalMocks.createMacOSTerminalLaunchScript,
         ).toHaveBeenCalledWith(project.launch_path, project.path, true);
-        expect(childProcessMocks.spawn).toHaveBeenCalledWith(
-            '/usr/bin/open',
-            [
-                '-a',
-                '/System/Applications/Utilities/Terminal.app',
-                '/tmp/godot-launch-test/launch.command',
-            ],
-            expect.objectContaining({ detached: true, stdio: 'ignore' }),
+        expect(
+            macTerminalMocks.openMacOSTerminalLaunchScript,
+        ).toHaveBeenCalledWith('/tmp/godot-launch-test/launch.command');
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+    });
+
+    it.each(['minimize', 'close_to_tray'])(
+        'waits for macOS Terminal dispatch before applying %s',
+        async (action) => {
+            const project = createProjectDetails({ launch_with_console: true });
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            getUserPreferences.mockResolvedValue({
+                post_launch_action: action,
+            });
+            let acceptDispatch!: () => void;
+            macTerminalMocks.openMacOSTerminalLaunchScript.mockReturnValue(
+                new Promise<void>((resolve) => {
+                    acceptDispatch = resolve;
+                }),
+            );
+
+            let settled = false;
+            const launch = launchProject(project).then((result) => {
+                settled = true;
+                return result;
+            });
+            await vi.waitFor(() => {
+                expect(
+                    macTerminalMocks.openMacOSTerminalLaunchScript,
+                ).toHaveBeenCalledOnce();
+            });
+            expect(settled).toBe(false);
+            expect(windowMock.minimize).not.toHaveBeenCalled();
+            expect(windowMock.hide).not.toHaveBeenCalled();
+
+            acceptDispatch();
+            await expect(launch).resolves.toEqual({ launched: true });
+            expect(
+                action === 'minimize' ? windowMock.minimize : windowMock.hide,
+            ).toHaveBeenCalledOnce();
+            expect(
+                posixTerminalMocks.removePosixTerminalLaunchScript,
+            ).not.toHaveBeenCalled();
+        },
+    );
+
+    it.each(['minimize', 'close_to_tray'])(
+        'reports macOS dispatch failure and cleans the script without applying %s',
+        async (action) => {
+            const project = createProjectDetails({ launch_with_console: true });
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            getUserPreferences.mockResolvedValue({
+                post_launch_action: action,
+            });
+            macTerminalMocks.openMacOSTerminalLaunchScript.mockRejectedValue(
+                new Error('open exited with code 1'),
+            );
+
+            await expect(launchProject(project)).rejects.toThrow(
+                'projects:terminal.errors.launch-failed',
+            );
+            expect(
+                posixTerminalMocks.removePosixTerminalLaunchScript,
+            ).toHaveBeenCalledWith('/tmp/godot-launch-test/launch.command');
+            expect(windowMock.minimize).not.toHaveBeenCalled();
+            expect(windowMock.hide).not.toHaveBeenCalled();
+        },
+    );
+
+    it('preserves the macOS dispatch error when script cleanup fails', async () => {
+        const project = createProjectDetails({ launch_with_console: true });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        macTerminalMocks.openMacOSTerminalLaunchScript.mockRejectedValue(
+            new Error('Cannot open Terminal'),
+        );
+        posixTerminalMocks.removePosixTerminalLaunchScript.mockRejectedValue(
+            new Error('Cannot remove script'),
+        );
+
+        await expect(launchProject(project)).rejects.toThrow(
+            'projects:terminal.errors.launch-failed',
         );
     });
 

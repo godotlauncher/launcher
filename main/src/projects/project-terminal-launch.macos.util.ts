@@ -3,6 +3,23 @@ import path from 'node:path';
 import { createPosixTerminalLaunchScript } from './project-terminal-launch.posix.util.js';
 
 /**
+ * Waits for macOS to accept a script launch in Terminal.
+ * @param scriptPath - Private launch script to open.
+ */
+export async function openMacOSTerminalLaunchScript(
+    scriptPath: string,
+): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+        execFile(
+            '/usr/bin/open',
+            ['-a', '/System/Applications/Utilities/Terminal.app', scriptPath],
+            { timeout: 5000 },
+            (error) => (error ? reject(error) : resolve()),
+        );
+    });
+}
+
+/**
  * Resolves the executable named by a macOS app bundle.
  * @param bundlePath - Godot app bundle path.
  */

@@ -18,7 +18,10 @@ vi.mock('electron', () => ({
     app: { getPath: vi.fn(() => '/tmp') },
 }));
 
-import { createMacOSTerminalLaunchScript } from './project-terminal-launch.macos.util.js';
+import {
+    createMacOSTerminalLaunchScript,
+    openMacOSTerminalLaunchScript,
+} from './project-terminal-launch.macos.util.js';
 import { removePosixTerminalLaunchScript } from './project-terminal-launch.posix.util.js';
 
 describe('macOS terminal launch script', () => {
@@ -129,5 +132,55 @@ describe('macOS terminal launch script', () => {
             recursive: true,
             force: true,
         });
+    });
+
+    it('waits for open to finish dispatching the script to Terminal', async () => {
+        processMocks.execFile.mockImplementation(() => undefined);
+        let settled = false;
+        const dispatch = openMacOSTerminalLaunchScript(
+            '/tmp/launch.command',
+        ).then(() => {
+            settled = true;
+        });
+        await Promise.resolve();
+        expect(settled).toBe(false);
+        expect(processMocks.execFile).toHaveBeenCalledWith(
+            '/usr/bin/open',
+            [
+                '-a',
+                '/System/Applications/Utilities/Terminal.app',
+                '/tmp/launch.command',
+            ],
+            { timeout: 5000 },
+            expect.any(Function),
+        );
+
+        processMocks.execFile.mock.calls[0][3](null, '', '');
+        await expect(dispatch).resolves.toBeUndefined();
+    });
+
+    it.each([
+        Object.assign(new Error('open exited with code 1'), { code: 1 }),
+        Object.assign(new Error('open was killed'), { signal: 'SIGTERM' }),
+        Object.assign(new Error('open could not start'), { code: 'ENOENT' }),
+    ])('rejects failed open dispatch: %s', async (error) => {
+        processMocks.execFile.mockImplementation(
+            (_command, _args, _options, callback) => {
+                callback(error, '', '');
+            },
+        );
+        await expect(
+            openMacOSTerminalLaunchScript('/tmp/launch.command'),
+        ).rejects.toBe(error);
+    });
+
+    it('rejects a synchronous dispatch error', async () => {
+        const error = new Error('Cannot spawn open');
+        processMocks.execFile.mockImplementation(() => {
+            throw error;
+        });
+        await expect(
+            openMacOSTerminalLaunchScript('/tmp/launch.command'),
+        ).rejects.toBe(error);
     });
 });
