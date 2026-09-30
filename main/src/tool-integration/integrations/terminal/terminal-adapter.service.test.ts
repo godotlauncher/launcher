@@ -9,6 +9,10 @@ const mocks = vi.hoisted(() => ({
     access: vi.fn(),
     stat: vi.fn(),
     lstat: vi.fn(),
+    waitForTerminalScriptStart: vi.fn(),
+}));
+vi.mock('./terminal-script-start.util.js', () => ({
+    waitForTerminalScriptStart: mocks.waitForTerminalScriptStart,
 }));
 vi.mock('node:child_process', () => ({ spawn: mocks.spawn }));
 vi.mock('node:fs/promises', () => ({
@@ -63,6 +67,7 @@ describe('TerminalAdapterService', () => {
         vi.clearAllMocks();
         vi.spyOn(process, 'platform', 'get').mockReturnValue('darwin');
         mocks.access.mockResolvedValue(undefined);
+        mocks.waitForTerminalScriptStart.mockResolvedValue(true);
         mocks.lstat.mockResolvedValue({
             isFile: () => false,
             isSymbolicLink: () => true,
@@ -115,6 +120,125 @@ describe('TerminalAdapterService', () => {
                 cwd: '/project with spaces',
             });
             vi.restoreAllMocks();
+        },
+    );
+
+    it.each(['gnome-terminal', 'konsole'] as const)(
+        'waits for the script marker after %s dispatch',
+        async (id) => {
+            vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+            try {
+                const child = Object.assign(new EventEmitter(), {
+                    unref: vi.fn(),
+                });
+                mocks.spawn.mockImplementation(() => {
+                    queueMicrotask(() => {
+                        child.emit('spawn');
+                        if (id === 'gnome-terminal') child.emit('exit', 0);
+                    });
+                    return child;
+                });
+                let confirmStart!: (started: boolean) => void;
+                mocks.waitForTerminalScriptStart.mockReturnValue(
+                    new Promise<boolean>((resolve) => {
+                        confirmStart = resolve;
+                    }),
+                );
+                let settled = false;
+                const target = targets.find((candidate) => candidate.id === id);
+                if (!target) throw new Error(`Missing fixture: ${id}`);
+                const launch = new TerminalAdapterService()
+                    .launch(target, '/project', '/tmp/launch.sh')
+                    .then((result) => {
+                        settled = true;
+                        return result;
+                    });
+                await vi.waitFor(() =>
+                    expect(
+                        mocks.waitForTerminalScriptStart,
+                    ).toHaveBeenCalledOnce(),
+                );
+                expect(settled).toBe(false);
+                confirmStart(true);
+                await expect(launch).resolves.toEqual({ success: true });
+                expect(
+                    mocks.waitForTerminalScriptStart.mock.calls[0][1].aborted,
+                ).toBe(true);
+            } finally {
+                vi.restoreAllMocks();
+            }
+        },
+    );
+
+    it.each(['exit', 'signal', 'error'])(
+        'rejects a Linux host that fails after spawning (%s) and cancels its startup check',
+        async (failure) => {
+            vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+            try {
+                const child = Object.assign(new EventEmitter(), {
+                    unref: vi.fn(),
+                });
+                mocks.waitForTerminalScriptStart.mockReturnValue(
+                    new Promise(() => {}),
+                );
+                mocks.spawn.mockImplementation(() => {
+                    queueMicrotask(() => {
+                        child.emit('spawn');
+                        if (failure === 'error')
+                            child.emit('error', new Error('Failed to start'));
+                        else
+                            child.emit(
+                                'exit',
+                                failure === 'exit' ? 1 : null,
+                                failure === 'signal' ? 'SIGTERM' : null,
+                            );
+                    });
+                    return child;
+                });
+                await expect(
+                    new TerminalAdapterService().launch(
+                        targets[4],
+                        '/project',
+                        '/tmp/launch.sh',
+                    ),
+                ).resolves.toEqual({ success: false, reason: 'launch-failed' });
+                expect(
+                    mocks.waitForTerminalScriptStart.mock.calls[0][1].aborted,
+                ).toBe(true);
+            } finally {
+                vi.restoreAllMocks();
+            }
+        },
+    );
+
+    it.each(['timeout', 'exception'])(
+        'rejects an unsuccessful Linux startup check (%s)',
+        async (failure) => {
+            vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+            try {
+                const child = Object.assign(new EventEmitter(), {
+                    unref: vi.fn(),
+                });
+                mocks.spawn.mockImplementation(() => {
+                    queueMicrotask(() => child.emit('spawn'));
+                    return child;
+                });
+                if (failure === 'timeout')
+                    mocks.waitForTerminalScriptStart.mockResolvedValue(false);
+                else
+                    mocks.waitForTerminalScriptStart.mockRejectedValue(
+                        new Error('Cannot consume marker'),
+                    );
+                await expect(
+                    new TerminalAdapterService().launch(
+                        targets[4],
+                        '/project',
+                        '/tmp/launch.sh',
+                    ),
+                ).resolves.toEqual({ success: false, reason: 'launch-failed' });
+            } finally {
+                vi.restoreAllMocks();
+            }
         },
     );
     it('rejects an unreadable editor script before spawning', async () => {

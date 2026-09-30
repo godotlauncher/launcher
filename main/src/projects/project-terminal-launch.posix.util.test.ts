@@ -42,7 +42,26 @@ describe('POSIX terminal launch script', () => {
         expect(contents).toContain('IFS= read -r _answer || true');
         expect(contents).toContain('exit "$status"');
         expect(contents).toContain('trap');
+        expect(contents).toContain(`_launch_started='${scriptPath}.started'`);
+        expect(contents).toContain('rm -f "$0" "$_launch_started"');
+        expect(
+            contents.indexOf(': > "$_launch_started" || exit 1'),
+        ).toBeLessThan(contents.indexOf("'/editors/artist'"));
         expect(options).toMatchObject({ mode: 0o700, flag: 'wx' });
+    });
+
+    it('keeps macOS scripts free of Linux startup markers', async () => {
+        await createPosixTerminalLaunchScript(
+            '/editor',
+            '/project',
+            false,
+            'command',
+        );
+        const [, contents] = files.writeFile.mock.calls[0];
+        expect(contents).not.toContain('_launch_started');
+        expect(contents).toContain(
+            'trap \'rm -f "$0"; rmdir "$(dirname "$0")"\' EXIT',
+        );
     });
 
     it('rejects an unavailable editor before allocating a helper', async () => {

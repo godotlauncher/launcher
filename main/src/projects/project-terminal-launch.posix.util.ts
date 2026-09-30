@@ -2,6 +2,7 @@ import { constants } from 'node:fs';
 import { access, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { app } from 'electron';
+import { terminalScriptStartPath } from '../tool-integration/integrations/terminal/terminal-script-start.util.js';
 
 /**
  * Quotes one value for a POSIX shell command.
@@ -39,7 +40,13 @@ export async function createPosixTerminalLaunchScript(
 
     const script = [
         '#!/bin/sh',
-        'trap \'rm -f "$0"; rmdir "$(dirname "$0")"\' EXIT',
+        ...(extension === 'sh'
+            ? [
+                  `_launch_started=${quoteShellArgument(terminalScriptStartPath(scriptPath))}`,
+                  'trap \'rm -f "$0" "$_launch_started"; rmdir "$(dirname "$0")"\' EXIT',
+                  ': > "$_launch_started" || exit 1',
+              ]
+            : ['trap \'rm -f "$0"; rmdir "$(dirname "$0")"\' EXIT']),
         arguments_.join(' '),
         'status=$?',
         'printf "\\nGodot exited (code %s). Press Return to finish..." "$status"',

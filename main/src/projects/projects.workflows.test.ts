@@ -814,6 +814,36 @@ describe('launchProject', () => {
         );
     });
 
+    it('keeps the launcher visible until the Linux script starts', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'linux',
+        });
+        const project = createProjectDetails({ launch_with_console: true });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getUserPreferences.mockResolvedValue({
+            post_launch_action: 'close_to_tray',
+        });
+        let confirmStart!: () => void;
+        terminals.launchEditorScript.mockReturnValue(
+            new Promise((resolve) => {
+                confirmStart = () => resolve({ success: true });
+            }),
+        );
+        const launch = launchProject(project);
+        await vi.waitFor(() =>
+            expect(terminals.launchEditorScript).toHaveBeenCalledOnce(),
+        );
+        expect(windowMock.hide).not.toHaveBeenCalled();
+        expect(windowMock.minimize).not.toHaveBeenCalled();
+        confirmStart();
+        await expect(launch).resolves.toEqual({ launched: true });
+        expect(windowMock.hide).toHaveBeenCalledOnce();
+    });
+
     it.each(['result', 'exception'])(
         'cleans the Linux script and rejects a terminal launch failure (%s)',
         async (failure) => {
@@ -826,10 +856,13 @@ describe('launchProject', () => {
                 projects: [project],
                 version: 'v1',
             });
+            getUserPreferences.mockResolvedValue({
+                post_launch_action: 'minimize',
+            });
             if (failure === 'result')
                 terminals.launchEditorScript.mockResolvedValue({
                     success: false,
-                    reason: 'unavailable',
+                    reason: 'launch-failed',
                 });
             else
                 terminals.launchEditorScript.mockRejectedValue(
@@ -840,6 +873,8 @@ describe('launchProject', () => {
                 posixTerminalMocks.removePosixTerminalLaunchScript,
             ).toHaveBeenCalledWith('/tmp/godot-launch-test/launch.sh');
             expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+            expect(windowMock.minimize).not.toHaveBeenCalled();
+            expect(windowMock.hide).not.toHaveBeenCalled();
         },
     );
 

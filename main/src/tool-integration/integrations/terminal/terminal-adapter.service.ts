@@ -6,6 +6,7 @@ import { Injectable } from '@mariodebono/di';
 import type { TerminalLaunchResult } from '@shared/contracts';
 import logger from 'electron-log';
 import type { TerminalTarget } from './terminal.types.js';
+import { waitForTerminalScriptStart } from './terminal-script-start.util.js';
 
 const TERMINAL_APP = '/System/Applications/Utilities/Terminal.app';
 
@@ -106,7 +107,7 @@ export class TerminalAdapterService {
     }
 
     /**
-     * Opens an exact directory and records bounded Linux launch diagnostics.
+     * Opens a directory or waits for a Linux editor script to start.
      * @param target - Freshly resolved compiled terminal candidate.
      * @param directory - Validated absolute project directory.
      * @param scriptPath - Optional private editor script to run on Linux.
@@ -239,6 +240,16 @@ export class TerminalAdapterService {
                 dispatcher,
             });
         return new Promise((resolve) => {
+            const startup =
+                scriptPath !== undefined ? new AbortController() : undefined;
+            /**
+             * Stops startup polling and settles the launch result.
+             * @param result - Terminal dispatch outcome.
+             */
+            const finish = (result: TerminalLaunchResult) => {
+                startup?.abort();
+                resolve(result);
+            };
             try {
                 const child = spawn(executable, args, {
                     cwd: directory,
@@ -304,11 +315,44 @@ export class TerminalAdapterService {
                             target.id,
                             error,
                         );
-                    resolve({ success: false, reason: 'launch-failed' });
+                    finish({ success: false, reason: 'launch-failed' });
                 });
-                if (dispatcher) {
+                if (scriptPath !== undefined && startup) {
+                    child.once('exit', (code, signal) => {
+                        if (code !== 0 || signal)
+                            finish({ success: false, reason: 'launch-failed' });
+                    });
+                    child.once('spawn', () => {
+                        child.unref();
+                        void waitForTerminalScriptStart(
+                            scriptPath,
+                            startup.signal,
+                        )
+                            .then((started) =>
+                                finish(
+                                    started
+                                        ? { success: true }
+                                        : {
+                                              success: false,
+                                              reason: 'launch-failed',
+                                          },
+                                ),
+                            )
+                            .catch((error: unknown) => {
+                                logger.warn(
+                                    '[Terminal] Script startup check failed',
+                                    target.id,
+                                    error,
+                                );
+                                finish({
+                                    success: false,
+                                    reason: 'launch-failed',
+                                });
+                            });
+                    });
+                } else if (dispatcher) {
                     child.once('exit', (code) =>
-                        resolve(
+                        finish(
                             code === 0
                                 ? { success: true }
                                 : { success: false, reason: 'launch-failed' },
@@ -317,7 +361,7 @@ export class TerminalAdapterService {
                 } else {
                     child.once('spawn', () => {
                         child.unref();
-                        resolve({ success: true });
+                        finish({ success: true });
                     });
                 }
             } catch (error) {
@@ -327,7 +371,7 @@ export class TerminalAdapterService {
                         target.id,
                         error,
                     );
-                resolve({ success: false, reason: 'launch-failed' });
+                finish({ success: false, reason: 'launch-failed' });
             }
         });
     }
