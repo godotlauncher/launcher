@@ -1,4 +1,10 @@
-import { FlaskConical, ImageOff, TriangleAlert, UserRound } from 'lucide-react';
+import {
+    Clock,
+    FlaskConical,
+    ImageOff,
+    TriangleAlert,
+    UserRound,
+} from 'lucide-react';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { getInvalidProjectTableKey } from '../projects-view.model';
 import type { ProjectPresentationProps } from './project-list.types';
@@ -22,6 +28,7 @@ export function ProjectDenseRow({
     badges,
     tagIndicators,
     launchDisabled,
+    lastOpened,
     editorMissing,
     editorDownloading,
     versionLabel,
@@ -30,10 +37,12 @@ export function ProjectDenseRow({
         <button
             type="button"
             data-testid="btnLaunchDenseProject"
-            disabled={launchDisabled}
+            aria-disabled={launchDisabled || undefined}
             aria-label={t('view.openProject', { project: project.name })}
-            onClick={() => onLaunchProject(project)}
-            className="flex min-h-8 min-w-0 items-center text-left text-base font-semibold disabled:opacity-45"
+            onClick={() => {
+                if (!launchDisabled) onLaunchProject(project);
+            }}
+            className="flex min-h-8 min-w-0 items-center text-left text-base font-semibold aria-disabled:opacity-45"
         >
             <span className="truncate">{project.name}</span>
         </button>
@@ -60,17 +69,34 @@ export function ProjectDenseRow({
                 )}
             </button>
             <div className="flex min-w-0 items-center gap-2 pr-2">
-                {launchDisabled ? (
-                    launchButton
-                ) : (
-                    <Tooltip
-                        tip={t('card.editInGodot')}
-                        placement="top"
-                        className="min-w-0"
-                    >
-                        {launchButton}
-                    </Tooltip>
-                )}
+                <Tooltip
+                    tip={
+                        <div className="flex min-w-0 flex-col gap-2">
+                            <p className="break-words font-semibold">
+                                {project.name}
+                            </p>
+                            <p className="break-all font-mono text-xs text-base-content/70">
+                                {project.path}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
+                                <span className="inline-flex items-center gap-1">
+                                    <Clock
+                                        size={12}
+                                        className="shrink-0"
+                                        aria-hidden="true"
+                                    />
+                                    {lastOpened}
+                                </span>
+                            </div>
+                        </div>
+                    }
+                    variant="panel"
+                    delay={1000}
+                    placement="top"
+                    className="min-w-0"
+                >
+                    {launchButton}
+                </Tooltip>
                 {tagIndicators}
                 <div
                     data-testid="denseProjectIndicators"

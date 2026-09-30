@@ -610,6 +610,143 @@ test('keeps dense titles, tags and badges together at minimum and wide window wi
     await filter.getByRole('combobox').press('Escape');
 });
 
+test('shows complete dense project details after delayed hover and keyboard focus', async () => {
+    const projects = SAMPLE_PROJECTS.map((project, index) => ({
+        ...project,
+        name: `${project.name} - A long project title with every detail available in the tooltip`,
+        path: `${project.path}/a-long-folder-name/another-long-folder-name/project`,
+        valid: index !== 1,
+        invalid_reason: index === 1 ? 'missing_editor' as const : undefined,
+    }));
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: 'dense' },
+        projects,
+        installedReleases: projects.filter((_, index) => index !== 1).map(project => project.release),
+    });
+    await setAppLanguage(mainPage, 'English');
+    await mainPage.getByTestId('btnSettings').click();
+    await mainPage.getByRole('tab', { name: 'Appearance', exact: true }).click();
+    await mainPage.getByTestId('themeDark').click();
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.setViewportSize({ width: 1024, height: 700 });
+    const row = (index: number) => mainPage.locator(`[data-project-path="${projects[index].path}"]`);
+    const details = (index: number) => mainPage.getByRole('tooltip').filter({ hasText: projects[index].path });
+    const firstName = row(0).getByTestId('btnLaunchDenseProject');
+    const missingEditorName = row(1).getByTestId('btnLaunchDenseProject');
+    await electronApp.evaluate(({ ipcMain }) => {
+        const fixture = ipcMain as typeof ipcMain & { compactLaunches: string[] };
+        fixture.compactLaunches = [];
+        ipcMain.removeHandler('projects.launchProject');
+        ipcMain.handle('projects.launchProject', (_, project) => {
+            fixture.compactLaunches.push(project.path);
+            return { success: true, data: { launched: true } };
+        });
+    });
+    await mainPage.getByTestId('inputProjectSearch').click();
+    await firstName.hover();
+    await mainPage.waitForTimeout(650);
+    await expect(details(0)).toHaveCount(0);
+    await missingEditorName.hover();
+    await mainPage.waitForTimeout(650);
+    await expect(details(0)).toHaveCount(0);
+    await expect(details(1)).toHaveCount(0);
+    await expect(details(1)).toBeVisible();
+    await expect(details(1).getByText(projects[1].name, { exact: true })).toBeVisible();
+    await expect(details(1).getByText(projects[1].path, { exact: true })).toBeVisible();
+    await expect(details(1)).not.toContainText(projects[1].version);
+    await expect(details(1)).toContainText('Opened 3 days ago');
+    await expect(details(1).getByRole('button')).toHaveCount(0);
+    await expect(row(1).getByTestId('btnLaunchDenseProject')).toBeDisabled();
+    await expect(details(1)).toBeInViewport();
+    await mainPage.screenshot({ path: test.info().outputPath('dense-project-details.png') });
+    await mainPage.mouse.move(0, 0);
+    await expect(details(1)).toHaveCount(0);
+
+    // Keyboard users can read details even when launching is disabled.
+    await mainPage.keyboard.press('Tab');
+    await missingEditorName.focus();
+    await mainPage.waitForTimeout(650);
+    await expect(details(1)).toHaveCount(0);
+    await expect(details(1)).toBeVisible();
+    await expect(missingEditorName).toHaveAttribute('aria-describedby', (await details(1).getAttribute('id'))!);
+    await missingEditorName.press('Enter');
+    expect(await readLaunches()).toEqual([]);
+    await mainPage.keyboard.press('Escape');
+    await expect(details(1)).toHaveCount(0);
+    const unopenedName = row(2).getByTestId('btnLaunchDenseProject');
+    await unopenedName.focus();
+    await expect(details(2)).toBeVisible();
+    await expect(details(2)).toContainText('Not opened yet');
+    await expect(unopenedName).toHaveAccessibleName(`Open ${projects[2].name} in Godot`);
+    await expect(unopenedName).toHaveAttribute('aria-describedby', (await details(2).getAttribute('id'))!);
+    await mainPage.getByTestId('inputProjectSearch').focus();
+    await expect(details(2)).toHaveCount(0);
+});
+
+test('copies the exact project path from Folders with feedback, retry and focus return', async () => {
+    const project = { ...SAMPLE_PROJECTS[0], name: 'A very long project name that should be truncated inside the More menu heading without overflowing its boundaries', path: `${SAMPLE_PROJECTS[0].path}/a folder with spaces` };
+    await prepareAppWithStubbedData(mainPage, electronApp, {
+        preferences: { ...SAMPLE_PREFS, projects_view_mode: 'dense' },
+        projects: [project],
+    });
+    await mainPage.getByTestId('btnProjects').click();
+    await mainPage.evaluate(() => {
+        const clipboardState = { values: [] as string[], reject: false };
+        const fixture = window as unknown as { clipboardState: typeof clipboardState };
+        fixture.clipboardState = clipboardState;
+        Object.defineProperty(navigator.clipboard, 'writeText', {
+            configurable: true,
+            value: async (value: string) => {
+                if (clipboardState.reject) throw new Error('Fixture clipboard failure');
+                clipboardState.values.push(value);
+            },
+        });
+    });
+    try {
+        await mainPage.getByTestId('btnProjectMoreOptions').click();
+        const moreMenu = mainPage.getByRole('dialog', { name: project.name, exact: true });
+        await expect(moreMenu.getByTestId('btnCopyProjectPathMenu')).toHaveCount(0);
+        const heading = moreMenu.locator('.menu-title > span');
+        await expect(heading).toHaveText(project.name);
+        expect(await heading.evaluate(element => ({
+            clipped: element.scrollWidth > element.clientWidth,
+            ellipsis: getComputedStyle(element).textOverflow,
+        }))).toEqual({ clipped: true, ellipsis: 'ellipsis' });
+        await mainPage.keyboard.press('Escape');
+        const more = mainPage.getByTestId('btnProjectFolders');
+        const menu = mainPage.getByRole('dialog', { name: 'Open project folders', exact: true });
+        await more.focus();
+        await more.press('Enter');
+        const copy = menu.getByTestId('btnCopyProjectPathMenu');
+        await expect(copy).toBeFocused();
+        await copy.press('Enter');
+        await expect(copy).toHaveText('Success');
+        await expect(menu).toBeVisible();
+        expect(await mainPage.evaluate(() => (window as unknown as { clipboardState: { values: string[] } }).clipboardState.values)).toEqual([project.path]);
+        await mainPage.keyboard.press('Escape');
+        await expect(menu).toHaveCount(0);
+        await expect(more).toBeFocused();
+
+        await mainPage.evaluate(() => { (window as unknown as { clipboardState: { reject: boolean } }).clipboardState.reject = true; });
+        await more.press('Enter');
+        await expect(copy).toHaveText('Copy project path');
+        await copy.press('Enter');
+        await expect(copy).toHaveText('Error');
+        await expect(menu).toBeVisible();
+        await mainPage.evaluate(() => { (window as unknown as { clipboardState: { reject: boolean } }).clipboardState.reject = false; });
+        await copy.press('Enter');
+        await expect(copy).toHaveText('Success');
+        await mainPage.keyboard.press('Escape');
+        await expect(more).toBeFocused();
+        for (const tab of ['tabProjectList', 'tabProjectCards']) {
+            await mainPage.getByTestId(tab).click();
+            await expect(mainPage.locator('[data-project-path]').getByRole('button', { name: 'Copy path', exact: true })).toBeVisible();
+        }
+    } finally {
+        await mainPage.evaluate(() => { delete (navigator.clipboard as unknown as { writeText?: unknown }).writeText; });
+    }
+});
+
 /** Returns launches recorded by the test's project handler. */
 async function readLaunches() {
     return electronApp.evaluate(({ ipcMain }) => (ipcMain as typeof ipcMain & { compactLaunches: string[] }).compactLaunches);
