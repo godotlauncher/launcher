@@ -2,6 +2,7 @@
     "view": {
         "cards": "Kart görünümü",
         "list": "Liste görünümü",
+        "compact": "Kompakt görünüm",
         "openProject": "{{project}} projesini Godot ile aç",
         "saveFailed": "Proje görünümü kaydedilemedi. Lütfen tekrar deneyin."
     },

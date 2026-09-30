@@ -1,8 +1,8 @@
 import { ImageOff, Play, TriangleAlert } from 'lucide-react';
 import { CopyBadge } from '../../../components/ui/copy-badge.component';
-import { Tooltip } from '../../../components/ui/tooltip.component';
 import { getInvalidProjectTableKey } from '../projects-view.model';
 import type { ProjectPresentationProps } from './project-list.types';
+import { ProjectStatusTooltip } from './project-status-tooltip.component';
 
 type ProjectCardProps = ProjectPresentationProps;
 
@@ -39,13 +39,17 @@ export function ProjectCard({
                 <div className="flex min-w-0 flex-col gap-1">
                     <div className="flex min-h-10 min-w-0 items-center gap-2 pl-3">
                         {!project.valid && (
-                            <Tooltip
+                            <ProjectStatusTooltip
                                 placement="top"
                                 tip={t(getInvalidProjectTableKey(project))}
-                                tone="warning"
+                                role="img"
+                                ariaLabel={t(
+                                    getInvalidProjectTableKey(project),
+                                )}
+                                warning
                             >
                                 <TriangleAlert className="size-5 shrink-0 text-warning" />
-                            </Tooltip>
+                            </ProjectStatusTooltip>
                         )}
                         <h3 className="truncate text-base font-semibold">
                             {project.name}

@@ -29,7 +29,7 @@ export type CodeEditorIntegrationPreferences = {
 
 export type UserPreferences = {
     /** Preferred Projects presentation; older preferences default to Cards. */
-    projects_view_mode?: 'cards' | 'list';
+    projects_view_mode?: 'cards' | 'list' | 'dense';
     /** Selected project tag IDs; older preferences default to no filter. */
     projects_tag_filter?: string[];
     prefs_version: number;

@@ -14,6 +14,7 @@
     "project": {
         "pinProject": "Fixar projeto",
         "unpinProject": "Desafixar projeto",
+        "copyProjectPath": "Copiar caminho do projeto",
         "openProjectFolder": "Abrir pasta do projeto",
         "openTerminal": "Abrir terminal aqui",
         "openInGitHub": "Abrir no GitHub",

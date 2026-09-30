@@ -2,6 +2,7 @@
     "view": {
         "cards": "卡片檢視",
         "list": "清單檢視",
+        "compact": "精簡檢視",
         "openProject": "在 Godot 中開啟 {{project}}",
         "saveFailed": "無法儲存專案檢視，請再試一次。"
     },

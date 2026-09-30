@@ -1,6 +1,7 @@
 import type { ProjectDetails } from '@shared/contracts';
-import { ExternalLink, FolderCog, FolderOpen } from 'lucide-react';
+import { Check, Copy, ExternalLink, FolderCog, FolderOpen } from 'lucide-react';
 import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import githubInvertocatBlack from '../../../assets/icons/github-invertocat-black.svg';
 import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
 import {
@@ -16,6 +17,7 @@ type ProjectFoldersMenuProps = {
     project: ProjectDetails | null;
     anchorRect: ActionMenuAnchorRect | null;
     githubUrl: string | null;
+    showCopyProjectPath?: boolean;
     t: Translate;
     onClose: () => void;
     onOpenProjectFolder: (project: ProjectDetails) => void;
@@ -30,12 +32,59 @@ export const ProjectFoldersMenu: React.FC<ProjectFoldersMenuProps> = ({
     project,
     anchorRect,
     githubUrl,
+    showCopyProjectPath = false,
     t,
     onClose,
     onOpenProjectFolder,
     onOpenEditorSettingsFolder,
     onOpenGitHub,
 }) => {
+    const [copyFeedback, setCopyFeedback] = useState<{
+        path: string;
+        status: 'copied' | 'error';
+    } | null>(null);
+    const copyAttemptRef = useRef(0);
+    const copyStatus =
+        copyFeedback && copyFeedback.path === project?.path
+            ? copyFeedback.status
+            : 'idle';
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: A different project invalidates the previous clipboard result.
+    useEffect(() => {
+        copyAttemptRef.current += 1;
+        setCopyFeedback(null);
+    }, [project?.path]);
+
+    useEffect(() => {
+        if (!copyFeedback) return;
+        const timeoutId = window.setTimeout(() => setCopyFeedback(null), 1600);
+        return () => window.clearTimeout(timeoutId);
+    }, [copyFeedback]);
+
+    /** Dismisses the menu and invalidates any pending clipboard result. */
+    const handleClose = () => {
+        copyAttemptRef.current += 1;
+        setCopyFeedback(null);
+        onClose();
+    };
+
+    /** Copies a project path and reports the clipboard result in the open menu.
+     * @param path - The path of the selected project.
+     */
+    const copyProjectPath = async (path: string) => {
+        const attempt = ++copyAttemptRef.current;
+        try {
+            await window.navigator.clipboard.writeText(path);
+            if (attempt === copyAttemptRef.current) {
+                setCopyFeedback({ path, status: 'copied' });
+            }
+        } catch {
+            if (attempt === copyAttemptRef.current) {
+                setCopyFeedback({ path, status: 'error' });
+            }
+        }
+    };
+
     const { theme, systemTheme } = useTheme();
     const effectiveTheme = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
     const githubIconSrc =
@@ -44,6 +93,37 @@ export const ProjectFoldersMenu: React.FC<ProjectFoldersMenuProps> = ({
             : githubInvertocatBlack;
     const items: ActionMenuItem[] = project
         ? [
+              ...(showCopyProjectPath
+                  ? [
+                        {
+                            key: 'copy-project-path',
+                            label: t(
+                                copyStatus === 'copied'
+                                    ? 'common:success'
+                                    : copyStatus === 'error'
+                                      ? 'common:error'
+                                      : 'menus:project.copyProjectPath',
+                            ),
+                            icon:
+                                copyStatus === 'copied' ? (
+                                    <Check
+                                        className={`${iconClassName} text-success`}
+                                    />
+                                ) : (
+                                    <Copy
+                                        className={`${iconClassName} ${copyStatus === 'error' ? 'text-error' : ''}`}
+                                    />
+                                ),
+                            testId: 'btnCopyProjectPathMenu',
+                            closeOnSelect: false,
+                            onSelect: () => copyProjectPath(project.path),
+                        },
+                        {
+                            type: 'separator' as const,
+                            key: 'copy-separator',
+                        },
+                    ]
+                  : []),
               {
                   key: 'open-project-folder',
                   label: t('project.openProjectFolder', { ns: 'menus' }),
@@ -98,7 +178,7 @@ export const ProjectFoldersMenu: React.FC<ProjectFoldersMenuProps> = ({
             anchorRect={anchorRect}
             ariaLabel={t('card.openFolders')}
             items={items}
-            onClose={onClose}
+            onClose={handleClose}
         />
     );
 };

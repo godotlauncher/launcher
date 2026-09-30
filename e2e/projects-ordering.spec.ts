@@ -4,6 +4,7 @@ import {
     _electron,
     type ElectronApplication,
     expect,
+    type Locator,
     type Page,
     test,
 } from '@playwright/test';
@@ -35,8 +36,8 @@ test.afterAll(async () => {
     await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
-for (const mode of ['cards', 'list'] as const) {
-test(`reorders pinned projects in ${mode} view and keeps the order after reload`, async () => {
+for (const mode of ['cards', 'list', 'dense'] as const) {
+test(`reveals pinned handles on hover and reorders projects in ${mode} view`, async () => {
     const pinnedProjects: ProjectDetails[] = [
         { ...SAMPLE_PROJECTS[0], pinned: true, pinned_order: 0 },
         SAMPLE_PROJECTS[1],
@@ -48,6 +49,8 @@ test(`reorders pinned projects in ${mode} view and keeps the order after reload`
     await installStatefulPinnedOrderHandlers(electronApp, pinnedProjects);
     await mainPage.getByTestId('btnProjects').click();
     if (mode === 'list') await mainPage.getByTestId('tabProjectList').click();
+    if (mode === 'dense') await mainPage.getByTestId('tabProjectDenseList').click();
+    await mainPage.getByTestId('inputProjectSearch').fill('');
 
     const newProjectCard = mainPage
         .locator('[data-project-section="new"]')
@@ -59,17 +62,45 @@ test(`reorders pinned projects in ${mode} view and keeps the order after reload`
     const pinnedSection = mainPage.locator(
         'section[aria-labelledby="pinned-projects-heading"]',
     );
-    const projectNames = pinnedSection.locator(mode === 'cards' ? '[data-project-path] h3' : '[data-testid=btnLaunchCompactProject] > span:last-child');
+    const projectNames = pinnedSection.locator(mode === 'cards' ? '[data-project-path] h3' : mode === 'dense' ? '[data-testid=btnLaunchDenseProject] > span' : '[data-testid=btnLaunchCompactProject] > span');
     await expect(projectNames).toHaveText(['My Prototype', 'My Awesome Game']);
 
     const firstHandle = pinnedSection
         .getByTestId('btnReorderPinnedProject')
         .first();
+    const firstRow = pinnedSection.locator('[data-project-path]').first();
+    const rowBounds = (await firstRow.boundingBox())!;
+    const blankRowPosition = { x: rowBounds.width / 2, y: 2 };
+    const heading = mainPage.getByTestId('projectsTitle');
+    await heading.hover();
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(0);
+    await expect.poll(() => handleReceivesPointer(firstHandle)).toBe(false);
+    await firstRow.hover({ position: blankRowPosition });
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(1);
+    await firstRow.click({ position: blankRowPosition });
+    await expect(firstRow).toBeFocused();
+    await heading.hover();
+    // Row focus remains, but must not keep the grip visible after pointer leave.
+    await expect(firstRow).toBeFocused();
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(0);
+    await expect.poll(() => handleReceivesPointer(firstHandle)).toBe(false);
+    await firstRow.hover({ position: blankRowPosition });
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(1);
+    await firstHandle.hover();
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(1);
+    await expect.poll(() => handleReceivesPointer(firstHandle)).toBe(true);
+    await firstHandle.click();
+    await heading.hover();
     await firstHandle.focus();
+    await expect(firstHandle).toBeFocused();
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(0);
     await firstHandle.press('Space');
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(1);
+    await expect(firstHandle).toHaveCSS('border-top-width', '1px');
     await mainPage.keyboard.press('ArrowDown');
     await mainPage.keyboard.press('Escape');
     await expect(projectNames).toHaveText(['My Prototype', 'My Awesome Game']);
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(0);
 
     await firstHandle.focus();
     await firstHandle.press('Space');
@@ -77,6 +108,26 @@ test(`reorders pinned projects in ${mode} view and keeps the order after reload`
     await mainPage.keyboard.press('Space');
 
     await expect(projectNames).toHaveText(['My Awesome Game', 'My Prototype']);
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(0);
+
+    // Pointer sorting still works from the handle at the outside edge.
+    const sourceRow = pinnedSection.locator('[data-project-path]').first();
+    await sourceRow.hover({ position: blankRowPosition });
+    const sourceHandle = sourceRow.getByTestId('btnReorderPinnedProject');
+    await sourceHandle.hover();
+    const sourceBounds = (await sourceHandle.boundingBox())!;
+    const targetBounds = (await pinnedSection.locator('[data-project-path]').nth(1).boundingBox())!;
+    await mainPage.mouse.down();
+    await mainPage.mouse.move(sourceBounds.x + sourceBounds.width / 2, sourceBounds.y + sourceBounds.height / 2 + 12, { steps: 5 });
+    await expect(sourceHandle).toHaveAttribute('aria-grabbed', 'true');
+    await expect.poll(() => readHandleOpacity(sourceHandle)).toBe(1);
+    await expect(sourceHandle).toHaveCSS('border-top-width', '1px');
+    await mainPage.screenshot({ path: test.info().outputPath(`pinned-handle-drag-${mode}.png`) });
+    await mainPage.mouse.move(targetBounds.x + targetBounds.width / 2, targetBounds.y + targetBounds.height * 0.75, { steps: 15 });
+    await mainPage.mouse.up();
+    await expect(projectNames).toHaveText(['My Prototype', 'My Awesome Game']);
+    await heading.hover();
+    await expect.poll(() => readHandleOpacity(firstHandle)).toBe(0);
 
     await mainPage.reload();
     await expect(mainPage.getByTestId('btnProjects')).toBeVisible({
@@ -87,14 +138,37 @@ test(`reorders pinned projects in ${mode} view and keeps the order after reload`
         mainPage
             .locator('section[aria-labelledby="pinned-projects-heading"]')
             .locator('[data-project-path] h3'),
-    ).toHaveText(['My Awesome Game', 'My Prototype']);
+    ).toHaveText(['My Prototype', 'My Awesome Game']);
 
-    await mainPage.getByPlaceholder('Search').fill('Awesome');
+    await mainPage.getByTestId('inputProjectSearch').fill('Awesome');
     await expect(
         mainPage.getByTestId('btnReorderPinnedProject'),
     ).toBeDisabled();
 });
 
+}
+
+/** Reads the rendered opacity, including every parent that can fade the grip.
+ * @param handle - The pinned project's drag button.
+ */
+async function readHandleOpacity(handle: Locator): Promise<number> {
+    return handle.evaluate(element => {
+        let opacity = 1;
+        for (let current: Element | null = element; current; current = current.parentElement) {
+            opacity *= Number(getComputedStyle(current).opacity);
+        }
+        return opacity;
+    });
+}
+
+/** Checks whether the grip can receive a pointer at its centre.
+ * @param handle - The pinned project's drag button.
+ */
+async function handleReceivesPointer(handle: Locator): Promise<boolean> {
+    return handle.evaluate(element => {
+        const bounds = element.getBoundingClientRect();
+        return element.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2));
+    });
 }
 
 /**

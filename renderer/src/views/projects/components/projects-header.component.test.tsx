@@ -10,6 +10,7 @@ describe('ProjectsHeader', () => {
                 onViewModeChange={vi.fn()}
                 cardsViewLabel="Cards view"
                 listViewLabel="List view"
+                compactViewLabel="Compact view"
                 title="Projects"
                 projectsLocation="/Projects"
                 searchPlaceholder="Search"

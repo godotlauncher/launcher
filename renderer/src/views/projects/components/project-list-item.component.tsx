@@ -5,10 +5,11 @@ import { ProjectActions } from './project-actions.component';
 import { ProjectBadges } from './project-badges.component';
 import { ProjectCard } from './project-card.component';
 import { ProjectCompactRow } from './project-compact-row.component';
+import { ProjectDenseRow } from './project-dense-row.component';
 import type { ProjectListItemProps } from './project-list.types';
 
 /**
- * Renders a project using shared status and actions in either presentation.
+ * Renders a project using shared status and actions in the selected presentation.
  * @param props - Project state, presentation and existing project handlers.
  */
 export const ProjectListItem: React.FC<ProjectListItemProps> = ({
@@ -72,7 +73,8 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     const versionLabel = `${project.version}${project.release.mono ? ' (.NET)' : ''}`;
     const isGitHubProject = projectGitHubUrls.has(project.path);
 
-    const compact = viewMode === 'list';
+    const dense = viewMode === 'dense';
+    const compact = viewMode !== 'cards';
     const actions = (
         <ProjectActions
             project={project}
@@ -84,6 +86,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
             onProjectMoreOptions={onProjectMoreOptions}
             t={t}
             compact={compact}
+            dense={dense}
             downloadableProjectEditor={downloadableProjectEditor}
             releaseInstalled={releaseInstalled}
             editorDownloading={editorDownloading}
@@ -141,7 +144,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
         <li
             ref={pinnedItemRef}
             tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`group/project relative rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
+            className={`group/project relative rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${dense ? 'flex min-h-[40px] items-center px-3 py-1' : compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
             data-project-view={viewMode}
             data-project-path={project.path}
             data-project-section={sectionKey}
@@ -153,7 +156,14 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
                 </div>
             )}
 
-            {compact ? (
+            {dense ? (
+                <ProjectDenseRow
+                    {...presentationProps}
+                    editorMissing={editorMissing}
+                    editorDownloading={editorDownloading}
+                    versionLabel={versionLabel}
+                />
+            ) : compact ? (
                 <ProjectCompactRow
                     {...presentationProps}
                     editorMissing={editorMissing}

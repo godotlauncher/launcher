@@ -290,6 +290,7 @@ suite('prefs.util', (_test) => {
         [undefined, 'cards'],
         ['cards', 'cards'],
         ['list', 'list'],
+        ['dense', 'dense'],
         ['invalid', 'cards'],
         [null, 'cards'],
     ])(

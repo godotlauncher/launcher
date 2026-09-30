@@ -14,6 +14,7 @@
     "project": {
         "pinProject": "Pin Project",
         "unpinProject": "Unpin Project",
+        "copyProjectPath": "Copy project path",
         "openProjectFolder": "Open Project Folder",
         "openTerminal": "Open Terminal Here",
         "openInGitHub": "Open in GitHub",

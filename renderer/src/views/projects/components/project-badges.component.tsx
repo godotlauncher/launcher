@@ -5,6 +5,7 @@ import { CodeEditorIntegrationIcon } from '../../../components/code-editor-integ
 import { StatusBadge } from '../../../components/ui/status-badge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { ProjectListItemProps } from './project-list.types';
+import { ProjectStatusTooltip } from './project-status-tooltip.component';
 
 /**
  * Fits 14px card icons inside pill badges with balanced padding and spacing.
@@ -76,7 +77,7 @@ export function ProjectBadges({
             }
         >
             {!compact && (
-                <Tooltip
+                <ProjectStatusTooltip
                     role={compact ? 'img' : undefined}
                     ariaLabel={
                         releaseInstalled
@@ -91,8 +92,8 @@ export function ProjectBadges({
                               })
                             : t('table.invalidReasons.missingEditor')
                     }
-                    tone={releaseInstalled ? 'default' : 'warning'}
-                    className="min-w-0 max-w-full"
+                    warning={!releaseInstalled}
+                    className="w-fit min-w-0 max-w-full"
                 >
                     <ProjectBadge compact={false} warning={!releaseInstalled}>
                         {editorDownloading ? (
@@ -119,16 +120,16 @@ export function ProjectBadges({
                             />
                         )}
                     </ProjectBadge>
-                </Tooltip>
+                </ProjectStatusTooltip>
             )}
 
             {project.codeEditorId && (
-                <Tooltip
+                <ProjectStatusTooltip
                     placement="top"
                     role={compact ? 'img' : undefined}
                     ariaLabel={codeEditorTooltip}
                     tip={codeEditorTooltip}
-                    tone={codeEditorUnavailable ? 'warning' : 'default'}
+                    warning={codeEditorUnavailable}
                 >
                     <ProjectBadge
                         compact={compact}
@@ -154,7 +155,7 @@ export function ProjectBadges({
                             {codeEditorName}
                         </span>
                     </ProjectBadge>
-                </Tooltip>
+                </ProjectStatusTooltip>
             )}
 
             {project.withGit && (

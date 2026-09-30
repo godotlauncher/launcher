@@ -14,6 +14,7 @@
     "project": {
         "pinProject": "釘選專案",
         "unpinProject": "取消釘選專案",
+        "copyProjectPath": "複製專案路徑",
         "openProjectFolder": "開啟專案資料夾",
         "openTerminal": "在此開啟終端機",
         "openInGitHub": "在 GitHub 中開啟",

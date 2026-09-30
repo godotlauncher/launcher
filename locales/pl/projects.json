@@ -2,6 +2,7 @@
     "view": {
         "cards": "Widok kart",
         "list": "Widok listy",
+        "compact": "Widok kompaktowy",
         "openProject": "Otwórz {{project}} w Godot",
         "saveFailed": "Nie udało się zapisać widoku projektów. Spróbuj ponownie."
     },

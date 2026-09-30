@@ -1,8 +1,18 @@
 import type { ProjectDetails } from '@shared/contracts';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ProjectActionsMenu } from './project-actions-menu.component';
+
+const menuCapture = vi.hoisted(() => ({
+    items: [] as Array<{
+        key: string;
+        label?: ReactNode;
+        disabled?: boolean;
+        closeOnSelect?: boolean;
+        onSelect?: () => void | Promise<void>;
+    }>,
+}));
 
 vi.mock('../../../components/ui/action-menu.component', () => ({
     ActionMenu: ({
@@ -14,9 +24,12 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
             key: string;
             label?: ReactNode;
             disabled?: boolean;
+            closeOnSelect?: boolean;
+            onSelect?: () => void | Promise<void>;
         }>;
-    }) =>
-        open ? (
+    }) => {
+        menuCapture.items = items;
+        return open ? (
             <div>
                 {items.map((item) => (
                     <button
@@ -28,7 +41,8 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
                     </button>
                 ))}
             </div>
-        ) : null,
+        ) : null;
+    },
 }));
 
 const project: ProjectDetails = {
@@ -62,6 +76,8 @@ const project: ProjectDetails = {
 };
 
 describe('ProjectActionsMenu', () => {
+    afterEach(() => vi.unstubAllGlobals());
+
     it('renders the remaining project management actions', () => {
         const html = renderToStaticMarkup(
             <ProjectActionsMenu
@@ -82,6 +98,7 @@ describe('ProjectActionsMenu', () => {
             />,
         );
 
+        expect(html).not.toContain('menus:project.copyProjectPath');
         expect(html).toContain('project.exportEditorSettings');
         expect(html).toContain('project.importEditorSettings');
         expect(html).toContain('project.removeFromList');

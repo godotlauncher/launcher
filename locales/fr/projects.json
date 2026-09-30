@@ -2,6 +2,7 @@
     "view": {
         "cards": "Vue en cartes",
         "list": "Vue en liste",
+        "compact": "Vue compacte",
         "openProject": "Ouvrir {{project}} dans Godot",
         "saveFailed": "Impossible d’enregistrer la vue des projets. Veuillez réessayer."
     },

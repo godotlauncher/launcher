@@ -16,6 +16,7 @@ type ProjectsHeaderProps = {
     onViewModeChange: (mode: ProjectViewMode) => void;
     cardsViewLabel: string;
     listViewLabel: string;
+    compactViewLabel: string;
     title: string;
     projectsLocation?: string;
     searchPlaceholder: string;
@@ -47,6 +48,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     onViewModeChange,
     cardsViewLabel,
     listViewLabel,
+    compactViewLabel,
     title,
     projectsLocation,
     searchPlaceholder,
@@ -114,6 +116,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                     onChange={onViewModeChange}
                     cardsLabel={cardsViewLabel}
                     listLabel={listViewLabel}
+                    compactLabel={compactViewLabel}
                 />
                 <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
                     {tagFilter}

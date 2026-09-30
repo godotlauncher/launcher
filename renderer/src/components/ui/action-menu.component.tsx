@@ -19,6 +19,7 @@ export type ActionMenuActionItem = {
     trailingIcon?: ReactNode;
     checked?: boolean;
     disabled?: boolean;
+    closeOnSelect?: boolean;
     destructive?: boolean;
     testId?: string;
     onSelect: () => void | Promise<void>;
@@ -287,8 +288,10 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
             >
                 <ul className="menu w-full bg-base-300 p-0 text-base">
                     {title && (
-                        <li className="menu-title max-w-72 menu-disabled">
-                            <span className="truncate">{title}</span>
+                        <li className="menu-title block min-w-0 max-w-72 menu-disabled">
+                            <span className="block w-full min-w-0 truncate">
+                                {title}
+                            </span>
                         </li>
                     )}
                     {items.map((item) => {
@@ -321,7 +324,9 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                                             return;
                                         }
 
-                                        onClose();
+                                        if (item.closeOnSelect !== false) {
+                                            onClose();
+                                        }
                                         void item.onSelect();
                                     }}
                                 >

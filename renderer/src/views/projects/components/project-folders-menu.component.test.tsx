@@ -1,8 +1,18 @@
 import type { ProjectDetails } from '@shared/contracts';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ProjectFoldersMenu } from './project-folders-menu.component';
+
+const menuCapture = vi.hoisted(() => ({
+    items: [] as Array<{
+        key: string;
+        label?: ReactNode;
+        disabled?: boolean;
+        closeOnSelect?: boolean;
+        onSelect?: () => void | Promise<void>;
+    }>,
+}));
 
 vi.mock('../../../components/ui/action-menu.component', () => ({
     ActionMenu: ({
@@ -14,9 +24,12 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
             key: string;
             label?: ReactNode;
             disabled?: boolean;
+            closeOnSelect?: boolean;
+            onSelect?: () => void | Promise<void>;
         }>;
-    }) =>
-        open ? (
+    }) => {
+        menuCapture.items = items;
+        return open ? (
             <div>
                 {items.map((item) => (
                     <button
@@ -28,7 +41,8 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
                     </button>
                 ))}
             </div>
-        ) : null,
+        ) : null;
+    },
 }));
 
 const project: ProjectDetails = {
@@ -61,6 +75,58 @@ const project: ProjectDetails = {
 };
 
 describe('ProjectFoldersMenu', () => {
+    afterEach(() => vi.unstubAllGlobals());
+    it('copies the selected project path without dismissing the menu', async () => {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        vi.stubGlobal('window', { navigator: { clipboard: { writeText } } });
+
+        renderToStaticMarkup(
+            <ProjectFoldersMenu
+                project={project}
+                showCopyProjectPath
+                anchorRect={null}
+                t={(key) => key}
+                onClose={vi.fn()}
+                githubUrl={null}
+                onOpenProjectFolder={vi.fn()}
+                onOpenEditorSettingsFolder={vi.fn()}
+                onOpenGitHub={vi.fn()}
+            />,
+        );
+
+        const copyItem = menuCapture.items.find(
+            (item) => item.key === 'copy-project-path',
+        );
+        expect(copyItem?.closeOnSelect).toBe(false);
+        await copyItem?.onSelect?.();
+        expect(writeText).toHaveBeenCalledExactlyOnceWith(project.path);
+    });
+
+    it('handles clipboard failure so the menu can be used again', async () => {
+        const writeText = vi.fn().mockRejectedValue(new Error('Denied'));
+        vi.stubGlobal('window', { navigator: { clipboard: { writeText } } });
+
+        renderToStaticMarkup(
+            <ProjectFoldersMenu
+                project={project}
+                showCopyProjectPath
+                anchorRect={null}
+                t={(key) => key}
+                onClose={vi.fn()}
+                githubUrl={null}
+                onOpenProjectFolder={vi.fn()}
+                onOpenEditorSettingsFolder={vi.fn()}
+                onOpenGitHub={vi.fn()}
+            />,
+        );
+
+        const copyItem = menuCapture.items.find(
+            (item) => item.key === 'copy-project-path',
+        );
+        await expect(copyItem?.onSelect?.()).resolves.toBeUndefined();
+        expect(writeText).toHaveBeenCalledExactlyOnceWith(project.path);
+    });
+
     it('renders both project folder destinations', () => {
         const html = renderToStaticMarkup(
             <ProjectFoldersMenu
@@ -82,6 +148,7 @@ describe('ProjectFoldersMenu', () => {
             />,
         );
 
+        expect(html).not.toContain('menus:project.copyProjectPath');
         expect(html).toContain('project.openProjectFolder');
         expect(html).toContain('project.openEditorSettingsFolder');
         expect(html).not.toContain('project.openTerminal');

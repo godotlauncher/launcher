@@ -171,7 +171,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         }
     };
     const projectViewMode: ProjectViewMode =
-        preferences?.projects_view_mode === 'list' ? 'list' : 'cards';
+        preferences?.projects_view_mode === 'list' ||
+        preferences?.projects_view_mode === 'dense'
+            ? preferences.projects_view_mode
+            : 'cards';
     /**
      * Saves the presentation before changing it, retaining the old view on failure.
      * @param mode - The requested project presentation.
@@ -569,6 +572,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         }
                         cardsViewLabel={t('view.cards')}
                         listViewLabel={t('view.list')}
+                        compactViewLabel={t('view.compact')}
                         title={t('title')}
                         projectsLocation={preferences?.projects_location}
                         searchPlaceholder={t('search.placeholder')}
@@ -782,6 +786,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 )}
             </div>
             <ProjectFoldersMenu
+                showCopyProjectPath={projectViewMode === 'dense'}
                 project={projectFoldersMenu?.project ?? null}
                 anchorRect={projectFoldersMenu?.anchorRect ?? null}
                 githubUrl={projectFoldersMenu?.githubUrl ?? null}

@@ -14,6 +14,7 @@
     "project": {
         "pinProject": "Закрепить проект",
         "unpinProject": "Открепить проект",
+        "copyProjectPath": "Копировать путь к проекту",
         "openProjectFolder": "Открыть папку проекта",
         "openTerminal": "Открыть терминал здесь",
         "openInGitHub": "Открыть на GitHub",

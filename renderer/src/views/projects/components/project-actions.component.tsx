@@ -22,6 +22,7 @@ type ProjectActionsProps = Pick<
     | 't'
 > & {
     compact: boolean;
+    dense?: boolean;
     downloadableProjectEditor?: ReleaseSummary;
     releaseInstalled: boolean;
     editorDownloading: boolean;
@@ -41,13 +42,14 @@ export function ProjectActions({
     onProjectMoreOptions,
     t,
     compact,
+    dense = false,
     downloadableProjectEditor,
     releaseInstalled,
     editorDownloading,
 }: ProjectActionsProps) {
     return (
         <div
-            className={`flex min-h-10 shrink-0 items-center gap-2 ${compact ? 'self-end' : 'self-start'}`}
+            className={`flex shrink-0 items-center ${dense ? 'min-h-8 gap-1' : 'min-h-10 gap-2'} ${compact ? 'self-end' : 'self-start'}`}
         >
             {downloadableProjectEditor && !releaseInstalled && (
                 <Tooltip placement="top" tip={t('card.installRequiredEditor')}>
@@ -55,7 +57,7 @@ export function ProjectActions({
                         type="button"
                         data-testid="btnInstallRequiredProjectEditor"
                         disabled={editorDownloading}
-                        className="btn btn-sm btn-ghost btn-square text-primary"
+                        className="btn btn-sm btn-ghost btn-square text-warning/80 hover:text-warning hover:bg-warning/20 hover:border-transparent"
                         aria-label={t('card.installRequiredEditor')}
                         onClick={() =>
                             onInstallRequiredProjectEditor(
