@@ -89,6 +89,10 @@ interface ProjectsContext {
         project: ProjectDetails,
         openWindowed: boolean,
     ) => Promise<ProjectDetails>;
+    setProjectLaunchWithConsole: (
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) => Promise<ProjectDetails>;
     setProjectPinned: (
         project: ProjectDetails,
         pinned: boolean,
@@ -522,6 +526,23 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return updatedProject;
     };
 
+    /**
+     * Saves a project's console launch preference.
+     * @param project - Project to update.
+     * @param launchWithConsole - Whether to show a console on launch.
+     */
+    const setProjectLaunchWithConsole = async (
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) => {
+        const updatedProject = await projectsBridge.setProjectLaunchWithConsole(
+            project,
+            launchWithConsole,
+        );
+        updateProjectState(updatedProject);
+        return updatedProject;
+    };
+
     const setProjectPinned = async (
         project: ProjectDetails,
         pinned: boolean,
@@ -687,13 +708,20 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const launchProject = async (project: ProjectDetails) => {
-        const result = await projectsBridge.launchProject(project);
-        if (!result.launched) {
-            if (result.reason === 'code_editor_unavailable') {
-                showMissingCodeEditorWarning(project, result);
-                return project;
+        try {
+            const result = await projectsBridge.launchProject(project);
+            if (!result.launched) {
+                if (result.reason === 'code_editor_unavailable') {
+                    showMissingCodeEditorWarning(project, result);
+                    return project;
+                }
+                return result.project;
             }
-            return result.project;
+        } catch (error) {
+            addAlert(
+                t('common:error'),
+                error instanceof Error ? error.message : t('common:error'),
+            );
         }
 
         return project;
@@ -748,6 +776,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 setProjectEditor,
                 queueProjectEditorRepairs,
                 setProjectWindowed,
+                setProjectLaunchWithConsole,
                 setProjectPinned,
                 reorderPinnedProjects,
                 setProjectCodeEditor,

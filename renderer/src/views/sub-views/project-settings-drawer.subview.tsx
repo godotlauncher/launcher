@@ -73,6 +73,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         onSetProjectEditor,
         onSetProjectCodeEditor,
         onSetProjectWindowed,
+        onSetProjectLaunchWithConsole,
         onInitializeProjectGit,
         getProjectGitIdentity,
         onSetProjectGitIdentity,
@@ -287,6 +288,8 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                     (project.release.valid === false ||
                         !project.release.editor_path));
             const windowed = form.initialWindowed !== form.windowed;
+            const launchWithConsole =
+                form.initialLaunchWithConsole !== form.launchWithConsole;
             let selection: ProjectEditorSelection | undefined;
             if (release) {
                 if (
@@ -352,6 +355,13 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                 current = await onSetProjectWindowed(current, form.windowed);
                 form.acceptWindowed(form.windowed);
             }
+            if (launchWithConsole) {
+                current = await onSetProjectLaunchWithConsole(
+                    current,
+                    form.launchWithConsole,
+                );
+                form.acceptLaunchWithConsole(form.launchWithConsole);
+            }
             if (tags.changed) await tags.submit();
             clearSettingsSave(project.path);
             if (gitDirty) setActiveTab('sourceControl');
@@ -394,6 +404,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
         form.hasCodeEditorChanges ||
         form.hasReleaseChanges ||
         form.hasWindowedChanges ||
+        form.hasLaunchWithConsoleChanges ||
         templatesDirty ||
         tags.changed;
     const pendingTabs: Record<ProjectSettingsTab, boolean> = {
@@ -401,7 +412,7 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
             form.hasRenameChanges || form.hasReleaseChanges || tags.changed,
         sourceControl: gitDirty,
         codeEditor: form.hasCodeEditorChanges,
-        launch: form.hasWindowedChanges,
+        launch: form.hasWindowedChanges || form.hasLaunchWithConsoleChanges,
         exportTemplates: templatesDirty,
     };
     const title = project
@@ -674,9 +685,16 @@ export const ProjectSettingsDrawer: React.FC<ProjectSettingsDrawerProps> = (
                                 <ProjectSettingsLaunchSection
                                     t={t}
                                     windowed={form.windowed}
-                                    changed={form.hasWindowedChanges}
+                                    windowedChanged={form.hasWindowedChanges}
+                                    launchWithConsole={form.launchWithConsole}
+                                    consoleChanged={
+                                        form.hasLaunchWithConsoleChanges
+                                    }
                                     disabled={isSubmitting}
                                     onWindowedChange={form.changeWindowed}
+                                    onLaunchWithConsoleChange={
+                                        form.changeLaunchWithConsole
+                                    }
                                 />
                             )}
                         </fieldset>

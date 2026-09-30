@@ -75,6 +75,27 @@ describe('TerminalCatalogueService', () => {
             resolvedTargetId: null,
         });
     });
+    it('uses the selected editor terminal even when Open Terminal Here is disabled', async () => {
+        const { catalogue, store, configuration, targets } = setup();
+        store.get.mockResolvedValue({ enabled: false });
+        configuration.get.mockResolvedValue({
+            valid: true,
+            selection: 'konsole',
+        });
+        expect(await catalogue.getEditorLaunchTarget()).toEqual(targets[1]);
+        expect((await catalogue.get()).resolvedTargetId).toBeNull();
+    });
+    it.each([false, true])(
+        'does not use an editor fallback for invalid or unavailable selection (valid=%s)',
+        async (valid) => {
+            const { catalogue, configuration } = setup();
+            configuration.get.mockResolvedValue({
+                valid,
+                selection: 'removed-terminal',
+            });
+            expect(await catalogue.getEditorLaunchTarget()).toBeUndefined();
+        },
+    );
     it('blocks resolution when disabled', async () => {
         const { catalogue, store } = setup();
         store.get.mockResolvedValue({ enabled: false });

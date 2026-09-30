@@ -421,9 +421,13 @@
         "launch": {
             "title": "Starten",
             "help": "Legen Sie fest, wie Godot dieses Projekt öffnet.",
+            "console": {
+                "label": "Im Terminal starten",
+                "help": "Ausgabe nach dem Beenden von Godot sichtbar lassen."
+            },
             "windowed": {
-                "label": "Fenstermodus verwenden",
-                "help": "Godot in einem normalen Fenster öffnen."
+                "label": "Editor im Fenster",
+                "help": "Godot mit --windowed starten."
             }
         },
         "pinned": {

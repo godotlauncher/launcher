@@ -1,3 +1,4 @@
+import { app } from 'electron';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppLifecycleService } from './app-lifecycle.service.js';
 
@@ -28,6 +29,7 @@ const mocks = vi.hoisted(() => ({
     setupAutoUpdate: vi.fn(),
     setupFocusRevalidation: vi.fn(),
     stopAutoUpdateChecks: vi.fn(),
+    showMessageBox: vi.fn(),
 }));
 
 vi.mock('@mariodebono/di', () => ({ Injectable: () => () => undefined }));
@@ -86,7 +88,7 @@ vi.mock('electron', () => ({
         on: mocks.autoUpdaterOn,
         removeListener: mocks.autoUpdaterRemoveListener,
     },
-    dialog: { showMessageBox: vi.fn() },
+    dialog: { showMessageBox: mocks.showMessageBox },
 }));
 
 vi.mock('electron-log/main.js', () => ({
@@ -108,7 +110,16 @@ vi.mock('./export-templates/template-storage.service.js', () => ({
 vi.mock('./commands/userPreferences.js', () => ({
     getUserPreferences: mocks.getUserPreferences,
 }));
-vi.mock('./i18n/index.js', () => ({ configureI18n: mocks.configureI18n }));
+vi.mock('./i18n/index.js', () => {
+    const translations: Record<string, string> = {
+        'common:error': 'Translated error',
+        'common:buttons.ok': 'Translated OK',
+    };
+    return {
+        configureI18n: mocks.configureI18n,
+        t: vi.fn((key: string) => translations[key] ?? key),
+    };
+});
 vi.mock('./autoUpdater.js', () => ({
     setupAutoUpdate: mocks.setupAutoUpdate,
     stopAutoUpdateChecks: mocks.stopAutoUpdateChecks,
@@ -246,6 +257,7 @@ describe('AppLifecycleService', () => {
         projectsService.checkAllProjectsValid.mockResolvedValue([]);
         projectsService.getProjectsDetails.mockResolvedValue([]);
         projectsService.launchProject.mockResolvedValue({ launched: true });
+        mocks.showMessageBox.mockResolvedValue({ response: 0 });
         toolIntegrationService.refreshAll.mockResolvedValue([]);
         installedEditorService.revalidateInstalledEditors.mockResolvedValue([]);
         mocks.setupFocusRevalidation.mockReturnValue(
@@ -491,6 +503,106 @@ describe('AppLifecycleService', () => {
         await launchFromTray(project);
 
         expect(projectsService.launchProject).toHaveBeenCalledWith(project);
+        expect(windowManager.revealMainWindow).not.toHaveBeenCalled();
+        expect(mocks.showMessageBox).not.toHaveBeenCalled();
+    });
+
+    it.each(['darwin', 'win32', 'linux'] as const)(
+        'reveals the launcher and reports a tray launch failure on %s',
+        async (platform) => {
+            const descriptor = Object.getOwnPropertyDescriptor(
+                process,
+                'platform',
+            );
+            Object.defineProperty(process, 'platform', {
+                configurable: true,
+                value: platform,
+            });
+            try {
+                const service = createService();
+                const project = { path: '/projects/demo' };
+                projectsService.launchProject.mockRejectedValue(
+                    new Error('Translated terminal launch failure'),
+                );
+                await initializeLifecycle(service);
+                vi.mocked(app.dock?.show)?.mockClear();
+                vi.mocked(app.setActivationPolicy).mockClear();
+                const launchFromTray = mocks.createTray.mock.calls[0][1] as (
+                    selectedProject: typeof project,
+                ) => Promise<void>;
+
+                await expect(launchFromTray(project)).resolves.toBeUndefined();
+
+                expect(
+                    projectsService.launchProject,
+                ).toHaveBeenCalledExactlyOnceWith(project);
+                expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+                expect(mocks.showMessageBox).toHaveBeenCalledExactlyOnceWith(
+                    mainWindow,
+                    {
+                        type: 'error',
+                        title: 'Translated error',
+                        message: 'Translated terminal launch failure',
+                        buttons: ['Translated OK'],
+                    },
+                );
+                expect(
+                    windowManager.revealMainWindow.mock.invocationCallOrder[0],
+                ).toBeLessThan(
+                    mocks.showMessageBox.mock.invocationCallOrder[0],
+                );
+                expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+                if (platform === 'darwin') {
+                    expect(app.dock?.show).toHaveBeenCalledOnce();
+                    expect(app.setActivationPolicy).toHaveBeenCalledWith(
+                        'regular',
+                    );
+                } else {
+                    expect(app.dock?.show).not.toHaveBeenCalled();
+                    expect(app.setActivationPolicy).not.toHaveBeenCalled();
+                }
+            } finally {
+                if (descriptor)
+                    Object.defineProperty(process, 'platform', descriptor);
+            }
+        },
+    );
+
+    it('uses a translated fallback when a tray launch fails without an error message', async () => {
+        const service = createService();
+        projectsService.launchProject.mockRejectedValue(null);
+        await initializeLifecycle(service);
+        const launchFromTray = mocks.createTray.mock.calls[0][1] as (
+            project: unknown,
+        ) => Promise<void>;
+        await expect(
+            launchFromTray({ path: '/projects/demo' }),
+        ).resolves.toBeUndefined();
+        expect(mocks.showMessageBox).toHaveBeenCalledWith(
+            mainWindow,
+            expect.objectContaining({ message: 'Translated error' }),
+        );
+    });
+
+    it('handles a rejected error dialog without leaving an unhandled tray callback', async () => {
+        const service = createService();
+        projectsService.launchProject.mockRejectedValue(
+            new Error('Launch failed'),
+        );
+        mocks.showMessageBox.mockRejectedValue(new Error('Window closed'));
+        await initializeLifecycle(service);
+        const launchFromTray = mocks.createTray.mock.calls[0][1] as (
+            project: unknown,
+        ) => Promise<void>;
+        await expect(
+            launchFromTray({ path: '/projects/demo' }),
+        ).resolves.toBeUndefined();
+        expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
+        const logger = (await import('electron-log/main.js')).default;
+        expect(logger.error).toHaveBeenCalledWith(
+            'Failed to show tray launch error',
+            expect.any(Error),
+        );
     });
 
     it('routes tray show requests through the standard window reveal path', async () => {
@@ -543,6 +655,7 @@ describe('AppLifecycleService', () => {
             mainWindow.webContents,
             { project, result },
         );
+        expect(mocks.showMessageBox).not.toHaveBeenCalled();
     });
 
     it('requests a framework quit when the updater event precedes app.before-quit', async () => {

@@ -11,6 +11,7 @@ import { TerminalToolIntegration } from './terminal-tool.integration.js';
 /** Registers one specialised Terminal tool and its narrow bridge. */
 @Module({
     imports: [ToolIntegrationModule, ProjectsStoreModule],
+    exports: [TerminalService],
     providers: [
         TerminalAdapterService,
         TerminalConfigurationService,

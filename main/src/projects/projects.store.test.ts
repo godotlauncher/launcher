@@ -53,6 +53,26 @@ describe('ProjectsStore', () => {
         expect(project.last_opened).toBeNull();
         expect(project.pinned).toBe(true);
         expect(project.pinned_order).toBeUndefined();
+        expect(project.launch_with_console).toBeUndefined();
+    });
+
+    it('keeps launch preferences after a disk round trip', async () => {
+        await store.put({
+            ...createProject('/projects/game', null),
+            open_windowed: true,
+            launch_with_console: true,
+        });
+
+        const [project] = await store.list();
+        expect(project).toMatchObject({
+            open_windowed: true,
+            launch_with_console: true,
+        });
+        const [stored] = JSON.parse(await fs.readFile(projectsPath, 'utf-8'));
+        expect(stored).toMatchObject({
+            open_windowed: true,
+            launch_with_console: true,
+        });
     });
 
     it('preserves ascending last-opened order and Date values', async () => {

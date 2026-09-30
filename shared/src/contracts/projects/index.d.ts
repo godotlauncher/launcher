@@ -229,6 +229,7 @@ export type ProjectDetails = {
     pinned?: boolean;
     pinned_order?: number;
     open_windowed?: boolean;
+    launch_with_console?: boolean;
     release: InstalledRelease;
     launch_path: string;
     config_version: 4 | 5;

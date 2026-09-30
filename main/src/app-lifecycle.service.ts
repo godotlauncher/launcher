@@ -28,7 +28,7 @@ import { recoverTemplateStorageOnStartup } from './export-templates/template-sto
 import { createEditingMenu, createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
 import { createTray } from './helpers/tray.helper.js';
-import { configureI18n } from './i18n/index.js';
+import { configureI18n, t } from './i18n/index.js';
 import { setMainWindow } from './mainWindow.js';
 import { getAppIconPath } from './pathResolver.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -128,6 +128,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         await this.installedEditorService.revalidateInstalledEditors();
     }
 
+    /** Binds window resources and handles launches requested from the tray. */
     @AppReady({ order: AppReadyOrder.AfterWindow })
     async afterWindowReady(): Promise<void> {
         const mainWindow = this.windowManager.getMainWindow();
@@ -143,15 +144,36 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         await createTray(
             mainWindow,
             async (project) => {
-                const result =
-                    await this.projectsService.launchProject(project);
-                if (!result.launched) {
-                    this.showMainWindow();
-                    if (result.reason === 'code_editor_unavailable') {
-                        ipcWebContentsSend(
-                            'project-launch-code-editor-warning',
-                            mainWindow.webContents,
-                            { project, result },
+                try {
+                    const result =
+                        await this.projectsService.launchProject(project);
+                    if (!result.launched) {
+                        this.showMainWindow();
+                        if (result.reason === 'code_editor_unavailable') {
+                            ipcWebContentsSend(
+                                'project-launch-code-editor-warning',
+                                mainWindow.webContents,
+                                { project, result },
+                            );
+                        }
+                    }
+                } catch (error) {
+                    logger.error('Failed to launch project from tray', error);
+                    try {
+                        this.showMainWindow();
+                        await dialog.showMessageBox(mainWindow, {
+                            type: 'error',
+                            title: t('common:error'),
+                            message:
+                                error instanceof Error && error.message
+                                    ? error.message
+                                    : t('common:error'),
+                            buttons: [t('common:buttons.ok')],
+                        });
+                    } catch (dialogError) {
+                        logger.error(
+                            'Failed to show tray launch error',
+                            dialogError,
                         );
                     }
                 }

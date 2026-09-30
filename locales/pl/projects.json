@@ -421,9 +421,13 @@
         "launch": {
             "title": "Uruchamianie",
             "help": "Wybierz sposób otwierania projektu przez Godot.",
+            "console": {
+                "label": "Uruchom w terminalu",
+                "help": "Pozostaw wyjście widoczne po zakończeniu działania Godota."
+            },
             "windowed": {
-                "label": "Użyj trybu okienkowego",
-                "help": "Otwórz edytor Godot w zwykłym oknie."
+                "label": "Edytor w oknie",
+                "help": "Uruchom Godot z --windowed."
             }
         },
         "pinned": {

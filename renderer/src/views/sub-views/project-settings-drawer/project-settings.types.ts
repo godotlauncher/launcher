@@ -40,6 +40,10 @@ export type ProjectSettingsDrawerProps = {
         project: ProjectDetails,
         windowed: boolean,
     ) => Promise<ProjectDetails>;
+    onSetProjectLaunchWithConsole: (
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) => Promise<ProjectDetails>;
     onInitializeProjectGit: (
         project: ProjectDetails,
     ) => Promise<InitializeProjectGitResult>;

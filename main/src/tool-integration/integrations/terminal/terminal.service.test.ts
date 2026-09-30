@@ -21,7 +21,11 @@ function setup() {
         ],
         resolvedTargetId: 'macos-terminal',
     };
-    const catalogue = { get: vi.fn(async () => summary), invalidate: vi.fn() };
+    const catalogue = {
+        getEditorLaunchTarget: vi.fn(async () => summary.targets[0]),
+        get: vi.fn(async () => summary),
+        invalidate: vi.fn(),
+    };
     const configuration = { select: vi.fn(), reset: vi.fn() };
     const adapters = { launch: vi.fn(async () => ({ success: true })) };
     const projects = { list: vi.fn(async () => [{ path: '/stored/project' }]) };
@@ -53,6 +57,26 @@ function setup() {
 }
 
 describe('TerminalService', () => {
+    it('dispatches an editor script without requiring Open Terminal Here to be enabled', async () => {
+        const { service, store, adapters, summary } = setup();
+        store.get.mockResolvedValue({ enabled: false });
+        expect(
+            await service.launchEditorScript('/project', '/private/launch.sh'),
+        ).toEqual({ success: true });
+        expect(adapters.launch).toHaveBeenCalledWith(
+            summary.targets[0],
+            '/project',
+            '/private/launch.sh',
+        );
+    });
+    it('reports a missing editor terminal without dispatching', async () => {
+        const { service, catalogue, adapters } = setup();
+        catalogue.getEditorLaunchTarget.mockResolvedValue(undefined as never);
+        expect(
+            await service.launchEditorScript('/project', '/private/launch.sh'),
+        ).toEqual({ success: false, reason: 'unavailable' });
+        expect(adapters.launch).not.toHaveBeenCalled();
+    });
     it('rejects arbitrary directories not present in the project store', async () => {
         const { service, adapters } = setup();
         expect(await service.openProject('/arbitrary/directory')).toEqual({

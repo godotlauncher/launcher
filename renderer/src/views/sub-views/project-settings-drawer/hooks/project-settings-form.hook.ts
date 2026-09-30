@@ -63,6 +63,9 @@ export function useProjectSettingsForm({
         useState<CreateProjectEditorSelection | null>(null);
     const [initialWindowed, setInitialWindowed] = useState(false);
     const [windowed, setWindowed] = useState(false);
+    const [initialLaunchWithConsole, setInitialLaunchWithConsole] =
+        useState(false);
+    const [launchWithConsole, setLaunchWithConsole] = useState(false);
     const [godotProjectName, setGodotProjectName] = useState<string | null>(
         null,
     );
@@ -113,6 +116,8 @@ export function useProjectSettingsForm({
         });
         setInitialWindowed(Boolean(project.open_windowed));
         setWindowed(Boolean(project.open_windowed));
+        setInitialLaunchWithConsole(Boolean(project.launch_with_console));
+        setLaunchWithConsole(Boolean(project.launch_with_console));
         setGodotProjectName(null);
         setRenameGodotProject(false);
         setNameError(undefined);
@@ -177,6 +182,8 @@ export function useProjectSettingsForm({
             setInitialReleaseKey(releaseKey);
             setWindowed(Boolean(saved.open_windowed));
             setInitialWindowed(Boolean(saved.open_windowed));
+            setLaunchWithConsole(Boolean(saved.launch_with_console));
+            setInitialLaunchWithConsole(Boolean(saved.launch_with_console));
             setCodeEditorId(saved.codeEditorId ?? null);
             setInitialCodeEditorId(saved.codeEditorId ?? null);
             setCodeEditorTouched(false);
@@ -191,6 +198,7 @@ export function useProjectSettingsForm({
         setName(draft.name);
         setReleaseSelection(draft.releaseSelection);
         setWindowed(draft.windowed);
+        setLaunchWithConsole(draft.launchWithConsole);
         setCodeEditorId(draft.codeEditorId);
         setCodeEditorTouched(draft.codeEditorTouched);
         setRenameGodotProject(draft.renameGodotProject);
@@ -271,6 +279,9 @@ export function useProjectSettingsForm({
                         !project.release.editor_path))),
     );
     const hasWindowedChanges = Boolean(project && initialWindowed !== windowed);
+    const hasLaunchWithConsoleChanges = Boolean(
+        project && initialLaunchWithConsole !== launchWithConsole,
+    );
 
     /** @param value - The edited Launcher project name. */
     const changeName = (value: string) => {
@@ -314,6 +325,11 @@ export function useProjectSettingsForm({
         setWindowed(value);
         setFormError(undefined);
     };
+    /** @param value - Whether launches should show a console. */
+    const changeLaunchWithConsole = (value: boolean) => {
+        setLaunchWithConsole(value);
+        setFormError(undefined);
+    };
     /** @param message - The form-level save error. */
     const setSaveError = (message: string | undefined) => setFormError(message);
     /** @param message - The Godot project name error. */
@@ -338,6 +354,9 @@ export function useProjectSettingsForm({
     const acceptRelease = (key: string) => setInitialReleaseKey(key);
     /** @param value - The successful launch preference baseline. */
     const acceptWindowed = (value: boolean) => setInitialWindowed(value);
+    /** @param value - The successful console preference baseline. */
+    const acceptLaunchWithConsole = (value: boolean) =>
+        setInitialLaunchWithConsole(value);
 
     return {
         sessionRef,
@@ -347,6 +366,8 @@ export function useProjectSettingsForm({
         releaseSelection,
         initialWindowed,
         windowed,
+        initialLaunchWithConsole,
+        launchWithConsole,
         godotProjectName,
         loadingGodotName,
         renameGodotProject,
@@ -371,12 +392,14 @@ export function useProjectSettingsForm({
         hasCodeEditorChanges,
         hasReleaseChanges,
         hasWindowedChanges,
+        hasLaunchWithConsoleChanges,
         changeName,
         validateName,
         changeRenameGodotProject,
         changeReleaseSelection,
         changeCodeEditor,
         changeWindowed,
+        changeLaunchWithConsole,
         setSaveError,
         setGodotNameError,
         setProjectNameError,
@@ -384,5 +407,6 @@ export function useProjectSettingsForm({
         acceptCodeEditor,
         acceptRelease,
         acceptWindowed,
+        acceptLaunchWithConsole,
     };
 }

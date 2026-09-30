@@ -99,6 +99,20 @@ export class TerminalService {
     }
 
     /**
+     * Opens an internally generated editor script using the terminal preference.
+     * @param directory - Project directory already resolved by ProjectsService.
+     * @param scriptPath - Private single-use launch script.
+     */
+    async launchEditorScript(
+        directory: string,
+        scriptPath: string,
+    ): Promise<TerminalLaunchResult> {
+        const target = await this.catalogue.getEditorLaunchTarget();
+        if (!target) return { success: false, reason: 'unavailable' };
+        return this.adapters.launch(target, directory, scriptPath);
+    }
+
+    /**
      * Resolves a stored project identity before opening its exact directory.
      * @param projectPath - Exact project path used as its stored identity.
      */

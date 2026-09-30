@@ -1,3 +1,8 @@
+vi.mock(
+    '../tool-integration/integrations/terminal/terminal.service.js',
+    () => ({ TerminalService: class {} }),
+);
+
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -199,6 +204,7 @@ describe('ProjectsService', () => {
             projectPublication as never,
             projectOrigins as never,
             projectTags as never,
+            {} as never,
         );
     });
 
@@ -554,6 +560,47 @@ describe('ProjectsService', () => {
             { id: 'web-contents' },
             [expect.objectContaining({ open_windowed: true })],
         );
+    });
+
+    it('persists console mode without changing windowed mode', async () => {
+        const project = {
+            path: '/projects/game',
+            open_windowed: true,
+        } as ProjectDetails;
+        store.update.mockImplementation(async (mutator) => mutator([project]));
+
+        const updated = await service.setProjectLaunchWithConsole(
+            project,
+            true,
+        );
+
+        expect(updated).toMatchObject({
+            launch_with_console: true,
+            open_windowed: true,
+        });
+        expect(project.launch_with_console).toBeUndefined();
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledOnce();
+        expect(mocks.ipcWebContentsSend).toHaveBeenCalledWith(
+            'projects-updated',
+            { id: 'web-contents' },
+            [
+                expect.objectContaining({
+                    launch_with_console: true,
+                    open_windowed: true,
+                }),
+            ],
+        );
+    });
+
+    it('does not mutate the project or publish when console persistence fails', async () => {
+        const project = { path: '/projects/game' } as ProjectDetails;
+        store.update.mockRejectedValue(new Error('write failed'));
+
+        await expect(
+            service.setProjectLaunchWithConsole(project, true),
+        ).rejects.toThrow('write failed');
+        expect(project.launch_with_console).toBeUndefined();
+        expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
     });
 
     it('does not publish when persistence fails', async () => {

@@ -421,9 +421,13 @@
         "launch": {
             "title": "Avvio",
             "help": "Scegli come Godot apre questo progetto.",
+            "console": {
+                "label": "Avvia nel terminale",
+                "help": "Mantieni visibile l'output dopo la chiusura di Godot."
+            },
             "windowed": {
-                "label": "Usa modalità finestra",
-                "help": "Apri l'editor Godot in una finestra normale."
+                "label": "Editor in finestra",
+                "help": "Avvia Godot con --windowed."
             }
         },
         "pinned": {

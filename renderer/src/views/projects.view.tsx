@@ -214,6 +214,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         codeEditorSettings,
         setProjectEditor,
         setProjectWindowed,
+        setProjectLaunchWithConsole,
         setProjectPinned,
         reorderPinnedProjects,
         setProjectCodeEditor,
@@ -839,6 +840,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 onSetProjectEditor={onSetProjectEditorFromSettings}
                 onSetProjectCodeEditor={onSetProjectCodeEditor}
                 onSetProjectWindowed={setProjectWindowed}
+                onSetProjectLaunchWithConsole={setProjectLaunchWithConsole}
                 onInitializeProjectGit={initializeProjectGit}
                 getProjectGitIdentity={getProjectGitIdentity}
                 onSetProjectGitIdentity={setProjectGitIdentity}

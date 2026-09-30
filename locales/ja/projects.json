@@ -421,9 +421,13 @@
         "launch": {
             "title": "起動",
             "help": "Godot でプロジェクトを開く方法を選びます。",
+            "console": {
+                "label": "ターミナルで起動",
+                "help": "Godot 終了後も出力を表示したままにします。"
+            },
             "windowed": {
-                "label": "ウィンドウモードを使用",
-                "help": "Godot エディターを通常のウィンドウで開きます。"
+                "label": "ウィンドウ表示で編集",
+                "help": "Godot を --windowed で起動します。"
             }
         },
         "pinned": {

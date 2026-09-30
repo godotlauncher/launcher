@@ -62,6 +62,8 @@ import { ProjectTagService } from '../project-tags/project-tag.service.js';
 import { TrayAvailabilityService } from '../services/tray-availability.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from '../tool-integration/integrations/git/git.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { TerminalService } from '../tool-integration/integrations/terminal/terminal.service.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
@@ -87,6 +89,15 @@ import { ProjectRemoteImportService } from './project-remote-import.service.js';
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
+import {
+    createMacOSTerminalLaunchScript,
+    openMacOSTerminalLaunchScript,
+} from './project-terminal-launch.macos.util.js';
+import {
+    createPosixTerminalLaunchScript,
+    removePosixTerminalLaunchScript,
+} from './project-terminal-launch.posix.util.js';
+import { launchWindowsTerminal } from './project-terminal-launch.windows.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
@@ -167,6 +178,7 @@ export class ProjectsService {
      * @param projectPublication - Follow-on remote publication and retry workflow.
      * @param projectOrigins - Process-local stored-project origin index.
      * @param projectTags - Launcher-owned project tag assignments.
+     * @param terminals - Native terminal launch boundary.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
@@ -181,6 +193,7 @@ export class ProjectsService {
         private readonly projectPublication: ProjectPublicationService,
         private readonly projectOrigins: ProjectRepositoryOriginIndexService,
         private readonly projectTags: ProjectTagService,
+        private readonly terminals: TerminalService,
     ) {}
 
     /**
@@ -854,6 +867,33 @@ export class ProjectsService {
     }
 
     /**
+     * Changes whether a project launches with a visible console.
+     *
+     * @param project - Project to update.
+     * @param launchWithConsole - Whether to request console mode.
+     */
+    async setProjectLaunchWithConsole(
+        project: ProjectDetails,
+        launchWithConsole: boolean,
+    ) {
+        const projects = await this.store.update((currentProjects) =>
+            currentProjects.map((candidate) =>
+                candidate.path === project.path
+                    ? { ...candidate, launch_with_console: launchWithConsole }
+                    : candidate,
+            ),
+        );
+        const updatedProject = projects.find(
+            (candidate) => candidate.path === project.path,
+        );
+        if (!updatedProject) {
+            throw new Error('Project not found');
+        }
+        this.publishProjects(projects);
+        return updatedProject;
+    }
+
+    /**
      * Changes whether a project is pinned.
      *
      * @param project - Project to update.
@@ -1220,9 +1260,74 @@ export class ProjectsService {
         if (areTemplatesMutating())
             throw new Error(t('exportTemplates:errors.busy'));
         const command = project.launch_path;
-        let editor: ChildProcess | ChildProcessByStdio<null, null, null>;
-
-        if (process.platform === 'darwin') {
+        let editor:
+            | ChildProcess
+            | ChildProcessByStdio<null, null, null>
+            | undefined;
+        if (process.platform === 'darwin' && project.launch_with_console) {
+            const terminalScriptPath = await createMacOSTerminalLaunchScript(
+                command,
+                project.path,
+                Boolean(project.open_windowed),
+            );
+            try {
+                await openMacOSTerminalLaunchScript(terminalScriptPath);
+            } catch (error) {
+                logger.warn('macOS terminal launch failed', error);
+                await removePosixTerminalLaunchScript(terminalScriptPath).catch(
+                    (cleanupError: unknown) =>
+                        logger.warn(
+                            'Failed to remove unused terminal launch script',
+                            cleanupError,
+                        ),
+                );
+                throw new Error(t('projects:terminal.errors.launch-failed'));
+            }
+        } else if (
+            process.platform === 'win32' &&
+            project.launch_with_console
+        ) {
+            try {
+                await launchWindowsTerminal(
+                    command,
+                    project.path,
+                    Boolean(project.open_windowed),
+                    project.release.console_path,
+                );
+            } catch (error) {
+                logger.warn('Windows terminal launch failed', error);
+                throw new Error(t('projects:terminal.errors.launch-failed'));
+            }
+        } else if (
+            process.platform === 'linux' &&
+            project.launch_with_console
+        ) {
+            const terminalScriptPath = await createPosixTerminalLaunchScript(
+                command,
+                project.path,
+                Boolean(project.open_windowed),
+                'sh',
+            );
+            try {
+                const result = await this.terminals.launchEditorScript(
+                    project.path,
+                    terminalScriptPath,
+                );
+                if (!result.success)
+                    throw new Error(
+                        t(`projects:terminal.errors.${result.reason}`),
+                    );
+            } catch (error) {
+                await removePosixTerminalLaunchScript(terminalScriptPath).catch(
+                    (cleanupError: unknown) =>
+                        logger.warn(
+                            'Failed to remove unused terminal launch script',
+                            cleanupError,
+                        ),
+                );
+                throw error;
+            }
+        } else if (process.platform === 'darwin') {
             const launchArguments = [
                 command,
                 '--args',
@@ -1248,18 +1353,20 @@ export class ProjectsService {
             });
         }
 
-        editor.on('error', (error: Error) => {
-            logger.error(`Failed to start process: ${error.message}`);
-        });
-        editor.on('exit', (code: number, signal: NodeJS.Signals | null) => {
-            if (code !== 0 && code !== null) {
-                logger.error(`Editor exited with error code ${code}`);
-                logger.error(editor.stderr);
-            } else if (signal) {
-                logger.error(`Editor was killed by signal: ${signal}`);
-            }
-        });
-        editor.unref();
+        if (editor) {
+            editor.on('error', (error: Error) => {
+                logger.error(`Failed to start process: ${error.message}`);
+            });
+            editor.on('exit', (code: number, signal: NodeJS.Signals | null) => {
+                if (code !== 0 && code !== null) {
+                    logger.error(`Editor exited with error code ${code}`);
+                    logger.error(editor?.stderr);
+                } else if (signal) {
+                    logger.error(`Editor was killed by signal: ${signal}`);
+                }
+            });
+            editor.unref();
+        }
 
         const currentMainWindow = getMainWindow();
         switch (prefs.post_launch_action) {

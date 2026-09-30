@@ -112,6 +112,34 @@ test.afterAll(async () => {
     await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
+test('saves the console switch independently of an existing windowed choice', async () => {
+    const selectedProject = { ...project, open_windowed: true };
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: [selectedProject], installedReleases: [installedRelease],
+        availableReleases: [], availablePrereleases: [],
+    });
+    await stubCatalogueEditorSave({ initialProject: selectedProject });
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+    await drawer.getByTestId('tabProjectSettings_launch').click();
+    const windowed = drawer.getByRole('checkbox', { name: /Windowed editor/ });
+    const consoleSwitch = drawer.getByRole('checkbox', { name: /Launch in terminal/ });
+    await expect(windowed).toBeChecked();
+    await expect(consoleSwitch).not.toBeChecked();
+
+    await consoleSwitch.check();
+    await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+    await expect(drawer).not.toBeVisible();
+    await expect.poll(readSettingsEvents).toEqual(['console:true']);
+
+    await page.getByTestId('btnProjectSettings').click();
+    await drawer.getByTestId('tabProjectSettings_launch').click();
+    await expect(windowed).toBeChecked();
+    await expect(consoleSwitch).toBeChecked();
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+});
+
 test('saves a catalogue editor before its delayed download and recovers both project views', async () => {
     await prepareAppWithStubbedData(page, electronApp, {
         projects: [project], installedReleases: [installedRelease], availableReleases: [catalogueRelease], availablePrereleases: [],
@@ -124,7 +152,7 @@ test('saves a catalogue editor before its delayed download and recovers both pro
     });
     await drawer.locator('#projectEditName').fill('Saved before download');
     await drawer.getByTestId('tabProjectSettings_launch').click();
-    await drawer.getByRole('checkbox').check();
+    await drawer.getByRole('checkbox', { name: /Windowed editor/ }).check();
     await drawer.getByTestId('tabProjectSettings_project').click();
     await drawer.getByTestId('selectProjectGodotEditor').click();
     await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
@@ -191,7 +219,7 @@ test('keeps Settings open when a combined save fails before download starts', as
     });
     await drawer.locator('#projectEditName').fill('Rejected save');
     await drawer.getByTestId('tabProjectSettings_launch').click();
-    await drawer.getByRole('checkbox').check();
+    await drawer.getByRole('checkbox', { name: /Windowed editor/ }).check();
     await drawer.getByTestId('tabProjectSettings_project').click();
     await drawer.getByTestId('selectProjectGodotEditor').click();
     await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
@@ -328,7 +356,7 @@ test('retains staged settings across tabs and discards them when closed', async 
     });
     await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeEnabled();
     await drawer.getByTestId('tabProjectSettings_launch').click();
-    const windowed = drawer.getByRole('checkbox');
+    const windowed = drawer.getByRole('checkbox', { name: /Windowed editor/ });
     await windowed.setChecked(!Boolean(project.open_windowed));
     await drawer.getByTestId('tabProjectSettings_codeEditor').click();
     await drawer.getByTestId('tabProjectSettings_project').click();
@@ -440,7 +468,7 @@ test('marks changed fields and menu items and clears indicators when reverted', 
     await expect(drawer.getByRole('button', { name: 'Update', exact: true })).toBeDisabled();
 
     await launchTab.click();
-    await drawer.getByRole('checkbox').setChecked(!Boolean(project.open_windowed));
+    await drawer.getByRole('checkbox', { name: /Windowed editor/ }).setChecked(!Boolean(project.open_windowed));
     await expect(dots).toHaveCount(2);
     await projectTab.click();
     await expect(launchTab.getByRole('img', { name: 'Unsaved changes' })).toBeVisible();
@@ -455,7 +483,7 @@ test('marks changed fields and menu items and clears indicators when reverted', 
     await page.getByTestId('btnProjectSettings').click();
     await expect(dots).toHaveCount(0);
     await drawer.getByTestId('tabProjectSettings_launch').click();
-    await drawer.getByRole('checkbox').setChecked(!Boolean(project.open_windowed));
+    await drawer.getByRole('checkbox', { name: /Windowed editor/ }).setChecked(!Boolean(project.open_windowed));
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();
     await expect(drawer).not.toBeVisible();
     await page.getByTestId('btnProjectSettings').click();
@@ -536,7 +564,7 @@ test('retains a Git identity draft across tabs and saves it independently', asyn
     await page.getByRole('dialog', { name: 'Unsaved changes', exact: true }).getByRole('button', { name: 'Back', exact: true }).click();
     await drawer.getByTestId('tabProjectSettings_launch').click();
     await expect(gitTab.getByRole('img', { name: 'Unsaved changes' })).toBeVisible();
-    await drawer.getByRole('checkbox').setChecked(!Boolean(project.open_windowed));
+    await drawer.getByRole('checkbox', { name: /Windowed editor/ }).setChecked(!Boolean(project.open_windowed));
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();
     await expect(drawer).toBeVisible();
     await expect(gitTab).toHaveAttribute('aria-selected', 'true');
@@ -635,6 +663,13 @@ async function stubCatalogueEditorSave(
         ipcMain.handle('projects.setProjectWindowed', async (_event, _project, openWindowed: boolean) => {
             state.__settingsCatalogueEvents?.push(`windowed:${openWindowed}`);
             currentProject = { ...currentProject, open_windowed: openWindowed };
+            publishProjects();
+            return { success: true, data: currentProject };
+        });
+        ipcMain.removeHandler('projects.setProjectLaunchWithConsole');
+        ipcMain.handle('projects.setProjectLaunchWithConsole', async (_event, _project, launchWithConsole: boolean) => {
+            state.__settingsCatalogueEvents?.push(`console:${launchWithConsole}`);
+            currentProject = { ...currentProject, launch_with_console: launchWithConsole };
             publishProjects();
             return { success: true, data: currentProject };
         });
