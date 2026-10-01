@@ -161,5 +161,38 @@
                 "createFailed": "Manifest für benutzerdefinierten Editor konnte nicht erstellt werden."
             }
         }
+    },
+    "selection": {
+        "enable": "Mehrfachauswahl aktivieren",
+        "disable": "Mehrfachauswahl deaktivieren",
+        "selected": "{{count}} ausgewählt",
+        "actions": "Aktionen",
+        "selectUnused": "Unbenutzte Editoren auswählen",
+        "selectAll": "Alle auswählen",
+        "clear": "Auswahl aufheben",
+        "remove": "Ausgewählte entfernen ({{count}})",
+        "selectEditor": "{{name}} auswählen ({{flavor}})",
+        "standard": "Standard",
+        "removing": "Editoren werden entfernt...",
+        "retryFailed": "Fehlgeschlagene Entfernungen wiederholen",
+        "done": "Schliessen",
+        "confirm": {
+            "title": "Ausgewählte Editoren entfernen",
+            "message": "Diese Editoren entfernen?",
+            "managed": "Installierte Editordateien werden von deinem Gerät gelöscht. Du kannst sie später erneut installieren.",
+            "custom": "Benutzerdefinierte Editoren werden aus Godot Launcher entfernt. Ihre Dateien bleiben erhalten.",
+            "used": "Projekte mit diesem Editor: {{names}}. Sie benötigen einen anderen Editor."
+        },
+        "results": {
+            "removed": "Entfernt",
+            "skipped": "Übersprungen",
+            "failed": "Fehlgeschlagen"
+        },
+        "errors": {
+            "busy": "Dieser Editor wird installiert oder entfernt. Versuche es nach Abschluss erneut.",
+            "changed": "Dieser Editor wurde seit der Auswahl geändert. Wähle ihn erneut aus.",
+            "used": "Dieser Editor wird verwendet oder extern verwaltet. Er wurde beibehalten.",
+            "failed": "Die ausgewählten Editoren konnten nicht entfernt werden. Versuche es erneut."
+        }
     }
 }

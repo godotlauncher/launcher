@@ -55,12 +55,24 @@ export class EditorProjectRepairAdapter {
      * @param release - Removed editor record.
      */
     async removeEditorFromProjects(release: InstalledRelease): Promise<void> {
-        const projects = await this.listProjects();
+        const projects = await this.getProjectsUsingEditor(release);
         for (const project of projects) {
-            if (project.release.editor_path === release.editor_path) {
-                await removeProjectEditor(project);
-            }
+            await removeProjectEditor(project);
         }
+    }
+
+    /**
+     * Reads all stored project assignments, including unavailable projects.
+     *
+     * @param release - Editor whose current assignments should be checked.
+     * @returns Projects assigned to the editor by identity or path.
+     */
+    async getProjectsUsingEditor(
+        release: InstalledRelease,
+    ): Promise<ProjectDetails[]> {
+        return (await this.listProjects()).filter((project) =>
+            projectUsesEditor(project, release),
+        );
     }
 
     /**

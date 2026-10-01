@@ -16,6 +16,7 @@ type InstallsHeaderProps = {
     copyPathLabel: string;
     copiedLabel: string;
     showControls?: boolean;
+    selectionControls?: React.ReactNode;
     onOpenCustomEditorMenu: MouseEventHandler<HTMLButtonElement>;
     onInstall: () => void;
 };
@@ -38,6 +39,7 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
     copyPathLabel,
     copiedLabel,
     showControls = true,
+    selectionControls,
     onOpenCustomEditorMenu,
     onInstall,
 }) => (
@@ -84,7 +86,8 @@ export const InstallsHeader: React.FC<InstallsHeaderProps> = ({
             )}
         </div>
         {showControls && (
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between gap-4">
+                {selectionControls}
                 <SearchField
                     placeholder={searchPlaceholder}
                     value={searchValue}

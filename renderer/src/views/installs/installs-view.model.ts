@@ -43,6 +43,31 @@ export function getReleaseActionKey(release: InstalledRelease): string {
 }
 
 /**
+ * Gets registered editors that are available for selection.
+ *
+ * @param installed - Registered editor records.
+ * @param downloading - Queued or active install identities.
+ * @param isBusy - Whether another editor action is in progress.
+ * @returns Editors that can be selected for removal.
+ */
+export function getSelectableInstalledEditors(
+    installed: InstalledRelease[],
+    downloading: Pick<InstalledRelease, 'version' | 'mono'>[],
+    isBusy: (release: InstalledRelease) => boolean,
+): InstalledRelease[] {
+    return installed.filter(
+        (release) =>
+            Boolean(release.install_path) &&
+            !isBusy(release) &&
+            !downloading.some(
+                (job) =>
+                    job.version === release.version &&
+                    job.mono === release.mono,
+            ),
+    );
+}
+
+/**
  * Counts projects assigned to one installed editor.
  *
  * @param release - Installed editor being inspected.

@@ -98,6 +98,18 @@ export class EditorInstallService {
     ) {}
 
     /**
+     * Reports queued and active installs for an editor identity.
+     *
+     * @param release - Version and flavour being checked.
+     * @returns Whether this editor has an unfinished install job.
+     */
+    isInstallPending(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+    ): boolean {
+        return this.jobsByIdentity.has(getInstalledEditorIdentity(release));
+    }
+
+    /**
      * Queues an official editor installation.
      *
      * @param release - Official release metadata.

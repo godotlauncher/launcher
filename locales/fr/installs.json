@@ -161,5 +161,38 @@
                 "createFailed": "Impossible de créer le manifeste de l’éditeur personnalisé."
             }
         }
+    },
+    "selection": {
+        "enable": "Activer la sélection multiple",
+        "disable": "Désactiver la sélection multiple",
+        "selected": "{{count}} sélectionnés",
+        "actions": "Actions",
+        "selectUnused": "Sélectionner les éditeurs inutilisés",
+        "selectAll": "Tout sélectionner",
+        "clear": "Effacer la sélection",
+        "remove": "Supprimer la sélection ({{count}})",
+        "selectEditor": "Sélectionner {{name}} ({{flavor}})",
+        "standard": "Standard",
+        "removing": "Suppression des éditeurs...",
+        "retryFailed": "Réessayer les suppressions échouées",
+        "done": "Fermer",
+        "confirm": {
+            "title": "Supprimer les éditeurs sélectionnés",
+            "message": "Supprimer ces éditeurs ?",
+            "managed": "Les fichiers des éditeurs installés seront supprimés de votre appareil. Vous pourrez les réinstaller plus tard.",
+            "custom": "Les éditeurs personnalisés seront retirés de Godot Launcher. Leurs fichiers seront conservés.",
+            "used": "Projets utilisant cet éditeur : {{names}}. Ils auront besoin d'un autre éditeur."
+        },
+        "results": {
+            "removed": "Supprimé",
+            "skipped": "Ignoré",
+            "failed": "Échec"
+        },
+        "errors": {
+            "busy": "Cet éditeur est en cours d'installation ou de suppression. Réessayez après la fin de l'opération.",
+            "changed": "Cet éditeur a changé depuis sa sélection. Sélectionnez-le à nouveau.",
+            "used": "Cet éditeur est utilisé ou géré en externe. Il a été conservé.",
+            "failed": "Impossible de supprimer les éditeurs sélectionnés. Réessayez."
+        }
     }
 }

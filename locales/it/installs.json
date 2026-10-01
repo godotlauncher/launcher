@@ -161,5 +161,38 @@
                 "createFailed": "Impossibile creare il manifest dell’editor personalizzato."
             }
         }
+    },
+    "selection": {
+        "enable": "Attiva selezione multipla",
+        "disable": "Disattiva selezione multipla",
+        "selected": "{{count}} selezionati",
+        "actions": "Azioni",
+        "selectUnused": "Seleziona editor inutilizzati",
+        "selectAll": "Seleziona tutti",
+        "clear": "Cancella selezione",
+        "remove": "Rimuovi selezionati ({{count}})",
+        "selectEditor": "Seleziona {{name}} ({{flavor}})",
+        "standard": "Standard",
+        "removing": "Rimozione degli editor...",
+        "retryFailed": "Riprova le rimozioni non riuscite",
+        "done": "Chiudi",
+        "confirm": {
+            "title": "Rimuovi editor selezionati",
+            "message": "Rimuovere questi editor?",
+            "managed": "I file degli editor installati verranno eliminati dal dispositivo. Potrai reinstallarli in seguito.",
+            "custom": "Gli editor personalizzati verranno rimossi da Godot Launcher. I loro file verranno conservati.",
+            "used": "Progetti che usano questo editor: {{names}}. Avranno bisogno di un altro editor."
+        },
+        "results": {
+            "removed": "Rimosso",
+            "skipped": "Saltato",
+            "failed": "Non riuscito"
+        },
+        "errors": {
+            "busy": "Questo editor è in fase di installazione o rimozione. Riprova al termine.",
+            "changed": "Questo editor è cambiato dalla selezione. Selezionalo di nuovo.",
+            "used": "Questo editor è in uso o è gestito esternamente. È stato conservato.",
+            "failed": "Impossibile rimuovere gli editor selezionati. Riprova."
+        }
     }
 }

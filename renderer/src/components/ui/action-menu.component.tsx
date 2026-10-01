@@ -40,6 +40,7 @@ type ActionMenuProps = {
     items: ActionMenuItem[];
     onClose: () => void;
     className?: string;
+    align?: 'start' | 'end';
 };
 
 type MenuPosition = {
@@ -116,9 +117,18 @@ function trapFocusInMenu(
     }
 }
 
+/**
+ * Positions a menu beside its trigger within the available viewport.
+ *
+ * @param panel - The rendered menu panel.
+ * @param anchorRect - Trigger bounds.
+ * @param align - Edge of the trigger used for horizontal alignment.
+ * @returns The visible menu position.
+ */
 function calculatePosition(
     panel: HTMLElement,
     anchorRect: ActionMenuAnchorRect,
+    align: 'start' | 'end',
 ): MenuPosition {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -140,7 +150,8 @@ function calculatePosition(
         viewportMargin,
         viewportHeight - panelHeight - viewportMargin,
     );
-    const preferredLeft = anchorRect.right - panelWidth;
+    const preferredLeft =
+        align === 'start' ? anchorRect.left : anchorRect.right - panelWidth;
     const left = clamp(
         preferredLeft,
         viewportMargin,
@@ -166,6 +177,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     items,
     onClose,
     className,
+    align = 'end',
 }) => {
     const panelRef = useRef<HTMLElement | null>(null);
     const portalAnchorRef = useRef<HTMLSpanElement | null>(null);
@@ -218,14 +230,16 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
 
         const updatePosition = () => {
             if (panelRef.current) {
-                setPosition(calculatePosition(panelRef.current, anchorRect));
+                setPosition(
+                    calculatePosition(panelRef.current, anchorRect, align),
+                );
             }
         };
 
         updatePosition();
         window.addEventListener('resize', updatePosition);
         return () => window.removeEventListener('resize', updatePosition);
-    }, [anchorRect, open, portalTarget]);
+    }, [align, anchorRect, open, portalTarget]);
 
     useEffect(() => {
         if (!open || typeof window === 'undefined') {

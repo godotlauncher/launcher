@@ -6,9 +6,12 @@ import { Injectable } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ConfigService } from '@mariodebono/di-config';
 import type {
+    EditorRemovalOutcome,
+    EditorRemovalSelection,
     InstalledRelease,
     RegisterCustomEngineResult,
     RemovedReleaseResult,
+    RemoveEditorsResult,
 } from '@shared/contracts';
 import logger from 'electron-log';
 import type { AppConfig } from '../config/index.js';
@@ -29,6 +32,8 @@ const VALIDATION_PATH_CHECK_TIMEOUT_MS = 1500;
 @Injectable()
 export class InstalledEditorService {
     private readonly activeOfficialInstalls = new Set<string>();
+    private readonly activeRemovals = new Set<string>();
+    private readonly activeCustomRegistrations = new Set<string>();
 
     /**
      * Reserves an editor identity until an official install has finished.
@@ -40,6 +45,12 @@ export class InstalledEditorService {
         release: Pick<InstalledRelease, 'version' | 'mono'>,
     ): () => void {
         const identity = getInstalledEditorIdentity(release);
+        if (
+            this.activeRemovals.has(identity) ||
+            this.activeCustomRegistrations.has(identity)
+        ) {
+            throw new Error(t('installs:selection.errors.busy'));
+        }
         this.activeOfficialInstalls.add(identity);
         return () => this.activeOfficialInstalls.delete(identity);
     }
@@ -106,9 +117,23 @@ export class InstalledEditorService {
         manifestPath: string,
         options: { replaceExisting?: boolean } = {},
     ): Promise<RegisterCustomEngineResult> {
+        let registrationIdentity: string | undefined;
         try {
             logger.info(`Registering custom editor manifest '${manifestPath}'`);
             const release = await parseCustomEngineManifest(manifestPath);
+            const identity = getInstalledEditorIdentity(release);
+            if (
+                this.activeOfficialInstalls.has(identity) ||
+                this.activeRemovals.has(identity) ||
+                this.activeCustomRegistrations.has(identity)
+            ) {
+                return {
+                    success: false,
+                    error: t('installs:selection.errors.busy'),
+                };
+            }
+            this.activeCustomRegistrations.add(identity);
+            registrationIdentity = identity;
             const installed = await this.store.list();
             const duplicate = installed.find((candidate) =>
                 hasSameInstalledEditorIdentity(candidate, release),
@@ -122,16 +147,6 @@ export class InstalledEditorService {
                 };
             }
 
-            if (
-                this.activeOfficialInstalls.has(
-                    getInstalledEditorIdentity(release),
-                )
-            ) {
-                return {
-                    success: false,
-                    error: t('installs:customEditor.duplicate.message'),
-                };
-            }
             const releases = await this.store.put(release);
             await this.projectRepair.revalidateProjects();
             return { success: true, release, releases };
@@ -140,6 +155,10 @@ export class InstalledEditorService {
                 success: false,
                 error: (error as Error).message,
             };
+        } finally {
+            if (registrationIdentity) {
+                this.activeCustomRegistrations.delete(registrationIdentity);
+            }
         }
     }
 
@@ -151,10 +170,39 @@ export class InstalledEditorService {
     async removeEditor(
         release: InstalledRelease,
     ): Promise<RemovedReleaseResult> {
+        const identity = getInstalledEditorIdentity(release);
+        if (
+            this.activeOfficialInstalls.has(identity) ||
+            this.activeRemovals.has(identity) ||
+            this.activeCustomRegistrations.has(identity)
+        ) {
+            return {
+                success: false,
+                error: t('installs:selection.errors.busy'),
+                version: release.version,
+                mono: release.mono,
+                releases: await this.store.list(),
+            };
+        }
+        this.activeRemovals.add(identity);
+        try {
+            return await this.removeReservedEditor(release);
+        } finally {
+            this.activeRemovals.delete(identity);
+        }
+    }
+
+    /**
+     * Deletes one editor while its identity is reserved by the caller.
+     *
+     * @param release - Validated editor record whose removal is reserved.
+     * @returns The completed removal or failure and current registrations.
+     */
+    private async removeReservedEditor(
+        release: InstalledRelease,
+    ): Promise<RemovedReleaseResult> {
         try {
             logger.info(`Removing release '${release.version}'`);
-            const releases = await this.store.remove(release);
-            await this.projectRepair.removeEditorFromProjects(release);
 
             if (
                 release.source !== 'custom' &&
@@ -167,7 +215,23 @@ export class InstalledEditorService {
                 });
             }
 
-            await this.projectRepair.revalidateProjects();
+            const releases = await this.store.remove(release);
+            try {
+                await this.projectRepair.removeEditorFromProjects(release);
+            } catch (error) {
+                logger.warn(
+                    'Could not remove project editor files after editor removal',
+                    error,
+                );
+            }
+            try {
+                await this.projectRepair.revalidateProjects();
+            } catch (error) {
+                logger.warn(
+                    'Could not revalidate projects after editor removal',
+                    error,
+                );
+            }
             return {
                 success: true,
                 version: release.version,
@@ -180,9 +244,108 @@ export class InstalledEditorService {
                 error: (error as Error).message,
                 version: release.version,
                 mono: release.mono,
-                releases: [],
+                releases: await this.store.list(),
             };
         }
+    }
+
+    /**
+     * Removes each current registered editor independently and preserves failures.
+     *
+     * @param selections - Editor snapshots and their unused-only restrictions.
+     * @param isInstallPending - Optional queued and active install check.
+     * @returns Per-editor outcomes and the remaining registered editors.
+     */
+    async removeEditors(
+        selections: EditorRemovalSelection[],
+        isInstallPending?: (release: InstalledRelease) => boolean,
+    ): Promise<RemoveEditorsResult> {
+        const outcomes: EditorRemovalOutcome[] = [];
+        const seen = new Set<string>();
+        for (const selection of selections) {
+            const identity = getInstalledEditorIdentity(selection.release);
+            if (seen.has(identity)) continue;
+            seen.add(identity);
+            if (
+                this.activeOfficialInstalls.has(identity) ||
+                this.activeRemovals.has(identity) ||
+                this.activeCustomRegistrations.has(identity) ||
+                isInstallPending?.(selection.release)
+            ) {
+                outcomes.push({
+                    release: selection.release,
+                    status: 'skipped',
+                    error: t('installs:selection.errors.busy'),
+                });
+                continue;
+            }
+            this.activeRemovals.add(identity);
+            try {
+                const registered = (await this.store.list()).find((candidate) =>
+                    hasSameInstalledEditorIdentity(
+                        candidate,
+                        selection.release,
+                    ),
+                );
+                if (
+                    !registered ||
+                    registered.editor_path !== selection.release.editor_path ||
+                    registered.install_path !==
+                        selection.release.install_path ||
+                    registered.source !== selection.release.source ||
+                    registered.managed_by_launcher !==
+                        selection.release.managed_by_launcher
+                ) {
+                    outcomes.push({
+                        release: selection.release,
+                        status: 'skipped',
+                        error: t('installs:selection.errors.changed'),
+                    });
+                    continue;
+                }
+                if (
+                    selection.onlyUnused &&
+                    (registered.source === 'custom' ||
+                        registered.managed_by_launcher === false ||
+                        (
+                            await this.projectRepair.getProjectsUsingEditor(
+                                registered,
+                            )
+                        ).length > 0)
+                ) {
+                    outcomes.push({
+                        release: registered,
+                        status: 'skipped',
+                        error: t('installs:selection.errors.used'),
+                    });
+                    continue;
+                }
+                if (isInstallPending?.(registered)) {
+                    outcomes.push({
+                        release: registered,
+                        status: 'skipped',
+                        error: t('installs:selection.errors.busy'),
+                    });
+                    continue;
+                }
+                const result = await this.removeReservedEditor(registered);
+                outcomes.push({
+                    release: registered,
+                    status: result.success ? 'removed' : 'failed',
+                    ...(result.error ? { error: result.error } : {}),
+                });
+            } catch (error) {
+                outcomes.push({
+                    release: selection.release,
+                    status: 'failed',
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+            } finally {
+                this.activeRemovals.delete(identity);
+            }
+        }
+        return { outcomes, releases: await this.store.list() };
     }
 
     /**
