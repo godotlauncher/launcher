@@ -1,11 +1,13 @@
 import type {
     EditorCatalogRelease,
     EditorInstallOrigin,
+    EditorRemovalSelection,
     InstalledRelease,
     InstallReleaseResult,
     ReleaseInstallProgress,
     ReleaseSummary,
     RemovedReleaseResult,
+    RemoveEditorsResult,
 } from '@shared/contracts';
 import React from 'react';
 import {
@@ -57,6 +59,9 @@ type ReleaseContext = {
     ) => ReleaseInstallProgress | undefined;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
+    removeReleases: (
+        selections: EditorRemovalSelection[],
+    ) => Promise<RemoveEditorsResult>;
     isDownloadingRelease: (version: string, mono: boolean) => boolean;
 
     checkAllReleasesValid: () => Promise<InstalledRelease[]>;
@@ -264,6 +269,20 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     };
 
     /**
+     * Removes selected editors and refreshes state even after partial failure.
+     *
+     * @param selections - Selected editors and their unused-only restrictions.
+     * @returns Independent removal outcomes.
+     */
+    const removeReleases = async (
+        selections: EditorRemovalSelection[],
+    ): Promise<RemoveEditorsResult> => {
+        const result = await editorInstallsBridge.removeEditors(selections);
+        setInstalledReleases(result.releases);
+        return result;
+    };
+
+    /**
      * Installs an editor through the existing install bridge.
      *
      * @param release - The legacy release used by the current installer.
@@ -387,6 +406,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 getReleaseInstallProgress,
                 isInstalledRelease,
                 removeRelease,
+                removeReleases,
                 isDownloadingRelease,
                 checkAllReleasesValid,
             }}

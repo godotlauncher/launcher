@@ -161,5 +161,38 @@
                 "createFailed": "Failed to create custom editor manifest."
             }
         }
+    },
+    "selection": {
+        "enable": "Enable multi-select",
+        "disable": "Disable multi-select",
+        "selected": "{{count}} selected",
+        "actions": "Actions",
+        "selectUnused": "Select unused editors",
+        "selectAll": "Select all",
+        "clear": "Clear selection",
+        "remove": "Remove selected ({{count}})",
+        "selectEditor": "Select {{name}} ({{flavor}})",
+        "standard": "Standard",
+        "removing": "Removing editors...",
+        "retryFailed": "Retry failed removals",
+        "done": "Close",
+        "confirm": {
+            "title": "Remove selected editors",
+            "message": "Remove these editors?",
+            "managed": "Installed editor files will be deleted from your device. You can install them again later.",
+            "custom": "Custom editors will be removed from Godot Launcher. Their files will be kept.",
+            "used": "Projects using this editor: {{names}}. They will need another editor."
+        },
+        "results": {
+            "removed": "Removed",
+            "skipped": "Skipped",
+            "failed": "Failed"
+        },
+        "errors": {
+            "busy": "This editor is being installed or removed. Try again when it finishes.",
+            "changed": "This editor changed since it was selected. Select it again.",
+            "used": "This editor is in use or is externally managed. It was kept.",
+            "failed": "Could not remove the selected editors. Try again."
+        }
     }
 }

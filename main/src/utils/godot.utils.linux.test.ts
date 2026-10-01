@@ -12,6 +12,7 @@ const fsMocks = vi.hoisted(() => ({
         link: vi.fn(),
         symlink: vi.fn(),
         unlink: vi.fn(),
+        rm: vi.fn(),
     },
 }));
 
@@ -55,6 +56,7 @@ describe('godot.utils.linux', () => {
         fsMocks.promises.link.mockResolvedValue(undefined);
         fsMocks.promises.symlink.mockResolvedValue(undefined);
         fsMocks.promises.unlink.mockResolvedValue(undefined);
+        fsMocks.promises.rm.mockResolvedValue(undefined);
     });
 
     it('skips removing a project with no launch path', async () => {
@@ -65,6 +67,26 @@ describe('godot.utils.linux', () => {
 
         expect(fsMocks.existsSync).not.toHaveBeenCalled();
         expect(fsMocks.promises.unlink).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+    });
+
+    it('removes dangling project editor and .NET links after their installation is deleted', async () => {
+        const launchPath =
+            '/home/demo/Godot/Editors/.editor_config/CozyBuilder/Godot';
+        fsMocks.existsSync.mockReturnValue(false);
+
+        await removeProjectEditorLinux({
+            launch_path: launchPath,
+            release: { ...missingRelease, mono: true },
+        } as ProjectDetails);
+
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(launchPath, {
+            force: true,
+        });
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            '/home/demo/Godot/Editors/.editor_config/CozyBuilder/GodotSharp',
+            { force: true },
+        );
     });
 
     it('does not unlink the project editor directory for a missing previous release', async () => {

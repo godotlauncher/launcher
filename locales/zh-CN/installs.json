@@ -161,5 +161,38 @@
                 "createFailed": "创建自定义编辑器清单失败。"
             }
         }
+    },
+    "selection": {
+        "enable": "启用多选",
+        "disable": "关闭多选",
+        "selected": "已选择 {{count}} 项",
+        "actions": "操作",
+        "selectUnused": "选择未使用的编辑器",
+        "selectAll": "全选",
+        "clear": "清除选择",
+        "remove": "移除所选项 ({{count}})",
+        "selectEditor": "选择 {{name}} ({{flavor}})",
+        "standard": "标准",
+        "removing": "正在移除编辑器...",
+        "retryFailed": "重试失败的移除",
+        "done": "关闭",
+        "confirm": {
+            "title": "移除所选编辑器",
+            "message": "移除这些编辑器？",
+            "managed": "已安装编辑器的文件将从设备中删除。您可以稍后重新安装。",
+            "custom": "自定义编辑器将从 Godot Launcher 中注销。其文件将保留。",
+            "used": "使用此编辑器的项目：{{names}}。这些项目将需要其他编辑器。"
+        },
+        "results": {
+            "removed": "已移除",
+            "skipped": "已跳过",
+            "failed": "失败"
+        },
+        "errors": {
+            "busy": "此编辑器正在安装或移除。请在完成后重试。",
+            "changed": "此编辑器在选择后发生了更改。请重新选择。",
+            "used": "此编辑器正在使用或由外部管理。已保留。",
+            "failed": "无法移除所选编辑器。请重试。"
+        }
     }
 }

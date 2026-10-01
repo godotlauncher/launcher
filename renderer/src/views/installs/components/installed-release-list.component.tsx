@@ -19,7 +19,10 @@ import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import { Tooltip } from '../../../components/ui/tooltip.component.tsx';
 import { groupEditorsByBaseVersion } from '../../../editor-version-group.model.ts';
 import { useRelease } from '../../../hooks/release.hook';
-import type { ReleaseAction } from '../installs-view.model';
+import {
+    getReleaseActionKey,
+    type ReleaseAction,
+} from '../installs-view.model';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -35,6 +38,10 @@ type InstalledReleaseListProps = {
     onRemove: (release: InstalledRelease) => void;
     onOpenInstalledFolder: (release: InstalledRelease) => void;
     onStartProjectManager: (release: InstalledRelease) => void;
+    selectionEnabled?: boolean;
+    selectedKeys?: Set<string>;
+    selectableKeys?: Set<string>;
+    onToggleEditor?: (release: InstalledRelease) => void;
 };
 
 /**
@@ -52,6 +59,10 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     onRemove,
     onOpenInstalledFolder,
     onStartProjectManager,
+    selectionEnabled = false,
+    selectedKeys,
+    selectableKeys,
+    onToggleEditor,
 }) => {
     const { cancelInstall, getReleaseInstallProgress } = useRelease();
     const groups = groupEditorsByBaseVersion(rows);
@@ -85,6 +96,18 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
                             onOpenInstalledFolder={onOpenInstalledFolder}
                             onStartProjectManager={onStartProjectManager}
                             onCancel={(jobId) => void cancelInstall(jobId)}
+                            selectionEnabled={selectionEnabled}
+                            selected={
+                                selectedKeys?.has(
+                                    getReleaseActionKey(release),
+                                ) ?? false
+                            }
+                            selectable={
+                                selectableKeys?.has(
+                                    getReleaseActionKey(release),
+                                ) ?? false
+                            }
+                            onToggleEditor={onToggleEditor}
                         />
                     ))}
                 </EditorVersionGroup>
@@ -108,6 +131,10 @@ type InstalledReleaseRowProps = {
     onOpenInstalledFolder: (release: InstalledRelease) => void;
     onStartProjectManager: (release: InstalledRelease) => void;
     onCancel: (jobId: string) => void;
+    selectionEnabled: boolean;
+    selected: boolean;
+    selectable: boolean;
+    onToggleEditor?: (release: InstalledRelease) => void;
 };
 
 /**
@@ -128,12 +155,29 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
     onOpenInstalledFolder,
     onStartProjectManager,
     onCancel,
+    selectionEnabled,
+    selected,
+    selectable,
+    onToggleEditor,
 }) => (
     <article
-        className={`flex min-h-14 items-start gap-3 rounded-md bg-base-content/2 px-3 py-3 text-base hover:bg-base-content/5 motion-reduce:transition-none ${removing ? 'pointer-events-none opacity-60' : ''}`}
+        className={`flex min-h-14 items-start gap-3 rounded-md ${selected ? 'bg-primary/10' : 'bg-base-content/2 hover:bg-base-content/5'} px-3 py-3 text-base motion-reduce:transition-none ${removing ? 'pointer-events-none opacity-60' : ''}`}
         data-testid={`installedReleaseRow_${release.version}_${release.mono ? 'mono' : 'standard'}`}
         aria-busy={removing}
     >
+        {selectionEnabled && (
+            <input
+                type="checkbox"
+                className="checkbox checkbox-sm checkbox-primary mt-1.5 shrink-0"
+                aria-label={t('selection.selectEditor', {
+                    name: release.name ?? release.version,
+                    flavor: release.mono ? '.NET' : t('selection.standard'),
+                })}
+                checked={selected}
+                disabled={!selectable}
+                onChange={() => onToggleEditor?.(release)}
+            />
+        )}
         <div className="flex min-w-0 flex-1 flex-col gap-1">
             <div className="flex min-h-8 min-w-0 flex-wrap items-center gap-2">
                 {release.valid === false && (
@@ -241,7 +285,7 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
             </div>
         </div>
 
-        {release.valid === false && (
+        {release.valid === false && !selectionEnabled && !removing && (
             <div className="flex shrink-0 self-start items-center gap-1">
                 {release.install_path && (
                     <Tooltip
@@ -339,56 +383,46 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
             </div>
         )}
 
-        {release.install_path && release.valid !== false && !removing && (
-            <div className="flex shrink-0 self-start items-center gap-1">
-                <Tooltip
-                    placement="top"
-                    tip={t('release.openInstalledFolder', { ns: 'menus' })}
-                >
-                    <button
-                        type="button"
-                        data-testid={`btnOpenReleaseFolder_${release.version}_${release.mono ? 'mono' : 'standard'}`}
-                        onClick={() => onOpenInstalledFolder(release)}
-                        className="btn btn-sm btn-ghost btn-square"
-                        aria-label={t('release.openInstalledFolder', {
-                            ns: 'menus',
-                        })}
+        {release.install_path &&
+            release.valid !== false &&
+            !removing &&
+            !selectionEnabled && (
+                <div className="flex shrink-0 self-start items-center gap-1">
+                    <Tooltip
+                        placement="top"
+                        tip={t('release.openInstalledFolder', { ns: 'menus' })}
                     >
-                        <FolderOpen size={16} aria-hidden="true" />
-                    </button>
-                </Tooltip>
-                <Tooltip
-                    placement="top"
-                    tip={t('release.startProjectManager', { ns: 'menus' })}
-                >
-                    <button
-                        type="button"
-                        data-testid={`btnStartProjectManager_${release.version}_${release.mono ? 'mono' : 'standard'}`}
-                        onClick={() => onStartProjectManager(release)}
-                        className="btn btn-sm btn-ghost btn-square"
-                        aria-label={t('release.startProjectManager', {
-                            ns: 'menus',
-                        })}
+                        <button
+                            type="button"
+                            data-testid={`btnOpenReleaseFolder_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+                            onClick={() => onOpenInstalledFolder(release)}
+                            className="btn btn-sm btn-ghost btn-square"
+                            aria-label={t('release.openInstalledFolder', {
+                                ns: 'menus',
+                            })}
+                        >
+                            <FolderOpen size={16} aria-hidden="true" />
+                        </button>
+                    </Tooltip>
+                    <Tooltip
+                        placement="top"
+                        tip={t('release.startProjectManager', { ns: 'menus' })}
                     >
-                        <img src={godotIcon} className="size-5" alt="" />
-                    </button>
-                </Tooltip>
-                <Tooltip
-                    placement="top"
-                    tip={
-                        release.source === 'custom'
-                            ? t('removeCustomEditor.menuLabel', {
-                                  ns: 'dialogs',
-                              })
-                            : t('release.deleteRelease', { ns: 'menus' })
-                    }
-                >
-                    <button
-                        type="button"
-                        data-testid={`btnRemoveRelease_${release.version}_${release.mono ? 'mono' : 'standard'}`}
-                        onClick={() => onRemove(release)}
-                        className="btn btn-sm btn-ghost btn-square text-error/80 hover:text-error hover:bg-error/20 hover:border-transparent"
-                        aria-label={
+                        <button
+                            type="button"
+                            data-testid={`btnStartProjectManager_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+                            onClick={() => onStartProjectManager(release)}
+                            className="btn btn-sm btn-ghost btn-square"
+                            aria-label={t('release.startProjectManager', {
+                                ns: 'menus',
+                            })}
+                        >
+                            <img src={godotIcon} className="size-5" alt="" />
+                        </button>
+                    </Tooltip>
+                    <Tooltip
+                        placement="top"
+                        tip={
                             release.source === 'custom'
                                 ? t('removeCustomEditor.menuLabel', {
                                       ns: 'dialogs',
@@ -396,10 +430,25 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                                 : t('release.deleteRelease', { ns: 'menus' })
                         }
                     >
-                        <Trash2 size={16} aria-hidden="true" />
-                    </button>
-                </Tooltip>
-            </div>
-        )}
+                        <button
+                            type="button"
+                            data-testid={`btnRemoveRelease_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+                            onClick={() => onRemove(release)}
+                            className="btn btn-sm btn-ghost btn-square text-error/80 hover:text-error hover:bg-error/20 hover:border-transparent"
+                            aria-label={
+                                release.source === 'custom'
+                                    ? t('removeCustomEditor.menuLabel', {
+                                          ns: 'dialogs',
+                                      })
+                                    : t('release.deleteRelease', {
+                                          ns: 'menus',
+                                      })
+                            }
+                        >
+                            <Trash2 size={16} aria-hidden="true" />
+                        </button>
+                    </Tooltip>
+                </div>
+            )}
     </article>
 );

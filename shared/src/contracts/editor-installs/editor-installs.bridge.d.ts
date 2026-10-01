@@ -5,6 +5,10 @@ import type {
     ReleaseSummary,
     RemovedReleaseResult,
 } from '../releases/index.js';
+import type {
+    EditorRemovalSelection,
+    RemoveEditorsResult,
+} from './editor-removal.types.js';
 
 /** Identifies the workflow that requested an editor installation. */
 export type EditorInstallOrigin = 'installs' | 'project';
@@ -35,6 +39,11 @@ export type EditorInstallsBridge = {
 
     /** Removes one registered editor. */
     removeEditor(release: InstalledRelease): Promise<RemovedReleaseResult>;
+
+    /** Removes selected editors, checking unused selections again before removal. */
+    removeEditors(
+        selections: EditorRemovalSelection[],
+    ): Promise<RemoveEditorsResult>;
 
     /** Registers one custom editor manifest. */
     registerCustomEditor(

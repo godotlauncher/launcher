@@ -59,6 +59,7 @@ describe('InstalledEditorService', () => {
     const projectRepair = {
         removeEditorFromProjects: vi.fn(),
         revalidateProjects: vi.fn(),
+        getProjectsUsingEditor: vi.fn(),
     };
 
     beforeEach(() => {
@@ -70,6 +71,7 @@ describe('InstalledEditorService', () => {
         store.replace.mockImplementation(async (releases) => releases);
         projectRepair.removeEditorFromProjects.mockResolvedValue(undefined);
         projectRepair.revalidateProjects.mockResolvedValue(undefined);
+        projectRepair.getProjectsUsingEditor.mockResolvedValue([]);
         fsMocks.existsSync.mockReturnValue(true);
         fsMocks.promises.access.mockResolvedValue(undefined);
         fsMocks.promises.rm.mockResolvedValue(undefined);
@@ -154,7 +156,7 @@ describe('InstalledEditorService', () => {
             }),
         ).resolves.toMatchObject({
             success: false,
-            error: 'installs:customEditor.duplicate.message',
+            error: 'installs:selection.errors.busy',
         });
         expect(store.put).not.toHaveBeenCalled();
 
@@ -194,6 +196,271 @@ describe('InstalledEditorService', () => {
             ['-p'],
             { detached: true, stdio: 'ignore' },
         );
+    });
+
+    it('keeps a failed deletion registered and continues the rest of a batch', async () => {
+        const failed = createRelease('4.3-stable');
+        const removed = createRelease('4.4-stable');
+        let registered = [failed, removed];
+        store.list.mockImplementation(async () => registered);
+        store.remove.mockImplementation(async (release: InstalledRelease) => {
+            registered = registered.filter(
+                (candidate) => candidate !== release,
+            );
+            return registered;
+        });
+        fsMocks.promises.rm.mockRejectedValueOnce(new Error('Access denied'));
+
+        const result = await createService().removeEditors([
+            { release: failed, onlyUnused: false },
+            { release: removed, onlyUnused: false },
+        ]);
+
+        expect(result.outcomes).toEqual([
+            { release: failed, status: 'failed', error: 'Access denied' },
+            { release: removed, status: 'removed' },
+        ]);
+        expect(result.releases).toEqual([failed]);
+        expect(store.remove).toHaveBeenCalledExactlyOnceWith(removed);
+        expect(
+            projectRepair.removeEditorFromProjects,
+        ).toHaveBeenCalledExactlyOnceWith(removed);
+    });
+
+    it('keeps a used project editor copy when installation deletion fails', async () => {
+        const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
+        let projectEditorExists = true;
+        projectRepair.removeEditorFromProjects.mockImplementation(async () => {
+            projectEditorExists = false;
+        });
+        fsMocks.promises.rm.mockRejectedValueOnce(new Error('Access denied'));
+
+        const result = await createService().removeEditors([
+            { release, onlyUnused: false },
+        ]);
+
+        expect(result.outcomes[0]).toMatchObject({ status: 'failed' });
+        expect(projectEditorExists).toBe(true);
+        expect(projectRepair.removeEditorFromProjects).not.toHaveBeenCalled();
+        expect(store.remove).not.toHaveBeenCalled();
+    });
+
+    it('reserves removal before querying project usage so custom replacement cannot race it', async () => {
+        const release = createRelease('4.3-stable');
+        const custom = {
+            ...release,
+            source: 'custom' as const,
+            managed_by_launcher: false,
+        };
+        store.list.mockResolvedValue([release]);
+        manifestMocks.parseCustomEngineManifest.mockResolvedValue(custom);
+        let finishUsageQuery: (projects: []) => void = () => undefined;
+        projectRepair.getProjectsUsingEditor.mockImplementationOnce(
+            () =>
+                new Promise<[]>((resolve) => {
+                    finishUsageQuery = resolve;
+                }),
+        );
+        const service = createService();
+
+        const removal = service.removeEditors([{ release, onlyUnused: true }]);
+        await vi.waitFor(() =>
+            expect(projectRepair.getProjectsUsingEditor).toHaveBeenCalledOnce(),
+        );
+        expect(
+            (
+                await service.registerCustomEditor('/editor/manifest.json', {
+                    replaceExisting: true,
+                })
+            ).success,
+        ).toBe(false);
+        expect(store.put).not.toHaveBeenCalled();
+        expect(() => service.reserveOfficialInstall(release)).toThrow(
+            'installs:selection.errors.busy',
+        );
+        finishUsageQuery([]);
+        expect((await removal).outcomes[0].status).toBe('removed');
+        expect(
+            (
+                await service.registerCustomEditor('/editor/manifest.json', {
+                    replaceExisting: true,
+                })
+            ).success,
+        ).toBe(true);
+    });
+
+    it('keeps a registration mutation reserved until persistence finishes', async () => {
+        const release = createRelease('4.3-stable');
+        const custom = {
+            ...release,
+            source: 'custom' as const,
+            managed_by_launcher: false,
+        };
+        store.list.mockResolvedValue([release]);
+        manifestMocks.parseCustomEngineManifest.mockResolvedValue(custom);
+        let finishRegistration: (releases: InstalledRelease[]) => void = () =>
+            undefined;
+        store.put.mockImplementationOnce(
+            () =>
+                new Promise<InstalledRelease[]>((resolve) => {
+                    finishRegistration = resolve;
+                }),
+        );
+        const service = createService();
+
+        const registering = service.registerCustomEditor(
+            '/editor/manifest.json',
+            { replaceExisting: true },
+        );
+        await vi.waitFor(() => expect(store.put).toHaveBeenCalledOnce());
+        expect(
+            (await service.removeEditors([{ release, onlyUnused: false }]))
+                .outcomes[0].status,
+        ).toBe('skipped');
+        expect((await service.removeEditor(release)).success).toBe(false);
+        expect(() => service.reserveOfficialInstall(release)).toThrow(
+            'installs:selection.errors.busy',
+        );
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        finishRegistration([custom]);
+        expect((await registering).success).toBe(true);
+        expect(() => service.reserveOfficialInstall(release)).not.toThrow();
+    });
+
+    it('checks project assignments again for unused selections', async () => {
+        const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
+        projectRepair.getProjectsUsingEditor.mockResolvedValue([
+            { name: 'Missing project', valid: false },
+        ]);
+
+        const result = await createService().removeEditors([
+            { release, onlyUnused: true },
+        ]);
+
+        expect(result.outcomes[0]).toMatchObject({ status: 'skipped' });
+        expect(result.releases).toEqual([release]);
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(store.remove).not.toHaveBeenCalled();
+    });
+
+    it('does not remove a changed installation or use paths supplied by a stale selection', async () => {
+        const previous = createRelease('4.3-stable');
+        const replacement = {
+            ...previous,
+            install_path: '/editors/new',
+            editor_path: '/editors/new/Godot',
+        };
+        store.list.mockResolvedValue([replacement]);
+
+        const result = await createService().removeEditors([
+            { release: previous, onlyUnused: false },
+        ]);
+
+        expect(result.outcomes[0]).toMatchObject({ status: 'skipped' });
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(store.remove).not.toHaveBeenCalled();
+    });
+
+    it('skips an editor whose installation was queued after selection', async () => {
+        const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
+        const result = await createService().removeEditors(
+            [{ release, onlyUnused: false }],
+            () => true,
+        );
+
+        expect(result.outcomes[0]).toMatchObject({
+            status: 'skipped',
+            error: 'installs:selection.errors.busy',
+        });
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(store.remove).not.toHaveBeenCalled();
+    });
+
+    it('keeps custom files and rejects custom editors in unused-only selections', async () => {
+        const custom = createRelease('studio-build', { source: 'custom' });
+        store.list.mockResolvedValue([custom]);
+        const service = createService();
+
+        expect(
+            (
+                await service.removeEditors([
+                    { release: custom, onlyUnused: true },
+                ])
+            ).outcomes[0].status,
+        ).toBe('skipped');
+        expect(
+            (
+                await service.removeEditors([
+                    { release: custom, onlyUnused: false },
+                ])
+            ).outcomes[0].status,
+        ).toBe('removed');
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(store.remove).toHaveBeenCalledExactlyOnceWith(custom);
+    });
+
+    it('rejects removal during an install and prevents installs during removal', async () => {
+        const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
+        const service = createService();
+        const finishInstall = service.reserveOfficialInstall(release);
+
+        expect(
+            (await service.removeEditors([{ release, onlyUnused: false }]))
+                .outcomes[0],
+        ).toMatchObject({
+            status: 'skipped',
+            error: 'installs:selection.errors.busy',
+        });
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        finishInstall();
+
+        let finishRemoval: () => void = () => undefined;
+        fsMocks.promises.rm.mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    finishRemoval = resolve;
+                }),
+        );
+        const removing = service.removeEditor(release);
+        await vi.waitFor(() =>
+            expect(fsMocks.promises.rm).toHaveBeenCalledOnce(),
+        );
+        expect(() => service.reserveOfficialInstall(release)).toThrow(
+            'installs:selection.errors.busy',
+        );
+        expect((await service.removeEditor(release)).success).toBe(false);
+        finishRemoval();
+        expect((await removing).success).toBe(true);
+        expect(() => service.reserveOfficialInstall(release)).not.toThrow();
+    });
+
+    it('reports successful deletion even when project revalidation fails afterwards', async () => {
+        const release = createRelease('4.3-stable');
+        projectRepair.revalidateProjects.mockRejectedValueOnce(
+            new Error('Project unavailable'),
+        );
+
+        expect((await createService().removeEditor(release)).success).toBe(
+            true,
+        );
+        expect(store.remove).toHaveBeenCalledWith(release);
+    });
+
+    it('keeps a completed removal successful when project editor cleanup fails', async () => {
+        const release = createRelease('4.3-stable');
+        projectRepair.removeEditorFromProjects.mockRejectedValueOnce(
+            new Error('Project unavailable'),
+        );
+
+        expect((await createService().removeEditor(release)).success).toBe(
+            true,
+        );
+        expect(store.remove).toHaveBeenCalledWith(release);
+        expect(projectRepair.revalidateProjects).toHaveBeenCalledOnce();
     });
 
     /** Creates a service with isolated dependency mocks. */

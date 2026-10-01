@@ -161,5 +161,38 @@
                 "createFailed": "Özel editör manifesti oluşturulamadı."
             }
         }
+    },
+    "selection": {
+        "enable": "Çoklu seçimi etkinleştir",
+        "disable": "Çoklu seçimi devre dışı bırak",
+        "selected": "{{count}} seçili",
+        "actions": "İşlemler",
+        "selectUnused": "Kullanılmayan düzenleyicileri seç",
+        "selectAll": "Tümünü seç",
+        "clear": "Seçimi temizle",
+        "remove": "Seçilenleri kaldır ({{count}})",
+        "selectEditor": "{{name}} seç ({{flavor}})",
+        "standard": "Standart",
+        "removing": "Düzenleyiciler kaldırılıyor...",
+        "retryFailed": "Başarısız kaldırmaları yeniden dene",
+        "done": "Kapat",
+        "confirm": {
+            "title": "Seçilen düzenleyicileri kaldır",
+            "message": "Bu düzenleyiciler kaldırılsın mı?",
+            "managed": "Kurulu düzenleyicilerin dosyaları cihazınızdan silinecek. Daha sonra yeniden kurabilirsiniz.",
+            "custom": "Özel düzenleyiciler Godot Launcher kaydından kaldırılacak. Dosyaları korunacak.",
+            "used": "Bu düzenleyiciyi kullanan projeler: {{names}}. Başka bir düzenleyiciye ihtiyaç duyacaklar."
+        },
+        "results": {
+            "removed": "Kaldırıldı",
+            "skipped": "Atlandı",
+            "failed": "Başarısız"
+        },
+        "errors": {
+            "busy": "Bu düzenleyici kuruluyor veya kaldırılıyor. Bittiğinde yeniden deneyin.",
+            "changed": "Bu düzenleyici seçildikten sonra değişti. Yeniden seçin.",
+            "used": "Bu düzenleyici kullanılıyor veya haricen yönetiliyor. Korundu.",
+            "failed": "Seçilen düzenleyiciler kaldırılamadı. Yeniden deneyin."
+        }
     }
 }

@@ -46,6 +46,12 @@ async function copyReleaseArtifacts(
     }
 }
 
+/**
+ * Removes project editor targets even when their installation is unavailable.
+ *
+ * @param projectEditorPath - Directory containing the project's editor targets.
+ * @param release - Editor whose executable, console and .NET files are removed.
+ */
 export async function removeProjectReleaseEditorWindows(
     projectEditorPath: string,
     release: InstalledRelease,
@@ -83,21 +89,13 @@ export async function removeProjectReleaseEditorWindows(
         logger.debug('Exe path exists:', fs.existsSync(exePath));
         logger.debug('Console path exists:', fs.existsSync(consolePath));
 
-        if (fs.existsSync(exePath)) {
-            logger.debug('Removing editor exe and console exe');
-            await fs.promises.unlink(exePath);
-        }
-
-        if (fs.existsSync(consolePath)) {
-            await fs.promises.unlink(consolePath);
-        }
+        await fs.promises.rm(exePath, { force: true });
+        await fs.promises.rm(consolePath, { force: true });
 
         if (release.mono) {
             const sharpDir = path.resolve(projectEditorPath, 'GodotSharp');
 
-            if (fs.existsSync(sharpDir)) {
-                await fs.promises.rmdir(sharpDir, { recursive: true });
-            }
+            await fs.promises.rm(sharpDir, { recursive: true, force: true });
         }
     }
 }

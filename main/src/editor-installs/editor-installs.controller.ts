@@ -5,6 +5,7 @@ import {
 import type {
     EditorInstallOrigin,
     EditorInstallsBridge,
+    EditorRemovalSelection,
     InstalledRelease,
     ReleaseSummary,
 } from '@shared/contracts';
@@ -79,6 +80,18 @@ export class EditorInstallsController implements EditorInstallsBridge {
     @EditorInstallsHandler('removeEditor')
     removeEditor(release: InstalledRelease) {
         return this.installedEditors.removeEditor(release);
+    }
+
+    /**
+     * Removes selected editors and reports each result independently.
+     *
+     * @param selections - Selected editors and their unused-only restrictions.
+     */
+    @EditorInstallsHandler('removeEditors')
+    removeEditors(selections: EditorRemovalSelection[]) {
+        return this.installedEditors.removeEditors(selections, (release) =>
+            this.installer.isInstallPending(release),
+        );
     }
 
     /**

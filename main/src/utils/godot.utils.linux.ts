@@ -7,6 +7,11 @@ import type {
 } from '@shared/contracts';
 import logger from 'electron-log';
 
+/**
+ * Removes a project's editor targets, including links to a deleted install.
+ *
+ * @param project - Project whose editor targets should be removed.
+ */
 export async function removeProjectEditorLinux(
     project: ProjectDetails,
 ): Promise<void> {
@@ -15,23 +20,13 @@ export async function removeProjectEditorLinux(
         return;
     }
 
-    // remove editor files
-    if (fs.existsSync(project.launch_path)) {
-        const baseFileName = path.basename(project.launch_path);
-        const projectEditorPath = path.dirname(project.launch_path);
-
-        const binPath = path.resolve(projectEditorPath, baseFileName);
-        if (fs.existsSync(binPath)) {
-            await fs.promises.unlink(binPath);
-        }
-
-        if (project.release.mono) {
-            const sharpDir = path.resolve(projectEditorPath, 'GodotSharp');
-            if (fs.existsSync(sharpDir)) {
-                // On Linux, GodotSharp is a symlink to a directory,
-                await fs.promises.unlink(sharpDir);
-            }
-        }
+    await fs.promises.rm(project.launch_path, { force: true });
+    if (project.release.mono) {
+        const sharpDir = path.resolve(
+            path.dirname(project.launch_path),
+            'GodotSharp',
+        );
+        await fs.promises.rm(sharpDir, { force: true });
     }
 }
 

@@ -1,3 +1,4 @@
+import * as path from 'node:path';
 import type { InstalledRelease, ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -8,8 +9,7 @@ import {
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
     promises: {
-        unlink: vi.fn(),
-        rmdir: vi.fn(),
+        rm: vi.fn(),
     },
 }));
 
@@ -43,8 +43,7 @@ describe('godot.utils.windows', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         fsMocks.existsSync.mockReturnValue(true);
-        fsMocks.promises.unlink.mockResolvedValue(undefined);
-        fsMocks.promises.rmdir.mockResolvedValue(undefined);
+        fsMocks.promises.rm.mockResolvedValue(undefined);
     });
 
     it('skips removing a previous missing editor release', async () => {
@@ -70,7 +69,7 @@ describe('godot.utils.windows', () => {
             release,
         );
 
-        expect(fsMocks.promises.unlink).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
     });
 
     it('skips removing a project with a missing editor release', async () => {
@@ -96,6 +95,32 @@ describe('godot.utils.windows', () => {
             release,
         } as ProjectDetails);
 
-        expect(fsMocks.promises.unlink).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+    });
+
+    it('removes dangling editor, console and .NET targets after installation deletion', async () => {
+        const projectEditorPath = path.resolve('editor-config', 'CozyBuilder');
+        fsMocks.existsSync.mockImplementation(
+            (target) => target === projectEditorPath,
+        );
+        const release = {
+            editor_path: path.resolve('managed-install', 'Godot.exe'),
+            mono: true,
+        } as InstalledRelease;
+
+        await removeProjectReleaseEditorWindows(projectEditorPath, release);
+
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            path.join(projectEditorPath, 'Godot.exe'),
+            { force: true },
+        );
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            path.join(projectEditorPath, 'Godot_console.exe'),
+            { force: true },
+        );
+        expect(fsMocks.promises.rm).toHaveBeenCalledWith(
+            path.join(projectEditorPath, 'GodotSharp'),
+            { recursive: true, force: true },
+        );
     });
 });

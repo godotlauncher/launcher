@@ -161,5 +161,38 @@
                 "createFailed": "Nie udało się utworzyć manifestu edytora niestandardowego."
             }
         }
+    },
+    "selection": {
+        "enable": "Włącz wybór wielu elementów",
+        "disable": "Wyłącz wybór wielu elementów",
+        "selected": "Wybrano: {{count}}",
+        "actions": "Działania",
+        "selectUnused": "Wybierz nieużywane edytory",
+        "selectAll": "Wybierz wszystkie",
+        "clear": "Wyczyść wybór",
+        "remove": "Usuń wybrane ({{count}})",
+        "selectEditor": "Wybierz {{name}} ({{flavor}})",
+        "standard": "Standardowy",
+        "removing": "Usuwanie edytorów...",
+        "retryFailed": "Ponów nieudane usunięcia",
+        "done": "Zamknij",
+        "confirm": {
+            "title": "Usuń wybrane edytory",
+            "message": "Usunąć te edytory?",
+            "managed": "Pliki zainstalowanych edytorów zostaną usunięte z urządzenia. Możesz zainstalować je ponownie później.",
+            "custom": "Edytory niestandardowe zostaną usunięte z Godot Launcher. Ich pliki zostaną zachowane.",
+            "used": "Projekty używające tego edytora: {{names}}. Będą potrzebować innego edytora."
+        },
+        "results": {
+            "removed": "Usunięto",
+            "skipped": "Pominięto",
+            "failed": "Niepowodzenie"
+        },
+        "errors": {
+            "busy": "Ten edytor jest instalowany lub usuwany. Spróbuj ponownie po zakończeniu.",
+            "changed": "Ten edytor zmienił się od czasu wybrania. Wybierz go ponownie.",
+            "used": "Ten edytor jest używany lub zarządzany zewnętrznie. Został zachowany.",
+            "failed": "Nie udało się usunąć wybranych edytorów. Spróbuj ponownie."
+        }
     }
 }

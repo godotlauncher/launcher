@@ -161,5 +161,38 @@
                 "createFailed": "Ma rnexxilniex noħolqu l-manifest tal-editur personalizzat."
             }
         }
+    },
+    "selection": {
+        "enable": "Attiva l-għażla multipla",
+        "disable": "Iddiżattiva l-għażla multipla",
+        "selected": "{{count}} magħżula",
+        "actions": "Azzjonijiet",
+        "selectUnused": "Agħżel edituri mhux użati",
+        "selectAll": "Agħżel kollox",
+        "clear": "Neħħi l-għażla",
+        "remove": "Neħħi l-magħżula ({{count}})",
+        "selectEditor": "Agħżel {{name}} ({{flavor}})",
+        "standard": "Standard",
+        "removing": "Qed jitneħħew l-edituri...",
+        "retryFailed": "Erġa' pprova t-tneħħijiet li fallew",
+        "done": "Agħlaq",
+        "confirm": {
+            "title": "Neħħi l-edituri magħżula",
+            "message": "Trid tneħħi dawn l-edituri?",
+            "managed": "Il-fajls tal-edituri installati jitħassru mill-apparat tiegħek. Tista' terġa' tinstallahom aktar tard.",
+            "custom": "L-edituri personalizzati jitneħħew minn Godot Launcher. Il-fajls tagħhom jinżammu.",
+            "used": "Proġetti li jużaw dan l-editur: {{names}}. Se jkollhom bżonn editur ieħor."
+        },
+        "results": {
+            "removed": "Imneħħi",
+            "skipped": "Maqbuż",
+            "failed": "Falla"
+        },
+        "errors": {
+            "busy": "Dan l-editur qed jiġi installat jew imneħħi. Erġa' pprova meta jintemm.",
+            "changed": "Dan l-editur inbidel wara li ntgħażel. Agħżlu mill-ġdid.",
+            "used": "Dan l-editur qed jintuża jew huwa ġestit esternament. Inżamm.",
+            "failed": "Ma setgħux jitneħħew l-edituri magħżula. Erġa' pprova."
+        }
     }
 }
