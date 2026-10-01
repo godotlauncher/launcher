@@ -20,11 +20,11 @@ import { mapGithubEditorRelease } from './github-editor-release.mapper.js';
 @Injectable()
 export class GithubEditorCatalogAdapter {
     /**
-     * Fetches releases published after the cached provider data.
+     * Remaps fetched releases, using the cached publication time only to stop pagination.
      *
      * @param providerId - The provider to fetch.
-     * @param publishedAfter - The newest stored publication time.
-     * @returns New releases and the latest publication time.
+     * @param publishedAfter - The newest stored publication time for pagination.
+     * @returns Fetched releases and the latest publication time.
      */
     async fetchProvider(
         providerId: EditorCatalogProviderId,
@@ -65,12 +65,6 @@ export class GithubEditorCatalogAdapter {
                     return new Date(release.publishedAt).getTime() <= afterTime;
                 });
             const mappedPage = pageReleases
-                .filter((release) => {
-                    if (!release.publishedAt) {
-                        return false;
-                    }
-                    return new Date(release.publishedAt).getTime() > afterTime;
-                })
                 .map((release) =>
                     mapGithubEditorRelease(
                         providerId,

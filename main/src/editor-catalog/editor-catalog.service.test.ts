@@ -290,6 +290,52 @@ describe('EditorCatalogService', () => {
         ).toBe(Date.now());
     });
 
+    it('replaces a cached partial release once and retains releases outside the fetched pages', async () => {
+        const cached = createRelease('official-stable', '4.5-stable');
+        const older = createRelease('official-stable', '4.4-stable');
+        const newer = createRelease('official-stable', '4.6-stable');
+        newer.publishedAt = '2026-01-02T00:00:00.000Z';
+        const catalog = createCatalogWithRelease(newer);
+        catalog.providers['official-stable'].releases.push(cached, older);
+        catalog.providers['official-stable'].lastFetchedAt = 0;
+        const completed = structuredClone(cached);
+        completed.variants.push({
+            id: `${cached.id}:dotnet`,
+            flavor: 'dotnet',
+            assets: [
+                {
+                    ...cached.variants[0].assets[0],
+                    id: `${cached.id}:dotnet:linux:x64`,
+                    platform: 'linux',
+                    digest: `sha256:${'b'.repeat(64)}`,
+                    checksumManifestUrl: 'https://example.com/SHA512-SUMS.txt',
+                },
+            ],
+        });
+        const { service, githubAdapter, store } = createService(catalog);
+        githubAdapter.fetchProvider.mockResolvedValue({
+            providerId: 'official-stable',
+            lastPublishedAt: newer.publishedAt,
+            releases: [newer, completed],
+        });
+
+        const result = await service.getCatalog();
+
+        expect(result.releases).toHaveLength(3);
+        expect(result.releases.find(({ id }) => id === cached.id)).toEqual(
+            completed,
+        );
+        expect(result.releases).toContainEqual(older);
+        expect(result.releases).toContainEqual(newer);
+        expect(
+            (await store.read()).providers['official-stable'].lastPublishedAt,
+        ).toBe(newer.publishedAt);
+        expect(githubAdapter.fetchProvider).toHaveBeenCalledExactlyOnceWith(
+            'official-stable',
+            newer.publishedAt,
+        );
+    });
+
     it('rebuilds a malformed catalog during explicit refresh', async () => {
         const { service, store } = createService(createEmptyEditorCatalog());
         store.read.mockRejectedValue(new Error('invalid catalog'));
