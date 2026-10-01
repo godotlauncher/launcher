@@ -45,7 +45,15 @@
             "readyWithVersion": "Wersja {{version}} jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>",
             "readyNoVersion": "Aktualizacja jest gotowa, uruchom ponownie Godot Launcher, aby ją zainstalować. <RestartButton>Uruchom ponownie teraz</RestartButton>",
             "manualWithVersion": "Wersja {{version}} jest dostępna, ale automatyczna instalacja nie jest obsługiwana w tym systemie rpm-ostree. <ReleaseLink>Pobierz ręcznie</ReleaseLink> albo <SkipButton>Pomiń tę wersję</SkipButton>",
-            "manualNoVersion": "Dostępna jest nowa wersja, ale automatyczna instalacja nie jest obsługiwana w tym systemie rpm-ostree. <ReleaseLink>Pobierz ręcznie</ReleaseLink>"
+            "manualNoVersion": "Dostępna jest nowa wersja, ale automatyczna instalacja nie jest obsługiwana w tym systemie rpm-ostree. <ReleaseLink>Pobierz ręcznie</ReleaseLink>",
+            "checking": "Sprawdzanie aktualizacji...",
+            "none": "Brak dostępnych aktualizacji",
+            "downloading": "Pobieranie aktualizacji...",
+            "downloadingProgress": "Pobieranie aktualizacji: {{percent}}%",
+            "checkFailed": "Nie udało się sprawdzić aktualizacji.",
+            "downloadFailed": "Nie udało się pobrać aktualizacji.",
+            "installFailed": "Nie udało się zainstalować aktualizacji.",
+            "failed": "Wystąpił błąd aktualizacji."
         }
     },
     "selectRelease": {

@@ -8,6 +8,7 @@ import {
     useState,
 } from 'react';
 import { appBridge, subscribeAppEvent } from '../renderer.bridge.ts';
+import { reduceAppUpdateState } from './app-update-state.util';
 
 type AppContext = {
     appVersion: string | undefined;
@@ -15,14 +16,21 @@ type AppContext = {
     installAndRelaunch: () => Promise<void>;
     checkForAppUpdates: () => Promise<void>;
     downloadAppUpdate: () => Promise<void>;
+    retryAppUpdate: () => Promise<void>;
     skipAppUpdate: (version: string) => Promise<void>;
     unskipAppUpdate: () => Promise<void>;
 };
 
 const appContext = createContext<AppContext>({} as AppContext);
 
+/** Reads the shared application update state and actions. */
 export const useApp = () => useContext(appContext);
 
+/**
+ * Shares update events and explicit actions across application views.
+ *
+ * @param props - Child views that consume the application state.
+ */
 export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     const [updateAvailable, setUpdateAvailable] = useState<AppUpdateMessage>();
     const [appVersion, setAppVersion] = useState<string>();
@@ -37,6 +45,22 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
 
     const downloadAppUpdate = async () => {
         await appBridge.downloadAppUpdate();
+    };
+
+    /** Retries only the operation identified by the current update failure. */
+    const retryAppUpdate = async () => {
+        if (updateAvailable?.type !== 'error') return;
+        switch (updateAvailable.failedOperation) {
+            case 'check':
+                await checkForAppUpdates();
+                break;
+            case 'download':
+                await downloadAppUpdate();
+                break;
+            case 'install':
+                await installAndRelaunch();
+                break;
+        }
     };
 
     const skipAppUpdate = async (version: string) => {
@@ -59,7 +83,10 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
 
         const unsubscribeUpdates = subscribeAppEvent(
             'app-updates',
-            setUpdateAvailable,
+            (incoming) =>
+                setUpdateAvailable((current) =>
+                    reduceAppUpdateState(current, incoming),
+                ),
         );
         return () => {
             unsubscribeUpdates();
@@ -74,6 +101,7 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
                 installAndRelaunch,
                 checkForAppUpdates,
                 downloadAppUpdate,
+                retryAppUpdate,
                 skipAppUpdate,
                 unskipAppUpdate,
             }}

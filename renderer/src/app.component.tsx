@@ -281,6 +281,7 @@ function MainLayout() {
         updateAvailable,
         installAndRelaunch,
         downloadAppUpdate,
+        retryAppUpdate,
         skipAppUpdate,
     } = useApp();
 
@@ -390,6 +391,7 @@ function MainLayout() {
                     updateAvailable={updateAvailable}
                     installAndRelaunch={installAndRelaunch}
                     downloadAppUpdate={downloadAppUpdate}
+                    retryAppUpdate={retryAppUpdate}
                     skipAppUpdate={skipAppUpdate}
                     openUpdateUrl={openExternalLink}
                 />

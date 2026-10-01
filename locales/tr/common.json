@@ -45,7 +45,15 @@
             "readyWithVersion": "{{version}} sürümü hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
             "readyNoVersion": "Güncelleme hazır, yüklemek için Godot Launcher'ı yeniden başlatın. <RestartButton>Şimdi yeniden başlat</RestartButton>",
             "manualWithVersion": "Sürüm {{version}} kullanılabilir, ancak bu rpm-ostree sisteminde otomatik kurulum desteklenmiyor. <ReleaseLink>Elle indir</ReleaseLink> veya <SkipButton>Bu sürümü atla</SkipButton>",
-            "manualNoVersion": "Yeni bir sürüm kullanılabilir, ancak bu rpm-ostree sisteminde otomatik kurulum desteklenmiyor. <ReleaseLink>Elle indir</ReleaseLink>"
+            "manualNoVersion": "Yeni bir sürüm kullanılabilir, ancak bu rpm-ostree sisteminde otomatik kurulum desteklenmiyor. <ReleaseLink>Elle indir</ReleaseLink>",
+            "checking": "Güncellemeler kontrol ediliyor...",
+            "none": "Kullanılabilir güncelleme yok",
+            "downloading": "Güncelleme indiriliyor...",
+            "downloadingProgress": "Güncelleme indiriliyor: {{percent}}%",
+            "checkFailed": "Güncellemeler kontrol edilemedi.",
+            "downloadFailed": "Güncelleme indirilemedi.",
+            "installFailed": "Güncelleme yüklenemedi.",
+            "failed": "Bir güncelleme hatası oluştu."
         }
     },
     "selectRelease": {

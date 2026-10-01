@@ -5,6 +5,8 @@ export type BackendResult = {
 
 export type SetAutoStartResult = BackendResult;
 
+export type AppUpdateOperation = 'check' | 'download' | 'install';
+
 export type AppUpdateMessage = {
     type:
         | 'ready'
@@ -19,6 +21,8 @@ export type AppUpdateMessage = {
     version?: string;
     message?: string;
     url?: string;
+    progressPercent?: number;
+    failedOperation?: AppUpdateOperation;
 };
 
 export type CheckForUpdatesOptions = {

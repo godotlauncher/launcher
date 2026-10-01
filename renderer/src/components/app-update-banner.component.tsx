@@ -3,17 +3,19 @@ import { ExternalLink } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { LAUNCHER_DOWNLOAD_URL } from '../app.constants';
+import { getAppUpdateMessage } from './app-update-message.util';
 
 type AppUpdateBannerProps = {
     updateAvailable: AppUpdateMessage | undefined;
     installAndRelaunch: () => Promise<void>;
     downloadAppUpdate: () => Promise<void>;
+    retryAppUpdate: () => Promise<void>;
     skipAppUpdate: (version: string) => Promise<void>;
     openUpdateUrl: (url: string) => Promise<void>;
 };
 
 type AppUpdateBannerContentProps = AppUpdateBannerProps & {
-    t: (key: string) => string;
+    t: (key: string, values?: { percent: number }) => string;
 };
 
 const bannerLinkClass = 'link link-primary';
@@ -55,6 +57,7 @@ export function getAppUpdateBannerContent({
     updateAvailable,
     installAndRelaunch,
     downloadAppUpdate,
+    retryAppUpdate,
     skipAppUpdate,
     openUpdateUrl,
     t,
@@ -112,7 +115,7 @@ export function getAppUpdateBannerContent({
             );
 
         case 'downloading':
-            return updateAvailable.message ?? null;
+            return getAppUpdateMessage(updateAvailable, t) ?? null;
 
         case 'ready':
             if (updateAvailable.version) {
@@ -190,15 +193,17 @@ export function getAppUpdateBannerContent({
         case 'error':
             return (
                 <>
-                    {updateAvailable.message}{' '}
-                    <button
-                        data-testid="btnAppUpdateRetry"
-                        type="button"
-                        onClick={downloadAppUpdate}
-                        className={bannerLinkClass}
-                    >
-                        {t('buttons.retry')}
-                    </button>
+                    {getAppUpdateMessage(updateAvailable, t)}{' '}
+                    {updateAvailable.failedOperation && (
+                        <button
+                            data-testid="btnAppUpdateRetry"
+                            type="button"
+                            onClick={retryAppUpdate}
+                            className={bannerLinkClass}
+                        >
+                            {t('buttons.retry')}
+                        </button>
+                    )}
                 </>
             );
 
@@ -216,7 +221,7 @@ export const AppUpdateBanner: React.FC<AppUpdateBannerProps> = (props) => {
     const { t } = useTranslation('common');
     const content = getAppUpdateBannerContent({
         ...props,
-        t: (key: string) => t(key),
+        t: (key, values) => t(key, values),
     });
 
     if (!content) {

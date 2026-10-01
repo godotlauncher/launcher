@@ -9,6 +9,7 @@ const appState = {
     installAndRelaunch: vi.fn(),
     checkForAppUpdates: vi.fn(),
     downloadAppUpdate: vi.fn(),
+    retryAppUpdate: vi.fn(),
     skipAppUpdate: vi.fn(),
     unskipAppUpdate: vi.fn(),
 };
@@ -28,6 +29,7 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => {
             const dictionary: Record<string, string> = {
+                'app.update.downloadingProgress': 'Downloading update: 55%',
                 'updates.title': 'Updates',
                 'updates.description': 'Configure updates',
                 'updates.autoCheck': 'Automatically check for updates',
@@ -91,6 +93,7 @@ describe('CheckForUpdates', () => {
             type: 'downloading',
             version: '1.9.1',
             message: 'Downloading update: 55%',
+            progressPercent: 55,
         };
 
         const html = renderToStaticMarkup(<CheckForUpdates />);

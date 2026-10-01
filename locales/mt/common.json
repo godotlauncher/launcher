@@ -45,7 +45,15 @@
             "readyWithVersion": "Il-verżjoni {{version}} hija lesta, erġa' ibda Godot Launcher biex tinstallaha. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
             "readyNoVersion": "L-aġġornament huwa lest, erġa' ibda Godot Launcher biex tinstallah. <RestartButton>Ibda mill-ġdid issa</RestartButton>",
             "manualWithVersion": "Il-verżjoni {{version}} hija disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink> jew <SkipButton>Aqbeż din il-verżjoni</SkipButton>",
-            "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink>"
+            "manualNoVersion": "Hemm verżjoni ġdida disponibbli, iżda l-installazzjoni awtomatika mhix appoġġjata fuq din is-sistema rpm-ostree. <ReleaseLink>Niżżel manwalment</ReleaseLink>",
+            "checking": "Qed jiċċekkja għal aġġornamenti...",
+            "none": "Ebda aġġornament disponibbli",
+            "downloading": "Qed iniżżel l-aġġornament...",
+            "downloadingProgress": "Qed iniżżel l-aġġornament: {{percent}}%",
+            "checkFailed": "Il-verifika għall-aġġornamenti falliet.",
+            "downloadFailed": "It-tniżżil tal-aġġornament falla.",
+            "installFailed": "L-installazzjoni tal-aġġornament falliet.",
+            "failed": "Seħħ żball fl-aġġornament."
         }
     },
     "selectRelease": {

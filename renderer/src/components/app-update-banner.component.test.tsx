@@ -34,6 +34,8 @@ const transCalls: Array<{
 
 const dictionary: Record<string, string> = {
     'buttons.retry': 'Retry',
+    'app.update.downloadFailed': 'Failed to download update',
+    'app.update.downloadingProgress': 'Downloading update: 55%',
 };
 
 vi.mock('react-i18next', () => ({
@@ -62,6 +64,7 @@ vi.mock('react-i18next', () => ({
 describe('AppUpdateBanner', () => {
     const installAndRelaunch = vi.fn();
     const downloadAppUpdate = vi.fn();
+    const retryAppUpdate = vi.fn();
     const openUpdateUrl = vi.fn();
     const skipAppUpdate = vi.fn();
 
@@ -81,6 +84,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            retryAppUpdate,
             openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
@@ -107,6 +111,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            retryAppUpdate,
             openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
@@ -131,9 +136,11 @@ describe('AppUpdateBanner', () => {
                     type: 'downloading',
                     version: '1.9.1',
                     message: 'Downloading update: 55%',
+                    progressPercent: 55,
                 }}
                 installAndRelaunch={installAndRelaunch}
                 downloadAppUpdate={downloadAppUpdate}
+                retryAppUpdate={retryAppUpdate}
                 openUpdateUrl={openUpdateUrl}
                 skipAppUpdate={skipAppUpdate}
             />,
@@ -155,6 +162,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            retryAppUpdate,
             openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
@@ -181,6 +189,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            retryAppUpdate,
             openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
@@ -216,6 +225,7 @@ describe('AppUpdateBanner', () => {
             },
             installAndRelaunch,
             downloadAppUpdate,
+            retryAppUpdate,
             openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
@@ -236,9 +246,11 @@ describe('AppUpdateBanner', () => {
                 type: 'error',
                 version: '1.9.1',
                 message: 'Failed to download update',
+                failedOperation: 'download',
             },
             installAndRelaunch,
             downloadAppUpdate,
+            retryAppUpdate,
             openUpdateUrl,
             skipAppUpdate,
             t: (key: string) => dictionary[key] ?? key,
@@ -255,6 +267,28 @@ describe('AppUpdateBanner', () => {
 
         await retryButton?.props.onClick();
 
-        expect(downloadAppUpdate).toHaveBeenCalledTimes(1);
+        expect(retryAppUpdate).toHaveBeenCalledTimes(1);
+        expect(downloadAppUpdate).not.toHaveBeenCalled();
+    });
+
+    it('shows unknown failures without guessing a retry operation', () => {
+        const html = renderToStaticMarkup(
+            <AppUpdateBanner
+                updateAvailable={{
+                    available: false,
+                    downloaded: false,
+                    type: 'error',
+                    message: 'A provider error',
+                }}
+                installAndRelaunch={installAndRelaunch}
+                downloadAppUpdate={downloadAppUpdate}
+                retryAppUpdate={retryAppUpdate}
+                openUpdateUrl={openUpdateUrl}
+                skipAppUpdate={skipAppUpdate}
+            />,
+        );
+
+        expect(html).toContain('app.update.failed');
+        expect(html).not.toContain('btnAppUpdateRetry');
     });
 });

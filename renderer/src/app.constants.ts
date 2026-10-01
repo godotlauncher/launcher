@@ -1,6 +1,7 @@
 // LAUNCHER
 export const LAUNCHER_PAGE_URL = 'https://godotlauncher.org';
 export const LAUNCHER_DOCS_URL = 'https://docs.godotlauncher.org';
+export const LAUNCHER_RELEASE_NOTES_URL = `${LAUNCHER_DOCS_URL}/release-notes/`;
 export const LAUNCHER_CONTRIBUTE_URL = 'https://godotlauncher.org/contribute';
 export const LAUNCHER_DOWNLOAD_URL = 'https://godotlauncher.org/download/';
 export const LAUNCHER_THIRD_PARTY_RAW_URL =

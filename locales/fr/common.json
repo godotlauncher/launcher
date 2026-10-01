@@ -45,7 +45,15 @@
             "readyWithVersion": "La version {{version}} est prête, redémarrez Godot Launcher pour l'installer. <RestartButton>Redémarrer maintenant</RestartButton>",
             "readyNoVersion": "La mise à jour est prête, redémarrez Godot Launcher pour l'installer. <RestartButton>Redémarrer maintenant</RestartButton>",
             "manualWithVersion": "La version {{version}} est disponible, mais l’installation automatique n’est pas prise en charge sur ce système rpm-ostree. <ReleaseLink>Télécharger manuellement</ReleaseLink> ou <SkipButton>Ignorer cette version</SkipButton>",
-            "manualNoVersion": "Une nouvelle version est disponible, mais l’installation automatique n’est pas prise en charge sur ce système rpm-ostree. <ReleaseLink>Télécharger manuellement</ReleaseLink>"
+            "manualNoVersion": "Une nouvelle version est disponible, mais l’installation automatique n’est pas prise en charge sur ce système rpm-ostree. <ReleaseLink>Télécharger manuellement</ReleaseLink>",
+            "checking": "Recherche de mises à jour...",
+            "none": "Aucune mise à jour disponible",
+            "downloading": "Téléchargement de la mise à jour...",
+            "downloadingProgress": "Téléchargement de la mise à jour : {{percent}}%",
+            "checkFailed": "La recherche de mises à jour a échoué.",
+            "downloadFailed": "Le téléchargement de la mise à jour a échoué.",
+            "installFailed": "L'installation de la mise à jour a échoué.",
+            "failed": "Une erreur de mise à jour est survenue."
         }
     },
     "selectRelease": {

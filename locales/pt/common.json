@@ -45,7 +45,15 @@
             "readyWithVersion": "A versão {{version}} está pronta, reinicia o Godot Launcher para a instalar. <RestartButton>Reinicia agora</RestartButton>",
             "readyNoVersion": "A atualização está pronta, reinicia o Godot Launcher para a instalar. <RestartButton>Reinicia agora</RestartButton>",
             "manualWithVersion": "A versão {{version}} está disponível, mas a instalação automática não é suportada neste sistema rpm-ostree. <ReleaseLink>Transferir manualmente</ReleaseLink> ou <SkipButton>Ignorar esta versão</SkipButton>",
-            "manualNoVersion": "Está disponível uma nova versão, mas a instalação automática não é suportada neste sistema rpm-ostree. <ReleaseLink>Transferir manualmente</ReleaseLink>"
+            "manualNoVersion": "Está disponível uma nova versão, mas a instalação automática não é suportada neste sistema rpm-ostree. <ReleaseLink>Transferir manualmente</ReleaseLink>",
+            "checking": "A procurar atualizações...",
+            "none": "Não há atualizações disponíveis",
+            "downloading": "A transferir atualização...",
+            "downloadingProgress": "A transferir atualização: {{percent}}%",
+            "checkFailed": "Não foi possível procurar atualizações.",
+            "downloadFailed": "Não foi possível transferir a atualização.",
+            "installFailed": "Não foi possível instalar a atualização.",
+            "failed": "Ocorreu um erro de atualização."
         }
     },
     "selectRelease": {

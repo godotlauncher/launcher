@@ -45,7 +45,15 @@
             "readyWithVersion": "Версия {{version}} готова, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
             "readyNoVersion": "Обновление готово, перезапустите Godot Launcher для установки. <RestartButton>Перезапустить сейчас</RestartButton>",
             "manualWithVersion": "Версия {{version}} доступна, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink> или <SkipButton>Пропустить эту версию</SkipButton>",
-            "manualNoVersion": "Доступна новая версия, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink>"
+            "manualNoVersion": "Доступна новая версия, но автоматическая установка не поддерживается в этой системе rpm-ostree. <ReleaseLink>Скачать вручную</ReleaseLink>",
+            "checking": "Проверка обновлений...",
+            "none": "Нет доступных обновлений",
+            "downloading": "Загрузка обновления...",
+            "downloadingProgress": "Загрузка обновления: {{percent}}%",
+            "checkFailed": "Не удалось проверить обновления.",
+            "downloadFailed": "Не удалось загрузить обновление.",
+            "installFailed": "Не удалось установить обновление.",
+            "failed": "Произошла ошибка обновления."
         }
     },
     "selectRelease": {
