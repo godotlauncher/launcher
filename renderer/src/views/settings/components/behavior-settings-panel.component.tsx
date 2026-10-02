@@ -31,6 +31,15 @@ export const BehaviorSettingsPanel: React.FC<BehaviorSettingsPanelProps> = ({
 }) => {
     const trayAvailability = useTrayAvailability(active);
 
+    const setCloseWindowToTray = (closeWindowToTray: boolean) => {
+        if (preferences) {
+            onPreferencesChange({
+                ...preferences,
+                close_window_to_tray: closeWindowToTray,
+            });
+        }
+    };
+
     return (
         <SettingsPanelSection active={active}>
             <SettingsSection
@@ -65,6 +74,42 @@ export const BehaviorSettingsPanel: React.FC<BehaviorSettingsPanelProps> = ({
                 message={t('behavior.trayAvailability.warning')}
                 details={[t('behavior.trayAvailability.closeFallback')]}
             />
+
+            <SettingsSection
+                title={t('behavior.windowClose.title')}
+                description={t('behavior.windowClose.description')}
+                titleTestId="windowCloseSettingsHeader"
+                descriptionTestId="windowCloseSettingsSubHeader"
+            >
+                <fieldset className="flex flex-wrap gap-x-5 gap-y-2">
+                    <legend className="sr-only">
+                        {t('behavior.windowClose.title')}
+                    </legend>
+                    <label className="flex min-h-8 items-center gap-2">
+                        <input
+                            type="radio"
+                            name="window-close-action"
+                            className="radio radio-sm"
+                            data-testid="radioWindowCloseToTray"
+                            checked={preferences?.close_window_to_tray !== false}
+                            onChange={() => setCloseWindowToTray(true)}
+                        />
+                        <span>{t('behavior.windowClose.closeToTray')}</span>
+                    </label>
+                    <label className="flex min-h-8 items-center gap-2">
+                        <input
+                            type="radio"
+                            name="window-close-action"
+                            className="radio radio-sm"
+                            data-testid="radioWindowCloseQuit"
+                            checked={preferences?.close_window_to_tray === false}
+                            onChange={() => setCloseWindowToTray(false)}
+                        />
+                        <span>{t('behavior.windowClose.quit')}</span>
+                    </label>
+                </fieldset>
+            </SettingsSection>
+            <ContentDivider />
 
             <ProjectLaunchAction />
             <WindowsSymlinkSetting />

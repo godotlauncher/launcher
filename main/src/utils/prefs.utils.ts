@@ -176,6 +176,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         skipped_app_update_version: undefined,
         auto_start: true,
         start_in_tray: true,
+        close_window_to_tray: true,
         confirm_project_remove: true,
         first_run: true,
         windows_enable_symlinks: false,

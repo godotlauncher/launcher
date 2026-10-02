@@ -484,6 +484,39 @@ describe('AppLifecycleService', () => {
         expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(false);
         expect(mocks.appQuit).not.toHaveBeenCalled();
     });
+
+    it.each([
+        undefined,
+        true,
+    ])('hides to the tray on close when close_window_to_tray is %s', async (closeWindowToTray) => {
+        mocks.getUserPreferences.mockResolvedValue({
+            ...defaultPreferences,
+            close_window_to_tray: closeWindowToTray,
+        });
+        const service = createService();
+
+        await initializeLifecycle(service);
+        await service.onMainWindowClose();
+
+        expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(true);
+        expect(mocks.appQuit).not.toHaveBeenCalled();
+    });
+
+    it('lets the framework quit on close when close to tray is disabled', async () => {
+        mocks.getUserPreferences.mockResolvedValue({
+            ...defaultPreferences,
+            close_window_to_tray: false,
+        });
+        const service = createService();
+
+        await initializeLifecycle(service);
+        trayAvailabilityService.isAvailable.mockClear();
+        await service.onMainWindowClose();
+
+        expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(false);
+        expect(trayAvailabilityService.isAvailable).not.toHaveBeenCalled();
+        expect(mocks.appQuit).not.toHaveBeenCalled();
+    });
     it('routes tray launches through the code editor aware project command', async () => {
         const service = createService();
         const project = { path: '/projects/demo' };
