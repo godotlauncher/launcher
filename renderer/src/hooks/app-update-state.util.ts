@@ -60,19 +60,3 @@ export function reduceAppUpdateState(
     }
     return next;
 }
-
-/**
- * Reports when checking or changing channels could disturb the selected update.
- *
- * @param update - Current renderer update state.
- * @returns Whether update settings should disable incompatible actions.
- */
-export function isAppUpdateInProgress(
-    update: AppUpdateMessage | undefined,
-): boolean {
-    return (
-        update?.type === 'checking' ||
-        update?.type === 'downloading' ||
-        update?.downloaded === true
-    );
-}

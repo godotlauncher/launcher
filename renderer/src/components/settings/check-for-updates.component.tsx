@@ -3,23 +3,19 @@ import type { ChangeEvent } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { LAUNCHER_DOWNLOAD_URL } from '../../app.constants';
 import { useApp } from '../../hooks/app.hook';
-import { isAppUpdateInProgress } from '../../hooks/app-update-state.util';
 import { usePreferences } from '../../hooks/preferences.hook';
 import { appBridge } from '../../renderer.bridge.ts';
-import { getAppUpdateMessage } from '../app-update-message.util';
 import { SettingsSection } from './settings-section.component';
 
 /** Renders update preferences and available update actions with shared settings styling. */
 export const CheckForUpdates: React.FC = () => {
     const { t } = useTranslation('settings');
-    const { t: tCommon } = useTranslation('common');
 
     const {
         updateAvailable,
         installAndRelaunch,
         checkForAppUpdates,
         downloadAppUpdate,
-        retryAppUpdate,
         skipAppUpdate,
         unskipAppUpdate,
     } = useApp();
@@ -29,12 +25,6 @@ export const CheckForUpdates: React.FC = () => {
         setReceiveBetaUpdates,
         loadPreferences,
     } = usePreferences();
-    const updateBusy = isAppUpdateInProgress(updateAvailable);
-    const updateMessage = updateAvailable
-        ? getAppUpdateMessage(updateAvailable, (key, values) =>
-              tCommon(key, values),
-          )
-        : undefined;
 
     const setAutoCheckUpdates = async (e: ChangeEvent<HTMLInputElement>) => {
         await setAutoUpdates(e.currentTarget.checked);
@@ -89,7 +79,6 @@ export const CheckForUpdates: React.FC = () => {
                             onChange={toggleBetaUpdates}
                             type="checkbox"
                             checked={preferences?.receive_beta_updates ?? false}
-                            disabled={updateBusy}
                             className="checkbox checkbox-sm mt-1"
                         />
                         <span className="flex flex-col gap-[4px]">
@@ -103,14 +92,15 @@ export const CheckForUpdates: React.FC = () => {
                     </label>
                 </div>
                 <div className="flex flex-col gap-4">
-                    {updateMessage && <div role="status">{updateMessage}</div>}
+                    {updateAvailable?.message && (
+                        <div role="status">{updateAvailable.message}</div>
+                    )}
 
                     <div className="flex flex-col gap-3">
                         <div className="flex flex-row flex-wrap gap-2">
                             <button
                                 type="button"
                                 onClick={() => checkForAppUpdates()}
-                                disabled={updateBusy}
                                 className={
                                     updateAvailable?.type === 'available'
                                         ? 'btn btn-ghost text-base'
@@ -119,16 +109,6 @@ export const CheckForUpdates: React.FC = () => {
                             >
                                 {t('updates.checkNow')}
                             </button>
-                            {updateAvailable?.type === 'error' &&
-                                updateAvailable.failedOperation && (
-                                    <button
-                                        type="button"
-                                        onClick={retryAppUpdate}
-                                        className="btn btn-primary text-base"
-                                    >
-                                        {tCommon('buttons.retry')}
-                                    </button>
-                                )}
                             {updateAvailable?.type === 'available' && (
                                 <>
                                     <button

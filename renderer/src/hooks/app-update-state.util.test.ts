@@ -1,9 +1,6 @@
 import type { AppUpdateMessage } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
-import {
-    isAppUpdateInProgress,
-    reduceAppUpdateState,
-} from './app-update-state.util';
+import { reduceAppUpdateState } from './app-update-state.util';
 
 const downloading: AppUpdateMessage = {
     type: 'downloading',
@@ -154,26 +151,5 @@ describe('reduceAppUpdateState', () => {
         expect(
             reduceAppUpdateState({ ...downloading, type: 'available' }, none),
         ).toEqual(none);
-    });
-});
-
-describe('isAppUpdateInProgress', () => {
-    it('locks checks and channel changes only for active operations', () => {
-        expect(isAppUpdateInProgress(downloading)).toBe(true);
-        expect(isAppUpdateInProgress(ready)).toBe(true);
-        expect(
-            isAppUpdateInProgress({
-                ...ready,
-                type: 'error',
-                failedOperation: 'install',
-            }),
-        ).toBe(true);
-        expect(
-            isAppUpdateInProgress({ ...downloading, type: 'checking' }),
-        ).toBe(true);
-        expect(
-            isAppUpdateInProgress({ ...downloading, type: 'available' }),
-        ).toBe(false);
-        expect(isAppUpdateInProgress(undefined)).toBe(false);
     });
 });

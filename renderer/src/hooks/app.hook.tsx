@@ -63,13 +63,21 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
         }
     };
 
+    /**
+     * Saves a skipped offer without clearing an update selected in the meantime.
+     *
+     * @param version - Offered version to exclude from background reminders.
+     */
     const skipAppUpdate = async (version: string) => {
         await appBridge.skipAppUpdate(version);
-        setUpdateAvailable({
-            available: false,
-            downloaded: false,
-            type: 'none',
-            message: 'No updates available',
+        setUpdateAvailable((current) => {
+            if (current?.version && current.version !== version) return current;
+            return reduceAppUpdateState(current, {
+                available: false,
+                downloaded: false,
+                type: 'none',
+                message: 'No updates available',
+            });
         });
     };
 
