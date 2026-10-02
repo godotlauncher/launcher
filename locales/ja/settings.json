@@ -37,6 +37,12 @@
             "startOnBoot": "コンピュータの起動時に起動する。",
             "startInTray": "トレイに起動する。"
         },
+        "windowClose": {
+            "title": "ウィンドウを閉じる",
+            "description": "Godot Launcherのウィンドウを閉じたときの動作を選択",
+            "closeToTray": "システムトレイに閉じる",
+            "quit": "Godot Launcherを終了"
+        },
         "projectLaunch": {
             "title": "プロジェクト起動時の動作",
             "description": "プロジェクト起動後のGodot Launcherの動作を選択",

@@ -37,6 +37,12 @@
             "startOnBoot": "電腦開機時啟動。",
             "startInTray": "在系統匣中啟動。"
         },
+        "windowClose": {
+            "title": "關閉視窗",
+            "description": "選擇關閉 Godot Launcher 視窗時的行為。",
+            "closeToTray": "關閉到系統匣",
+            "quit": "結束 Godot Launcher"
+        },
         "projectLaunch": {
             "title": "專案啟動動作",
             "description": "選擇啟動專案後 Godot Launcher 的行為",

@@ -37,6 +37,12 @@
             "startOnBoot": "Uruchom przy starcie komputera.",
             "startInTray": "Uruchom w zasobniku systemowym."
         },
+        "windowClose": {
+            "title": "Zamykanie okna",
+            "description": "Wybierz, co ma się dziać po zamknięciu okna Godot Launcher.",
+            "closeToTray": "Zamknij do zasobnika systemowego",
+            "quit": "Zakończ Godot Launcher"
+        },
         "projectLaunch": {
             "title": "Akcja uruchamiania projektu",
             "description": "Wybierz, co robi Godot Launcher po uruchomieniu projektu",

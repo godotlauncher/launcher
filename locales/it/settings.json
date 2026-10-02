@@ -37,6 +37,12 @@
             "startOnBoot": "Avvia all'avvio del computer.",
             "startInTray": "Avvia nell'area di notifica."
         },
+        "windowClose": {
+            "title": "Chiusura finestra",
+            "description": "Scegli cosa succede quando chiudi la finestra di Godot Launcher.",
+            "closeToTray": "Chiudi nell'area di notifica",
+            "quit": "Esci da Godot Launcher"
+        },
         "projectLaunch": {
             "title": "Azione dopo l'avvio del progetto",
             "description": "Scegli cosa fa Godot Launcher dopo aver avviato un progetto",

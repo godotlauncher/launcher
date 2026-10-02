@@ -37,6 +37,12 @@
             "startOnBoot": "Bilgisayar başladığında başlat.",
             "startInTray": "Sistem tepsisinde başlat."
         },
+        "windowClose": {
+            "title": "Pencere kapatma",
+            "description": "Godot Launcher penceresini kapattığınızda ne olacağını seçin.",
+            "closeToTray": "Sistem tepsisine küçült",
+            "quit": "Godot Launcher'dan çık"
+        },
         "projectLaunch": {
             "title": "Proje Başlatma Eylemi",
             "description": "Bir proje başlattıktan sonra Godot Launcher'ın ne yapacağını seçin",
