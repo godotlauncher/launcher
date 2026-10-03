@@ -35,7 +35,7 @@ import {
 import IconDiscord from './assets/icons/discord-symbol-blurple.svg';
 import rocketBlack from './assets/icons/godot-launcher-black.svg';
 import rocketWhite from './assets/icons/godot-launcher-white.svg';
-import { AppUpdateBanner } from './components/app-update-banner.component';
+import { AppUpdateNotification } from './components/app-update-notification.component';
 import { MenuDivider } from './components/ui/menu-divider.component';
 import { Tooltip } from './components/ui/tooltip.component';
 import { useApp } from './hooks/app.hook';
@@ -273,6 +273,7 @@ function SettingsRoute() {
  * @returns The primary application layout.
  */
 function MainLayout() {
+    const { loadPreferences } = usePreferences();
     const templatesActive = useTemplateActivity();
     const { t } = useTranslation('common');
     const location = useLocation();
@@ -281,6 +282,7 @@ function MainLayout() {
         updateAvailable,
         installAndRelaunch,
         downloadAppUpdate,
+        retryAppUpdate,
         skipAppUpdate,
     } = useApp();
 
@@ -289,6 +291,16 @@ function MainLayout() {
             'menu-active': currentView === view,
         });
     const connectionsActive = isConnectionsPathname(location.pathname);
+
+    /**
+     * Skips the selected release and refreshes shared Settings preferences.
+     *
+     * @param version - Exact release version to skip.
+     */
+    const handleSkipUpdate = async (version: string) => {
+        await skipAppUpdate(version);
+        await loadPreferences();
+    };
 
     return (
         <div className="flex h-full overflow-hidden">
@@ -386,11 +398,13 @@ function MainLayout() {
                     </div>
                 ))}
                 <div className="flex flex-1"></div>
-                <AppUpdateBanner
+                <AppUpdateNotification
+                    pathname={location.pathname}
                     updateAvailable={updateAvailable}
                     installAndRelaunch={installAndRelaunch}
                     downloadAppUpdate={downloadAppUpdate}
-                    skipAppUpdate={skipAppUpdate}
+                    retryAppUpdate={retryAppUpdate}
+                    skipAppUpdate={handleSkipUpdate}
                     openUpdateUrl={openExternalLink}
                 />
                 <div className="pt-2">

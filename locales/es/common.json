@@ -45,7 +45,40 @@
             "readyWithVersion": "La versión {{version}} está lista, reinicia Godot Launcher para instalarla. <RestartButton>Reiniciar ahora</RestartButton>",
             "readyNoVersion": "La actualización está lista, reinicia Godot Launcher para instalarla. <RestartButton>Reiniciar ahora</RestartButton>",
             "manualWithVersion": "La versión {{version}} está disponible, pero la instalación automática no es compatible con este sistema rpm-ostree. <ReleaseLink>Descargar manualmente</ReleaseLink> o <SkipButton>Omitir esta versión</SkipButton>",
-            "manualNoVersion": "Hay una nueva versión disponible, pero la instalación automática no es compatible con este sistema rpm-ostree. <ReleaseLink>Descargar manualmente</ReleaseLink>"
+            "manualNoVersion": "Hay una nueva versión disponible, pero la instalación automática no es compatible con este sistema rpm-ostree. <ReleaseLink>Descargar manualmente</ReleaseLink>",
+            "notification": {
+                "available": "Actualización disponible",
+                "downloading": "Descargando",
+                "ready": "Actualización lista",
+                "error": "La actualización requiere atención",
+                "update": "Actualizar",
+                "downloadingProgress": "Descargando {{percent}}%"
+            },
+            "panel": {
+                "titleWithVersion": "Godot Launcher {{version}}",
+                "title": "Actualización de Godot Launcher",
+                "installAfterDownload": "Reinicia para instalar cuando termine la descarga.",
+                "ready": "La actualización se ha descargado. Reinicia Godot Launcher para instalarla.",
+                "manual": "La instalación automática no está disponible en este sistema rpm-ostree. Descarga e instala la actualización manualmente.",
+                "readReleaseNotes": "Leer notas de la versión",
+                "download": "Descargar actualización",
+                "restart": "Reiniciar e instalar",
+                "downloadManually": "Descargar manualmente",
+                "skip": "Omitir esta versión",
+                "downloadProgress": "Progreso de la descarga",
+                "openFailed": "No se pudo abrir el enlace. Inténtalo de nuevo.",
+                "actionFailed": "No se pudo completar la acción. Inténtalo de nuevo.",
+                "close": "Cerrar panel de actualización",
+                "later": "Más tarde"
+            },
+            "checking": "Buscando actualizaciones...",
+            "none": "No hay actualizaciones disponibles",
+            "downloading": "Descargando actualización...",
+            "downloadingProgress": "Descargando actualización: {{percent}}%",
+            "checkFailed": "No se pudo buscar actualizaciones.",
+            "downloadFailed": "No se pudo descargar la actualización.",
+            "installFailed": "No se pudo instalar la actualización.",
+            "failed": "Se ha producido un error de actualización."
         }
     },
     "selectRelease": {

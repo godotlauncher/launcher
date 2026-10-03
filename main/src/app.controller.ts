@@ -18,10 +18,10 @@ import semver from 'semver';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { AppLifecycleService } from './app-lifecycle.service.js';
 import {
+    changeBetaChannel,
     checkForUpdates,
     downloadAppUpdate,
     installUpdateAndRestart,
-    setBetaChannel,
 } from './autoUpdater.js';
 import {
     ensureDirectory,
@@ -115,12 +115,19 @@ export class AppController implements AppBridge {
         return setAutoCheckUpdates(enabled);
     }
 
+    /**
+     * Saves the beta preference only when the selected update is not busy.
+     *
+     * @param enabled - Whether prerelease updates should be offered.
+     * @returns The preference that remains active after the attempted change.
+     */
     @AppHandler('setReceiveBetaUpdates')
     async setReceiveBetaUpdates(enabled: boolean): Promise<boolean> {
         const prefs = await getUserPreferences();
-        await setUserPreferences({ ...prefs, receive_beta_updates: enabled });
-        setBetaChannel(enabled);
-        return enabled;
+        const applied = await changeBetaChannel(enabled, () =>
+            setUserPreferences({ ...prefs, receive_beta_updates: enabled }),
+        );
+        return applied ? enabled : (prefs.receive_beta_updates ?? false);
     }
 
     @AppHandler('openFileDialog')

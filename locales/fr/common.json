@@ -45,7 +45,40 @@
             "readyWithVersion": "La version {{version}} est prête, redémarrez Godot Launcher pour l'installer. <RestartButton>Redémarrer maintenant</RestartButton>",
             "readyNoVersion": "La mise à jour est prête, redémarrez Godot Launcher pour l'installer. <RestartButton>Redémarrer maintenant</RestartButton>",
             "manualWithVersion": "La version {{version}} est disponible, mais l’installation automatique n’est pas prise en charge sur ce système rpm-ostree. <ReleaseLink>Télécharger manuellement</ReleaseLink> ou <SkipButton>Ignorer cette version</SkipButton>",
-            "manualNoVersion": "Une nouvelle version est disponible, mais l’installation automatique n’est pas prise en charge sur ce système rpm-ostree. <ReleaseLink>Télécharger manuellement</ReleaseLink>"
+            "manualNoVersion": "Une nouvelle version est disponible, mais l’installation automatique n’est pas prise en charge sur ce système rpm-ostree. <ReleaseLink>Télécharger manuellement</ReleaseLink>",
+            "notification": {
+                "available": "Mise à jour disponible",
+                "downloading": "Téléchargement",
+                "ready": "Mise à jour prête",
+                "error": "La mise à jour demande votre attention",
+                "update": "Actualiser",
+                "downloadingProgress": "Téléchargement {{percent}}%"
+            },
+            "panel": {
+                "titleWithVersion": "Godot Launcher {{version}}",
+                "title": "Mise à jour de Godot Launcher",
+                "installAfterDownload": "Redémarrez pour installer une fois le téléchargement terminé.",
+                "ready": "La mise à jour est téléchargée. Redémarrez Godot Launcher pour l’installer.",
+                "manual": "L’installation automatique n’est pas prise en charge sur ce système rpm-ostree. Téléchargez et installez la mise à jour manuellement.",
+                "readReleaseNotes": "Lire les notes de version",
+                "download": "Télécharger la mise à jour",
+                "restart": "Redémarrer et installer",
+                "downloadManually": "Télécharger manuellement",
+                "skip": "Ignorer cette version",
+                "downloadProgress": "Progression du téléchargement",
+                "openFailed": "Impossible d’ouvrir le lien. Veuillez réessayer.",
+                "actionFailed": "L’action n’a pas pu être terminée. Veuillez réessayer.",
+                "close": "Fermer le panneau de mise à jour",
+                "later": "Plus tard"
+            },
+            "checking": "Recherche de mises à jour...",
+            "none": "Aucune mise à jour disponible",
+            "downloading": "Téléchargement de la mise à jour...",
+            "downloadingProgress": "Téléchargement de la mise à jour : {{percent}}%",
+            "checkFailed": "La recherche de mises à jour a échoué.",
+            "downloadFailed": "Le téléchargement de la mise à jour a échoué.",
+            "installFailed": "L'installation de la mise à jour a échoué.",
+            "failed": "Une erreur de mise à jour est survenue."
         }
     },
     "selectRelease": {

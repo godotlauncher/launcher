@@ -45,7 +45,40 @@
             "readyWithVersion": "版本 {{version}} 已就緒，重新啟動 Godot Launcher 以安裝。<RestartButton>立即重新啟動</RestartButton>",
             "readyNoVersion": "更新已就緒，重新啟動 Godot Launcher 以安裝。<RestartButton>立即重新啟動</RestartButton>",
             "manualWithVersion": "{{version}} 版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>或<SkipButton>略過此版本</SkipButton>",
-            "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>"
+            "manualNoVersion": "有新版本可用，但此 rpm-ostree 系統不支援自動安裝。<ReleaseLink>手動下載</ReleaseLink>",
+            "notification": {
+                "available": "有可用更新",
+                "downloading": "下載中",
+                "ready": "更新已就緒",
+                "error": "更新需要處理",
+                "update": "更新",
+                "downloadingProgress": "下載中 {{percent}}%"
+            },
+            "panel": {
+                "titleWithVersion": "Godot Launcher {{version}}",
+                "title": "Godot Launcher 更新",
+                "installAfterDownload": "下載完成後重新啟動以安裝更新。",
+                "ready": "更新已下載。請重新啟動 Godot Launcher 以安裝。",
+                "manual": "此 rpm-ostree 系統不支援自動安裝。請手動下載並安裝更新。",
+                "readReleaseNotes": "閱讀版本資訊",
+                "download": "下載更新",
+                "restart": "重新啟動並安裝",
+                "downloadManually": "手動下載",
+                "skip": "略過此版本",
+                "downloadProgress": "下載進度",
+                "openFailed": "無法開啟連結。請重試。",
+                "actionFailed": "無法完成操作。請重試。",
+                "close": "關閉更新面板",
+                "later": "稍後"
+            },
+            "checking": "正在檢查更新...",
+            "none": "沒有可用更新",
+            "downloading": "正在下載更新...",
+            "downloadingProgress": "正在下載更新: {{percent}}%",
+            "checkFailed": "檢查更新失敗。",
+            "downloadFailed": "下載更新失敗。",
+            "installFailed": "安裝更新失敗。",
+            "failed": "發生更新錯誤。"
         }
     },
     "selectRelease": {
