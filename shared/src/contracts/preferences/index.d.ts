@@ -41,6 +41,7 @@ export type UserPreferences = {
     receive_beta_updates: boolean;
     auto_start: boolean;
     start_in_tray: boolean;
+    close_window_to_tray?: boolean;
     confirm_project_remove: boolean;
     first_run: boolean;
     /** The shared-template migration introduction has been acknowledged. */

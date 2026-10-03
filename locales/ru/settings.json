@@ -37,6 +37,12 @@
             "startOnBoot": "Запускать при загрузке компьютера.",
             "startInTray": "Запускать в трее."
         },
+        "windowClose": {
+            "title": "Закрытие окна",
+            "description": "Выберите, что происходит при закрытии окна Godot Launcher.",
+            "closeToTray": "Закрыть в системный трей",
+            "quit": "Выйти из Godot Launcher"
+        },
         "projectLaunch": {
             "title": "Действие после запуска проекта",
             "description": "Выберите, что делает Godot Launcher после запуска проекта",
