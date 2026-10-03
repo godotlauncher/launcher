@@ -481,7 +481,11 @@ describe('AppLifecycleService', () => {
         await initializeLifecycle(service);
         await service.onMainWindowClose();
 
+        const logger = (await import('electron-log/main.js')).default;
         expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(false);
+        expect(logger.info).toHaveBeenCalledWith(
+            'System tray is unavailable; quitting when the main window closes',
+        );
         expect(mocks.appQuit).not.toHaveBeenCalled();
     });
 
@@ -510,13 +514,20 @@ describe('AppLifecycleService', () => {
         const service = createService();
 
         await initializeLifecycle(service);
-        trayAvailabilityService.isAvailable.mockClear();
         await service.onMainWindowClose();
 
+        const logger = (await import('electron-log/main.js')).default;
+        expect(electronAppService.setHideOnClose).toHaveBeenCalledOnce();
         expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(false);
-        expect(trayAvailabilityService.isAvailable).not.toHaveBeenCalled();
+        expect(logger.debug).toHaveBeenCalledWith(
+            'Close to tray is disabled; quitting when the main window closes',
+        );
+        expect(logger.info).not.toHaveBeenCalledWith(
+            'System tray is unavailable; quitting when the main window closes',
+        );
         expect(mocks.appQuit).not.toHaveBeenCalled();
     });
+
     it('routes tray launches through the code editor aware project command', async () => {
         const service = createService();
         const project = { path: '/projects/demo' };
