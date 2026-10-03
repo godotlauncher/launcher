@@ -35,7 +35,7 @@ export function VerticalTabMenu<Tab extends string>({
             role="tablist"
             aria-orientation="vertical"
             aria-label={ariaLabel}
-            className="flex w-56 shrink-0 flex-col gap-1 overflow-y-auto border-r border-base-content/10 p-3 sm:w-64"
+            className="flex w-shell-settings-sidebar shrink-0 flex-col gap-1 overflow-y-auto border-r border-base-content/10 p-3"
         >
             {items.map((item, index) => {
                 const Icon = item.icon;
