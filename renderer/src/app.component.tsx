@@ -458,9 +458,6 @@ function MainLayout() {
                                 <span className="flex-1">
                                     {t('app.navigation.connections')}
                                 </span>
-                                <span className="badge badge-primary">
-                                    {t('app.navigation.new')}
-                                </span>
                             </NavLink>
                         </li>
 
