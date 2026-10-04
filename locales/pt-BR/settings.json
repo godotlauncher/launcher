@@ -37,6 +37,12 @@
             "startOnBoot": "Iniciar quando o computador ligar.",
             "startInTray": "Iniciar na bandeja."
         },
+        "windowClose": {
+            "title": "Fechamento da janela",
+            "description": "Escolha o que acontece ao fechar a janela do Godot Launcher.",
+            "closeToTray": "Fechar para a bandeja do sistema",
+            "quit": "Sair do Godot Launcher"
+        },
         "projectLaunch": {
             "title": "Ação após iniciar projeto",
             "description": "Escolha o que o Godot Launcher faz depois de iniciar um projeto",

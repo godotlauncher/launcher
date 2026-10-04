@@ -1,4 +1,5 @@
 import { app } from 'electron';
+import logger from 'electron-log/main.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppLifecycleService } from './app-lifecycle.service.js';
 
@@ -318,7 +319,6 @@ describe('AppLifecycleService', () => {
         await service.recoverTemplateStorage();
         await service.beforeWindowReady();
 
-        const logger = (await import('electron-log/main.js')).default;
         expect(logger.warn).toHaveBeenCalledWith(
             expect.stringMatching(/Export template storage requires recovery/),
         );
@@ -482,8 +482,52 @@ describe('AppLifecycleService', () => {
         await service.onMainWindowClose();
 
         expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(false);
+        expect(logger.info).toHaveBeenCalledWith(
+            'System tray is unavailable; quitting when the main window closes',
+        );
         expect(mocks.appQuit).not.toHaveBeenCalled();
     });
+
+    it.each([undefined, true])(
+        'hides to the tray on close when close_window_to_tray is %s',
+        async (closeWindowToTray) => {
+            mocks.getUserPreferences.mockResolvedValue({
+                ...defaultPreferences,
+                close_window_to_tray: closeWindowToTray,
+            });
+            const service = createService();
+
+            await initializeLifecycle(service);
+            await service.onMainWindowClose();
+
+            expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(
+                true,
+            );
+            expect(mocks.appQuit).not.toHaveBeenCalled();
+        },
+    );
+
+    it('lets the framework quit on close when close to tray is disabled', async () => {
+        mocks.getUserPreferences.mockResolvedValue({
+            ...defaultPreferences,
+            close_window_to_tray: false,
+        });
+        const service = createService();
+
+        await initializeLifecycle(service);
+        await service.onMainWindowClose();
+
+        expect(electronAppService.setHideOnClose).toHaveBeenCalledOnce();
+        expect(electronAppService.setHideOnClose).toHaveBeenCalledWith(false);
+        expect(logger.debug).toHaveBeenCalledWith(
+            'Close to tray is disabled; quitting when the main window closes',
+        );
+        expect(logger.info).not.toHaveBeenCalledWith(
+            'System tray is unavailable; quitting when the main window closes',
+        );
+        expect(mocks.appQuit).not.toHaveBeenCalled();
+    });
+
     it('routes tray launches through the code editor aware project command', async () => {
         const service = createService();
         const project = { path: '/projects/demo' };
@@ -598,7 +642,6 @@ describe('AppLifecycleService', () => {
             launchFromTray({ path: '/projects/demo' }),
         ).resolves.toBeUndefined();
         expect(windowManager.revealMainWindow).toHaveBeenCalledOnce();
-        const logger = (await import('electron-log/main.js')).default;
         expect(logger.error).toHaveBeenCalledWith(
             'Failed to show tray launch error',
             expect.any(Error),

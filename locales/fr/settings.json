@@ -37,6 +37,12 @@
             "startOnBoot": "Démarrer au démarrage de l'ordinateur.",
             "startInTray": "Démarrer dans la barre d'état système."
         },
+        "windowClose": {
+            "title": "Fermeture de la fenêtre",
+            "description": "Choisir ce que fait Godot Launcher lorsque vous fermez sa fenêtre.",
+            "closeToTray": "Fermer dans la barre d'état système",
+            "quit": "Quitter Godot Launcher"
+        },
         "projectLaunch": {
             "title": "Action de lancement du projet",
             "description": "Choisir ce que fait Godot Launcher après le lancement d'un projet",

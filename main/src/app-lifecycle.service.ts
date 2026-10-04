@@ -252,12 +252,19 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
             return;
         }
 
-        const hideOnClose = await this.trayAvailabilityService.isAvailable();
+        const closeToTray = prefs.close_window_to_tray !== false;
+        const trayAvailable = await this.trayAvailabilityService.isAvailable();
+        const hideOnClose = closeToTray && trayAvailable;
+
         this.electronAppService.setHideOnClose(hideOnClose);
 
         if (hideOnClose) {
             logger.debug('Hiding window');
             this.hideDockIcon();
+        } else if (!closeToTray) {
+            logger.debug(
+                'Close to tray is disabled; quitting when the main window closes',
+            );
         } else {
             logger.info(
                 'System tray is unavailable; quitting when the main window closes',

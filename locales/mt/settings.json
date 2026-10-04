@@ -37,6 +37,12 @@
             "startOnBoot": "Ibda meta l-kompjuter jibda.",
             "startInTray": "Ibda fit-tray."
         },
+        "windowClose": {
+            "title": "Għeluq tat-tieqa",
+            "description": "Agħżel x'jiġri meta tagħlaq it-tieqa ta' Godot Launcher.",
+            "closeToTray": "Agħlaq għas-system tray",
+            "quit": "Oħroġ minn Godot Launcher"
+        },
         "projectLaunch": {
             "title": "Azzjoni wara li Tibda Proġett",
             "description": "Agħżel x'jagħmel Godot Launcher wara li jibda proġett",

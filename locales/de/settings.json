@@ -37,6 +37,12 @@
             "startOnBoot": "Beim Systemstart starten.",
             "startInTray": "Im Tray starten."
         },
+        "windowClose": {
+            "title": "Fenster schließen",
+            "description": "Wählen Sie, was passiert, wenn Sie das Fenster von Godot Launcher schließen.",
+            "closeToTray": "In Systemtray schließen",
+            "quit": "Godot Launcher beenden"
+        },
         "projectLaunch": {
             "title": "Projektstart-Aktion",
             "description": "Wählen Sie, was der Godot Launcher nach dem Start eines Projekts tun soll",
