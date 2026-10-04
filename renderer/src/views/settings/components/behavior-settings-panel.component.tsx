@@ -91,7 +91,9 @@ export const BehaviorSettingsPanel: React.FC<BehaviorSettingsPanelProps> = ({
                             name="window-close-action"
                             className="radio radio-sm"
                             data-testid="radioWindowCloseToTray"
-                            checked={preferences?.close_window_to_tray !== false}
+                            checked={
+                                preferences?.close_window_to_tray !== false
+                            }
                             onChange={() => setCloseWindowToTray(true)}
                         />
                         <span>{t('behavior.windowClose.closeToTray')}</span>
@@ -102,7 +104,9 @@ export const BehaviorSettingsPanel: React.FC<BehaviorSettingsPanelProps> = ({
                             name="window-close-action"
                             className="radio radio-sm"
                             data-testid="radioWindowCloseQuit"
-                            checked={preferences?.close_window_to_tray === false}
+                            checked={
+                                preferences?.close_window_to_tray === false
+                            }
                             onChange={() => setCloseWindowToTray(false)}
                         />
                         <span>{t('behavior.windowClose.quit')}</span>
