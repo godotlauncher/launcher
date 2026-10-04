@@ -6,11 +6,13 @@
 }
 
 :root {
-    --shell-sidebar-width: 15rem;
+    --shell-sidebar-width: 17rem;
+    --shell-settings-sidebar-width: 17rem;
 }
 
 @theme inline {
     --spacing-shell-sidebar: var(--shell-sidebar-width);
+    --spacing-shell-settings-sidebar: var(--shell-settings-sidebar-width);
 }
 
 @plugin "daisyui/theme" {

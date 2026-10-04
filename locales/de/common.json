@@ -45,7 +45,40 @@
             "readyWithVersion": "Version {{version}} ist bereit, starte Godot Launcher neu, um sie zu installieren. <RestartButton>Jetzt neu starten</RestartButton>",
             "readyNoVersion": "Das Update ist bereit, starte Godot Launcher neu, um es zu installieren. <RestartButton>Jetzt neu starten</RestartButton>",
             "manualWithVersion": "Version {{version}} ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <ReleaseLink>Manuell herunterladen</ReleaseLink> oder <SkipButton>Diese Version überspringen</SkipButton>",
-            "manualNoVersion": "Eine neue Version ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <ReleaseLink>Manuell herunterladen</ReleaseLink>"
+            "manualNoVersion": "Eine neue Version ist verfügbar, aber die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. <ReleaseLink>Manuell herunterladen</ReleaseLink>",
+            "notification": {
+                "available": "Update verfügbar",
+                "downloading": "Herunterladen",
+                "ready": "Update bereit",
+                "error": "Update benötigt Aufmerksamkeit",
+                "update": "Update",
+                "downloadingProgress": "Herunterladen {{percent}}%"
+            },
+            "panel": {
+                "titleWithVersion": "Godot Launcher {{version}}",
+                "title": "Godot Launcher-Update",
+                "installAfterDownload": "Starte nach dem Download neu, um das Update zu installieren.",
+                "ready": "Das Update wurde heruntergeladen. Starte Godot Launcher neu, um es zu installieren.",
+                "manual": "Die automatische Installation wird auf diesem rpm-ostree-System nicht unterstützt. Lade das Update herunter und installiere es manuell.",
+                "readReleaseNotes": "Versionshinweise lesen",
+                "download": "Update herunterladen",
+                "restart": "Neu starten und installieren",
+                "downloadManually": "Manuell herunterladen",
+                "skip": "Diese Version überspringen",
+                "downloadProgress": "Download-Fortschritt",
+                "openFailed": "Der Link konnte nicht geöffnet werden. Bitte versuche es erneut.",
+                "actionFailed": "Die Aktion konnte nicht abgeschlossen werden. Bitte versuche es erneut.",
+                "close": "Update-Bereich schließen",
+                "later": "Später"
+            },
+            "checking": "Nach Updates suchen...",
+            "none": "Keine Updates verfügbar",
+            "downloading": "Update wird heruntergeladen...",
+            "downloadingProgress": "Update wird heruntergeladen: {{percent}}%",
+            "checkFailed": "Die Suche nach Updates ist fehlgeschlagen.",
+            "downloadFailed": "Das Update konnte nicht heruntergeladen werden.",
+            "installFailed": "Das Update konnte nicht installiert werden.",
+            "failed": "Ein Fehler beim Update ist aufgetreten."
         }
     },
     "selectRelease": {
