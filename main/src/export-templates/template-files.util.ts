@@ -15,6 +15,13 @@ export type TemplateFile = {
     mode: number;
     metadata?: { mtimeMs: number; ctimeMs: number; ino: number; dev: number };
 };
+/** Scopes tree discovery and content reads, and reports actual bytes checked. */
+export type TemplateTreeHashOptions = {
+    /** Discover only these direct children, leaving unrelated root contents untouched. */
+    includedRoots?: ReadonlySet<string>;
+    files?: ReadonlySet<string>;
+    onBytes?: (bytes: number) => void;
+};
 let mutationActive = false;
 let templateConnectionsActive = 0;
 let templateOperationsActive = 0;
@@ -147,13 +154,17 @@ export async function templateLstat(
  * @param root - Directory to read.
  * @param hashFiles - Whether file contents are needed for a mutation review.
  * @param captureMetadata - Include cheap change-detection metadata for file selection.
+ * @param excludedRoots - Direct children omitted from discovery.
  * @param signal - Optional cancellation signal.
+ * @param hashOptions - Optional discovery scope, hash scope and byte reporting.
  */
 export async function readTemplateTree(
     root: string,
     hashFiles = false,
     signal?: AbortSignal,
     captureMetadata = false,
+    excludedRoots?: ReadonlySet<string>,
+    hashOptions?: TemplateTreeHashOptions,
 ): Promise<TemplateFile[]> {
     const files: TemplateFile[] = [];
     const rootStat = await templateLstat(root);
@@ -166,6 +177,13 @@ export async function readTemplateTree(
     async function walk(relative: string): Promise<void> {
         const directory = relative ? templateChild(root, relative) : root;
         for (const name of (await fs.promises.readdir(directory)).sort()) {
+            if (!relative && excludedRoots?.has(name)) continue;
+            if (
+                !relative &&
+                hashOptions?.includedRoots &&
+                !hashOptions.includedRoots.has(name)
+            )
+                continue;
             signal?.throwIfAborted();
             const child = relative ? `${relative}/${name}` : name;
             const filename = templateChild(root, child);
@@ -178,10 +196,17 @@ export async function readTemplateTree(
             }
             if (!stat.isFile())
                 throw new Error('exportTemplates:errors.unsafe');
-            const hash = hashFiles ? createHash('sha256') : undefined;
+            const hash =
+                hashFiles &&
+                (!hashOptions?.files || hashOptions.files.has(child))
+                    ? createHash('sha256')
+                    : undefined;
             if (hash) {
                 const stream = fs.createReadStream(filename, { signal });
-                for await (const chunk of stream) hash.update(chunk);
+                for await (const chunk of stream) {
+                    hash.update(chunk);
+                    hashOptions?.onBytes?.(chunk.length);
+                }
                 const after = await fs.promises.lstat(filename);
                 if (
                     after.size !== stat.size ||
@@ -211,6 +236,21 @@ export async function readTemplateTree(
     }
     await walk('');
     return files;
+}
+/** Records cheap file identity and modification metadata in a stable order.
+ * @param files - Files captured during discovery or a later validation.
+ */
+export function templateMetadataSnapshot(files: TemplateFile[]): string {
+    return JSON.stringify(
+        [...files]
+            .sort((a, b) => a.relative.localeCompare(b.relative))
+            .map((file) => ({
+                relative: file.relative,
+                size: file.size,
+                mode: file.mode,
+                metadata: file.metadata,
+            })),
+    );
 }
 /** Fingerprints a sorted file manifest.
  * @param files - Hashed files to identify.

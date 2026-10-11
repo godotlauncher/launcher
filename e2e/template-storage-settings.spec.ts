@@ -284,18 +284,24 @@ test('moves both complete stores, preserves project links and survives restart',
         await fs.realpath(importedDestination),
     );
     expect(
-        path.resolve(
-            path.dirname(path.join(activeTemplates(projects[1]), '4.4.stable')),
-            await fs.readlink(
+        (
+            await fs.lstat(
                 path.join(activeTemplates(projects[1]), '4.4.stable'),
-            ),
+            )
+        ).isSymbolicLink(),
+    ).toBe(true);
+    expect(
+        await fs.realpath(
+            path.join(activeTemplates(projects[1]), '4.4.stable'),
         ),
     ).toBe(
-        path.join(
-            importedDestination,
-            'imported',
-            build.setId,
-            build.directoryName,
+        await fs.realpath(
+            path.join(
+                importedDestination,
+                'imported',
+                build.setId,
+                build.directoryName,
+            ),
         ),
     );
     expect(
@@ -356,18 +362,24 @@ test('moves both complete stores, preserves project links and survives restart',
         'healthy',
     ]);
     expect(
-        path.resolve(
-            path.dirname(path.join(activeTemplates(projects[1]), '4.4.stable')),
-            await fs.readlink(
+        (
+            await fs.lstat(
                 path.join(activeTemplates(projects[1]), '4.4.stable'),
-            ),
+            )
+        ).isSymbolicLink(),
+    ).toBe(true);
+    expect(
+        await fs.realpath(
+            path.join(activeTemplates(projects[1]), '4.4.stable'),
         ),
     ).toBe(
-        path.join(
-            importedDestination,
-            'imported',
-            build.setId,
-            build.directoryName,
+        await fs.realpath(
+            path.join(
+                importedDestination,
+                'imported',
+                build.setId,
+                build.directoryName,
+            ),
         ),
     );
     expect(
@@ -468,13 +480,8 @@ test('a second move removes the previous physical store without breaking its can
     expect(await fs.lstat(first).catch(() => null)).toBeNull();
     expect(await fs.realpath(importedRoot)).toBe(await fs.realpath(second));
     expect(
-        path.resolve(
-            path.dirname(path.join(activeTemplates(projects[1]), '4.4.stable')),
-            await fs.readlink(
-                path.join(activeTemplates(projects[1]), '4.4.stable'),
-            ),
-        ),
-    ).toBe(path.join(second, 'imported', build.setId, build.directoryName));
+        await fs.realpath(path.join(activeTemplates(projects[1]), '4.4.stable')),
+    ).toBe(await fs.realpath(path.join(second, 'imported', build.setId, build.directoryName)));
     expect(
         await fs.readFile(
             path.join(

@@ -13,6 +13,11 @@ import {
     templateLstat,
 } from './template-files.util.js';
 import { projectOfficialTemplateRoot } from './template-paths.util.js';
+import {
+    managedTemplateVersionTarget,
+    templateVersionCollection,
+} from './template-version-layout.util.js';
+import { readTemplateVersionLayout } from './template-version-migration.store.js';
 
 /** Recognises housekeeping entries without treating arbitrary hidden files as disposable.
  * @param name - One directory entry.
@@ -36,6 +41,25 @@ export function isTemplateHousekeeping(name: string): boolean {
         ].includes(name.toLowerCase()) ||
         /^\.Trash-\d+$/.test(name)
     );
+}
+
+/** Checks whether a collection contains only recognised regular metadata files.
+ * @param directory - Local template collection.
+ * @param entries - Fresh names directly inside the collection.
+ */
+export async function hasOnlyTemplateHousekeepingFiles(
+    directory: string,
+    entries: readonly string[],
+): Promise<boolean> {
+    if (
+        !entries.length ||
+        entries.some((name) => !isTemplateHousekeeping(name))
+    )
+        return false;
+    const stats = await Promise.all(
+        entries.map((name) => templateLstat(path.join(directory, name))),
+    );
+    return stats.every((stat) => stat?.isFile() && !stat.isSymbolicLink());
 }
 
 /** Assesses a registered environment without creating folders, links or downloading files.
@@ -118,6 +142,21 @@ export async function assessProjectTemplates(
             return result;
         }
         const entries = (await fs.promises.readdir(local)).sort();
+        const layout = await readTemplateVersionLayout(
+            path.dirname(project.launch_path),
+        );
+        if (
+            layout &&
+            templateVersionCollection(
+                path.dirname(project.launch_path),
+                layout.root,
+            ) !== local
+        ) {
+            result.state = 'blocked';
+            result.reason = 'unexpected-content';
+            return result;
+        }
+        let unsafeVersion = false;
         for (const name of entries) {
             if (isTemplateHousekeeping(name)) {
                 result.metadata.push(name);
@@ -128,18 +167,41 @@ export async function assessProjectTemplates(
                 continue;
             }
             const stat = await templateLstat(templateChild(local, name));
+            if (
+                stat?.isSymbolicLink() &&
+                layout?.managed[name] &&
+                (await managedTemplateVersionTarget(
+                    templateChild(local, name),
+                    root,
+                ))
+            )
+                continue;
             if (!stat?.isDirectory() || stat.isSymbolicLink()) {
                 result.unexpected.push(name);
+                if (!stat?.isFile() || stat.isSymbolicLink())
+                    unsafeVersion = true;
                 continue;
             }
             result.setIds.push(name);
         }
-        if (result.unexpected.length) {
+        if (
+            unsafeVersion ||
+            (result.unexpected.length && !result.setIds.length && !layout)
+        ) {
             result.state = 'blocked';
             result.reason = 'unexpected-content';
             return result;
         }
-        if (!entries.length) {
+        if (layout && !result.setIds.length) {
+            result.state = 'shared';
+            result.reason = 'connected';
+            result.pending = false;
+            return result;
+        }
+        if (
+            !entries.length ||
+            (await hasOnlyTemplateHousekeepingFiles(local, entries))
+        ) {
             result.state = 'ready';
             result.reason = 'empty';
             return result;

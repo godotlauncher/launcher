@@ -72,7 +72,15 @@
         "decision": "Çakışan her dosya için saklanacak kopyayı seçin.",
         "recovery": "Kesintiye uğrayan işlem kurtarılmalı. Godot'u kapatıp dosyaları kurtarın. Dosyalar değiştiyse yeniden denemeden önce klasörleri inceleyin.",
         "failed": "İşlem tamamlanamadı. İzinleri, boş alanı ve bağlantıyı kontrol edip yeniden deneyin.",
-        "range": "Bu sunucu kısmi indirmeleri desteklemiyor veya paket değişti. Seçiciyi yeniden açın veya bir TPZ dosyasını içe aktarın."
+        "range": "Bu sunucu kısmi indirmeleri desteklemiyor veya paket değişti. Seçiciyi yeniden açın veya bir TPZ dosyasını içe aktarın.",
+        "downloadNetwork": "İndirme bağlantısı başarısız oldu.",
+        "downloadServer": "İndirme sunucusu bir hata döndürdü.",
+        "downloadPartial": "Şablon dosyası listesi yüklenemedi.",
+        "downloadChanged": "Şablon paketi değişti.",
+        "downloadUnavailable": "Şablon paketi kullanılamıyor.",
+        "downloadInvalid": "Geçersiz veya okunamayan şablon paketi.",
+        "fullChanged": "Şablon paketi değişti.",
+        "downloadFailed": "Şablon dosyaları yüklenemedi."
     },
     "picker": {
         "title": "Dışa aktarma şablonu ekle",
@@ -98,7 +106,24 @@
         "save": "Değişiklikleri kaydet",
         "removalNotice": "Kaldırılan dosyalar bu paylaşılan şablonları kullanan projelerde artık kullanılamaz.",
         "loading": "Kullanılabilir dosyalar yükleniyor...",
-        "localOnly": "Yalnızca kurulu dosyalar kullanılabilir. Resmî dosyalar eklemek için bu paneli bağlantı varken yeniden açın."
+        "localOnly": "Yalnızca kurulu dosyalar kullanılabilir. Resmî dosyalar eklemek için bu paneli bağlantı varken yeniden açın.",
+        "tryAgain": "Yeniden dene",
+        "refreshFiles": "Dosya listesini yenile",
+        "chooseAnotherVersion": "Başka bir sürüm seç",
+        "refreshAfterChanges": "Yeniden denemeden önce değişiklikleri kaydedin veya geri alın.",
+        "done": "Bitti",
+        "fullCancelFailed": "İptal işlemi doğrulanmadı.",
+        "downloadFull": "Tam paketi indir",
+        "fullOffer": "Tam paket: {{size}}",
+        "fullKeepFiles": "Tüm platformlar için eksik şablonları ekler. Mevcut dosyalar korunur.",
+        "fullDownloading": "Tam paket indiriliyor",
+        "fullExtracting": "Şablonlar çıkarılıyor",
+        "fullInstalling": "Şablonlar kuruluyor",
+        "fullComplete": "Şablonlar kuruldu.",
+        "fullCancelled": "İndirme iptal edildi.",
+        "saveFailed": "Şablon değişiklikleri kaydedilemedi.",
+        "installFailed": "Şablonlar kurulamadı.",
+        "onlineFilesUnavailable": "Çevrimiçi dosya listesi yüklenemedi. Kurulu dosyalar gösteriliyor."
     },
     "manage": "Şablonları yönet",
     "removeTemplates": "Şablonları kaldır",
@@ -269,7 +294,16 @@
         "save": "Kaydet",
         "checking": "Dışa aktarma şablonları kontrol ediliyor...",
         "removeFile": "Seçili dosyayı kaldır",
-        "affectedProjects": "Etkilenen projeler"
+        "affectedProjects": "Etkilenen projeler",
+        "chooseAnotherFile": "Başka bir dosya seç",
+        "cannotReplace": "Bu dosya bu şablonların yerine kullanılamaz",
+        "cannotImport": "Bu dosya içe aktarılamaz",
+        "existingBuild": "Mevcut derleme",
+        "selectedFile": "Seçilen dosya",
+        "replacementMismatch": "Bu derleme {{expected}} şablonlarını gerektiriyor. Seçilen dosya {{actual}} şablonlarını içeriyor.",
+        "replacingBuild": "\"{{label}}\" değiştiriliyor",
+        "replaceSummary": "Bu derlemedeki tüm dosyalar değiştirilir. Bu derlemeyi kullanan projeler yeni dosyaları kullanır.",
+        "packageDetails": "Paket ayrıntıları"
     },
     "storage": {
         "title": "Dışa aktarma şablonu depolama alanı",
@@ -345,5 +379,159 @@
         "moveSummary_two": "{{count}} şablonu ({{size}}) şuraya taşımak üzeresiniz:",
         "moveSummary_few": "{{count}} şablonu ({{size}}) şuraya taşımak üzeresiniz:",
         "moveSummary_many": "{{count}} şablonu ({{size}}) şuraya taşımak üzeresiniz:"
+    },
+    "wizardMigration": {
+        "title": "Dışa aktarma şablonlarını taşı",
+        "stepsLabel": "Şablon taşıma adımları",
+        "steps": {
+            "about": "Hakkında",
+            "options": "Seçenekler",
+            "choose": "Seç",
+            "review": "İncele",
+            "move": "Taşı",
+            "done": "Bitti"
+        },
+        "titles": {
+            "about": "Dışa aktarma şablonlarınızı tek bir yerde toplayın",
+            "options": "Her seçeneğin anlamı",
+            "choose": "Tüm projeler için seç",
+            "review": "Seçimlerinizi kontrol edin",
+            "move": "Dışa aktarma şablonları taşınıyor",
+            "done": "Taşıma sonuçlarınız"
+        },
+        "about": {
+            "intro": "Eski projeler dışa aktarma şablonlarını kendi düzenleyici klasörlerinde saklar. Godot Launcher artık bu dosyaları Dışa Aktarma Şablonları bölümünden yönetebilir.",
+            "today": "Bugün",
+            "before": "Her projenin düzenleyici klasöründeki şablonlar",
+            "after": "Taşımadan sonra",
+            "destination": "Dışa Aktarma Şablonları bölümünden yönetilen şablonlar",
+            "why": "Neden taşımalısınız?",
+            "benefit1": "Şablonlarınızı tek bir yerde görüntüleyin ve yönetin.",
+            "benefit2": "Her projenin şablonlarını koruyun veya projelerin paylaşılan dosyaları kullanmasını sağlayın.",
+            "benefit3": "Fazladan yerel kopyalar saklamak yerine paylaşılan şablonları yeniden kullanın.",
+            "found": "{{number}} projede şablon bulduk.",
+            "next": "Şimdi seçenekleri öğrenin. Dosyalar taşınmadan önce seçimlerinizi inceleyeceksiniz."
+        },
+        "optionsIntro": "Sonraki ekranda bir projedeki tüm sürümler için tek bir seçim yapın veya her sürüm için ayrı seçim yapın.",
+        "optionTitle": "Seçenek {{number}}: {{label}}",
+        "recommended": "Önerilen",
+        "choices": {
+            "save-imported": "Mevcut şablonları koru",
+            "share-project": "Şablonları paylaş",
+            "use-shared": "Paylaşılan şablonları kullan",
+            "later": "Daha sonra karar ver"
+        },
+        "explanations": {
+            "save-imported": "Şablon klasörünü İçe Aktarılan Şablonlar bölümüne taşır. Proje kendi dosyalarını kullanmaya devam eder.",
+            "share-project": "Eksik dosyaları paylaşılan şablonlara ekler ve bu projede bunları kullanır. Mevcut paylaşılan dosyalar değişmez. Yerel dosyalarınızdan farklılarsa proje paylaşılan dosyaları kullanır.",
+            "use-shared": "Paylaşılan şablonları kullanır. Dışa aktarmadan önce eksik şablonları indirmeniz gerekebilir.",
+            "later": "Bu şablonları olduğu gibi bırakır. Daha sonra Dışa Aktarma Şablonları bölümünden karar verebilirsiniz."
+        },
+        "warnings": {
+            "share-project": "Yerel kopyalar ayrı bir kopya kaydedilmeden kaldırılır.",
+            "use-shared": "Yerel şablon dosyaları ayrı bir kopya kaydedilmeden silinir."
+        },
+        "infoReminder": "Bir seçimin açıklamasını yeniden görmek için yanındaki bilgi düğmesini kullanın.",
+        "explain": "{{project}} için {{choice}} seçeneğini açıkla",
+        "scope": "Şu sürümler için geçerlidir: {{versions}}.",
+        "chooseIntro": "Her proje için tek bir seçim yapın veya her sürüm için ayrı seçim yapın.",
+        "projectSummary": "Projeler: {{projects}}, şablon sürümleri: {{versions}}",
+        "choiceSummary": "Şablon sürümüne göre seçimler",
+        "moreProjects": "Aşağıda daha fazla proje var. Görmek için kaydırın.",
+        "moreVersions": "Aşağıda daha fazla sürüm var. Görmek için kaydırın.",
+        "choiceNotice": {
+            "save-imported": "Şablonlarınız korunur",
+            "share-project": "Yerel kopyalar paylaşımdan sonra kaldırılır",
+            "use-shared": "Yerel dosyalar silinir",
+            "later": "Dosyalar olduğu gibi korunur"
+        },
+        "keepAll": "Tümü için mevcutları koru",
+        "keepNotice": "Mevcut şablonları koru aynı dosyaları kullanmaya devam eder. Aşağıdaki seçimleri değiştirebilirsiniz.",
+        "projectColumn": "Proje",
+        "versionsColumn": "Şablon sürümleri",
+        "choiceColumn": "Seçiminiz",
+        "individual": "Her sürüm için seç",
+        "individualLabel": "{{project}} içindeki her sürüm için seç",
+        "allVersions": "{{number}} sürümün tümü için geçerlidir",
+        "choiceLabel": "{{project}} için seçim",
+        "versionChoiceLabel": "{{project}}, {{version}} için seçim",
+        "unavailable": "Bu projeyi hazır olana kadar sonraya bırakın.",
+        "reviewIntro": "Henüz hiçbir şey değişmedi. Aşağıdaki listeyi kontrol edin. Başlamadan önce Godot düzenleyicilerini kapatın ve dışa aktarmaları durdurun.",
+        "reviewing": "Şablon dosyaları kontrol ediliyor...",
+        "effectsColumn": "Ne olacak",
+        "reviewVersions": "{{project}} için incelenen sürümler",
+        "reviewScope": {
+            "individual": "Her sürüm için ayrı seçimler",
+            "differentEffects": "Her sürüm için farklı etkiler"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "İçe Aktarılan Şablonlar bölümündeki şablonlarınızı kullanın.",
+                "shared": "Paylaşılan şablonları kullanın. Dışa aktarmadan önce eksikleri indirmeniz gerekebilir.",
+                "local": "Yerel şablonları kullanmaya devam edin."
+            },
+            "addMissing": "Eksik paylaşılan dosyaları ekleyin. Mevcut paylaşılan dosyaları koruyun.",
+            "localFiles": {
+                "remove-after-verification": "Dosyaları İçe Aktarılan Şablonlar bölümünde tutun ve bu projeyi onlara bağlayın.",
+                "remove-after-connection": "Projeyi bağladıktan sonra yerel dosyaları kaldırın. Ayrı bir kopya kaydedilmez.",
+                "keep": "Yerel dosyaları koruyun ve daha sonra karar verin."
+            }
+        },
+        "files": "{{number}} dosya",
+        "effects": {
+            "save-imported": "Klasörü İçe Aktarılan Şablonlar bölümüne taşıyın ve dosyalarını kullanmaya devam edin.",
+            "share-project": "Eksik paylaşılan dosyaları ekleyin, mevcutları koruyun, ardından paylaşılan şablonları kullanıp yerel kopyaları kaldırın.",
+            "use-shared": "Paylaşılan şablonları kullanın ve yerel dosyaları kaldırın. Dışa aktarmadan önce eksik şablonları indirmeniz gerekebilir.",
+            "later": "Yerel dosyaları koruyun ve bu sürümü sonraya bırakın."
+        },
+        "nothingChanged": "Henüz hiçbir şey değişmedi. Bir seçimi değiştirmek için Geri'yi seçin.",
+        "confirmRemoval": "Şablonları paylaş ve Paylaşılan şablonları kullan seçeneklerinin listelenen yerel dosyaları ayrı bir kopya kaydetmeden kaldırdığını anlıyorum.",
+        "leftLater": "Sonraya bırakıldı",
+        "laterProjects": "Sonraya bırakılan projeler",
+        "next": "İleri",
+        "seeOptions": "Seçenekleri gör",
+        "chooseProjects": "Projeler için seç",
+        "reviewChoices": "Seçimleri incele",
+        "moveTemplates": "Şablonları taşı",
+        "moving": "Şablonlar taşınıyor...",
+        "back": "Geri",
+        "finishLater": "Daha sonra tamamla",
+        "done": "Bitti",
+        "openTemplates": "Dışa Aktarma Şablonlarını Aç",
+        "keepOpen": "Büyük taşımalar zaman alabilir. Godot Launcher taşıma bitene kadar açık kalır.",
+        "progress": "{{total}} şablon sürümünden {{completed}} tanesi tamamlandı",
+        "progressLabel": "Tamamlanan şablon sürümleri",
+        "status": {
+            "waiting": "Bekliyor",
+            "checking": "Şablon dosyaları kontrol ediliyor",
+            "copying": "Şablonlar kopyalanıyor",
+            "verifying": "Kopyalanan dosyalar kontrol ediliyor",
+            "connecting": "Proje bağlantısı güncelleniyor",
+            "cleaning": "Taşıma tamamlanıyor",
+            "complete": "Bitti",
+            "error": "Taşınamadı",
+            "later": "Sonraya bırakıldı"
+        },
+        "results": "Şablon sürümü sonuçları",
+        "success": "Şablonlarınız hazır",
+        "partial": "Bazı şablonların yeniden incelenmesi gerekiyor",
+        "resultSummary": "Tamamlanan: {{completed}}. Taşınamayan: {{failed}}. Sonraya bırakılan: {{later}}.",
+        "resultNote": "Taşınan dosyaları Dışa Aktarma Şablonları bölümünden yönetebilirsiniz. Sonraya bırakılan sürümler için hâlâ bir karar verilmesi gerekiyor.",
+        "retryFailed": "Başarısız sürümleri yeniden dene",
+        "retryFailedCount": "Başarısız sürümleri yeniden dene ({{number}})",
+        "recover": "Kesintiye uğrayan taşımayı kurtar",
+        "recovering": "Şablonlar kurtarılıyor...",
+        "viewResults": "Taşımayı görüntüle",
+        "destination": {
+            "imported": "İçe Aktarılan Şablonlar bölümündeki şablonlarınızı kullanın.",
+            "shared": "Paylaşılan şablonları kullanın. Dışa aktarmadan önce eksik şablonları indirmeniz gerekebilir.",
+            "local": "Yerel şablonları kullanmaya devam edin."
+        },
+        "addMissing": "Eksik paylaşılan dosyaları ekleyin. Mevcut paylaşılan dosyalar değişmez.",
+        "localFiles": {
+            "remove-after-verification": "Dosyaları İçe Aktarılan Şablonlar bölümünde tutun ve bu projeyi onlara bağlayın.",
+            "remove-after-connection": "Proje bağlandıktan sonra yerel kopyaları ayrı bir kopya kaydetmeden kaldırın.",
+            "keep": "Yerel dosyaları koruyun ve bu sürümü sonraya bırakın."
+        }
     }
 }

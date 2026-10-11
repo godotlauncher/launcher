@@ -72,7 +72,15 @@
         "decision": "Wählen Sie für jede abweichende Datei eine Kopie aus.",
         "recovery": "Wiederherstellung erforderlich. Schließen Sie Godot und stellen Sie Dateien wieder her. Prüfen Sie geänderte Dateien vor einem erneuten Versuch.",
         "failed": "Vorgang fehlgeschlagen. Berechtigungen, Speicherplatz und Verbindung prüfen und erneut versuchen.",
-        "range": "Dieser Server unterstützt keine Teildownloads oder das Paket wurde geändert. Öffne die Auswahl erneut oder importiere eine TPZ-Datei."
+        "range": "Dieser Server unterstützt keine Teildownloads oder das Paket wurde geändert. Öffne die Auswahl erneut oder importiere eine TPZ-Datei.",
+        "downloadNetwork": "Die Download-Verbindung ist fehlgeschlagen.",
+        "downloadServer": "Der Download-Server hat einen Fehler zurückgegeben.",
+        "downloadPartial": "Die Liste der Vorlagendateien konnte nicht geladen werden.",
+        "downloadChanged": "Das Vorlagenpaket hat sich geändert.",
+        "downloadUnavailable": "Das Vorlagenpaket ist nicht verfügbar.",
+        "downloadInvalid": "Ungültiges oder nicht lesbares Vorlagenpaket.",
+        "fullChanged": "Das Vorlagenpaket hat sich geändert.",
+        "downloadFailed": "Die Vorlagendateien konnten nicht geladen werden."
     },
     "picker": {
         "title": "Exportvorlage hinzufügen",
@@ -98,7 +106,24 @@
         "save": "Änderungen speichern",
         "removalNotice": "Entfernte Dateien stehen Projekten, die diese gemeinsamen Vorlagen verwenden, nicht mehr zur Verfügung.",
         "loading": "Verfügbare Dateien werden geladen...",
-        "localOnly": "Nur installierte Dateien sind verfügbar. Öffne diesen Dialog mit einer Verbindung erneut, um offizielle Dateien hinzuzufügen."
+        "localOnly": "Nur installierte Dateien sind verfügbar. Öffne diesen Dialog mit einer Verbindung erneut, um offizielle Dateien hinzuzufügen.",
+        "tryAgain": "Erneut versuchen",
+        "refreshFiles": "Dateiliste aktualisieren",
+        "chooseAnotherVersion": "Andere Version wählen",
+        "refreshAfterChanges": "Änderungen vor dem erneuten Versuch speichern oder rückgängig machen.",
+        "done": "Fertig",
+        "fullCancelFailed": "Der Abbruch wurde nicht bestätigt.",
+        "downloadFull": "Vollständiges Paket herunterladen",
+        "fullOffer": "Vollständiges Paket: {{size}}",
+        "fullKeepFiles": "Fügt fehlende Vorlagen für alle Plattformen hinzu. Vorhandene Dateien bleiben erhalten.",
+        "fullDownloading": "Vollständiges Paket wird heruntergeladen",
+        "fullExtracting": "Vorlagen werden entpackt",
+        "fullInstalling": "Vorlagen werden installiert",
+        "fullComplete": "Vorlagen installiert.",
+        "fullCancelled": "Download abgebrochen.",
+        "saveFailed": "Änderungen an den Vorlagen konnten nicht gespeichert werden.",
+        "installFailed": "Vorlagen konnten nicht installiert werden.",
+        "onlineFilesUnavailable": "Die Online-Dateiliste konnte nicht geladen werden. Installierte Dateien werden angezeigt."
     },
     "manage": "Vorlagen verwalten",
     "removeTemplates": "Vorlagen entfernen",
@@ -269,7 +294,16 @@
         "save": "Speichern",
         "checking": "Exportvorlagen werden geprüft...",
         "removeFile": "Ausgewählte Datei entfernen",
-        "affectedProjects": "Betroffene Projekte"
+        "affectedProjects": "Betroffene Projekte",
+        "chooseAnotherFile": "Andere Datei wählen",
+        "cannotReplace": "Diese Datei kann diese Vorlagen nicht ersetzen",
+        "cannotImport": "Diese Datei kann nicht importiert werden",
+        "existingBuild": "Vorhandene Variante",
+        "selectedFile": "Ausgewählte Datei",
+        "replacementMismatch": "Diese Variante benötigt Vorlagen für {{expected}}. Die ausgewählte Datei enthält Vorlagen für {{actual}}.",
+        "replacingBuild": "„{{label}}“ wird ersetzt",
+        "replaceSummary": "Dies ersetzt alle Dateien dieser Variante. Projekte, die sie verwenden, nutzen danach den Ersatz.",
+        "packageDetails": "Paketdetails"
     },
     "storage": {
         "title": "Speicher für Exportvorlagen",
@@ -345,5 +379,159 @@
         "moveSummary_two": "Du wirst {{count}} Vorlagen ({{size}}) verschieben nach:",
         "moveSummary_few": "Du wirst {{count}} Vorlagen ({{size}}) verschieben nach:",
         "moveSummary_many": "Du wirst {{count}} Vorlagen ({{size}}) verschieben nach:"
+    },
+    "wizardMigration": {
+        "title": "Exportvorlagen verschieben",
+        "stepsLabel": "Schritte der Vorlagenmigration",
+        "steps": {
+            "about": "Überblick",
+            "options": "Optionen",
+            "choose": "Auswählen",
+            "review": "Prüfen",
+            "move": "Verschieben",
+            "done": "Fertig"
+        },
+        "titles": {
+            "about": "Alle Exportvorlagen an einem Ort zusammenführen",
+            "options": "Was die einzelnen Optionen bedeuten",
+            "choose": "Für alle Projekte auswählen",
+            "review": "Auswahl prüfen",
+            "move": "Exportvorlagen werden verschoben",
+            "done": "Ergebnisse der Migration"
+        },
+        "about": {
+            "intro": "Ältere Projekte speichern Exportvorlagen in ihren eigenen Editorordnern. Godot Launcher kann diese Dateien jetzt unter Exportvorlagen verwalten.",
+            "today": "Heute",
+            "before": "Vorlagen im Editorordner jedes Projekts",
+            "after": "Nach dem Verschieben",
+            "destination": "Vorlagen unter Exportvorlagen verwaltet",
+            "why": "Warum verschieben?",
+            "benefit1": "Alle Vorlagen an einem Ort ansehen und verwalten.",
+            "benefit2": "Die Vorlagen jedes Projekts behalten oder Projekte gemeinsame Dateien verwenden lassen.",
+            "benefit3": "Gemeinsame Vorlagen wiederverwenden statt zusätzliche lokale Kopien aufzubewahren.",
+            "found": "Wir haben Vorlagen in {{number}} Projekten gefunden.",
+            "next": "Lernen Sie als Nächstes die Optionen kennen. Sie prüfen Ihre Auswahl, bevor Dateien verschoben werden."
+        },
+        "optionsIntro": "Wählen Sie auf der nächsten Seite eine Option für alle Versionen eines Projekts oder für jede Version einzeln.",
+        "optionTitle": "Option {{number}}: {{label}}",
+        "recommended": "Empfohlen",
+        "choices": {
+            "save-imported": "Aktuelle Vorlagen behalten",
+            "share-project": "Vorlagen teilen",
+            "use-shared": "Gemeinsame Vorlagen verwenden",
+            "later": "Später entscheiden"
+        },
+        "explanations": {
+            "save-imported": "Verschiebt den Vorlagenordner zu Importierte Vorlagen. Das Projekt verwendet weiterhin seine Dateien.",
+            "share-project": "Fügt fehlende Dateien zu den gemeinsamen Vorlagen hinzu und verwendet sie für dieses Projekt. Vorhandene gemeinsame Dateien bleiben unverändert. Wenn sie sich von Ihren lokalen Dateien unterscheiden, verwendet das Projekt die gemeinsamen Dateien.",
+            "use-shared": "Verwendet die gemeinsamen Vorlagen. Vor dem Export müssen Sie möglicherweise fehlende Vorlagen herunterladen.",
+            "later": "Lässt diese Vorlagen unverändert. Sie können später unter Exportvorlagen entscheiden."
+        },
+        "warnings": {
+            "share-project": "Lokale Kopien werden entfernt, ohne eine separate Kopie zu speichern.",
+            "use-shared": "Lokale Vorlagendateien werden gelöscht, ohne eine separate Kopie zu speichern."
+        },
+        "infoReminder": "Mit der Info-Schaltfläche neben einer Option können Sie deren Erklärung erneut anzeigen.",
+        "explain": "{{choice}} für {{project}} erklären",
+        "scope": "Gilt für diese Versionen: {{versions}}.",
+        "chooseIntro": "Wählen Sie eine Option pro Projekt oder für jede Version einzeln.",
+        "projectSummary": "Projekte: {{projects}}, Vorlagenversionen: {{versions}}",
+        "choiceSummary": "Auswahl nach Vorlagenversion",
+        "moreProjects": "Weitere Projekte unten. Scrollen Sie, um sie zu sehen.",
+        "moreVersions": "Weitere Versionen unten. Scrollen Sie, um sie zu sehen.",
+        "choiceNotice": {
+            "save-imported": "Ihre Vorlagen bleiben erhalten",
+            "share-project": "Lokale Kopien werden nach dem Teilen entfernt",
+            "use-shared": "Lokale Dateien werden gelöscht",
+            "later": "Dateien bleiben unverändert"
+        },
+        "keepAll": "Aktuelle Vorlagen für alle behalten",
+        "keepNotice": "Aktuelle Vorlagen behalten verwendet weiterhin dieselben Dateien. Sie können jede Auswahl unten ändern.",
+        "projectColumn": "Projekt",
+        "versionsColumn": "Vorlagenversionen",
+        "choiceColumn": "Ihre Auswahl",
+        "individual": "Für jede Version auswählen",
+        "individualLabel": "Für jede Version in {{project}} auswählen",
+        "allVersions": "Gilt für alle {{number}} Versionen",
+        "choiceLabel": "Auswahl für {{project}}",
+        "versionChoiceLabel": "Auswahl für {{project}}, {{version}}",
+        "unavailable": "Lassen Sie dieses Projekt für später, bis es bereit ist.",
+        "reviewIntro": "Es wurde noch nichts geändert. Prüfen Sie die Liste unten. Schließen Sie Godot-Editoren und beenden Sie Exporte, bevor Sie starten.",
+        "reviewing": "Vorlagendateien werden geprüft...",
+        "effectsColumn": "Was passieren wird",
+        "reviewVersions": "Geprüfte Versionen für {{project}}",
+        "reviewScope": {
+            "individual": "Separate Auswahl für jede Version",
+            "differentEffects": "Unterschiedliche Auswirkungen je Version"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "Ihre Vorlagen aus Importierte Vorlagen verwenden.",
+                "shared": "Gemeinsame Vorlagen verwenden. Fehlende Vorlagen müssen vor dem Export möglicherweise heruntergeladen werden.",
+                "local": "Lokale Vorlagen weiterhin verwenden."
+            },
+            "addMissing": "Fehlende gemeinsame Dateien hinzufügen. Vorhandene gemeinsame Dateien behalten.",
+            "localFiles": {
+                "remove-after-verification": "Dateien in Importierte Vorlagen behalten und dieses Projekt damit verbinden.",
+                "remove-after-connection": "Lokale Dateien nach dem Verbinden des Projekts entfernen. Es wird keine separate Kopie gespeichert.",
+                "keep": "Lokale Dateien behalten und später entscheiden."
+            }
+        },
+        "files": "{{number}} Dateien",
+        "effects": {
+            "save-imported": "Ordner zu Importierte Vorlagen verschieben und seine Dateien weiterhin verwenden.",
+            "share-project": "Fehlende gemeinsame Dateien hinzufügen, vorhandene behalten, dann gemeinsame Vorlagen verwenden und lokale Kopien entfernen.",
+            "use-shared": "Gemeinsame Vorlagen verwenden und lokale Dateien entfernen. Fehlende Vorlagen müssen vor dem Export möglicherweise heruntergeladen werden.",
+            "later": "Lokale Dateien behalten und diese Version für später lassen."
+        },
+        "nothingChanged": "Es wurde noch nichts geändert. Wählen Sie Zurück, um eine Auswahl zu ändern.",
+        "confirmRemoval": "Ich verstehe, dass Vorlagen teilen und Gemeinsame Vorlagen verwenden die aufgeführten lokalen Dateien entfernen, ohne eine separate Kopie zu speichern.",
+        "leftLater": "Für später gelassen",
+        "laterProjects": "Für später gelassene Projekte",
+        "next": "Weiter",
+        "seeOptions": "Optionen ansehen",
+        "chooseProjects": "Für Projekte auswählen",
+        "reviewChoices": "Auswahl prüfen",
+        "moveTemplates": "Vorlagen verschieben",
+        "moving": "Vorlagen werden verschoben...",
+        "back": "Zurück",
+        "finishLater": "Später abschliessen",
+        "done": "Fertig",
+        "openTemplates": "Exportvorlagen öffnen",
+        "keepOpen": "Große Verschiebevorgänge können eine Weile dauern. Godot Launcher bleibt geöffnet, bis der Vorgang abgeschlossen ist.",
+        "progress": "{{completed}} von {{total}} Vorlagenversionen abgeschlossen",
+        "progressLabel": "Abgeschlossene Vorlagenversionen",
+        "status": {
+            "waiting": "Wartet",
+            "checking": "Vorlagendateien werden geprüft",
+            "copying": "Vorlagen werden kopiert",
+            "verifying": "Kopierte Dateien werden geprüft",
+            "connecting": "Projektverbindung wird aktualisiert",
+            "cleaning": "Verschieben wird abgeschlossen",
+            "complete": "Fertig",
+            "error": "Konnte nicht verschoben werden",
+            "later": "Für später gelassen"
+        },
+        "results": "Ergebnisse nach Vorlagenversion",
+        "success": "Ihre Vorlagen sind bereit",
+        "partial": "Einige Vorlagen müssen nochmals geprüft werden",
+        "resultSummary": "Abgeschlossen: {{completed}}. Nicht verschoben: {{failed}}. Für später: {{later}}.",
+        "resultNote": "Sie können die verschobenen Dateien unter Exportvorlagen verwalten. Für später gelassene Versionen benötigen weiterhin eine Entscheidung.",
+        "retryFailed": "Fehlgeschlagene Versionen erneut versuchen",
+        "retryFailedCount": "Fehlgeschlagene Versionen erneut versuchen ({{number}})",
+        "recover": "Unterbrochenes Verschieben wiederherstellen",
+        "recovering": "Vorlagen werden wiederhergestellt...",
+        "viewResults": "Migration ansehen",
+        "destination": {
+            "imported": "Ihre Vorlagen aus Importierte Vorlagen verwenden.",
+            "shared": "Gemeinsame Vorlagen verwenden. Fehlende Vorlagen müssen vor dem Export möglicherweise heruntergeladen werden.",
+            "local": "Lokale Vorlagen weiterhin verwenden."
+        },
+        "addMissing": "Fehlende gemeinsame Dateien hinzufügen. Vorhandene gemeinsame Dateien bleiben unverändert.",
+        "localFiles": {
+            "remove-after-verification": "Dateien in Importierte Vorlagen behalten und dieses Projekt damit verbinden.",
+            "remove-after-connection": "Lokale Kopien nach dem Verbinden des Projekts entfernen, ohne eine separate Kopie zu speichern.",
+            "keep": "Lokale Dateien behalten und diese Version für später lassen."
+        }
     }
 }

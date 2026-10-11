@@ -216,6 +216,134 @@ describe('Godot template storage', () => {
         ).rejects.toThrow('changed');
     });
 
+    it('reports bytes for checked files while retaining metadata for other files', async () => {
+        const root = path.resolve('templates');
+        const fileStat = {
+            isDirectory: () => false,
+            isSymbolicLink: () => false,
+            isFile: () => true,
+            size: 3,
+            mode: 0o644,
+            mtimeMs: 1,
+            ino: 1,
+        } as fs.Stats;
+        vi.mocked(fs.promises.lstat).mockImplementation(async (filename) =>
+            path.extname(String(filename)) === '.zip' ? fileStat : stat(true),
+        );
+        vi.mocked(fs.promises.readdir).mockImplementation(
+            async (filename) =>
+                (String(filename) === root
+                    ? ['4.7.stable', '4.6.stable']
+                    : ['web.zip']) as never,
+        );
+        vi.mocked(fs.createReadStream).mockImplementation(
+            () => Readable.from([Buffer.from('abc')]) as fs.ReadStream,
+        );
+        const onBytes = vi.fn();
+        const files = await readTemplateTree(
+            root,
+            true,
+            undefined,
+            false,
+            undefined,
+            { files: new Set(['4.7.stable/web.zip']), onBytes },
+        );
+        expect(fs.createReadStream).toHaveBeenCalledExactlyOnceWith(
+            path.join(root, '4.7.stable', 'web.zip'),
+            { signal: undefined },
+        );
+        expect(onBytes).toHaveBeenCalledExactlyOnceWith(3);
+        expect(
+            files.find((file) => file.relative.startsWith('4.7'))?.hash,
+        ).toHaveLength(64);
+        expect(
+            files.find((file) => file.relative.startsWith('4.6')),
+        ).toMatchObject({ hash: '', size: 3, mode: 0o644 });
+    });
+
+    it('hashes exact nested additions without reading retained shared files', async () => {
+        const root = path.resolve('templates');
+        const fileStat = {
+            isDirectory: () => false,
+            isSymbolicLink: () => false,
+            isFile: () => true,
+            size: 3,
+            mode: 0o644,
+            mtimeMs: 1,
+            ino: 1,
+        } as fs.Stats;
+        vi.mocked(fs.promises.lstat).mockImplementation(async (filename) =>
+            String(filename).endsWith('.zip') ? fileStat : stat(true),
+        );
+        vi.mocked(fs.promises.readdir).mockImplementation(
+            async (filename) =>
+                (String(filename) === root
+                    ? ['nested']
+                    : ['added.zip', 'retained.zip']) as never,
+        );
+        vi.mocked(fs.createReadStream).mockImplementation(
+            () => Readable.from([Buffer.from('abc')]) as fs.ReadStream,
+        );
+        const result = await readTemplateTree(
+            root,
+            true,
+            undefined,
+            false,
+            undefined,
+            { files: new Set(['nested/added.zip']) },
+        );
+        expect(fs.createReadStream).toHaveBeenCalledExactlyOnceWith(
+            path.join(root, 'nested', 'added.zip'),
+            { signal: undefined },
+        );
+        expect(
+            result.find((file) => file.relative.endsWith('retained.zip'))?.hash,
+        ).toBe('');
+    });
+
+    it('discovers only requested version folders without inspecting unrelated root entries', async () => {
+        const root = path.resolve('templates');
+        const version = '4.7.stable';
+        const fileStat = {
+            isDirectory: () => false,
+            isSymbolicLink: () => false,
+            isFile: () => true,
+            size: 3,
+            mode: 0o644,
+        } as fs.Stats;
+        vi.mocked(fs.promises.lstat).mockImplementation(async (filename) =>
+            String(filename).endsWith('version.txt') ? fileStat : stat(true),
+        );
+        vi.mocked(fs.promises.readdir).mockImplementation(
+            async (filename) =>
+                (String(filename) === root
+                    ? [version, 'user-folder', 'notes-link', 'not:portable']
+                    : ['version.txt']) as never,
+        );
+        const files = await readTemplateTree(
+            root,
+            false,
+            undefined,
+            false,
+            undefined,
+            {
+                includedRoots: new Set([version]),
+            },
+        );
+        expect(files.map((file) => file.relative)).toEqual([
+            `${version}/version.txt`,
+        ]);
+        expect(fs.promises.lstat).not.toHaveBeenCalledWith(
+            path.join(root, 'user-folder'),
+        );
+        expect(fs.promises.lstat).not.toHaveBeenCalledWith(
+            path.join(root, 'notes-link'),
+        );
+        expect(fs.promises.readdir).not.toHaveBeenCalledWith(
+            path.join(root, 'user-folder'),
+        );
+    });
+
     it('fingerprints independently of traversal ordering and detects changed bytes and permissions', () => {
         const a = { relative: 'a.txt', size: 1, hash: 'a', mode: 0o644 };
         const b = { ...a, relative: 'a/b.txt' };

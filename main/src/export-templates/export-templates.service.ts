@@ -2,8 +2,14 @@ import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Injectable } from '@mariodebono/di';
-import { AppReady, AppReadyOrder } from '@mariodebono/di-electron';
+import {
+    AppReady,
+    AppReadyOrder,
+    BeforeAppQuit,
+    BeforeMainWindowClose,
+} from '@mariodebono/di-electron';
 import type {
+    ExportTemplateAsset,
     ExportTemplateInventory,
     ExportTemplateSet,
     ProjectDetails,
@@ -12,6 +18,9 @@ import type {
     TemplateJob,
     TemplateMigrationAssessment,
     TemplateMigrationChoice,
+    TemplateMigrationFileProgress,
+    TemplateMigrationProjectDecision,
+    TemplateMigrationReview,
     TemplateMigrationVersionChoices,
     TemplatePackage,
     TemplateProjectAssessment,
@@ -33,8 +42,14 @@ import {
 import { TemplateArchiveAdapter } from './template-archive.adapter.js';
 import {
     assessProjectTemplates,
+    hasOnlyTemplateHousekeepingFiles,
     isTemplateHousekeeping,
 } from './template-assessment.util.js';
+import { downloadTemplatePackage } from './template-download.adapter.js';
+import {
+    isTemplateExitBlocked,
+    withTemplateExitBlocked,
+} from './template-exit-guard.util.js';
 import {
     pruneEmptyTemplateDirectories,
     updateTemplateFiles,
@@ -55,6 +70,10 @@ import {
     templateFingerprint,
     templateLstat,
 } from './template-files.util.js';
+import type { ReviewedTemplateMigration } from './template-migration.types.js';
+import { assertMigrationSourceUnchanged } from './template-migration-plan.util.js';
+import { TemplateMigrationReviewService } from './template-migration-review.service.js';
+import { readTemplateMigrationSource } from './template-migration-source.util.js';
 import { projectOfficialTemplateRoot } from './template-paths.util.js';
 import {
     extractTemplateRange,
@@ -69,6 +88,11 @@ import {
     recoverTemplateTransaction,
     type TemplateJournal,
 } from './template-transaction.util.js';
+import { TemplateVersionMigrationService } from './template-version-migration.service.js';
+import {
+    readTemplateVersionMigration,
+    templateVersionMigrationRecoveryId,
+} from './template-version-migration.store.js';
 
 const OPERATION_ID =
     /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
@@ -92,6 +116,13 @@ type Work = {
 /** Owns inventory and explicitly requested template operations. */
 @Injectable()
 export class ExportTemplatesService {
+    /** Blocks normal Close and Quit only while migration or recovery is running. */
+    @BeforeAppQuit()
+    @BeforeMainWindowClose()
+    canExitDuringTemplateOperation(): boolean {
+        return !isTemplateExitBlocked();
+    }
+
     private job: TemplateJob | null = null;
     private work?: Work;
     private starting = false;
@@ -107,6 +138,32 @@ export class ExportTemplatesService {
     private pendingWork?: { id: string; signal: AbortController };
     private pumping = false;
     private packageIndexes = new Map<string, Promise<TemplateRangeIndex>>();
+    /** Reads the current files and refuses editor changes during review preparation.
+     * @param projectPath - Registered project being reviewed.
+     * @param report - Optional callback for preparation progress.
+     */
+    private migrationReviews = new TemplateMigrationReviewService(
+        async (projectPath, report) => {
+            await this.storage.assertAvailable('official');
+            const project = structuredClone(await this.project(projectPath));
+            const source = await readTemplateMigrationSource(
+                project,
+                getSharedTemplateRoot(),
+                report,
+            );
+            const current = await this.project(projectPath);
+            assertMigrationSourceUnchanged(source, {
+                ...source,
+                name: current.name,
+                launchPath: current.launch_path,
+                setId: this.identity(current),
+                mode: current.exportTemplateMode,
+                buildSelections: { ...current.exportTemplateBuilds },
+                localRoot: this.local(current),
+            });
+            return source;
+        },
+    );
     private packageSnapshots = new Map<
         string,
         {
@@ -130,6 +187,16 @@ export class ExportTemplatesService {
 
     private importedService?: ImportedTemplatesService;
     private storageService?: TemplateStorageService;
+    private versionMigrationService?: TemplateVersionMigrationService;
+    /** Reuses the imported library's destination naming for per-version migrations. */
+    private get versionMigration(): TemplateVersionMigrationService {
+        this.versionMigrationService ??= new TemplateVersionMigrationService(
+            this.projects,
+            (project, setId, files) =>
+                this.imported.prepareSavedVersion(project, setId, files),
+        );
+        return this.versionMigrationService;
+    }
     /** Creates the storage facade on first use so existing service construction remains stable. */
     private get storage(): TemplateStorageService {
         this.storageService ??= new TemplateStorageService(
@@ -150,48 +217,51 @@ export class ExportTemplatesService {
     /** Repairs interrupted imported link updates before the main window opens. */
     @AppReady({ order: AppReadyOrder.BeforeWindow })
     async restoreTemplateLinks(): Promise<void> {
-        try {
-            await this.storage.assertAvailable('official');
-        } catch (error) {
-            logger.warn(
-                'Export template storage is unavailable on startup',
-                error,
-            );
-            return;
-        }
-        await this.libraryMutation(async () => {
-            await this.imported.cleanupAbandonedPreviews();
-            if ((await this.recoveries()).length) return;
-            for (const project of await this.projects.list()) {
-                if (
-                    !project.launch_path ||
-                    project.release.source === 'custom' ||
-                    !Object.keys(project.exportTemplateBuilds ?? {}).length
-                )
-                    continue;
-                const assessment = await assessProjectTemplates(
-                    project,
-                    getSharedTemplateRoot(),
+        return withTemplateExitBlocked(async () => {
+            try {
+                await this.storage.assertAvailable('official');
+            } catch (error) {
+                logger.warn(
+                    'Export template storage is unavailable on startup',
+                    error,
                 );
-                if (assessment.state !== 'shared') continue;
-                try {
-                    await this.imported.synchronise(undefined, [project]);
-                } catch (error) {
-                    logger.warn(
-                        'Could not restore project export template links',
-                        error,
-                    );
-                }
+                return;
             }
-        }, 'official').catch((error) =>
-            logger.warn(
-                'Could not restore export template links on startup',
-                error,
-            ),
-        );
+            await this.libraryMutation(async () => {
+                await this.versionMigration.recover();
+                await this.imported.cleanupAbandonedPreviews();
+                if ((await this.recoveries()).length) return;
+                for (const project of await this.projects.list()) {
+                    if (
+                        !project.launch_path ||
+                        project.release.source === 'custom' ||
+                        !Object.keys(project.exportTemplateBuilds ?? {}).length
+                    )
+                        continue;
+                    const assessment = await assessProjectTemplates(
+                        project,
+                        getSharedTemplateRoot(),
+                    );
+                    if (assessment.state !== 'shared') continue;
+                    try {
+                        await this.imported.synchronise(undefined, [project]);
+                    } catch (error) {
+                        logger.warn(
+                            'Could not restore project export template links',
+                            error,
+                        );
+                    }
+                }
+            }, 'official').catch((error) =>
+                logger.warn(
+                    'Could not restore export template links on startup',
+                    error,
+                ),
+            );
+        });
     }
 
-    /** Returns the current connection and installed files for one registered project.
+    /** Returns the connection, migration requirement and files for one registered project.
      * @param projectPath - Stored project identity.
      * @param selectedSetId - Optional version selected in project settings.
      */
@@ -240,6 +310,16 @@ export class ExportTemplatesService {
         } catch {
             /* Keep settings usable so a missing selection can be corrected. */
         }
+        let hasLocalFiles =
+            status === 'local' && (await fs.promises.readdir(local)).length > 0;
+        if (hasLocalFiles && !custom) {
+            const assessment = await assessProjectTemplates(
+                project,
+                getSharedTemplateRoot(),
+            );
+            hasLocalFiles =
+                assessment.state !== 'shared' && assessment.reason !== 'empty';
+        }
         return {
             buildSelections: project.exportTemplateBuilds ?? {},
             importedBuilds: await Promise.all(
@@ -267,9 +347,7 @@ export class ExportTemplatesService {
             files: files
                 .map((file) => file.relative)
                 .filter((name) => name !== 'version.txt'),
-            hasLocalFiles:
-                status === 'local' &&
-                (await fs.promises.readdir(local)).length > 0,
+            hasLocalFiles,
         };
     }
 
@@ -498,7 +576,7 @@ export class ExportTemplatesService {
 
     /** Reconciles a durable interrupted move journal. */
     recoverStorageMove() {
-        return this.storage.recover();
+        return withTemplateExitBlocked(() => this.storage.recover());
     }
 
     /** Adds queue and recovery constraints to an otherwise read-only assessment.
@@ -537,13 +615,16 @@ export class ExportTemplatesService {
      * @param setIds - Affected version and flavour identities.
      * @param kind - User-facing operation category.
      * @param action - Deferred operation using main-owned inputs.
+     * @param projectPath - Optional project owning this operation.
+     * @param fullPackage - Complete package identity for progress and retry.
      */
     private enqueue(
         setIds: string[],
         kind: NonNullable<TemplateJob['kind']>,
         action: () => Promise<void>,
         projectPath?: string,
-    ): void {
+        fullPackage?: TemplateJob['fullPackage'],
+    ): string {
         if (this.storageService?.isActive())
             throw new Error('exportTemplates:storage.errors.busy');
         if (
@@ -575,11 +656,19 @@ export class ExportTemplatesService {
         }
         const id = randomUUID();
         this.tasks.set(id, {
-            job: { id, setIds, kind, stage: 'queued', projectPath },
+            job: {
+                id,
+                setIds,
+                kind,
+                stage: 'queued',
+                projectPath,
+                fullPackage,
+            },
             action,
         });
         this.waiting.push(id);
         void this.pump();
+        return id;
     }
 
     /** Starts the next queued operation only after recovery is clear. */
@@ -593,6 +682,7 @@ export class ExportTemplatesService {
         )
             return;
         this.pumping = true;
+        let advanced = false;
         try {
             await this.storage.assertAvailable('journal');
             if ((await this.recoveries()).length) return;
@@ -600,6 +690,7 @@ export class ExportTemplatesService {
             if (!id) return;
             const task = this.tasks.get(id);
             if (!task) return;
+            advanced = true;
             this.running = id;
             this.pendingWork = { id, signal: new AbortController() };
             task.job = { ...task.job, stage: 'preparing' };
@@ -626,7 +717,7 @@ export class ExportTemplatesService {
             this.pendingWork = undefined;
             this.pumping = false;
         }
-        if (!this.running && this.waiting.length) void this.pump();
+        if (advanced && !this.running && this.waiting.length) void this.pump();
     }
 
     /** Retries a failed operation with its retained main-owned inputs.
@@ -634,6 +725,8 @@ export class ExportTemplatesService {
      */
     async retryJob(jobId: string): Promise<void> {
         const task = this.tasks.get(jobId);
+        if (task?.job.migration)
+            throw new Error('exportTemplates:errors.changed');
         if (task?.job.stage !== 'error')
             throw new Error('exportTemplates:errors.changed');
         this.enqueue(
@@ -641,6 +734,7 @@ export class ExportTemplatesService {
             task.job.kind ?? 'update',
             task.action,
             task.job.projectPath,
+            task.job.fullPackage,
         );
     }
 
@@ -657,7 +751,9 @@ export class ExportTemplatesService {
             false,
             undefined,
             true,
-        );
+        ).catch((cause) => {
+            throw new Error('exportTemplates:errors.read', { cause });
+        });
         if (!(await templateLstat(destination)))
             throw new Error('exportTemplates:errors.changed');
         const token = randomUUID();
@@ -836,7 +932,299 @@ export class ExportTemplatesService {
         }
     }
 
-    /** Queues the project-level choice for immediate execution.
+    /** Builds a read-only review for all selected projects and versions.
+     * @param decisions - Project-wide or individual choices from Choose.
+     * @param requestId - Identifier used to read preparation progress.
+     */
+    async reviewMigration(
+        decisions: TemplateMigrationProjectDecision[],
+        requestId?: string,
+    ): Promise<TemplateMigrationReview> {
+        if (this.templatesBusy() || (await this.recoveries()).length)
+            throw new Error('exportTemplates:errors.busy');
+        return this.migrationReviews.prepare(decisions, requestId);
+    }
+
+    /** Reads progress for the current read-only review.
+     * @param requestId - Identifier supplied with the review request.
+     */
+    getMigrationReviewProgress(requestId: string) {
+        return this.migrationReviews.getProgress(requestId);
+    }
+
+    /** Releases a closed review without changing files or project preferences.
+     * @param token - Review being closed by the renderer.
+     */
+    async discardMigrationReview(token: string): Promise<void> {
+        this.migrationReviews.discard(token);
+    }
+
+    /** Revalidates the entire reviewed batch under the operation lock before starting file changes.
+     * @param token - Latest main-owned review token.
+     * @param removalConfirmed - Explicit acknowledgement of local removal for Share and Use shared.
+     */
+    async applyMigrationReview(
+        token: string,
+        removalConfirmed: boolean,
+    ): Promise<string> {
+        return withTemplateExitBlocked(async () => {
+            await this.storage.assertAvailable();
+            if (
+                typeof token !== 'string' ||
+                typeof removalConfirmed !== 'boolean'
+            )
+                throw new Error('exportTemplates:errors.decision');
+            if (this.templatesBusy())
+                throw new Error('exportTemplates:errors.busy');
+            this.starting = true;
+            const release = await reserveTemplateOperation();
+            try {
+                if ((await this.recoveries()).length)
+                    throw new Error('exportTemplates:errors.recovery');
+                const reviewed = await this.migrationReviews.consume(
+                    token,
+                    removalConfirmed,
+                );
+                if (
+                    !reviewed.some(({ plan }) =>
+                        plan.versions.some(({ choice }) => choice !== 'later'),
+                    )
+                )
+                    throw new Error('exportTemplates:errors.decision');
+                const id = randomUUID();
+                const job: TemplateJob = {
+                    id,
+                    kind: 'migrate',
+                    setIds: [
+                        ...new Set(
+                            reviewed.flatMap(({ plan }) =>
+                                plan.versions.map(({ setId }) => setId),
+                            ),
+                        ),
+                    ],
+                    stage: 'applying',
+                    migration: {
+                        status: 'running',
+                        review: {
+                            projects: reviewed.map(({ plan }) => plan),
+                            requiresRemovalConfirmation: reviewed.some(
+                                ({ plan }) =>
+                                    plan.versions.some(
+                                        ({ choice }) =>
+                                            choice === 'share-project' ||
+                                            choice === 'use-shared',
+                                    ),
+                            ),
+                        },
+                        versions: reviewed.flatMap(({ plan }) =>
+                            plan.versions.map(({ setId, choice }) => ({
+                                projectPath: plan.projectPath,
+                                setId,
+                                status:
+                                    choice === 'later'
+                                        ? ('later' as const)
+                                        : ('waiting' as const),
+                            })),
+                        ),
+                    },
+                };
+                this.tasks.set(id, {
+                    job,
+                    action: async () => {
+                        throw new Error('exportTemplates:errors.changed');
+                    },
+                });
+                this.running = id;
+                this.job = job;
+                setTemplatesMutating(true);
+                void this.runReviewedMigration(id, reviewed, release);
+                return id;
+            } catch (error) {
+                this.starting = false;
+                release();
+                throw error;
+            }
+        });
+    }
+
+    /** Reports independent version outcomes while holding one batch-wide template lock.
+     * @param id - Session job whose progress the wizard follows.
+     * @param reviewed - Freshly validated main-owned source snapshots and plans.
+     * @param release - Exclusive operation lock, released after every version settles.
+     */
+    private async runReviewedMigration(
+        id: string,
+        reviewed: ReviewedTemplateMigration[],
+        release: () => void,
+    ): Promise<void> {
+        return withTemplateExitBlocked(async () => {
+            const task = this.tasks.get(id);
+            if (!task?.job.migration) {
+                this.starting = false;
+                this.running = null;
+                release();
+                return;
+            }
+            /** Updates one exact reviewed identity without publishing fabricated progress.
+             * @param projectPath - Registered project identity.
+             * @param setId - Version and edition identity.
+             * @param status - Real file operation phase.
+             * @param error - Bounded error key for a failed version.
+             * @param progress - Bytes actually read in the current phase.
+             */
+            const report = (
+                projectPath: string,
+                setId: string,
+                status: NonNullable<
+                    TemplateJob['migration']
+                >['versions'][number]['status'],
+                error?: string,
+                progress?: TemplateMigrationFileProgress,
+            ) => {
+                if (!task.job.migration) return;
+                task.job = {
+                    ...task.job,
+                    migration: {
+                        ...task.job.migration,
+                        versions: task.job.migration.versions.map((version) =>
+                            version.projectPath === projectPath &&
+                            version.setId === setId
+                                ? { ...version, status, error, progress }
+                                : version,
+                        ),
+                    },
+                };
+                this.job = task.job;
+            };
+            try {
+                for (const { source, plan } of reviewed) {
+                    let expected = structuredClone(
+                        await this.project(source.projectPath),
+                    );
+                    assertMigrationSourceUnchanged(source, {
+                        ...source,
+                        name: expected.name,
+                        launchPath: expected.launch_path,
+                        setId: this.identity(expected),
+                        mode: expected.exportTemplateMode,
+                        buildSelections: { ...expected.exportTemplateBuilds },
+                        localRoot: this.local(expected),
+                    });
+                    for (const version of plan.versions) {
+                        if (version.choice === 'later') continue;
+                        try {
+                            if (await readTemplateVersionMigration())
+                                throw new Error(
+                                    'exportTemplates:errors.recovery',
+                                );
+                            expected = await this.versionMigration.execute(
+                                source,
+                                version,
+                                expected,
+                                (status, progress) =>
+                                    report(
+                                        source.projectPath,
+                                        version.setId,
+                                        status,
+                                        undefined,
+                                        progress,
+                                    ),
+                            );
+                            report(
+                                source.projectPath,
+                                version.setId,
+                                'complete',
+                            );
+                            this.settleMigrationVersion(
+                                source.projectPath,
+                                version.setId,
+                            );
+                        } catch (error) {
+                            logger.warn(
+                                'Export-template version migration failed',
+                                { setId: version.setId },
+                                error,
+                            );
+                            report(
+                                source.projectPath,
+                                version.setId,
+                                'error',
+                                error instanceof Error &&
+                                    error.message.startsWith('exportTemplates:')
+                                    ? error.message
+                                    : 'exportTemplates:errors.failed',
+                            );
+                        }
+                    }
+                }
+            } catch (error) {
+                for (const version of task.job.migration?.versions ?? []) {
+                    if (
+                        !['complete', 'error', 'later'].includes(version.status)
+                    )
+                        report(
+                            version.projectPath,
+                            version.setId,
+                            'error',
+                            error instanceof Error &&
+                                error.message.startsWith('exportTemplates:')
+                                ? error.message
+                                : 'exportTemplates:errors.failed',
+                        );
+                }
+            } finally {
+                const migration = task.job.migration;
+                if (migration)
+                    task.job = {
+                        ...task.job,
+                        stage: migration.versions.some(
+                            ({ status }) => status === 'error',
+                        )
+                            ? 'error'
+                            : 'complete',
+                        migration: { ...migration, status: 'complete' },
+                    };
+                this.job = task.job;
+                this.starting = false;
+                this.running = null;
+                setTemplatesMutating(false);
+                release();
+                void this.pump();
+            }
+        });
+    }
+
+    /** Marks an earlier failed attempt resolved only after main verifies the same version completed.
+     * @param projectPath - Exact registered project identity.
+     * @param setId - Completed version and edition.
+     */
+    private settleMigrationVersion(projectPath: string, setId: string): void {
+        for (const batch of this.tasks.values()) {
+            const migration = batch.job.migration;
+            if (migration?.status !== 'complete') continue;
+            const versions = migration.versions.map((version) =>
+                version.projectPath === projectPath &&
+                version.setId === setId &&
+                version.status === 'error'
+                    ? {
+                          ...version,
+                          status: 'complete' as const,
+                          error: undefined,
+                      }
+                    : version,
+            );
+            batch.job = {
+                ...batch.job,
+                stage: versions.some((version) => version.status === 'error')
+                    ? 'error'
+                    : 'complete',
+                migration: { ...migration, versions },
+            };
+            if (this.job?.id === batch.job.id) this.job = batch.job;
+        }
+    }
+
+    /** Queues the legacy project-level choice for immediate execution.
      * @param projectPath - Registered project identity.
      * @param choice - Default policy for the whole project collection.
      * @param versionChoices - Optional explicit choices for every populated version.
@@ -854,7 +1242,8 @@ export class ExportTemplatesService {
             throw new Error('exportTemplates:errors.connection');
         if (
             versionChoices !== undefined &&
-            (!versionChoices ||
+            (choice === 'save-imported' ||
+                !versionChoices ||
                 typeof versionChoices !== 'object' ||
                 Array.isArray(versionChoices) ||
                 Object.entries(versionChoices).some(
@@ -1006,6 +1395,11 @@ export class ExportTemplatesService {
             result.recoverySets = {};
             for (const id of result.recoveries) {
                 try {
+                    const versionJournal = await readTemplateVersionMigration();
+                    if (versionJournal?.id === id) {
+                        result.recoverySets[id] = [versionJournal.setId];
+                        continue;
+                    }
                     const journal = await readTemplateJournal(
                         path.join(
                             this.workParent(await fs.promises.realpath(root)),
@@ -1073,7 +1467,9 @@ export class ExportTemplatesService {
             false,
             undefined,
             true,
-        );
+        ).catch((cause) => {
+            throw new Error('exportTemplates:errors.read', { cause });
+        });
         const token = randomUUID();
         if (this.packageSnapshots.size >= 32)
             this.packageSnapshots.delete(
@@ -1101,6 +1497,120 @@ export class ExportTemplatesService {
                 .map((file) => file.relative)
                 .filter((name) => name !== 'version.txt'),
         };
+    }
+
+    /** Queues a complete catalogue package without requiring HTTP ranges.
+     * @param releaseId - Cached official release identity.
+     * @param assetId - Template package within the selected release.
+     */
+    async downloadFullPackage(
+        releaseId: string,
+        assetId: string,
+    ): Promise<string> {
+        await this.storage.assertAvailable('official');
+        const catalogue = await this.catalog.getCatalog({
+            refreshIfStale: false,
+        });
+        const release = catalogue.releases.find(
+            (item) => item.id === releaseId,
+        );
+        const asset = release?.templateAssets?.find(
+            (item) => item.id === assetId,
+        );
+        if (!release || !asset)
+            throw new Error('exportTemplates:errors.package');
+        const id = `${release.tag.replace('-', '.')}${asset.flavor === 'dotnet' ? '.mono' : ''}`;
+        if (!isTemplateIdentity(id))
+            throw new Error('exportTemplates:errors.identity');
+        const selectedAsset = { ...asset };
+        return this.enqueue(
+            [id],
+            'update',
+            () => this.executeFullPackage(id, selectedAsset),
+            undefined,
+            { releaseId, assetId },
+        );
+    }
+
+    /** Stages and validates the complete package before adding missing official files.
+     * @param id - Expected Godot version and edition.
+     * @param asset - Main-owned catalogue metadata retained for retry.
+     */
+    private async executeFullPackage(
+        id: string,
+        asset: ExportTemplateAsset,
+    ): Promise<void> {
+        const work = await this.begin();
+        void this.run(work, async () => {
+            await checkTemplateCapacity(work.directory, asset.sizeBytes);
+            this.update(work, {
+                stage: 'downloading',
+                receivedBytes: 0,
+                totalBytes: asset.sizeBytes,
+            });
+            const archive = path.join(work.directory, 'package.tpz');
+            await downloadTemplatePackage(
+                asset,
+                archive,
+                work.signal.signal,
+                (receivedBytes, totalBytes) =>
+                    this.update(work, { receivedBytes, totalBytes }),
+            );
+            this.update(work, {
+                stage: 'preparing',
+                receivedBytes: 0,
+                totalBytes: undefined,
+                ...(this.job?.fullPackage
+                    ? {
+                          fullPackage: {
+                              ...this.job.fullPackage,
+                              extracting: true,
+                          },
+                      }
+                    : {}),
+            });
+            const extracted = await this.templateArchives.extract(
+                archive,
+                path.join(work.directory, 'extracted'),
+                work.signal.signal,
+                (receivedBytes, totalBytes) =>
+                    this.update(work, { receivedBytes, totalBytes }),
+            );
+            if (extracted.identity !== id)
+                throw new Error('exportTemplates:errors.identity');
+            const files = await readTemplateTree(
+                extracted.contents,
+                false,
+                work.signal.signal,
+            );
+            if (!files.some((file) => file.relative !== 'version.txt'))
+                throw new Error('exportTemplates:errors.identity');
+            await this.assertRoot(work);
+            work.signal.signal.throwIfAborted();
+            const destination = templateChild(work.root, id);
+            // Inspect the destination before publishing; regular existing files are retained.
+            await readTemplateTree(
+                destination,
+                false,
+                work.signal.signal,
+            ).catch((cause) => {
+                work.signal.signal.throwIfAborted();
+                throw new Error('exportTemplates:errors.read', { cause });
+            });
+            work.signal.signal.throwIfAborted();
+            this.update(work, {
+                stage: 'applying',
+                receivedBytes: undefined,
+                totalBytes: undefined,
+            });
+            setTemplatesMutating(true);
+            await updateTemplateFiles(
+                destination,
+                extracted.contents,
+                files.map((file) => file.relative),
+                [],
+            );
+        });
     }
 
     /** Identifies selection changes without reading file contents.
@@ -1291,7 +1801,7 @@ export class ExportTemplatesService {
     /** Executes the selected policy against the current shared collection.
      * @param projectPath - Registered project identity.
      * @param choice - Merge local files, use shared files or save local folders as imports.
-     * @param emptyOnly - Automatic connections must never move newly added local files.
+     * @param emptyOnly - Automatic connections allow metadata only, never local templates.
      * @param expected - Project editor captured when the operation was requested.
      * @param versionChoices - Choices that must cover the populated collection before any file is copied.
      */
@@ -1302,111 +1812,150 @@ export class ExportTemplatesService {
         expected?: ProjectDetails,
         versionChoices?: TemplateMigrationVersionChoices,
     ): Promise<void> {
-        const work = await this.begin();
-        void this.run(work, async () => {
-            const project = await this.project(projectPath);
-            if (
-                expected &&
-                (project.launch_path !== expected.launch_path ||
-                    this.identity(project) !== this.identity(expected))
-            )
-                throw new Error('exportTemplates:errors.changed');
-            const local = this.local(project);
-            const status = await templateConnectionStatus(
-                local,
-                getSharedTemplateRoot(),
-            );
-            if (status === 'shared') {
-                await this.setProjectTemplateMode(project, 'shared');
-                return;
-            }
-            if (status !== 'local' && status !== 'missing')
-                throw new Error('exportTemplates:errors.connection');
-            work.project = project;
-            const entries =
-                status === 'missing' ? [] : await fs.promises.readdir(local);
-            if (!entries.length) {
-                if (versionChoices && Object.keys(versionChoices).length)
-                    throw new Error('exportTemplates:errors.changed');
-                work.emptyConnectionStatus = status;
-                work.sourceHash = templateFingerprint([]);
-                await this.applyMigration(work);
-                return;
-            }
-            if (emptyOnly) throw new Error('exportTemplates:errors.changed');
-            for (const id of entries) {
-                if (!isTemplateHousekeeping(id) && !isTemplateIdentity(id))
-                    throw new Error('exportTemplates:errors.identity');
-            }
-            if (choice === 'save-imported') {
-                setTemplatesMutating(true);
-                this.update(work, {
-                    stage: 'applying',
-                    setIds: entries.filter(isTemplateIdentity),
-                });
-                for (const name of entries.filter(isTemplateHousekeeping))
-                    await fs.promises.rm(path.join(local, name), {
-                        recursive: true,
-                        force: true,
-                    });
-                await this.imported.saveProject(project, local);
-                work.projectSynchronised = true;
-                return;
-            }
-            const contents = await readTemplateTree(
-                local,
-                false,
-                work.signal.signal,
-            );
-            work.sourceHash = templateFingerprint(contents);
-            const versions = entries.filter(isTemplateIdentity).map((id) => ({
-                id,
-                files: contents
-                    .filter((file) => file.relative.startsWith(`${id}/`))
-                    .map((file) => ({
-                        ...file,
-                        relative: file.relative.slice(id.length + 1),
-                    })),
-            }));
-            if (versionChoices) {
-                const populatedIds = versions
-                    .filter(({ files }) =>
-                        files.some((file) => file.relative !== 'version.txt'),
-                    )
-                    .map(({ id }) => id);
-                if (
-                    Object.keys(versionChoices).length !==
-                        populatedIds.length ||
-                    populatedIds.some(
-                        (id) => !Object.hasOwn(versionChoices, id),
-                    )
-                )
-                    throw new Error('exportTemplates:errors.changed');
-            }
-            this.update(work, { setIds: versions.map(({ id }) => id) });
-            await this.assertRoot(work);
-            work.signal.signal.throwIfAborted();
-            this.update(work, { stage: 'applying' });
-            setTemplatesMutating(true);
-            try {
-                for (const { id, files } of versions) {
+        return withTemplateExitBlocked(async () => {
+            const work = await this.begin();
+            void withTemplateExitBlocked(() =>
+                this.run(work, async () => {
+                    const project = await this.project(projectPath);
                     if (
-                        (versionChoices?.[id] ?? choice) !== 'share-project' ||
-                        !files.length
+                        expected &&
+                        (project.launch_path !== expected.launch_path ||
+                            this.identity(project) !== this.identity(expected))
                     )
-                        continue;
-                    await updateTemplateFiles(
-                        templateChild(work.root, id),
-                        templateChild(local, id),
-                        files.map((file) => file.relative),
-                        [],
-                        true,
+                        throw new Error('exportTemplates:errors.changed');
+                    const local = this.local(project);
+                    const status = await templateConnectionStatus(
+                        local,
+                        getSharedTemplateRoot(),
                     );
-                }
-            } finally {
-                setTemplatesMutating(false);
-            }
-            await this.applyMigration(work);
+                    if (status === 'shared') {
+                        await this.setProjectTemplateMode(project, 'shared');
+                        return;
+                    }
+                    if (status !== 'local' && status !== 'missing')
+                        throw new Error('exportTemplates:errors.connection');
+                    work.project = project;
+                    const entries =
+                        status === 'missing'
+                            ? []
+                            : await fs.promises.readdir(local);
+                    if (!entries.length) {
+                        if (
+                            versionChoices &&
+                            Object.keys(versionChoices).length
+                        )
+                            throw new Error('exportTemplates:errors.changed');
+                        work.emptyConnectionStatus = status;
+                        work.sourceHash = templateFingerprint([]);
+                        await this.applyMigration(work);
+                        return;
+                    }
+                    if (
+                        emptyOnly &&
+                        !(await hasOnlyTemplateHousekeepingFiles(
+                            local,
+                            entries,
+                        ))
+                    )
+                        throw new Error('exportTemplates:errors.changed');
+                    for (const id of entries) {
+                        if (
+                            !isTemplateHousekeeping(id) &&
+                            !isTemplateIdentity(id)
+                        )
+                            throw new Error('exportTemplates:errors.identity');
+                    }
+                    if (choice === 'save-imported') {
+                        setTemplatesMutating(true);
+                        this.update(work, {
+                            stage: 'applying',
+                            setIds: entries.filter(isTemplateIdentity),
+                        });
+                        for (const name of entries.filter(
+                            isTemplateHousekeeping,
+                        ))
+                            await fs.promises.rm(path.join(local, name), {
+                                recursive: true,
+                                force: true,
+                            });
+                        await this.imported.saveProject(project, local);
+                        work.projectSynchronised = true;
+                        return;
+                    }
+                    const contents = await readTemplateTree(
+                        local,
+                        false,
+                        work.signal.signal,
+                    );
+                    if (
+                        emptyOnly &&
+                        contents.some(
+                            (file) =>
+                                file.relative.includes('/') ||
+                                !isTemplateHousekeeping(file.relative),
+                        )
+                    )
+                        throw new Error('exportTemplates:errors.changed');
+                    work.sourceHash = templateFingerprint(contents);
+                    const versions = entries
+                        .filter(isTemplateIdentity)
+                        .map((id) => ({
+                            id,
+                            files: contents
+                                .filter((file) =>
+                                    file.relative.startsWith(`${id}/`),
+                                )
+                                .map((file) => ({
+                                    ...file,
+                                    relative: file.relative.slice(
+                                        id.length + 1,
+                                    ),
+                                })),
+                        }));
+                    if (versionChoices) {
+                        const populatedIds = versions
+                            .filter(({ files }) =>
+                                files.some(
+                                    (file) => file.relative !== 'version.txt',
+                                ),
+                            )
+                            .map(({ id }) => id);
+                        if (
+                            Object.keys(versionChoices).length !==
+                                populatedIds.length ||
+                            populatedIds.some(
+                                (id) => !Object.hasOwn(versionChoices, id),
+                            )
+                        )
+                            throw new Error('exportTemplates:errors.changed');
+                    }
+                    this.update(work, { setIds: versions.map(({ id }) => id) });
+                    await this.assertRoot(work);
+                    work.signal.signal.throwIfAborted();
+                    this.update(work, { stage: 'applying' });
+                    setTemplatesMutating(true);
+                    try {
+                        for (const { id, files } of versions) {
+                            if (
+                                (versionChoices?.[id] ?? choice) !==
+                                    'share-project' ||
+                                !files.length
+                            )
+                                continue;
+                            await updateTemplateFiles(
+                                templateChild(work.root, id),
+                                templateChild(local, id),
+                                files.map((file) => file.relative),
+                                [],
+                                true,
+                            );
+                        }
+                    } finally {
+                        setTemplatesMutating(false);
+                    }
+                    await this.applyMigration(work);
+                }),
+            );
         });
     }
 
@@ -1532,77 +2081,92 @@ export class ExportTemplatesService {
      * @param recoveryId - Discovered operation identifier.
      */
     async recover(recoveryId: string): Promise<void> {
-        if (this.starting || (this.job && !TERMINAL.has(this.job.stage)))
-            throw new Error('exportTemplates:errors.busy');
-        this.starting = true;
-        const release = await reserveTemplateOperation();
-        setTemplatesMutating(true);
-        const previous = this.tasks.get(recoveryId)?.job;
-        const task = {
-            job: {
-                id: recoveryId,
-                setIds: previous?.setIds ?? [],
-                kind: 'recover',
-                stage: 'applying',
-            } as TemplateJob,
-            action: () => this.recover(recoveryId),
-        };
-        this.tasks.set(recoveryId, task);
-        try {
-            if (
-                !OPERATION_ID.test(recoveryId) ||
-                !(await this.recoveries()).includes(recoveryId)
-            )
-                throw new Error('exportTemplates:errors.recovery');
-            const root = await fs.promises.realpath(getSharedTemplateRoot());
-            const directory = path.join(this.workParent(root), recoveryId);
-            if (!(await templateLstat(path.join(directory, 'journal.json')))) {
-                const names = await fs.promises.readdir(directory);
+        return withTemplateExitBlocked(async () => {
+            if (this.starting || (this.job && !TERMINAL.has(this.job.stage)))
+                throw new Error('exportTemplates:errors.busy');
+            this.starting = true;
+            const release = await reserveTemplateOperation();
+            setTemplatesMutating(true);
+            const previous = this.tasks.get(recoveryId)?.job;
+            const task = {
+                job: {
+                    id: recoveryId,
+                    setIds: previous?.setIds ?? [],
+                    kind: 'recover',
+                    stage: 'applying',
+                } as TemplateJob,
+                action: () => this.recover(recoveryId),
+            };
+            this.tasks.set(recoveryId, task);
+            try {
+                if ((await readTemplateVersionMigration())?.id === recoveryId) {
+                    const result = await this.versionMigration.recover();
+                    if (result?.status === 'complete')
+                        this.settleMigrationVersion(
+                            result.projectPath,
+                            result.setId,
+                        );
+                    return;
+                }
                 if (
-                    names.some(
-                        (name) =>
-                            ![
-                                'package.tpz',
-                                'extracted',
-                                'replacement',
-                                'new',
-                                'journal.next',
-                            ].includes(name),
-                    )
+                    !OPERATION_ID.test(recoveryId) ||
+                    !(await this.recoveries()).includes(recoveryId)
                 )
                     throw new Error('exportTemplates:errors.recovery');
-                await fs.promises.rm(directory, { recursive: true });
-                return;
+                const root = await fs.promises.realpath(
+                    getSharedTemplateRoot(),
+                );
+                const directory = path.join(this.workParent(root), recoveryId);
+                if (
+                    !(await templateLstat(path.join(directory, 'journal.json')))
+                ) {
+                    const names = await fs.promises.readdir(directory);
+                    if (
+                        names.some(
+                            (name) =>
+                                ![
+                                    'package.tpz',
+                                    'extracted',
+                                    'replacement',
+                                    'new',
+                                    'journal.next',
+                                ].includes(name),
+                        )
+                    )
+                        throw new Error('exportTemplates:errors.recovery');
+                    await fs.promises.rm(directory, { recursive: true });
+                    return;
+                }
+                const journal = await readTemplateJournal(directory);
+                task.job = {
+                    ...task.job,
+                    setIds: journal.sets.map((set) => set.id),
+                };
+                await recoverTemplateTransaction(
+                    root,
+                    directory,
+                    getSharedTemplateRoot(),
+                );
+            } catch (error) {
+                task.job = {
+                    ...task.job,
+                    stage: 'error',
+                    error:
+                        error instanceof Error &&
+                        error.message.startsWith('exportTemplates:')
+                            ? error.message
+                            : 'exportTemplates:errors.recovery',
+                };
+                throw error;
+            } finally {
+                if (task.job.stage !== 'error')
+                    task.job = { ...task.job, stage: 'complete' };
+                this.starting = false;
+                setTemplatesMutating(false);
+                release();
+                void this.pump();
             }
-            const journal = await readTemplateJournal(directory);
-            task.job = {
-                ...task.job,
-                setIds: journal.sets.map((set) => set.id),
-            };
-            await recoverTemplateTransaction(
-                root,
-                directory,
-                getSharedTemplateRoot(),
-            );
-        } catch (error) {
-            task.job = {
-                ...task.job,
-                stage: 'error',
-                error:
-                    error instanceof Error &&
-                    error.message.startsWith('exportTemplates:')
-                        ? error.message
-                        : 'exportTemplates:errors.recovery',
-            };
-            throw error;
-        } finally {
-            if (task.job.stage !== 'error')
-                task.job = { ...task.job, stage: 'complete' };
-            this.starting = false;
-            setTemplatesMutating(false);
-            release();
-            void this.pump();
-        }
+        });
     }
 
     /** Allocates one exclusive preparation job. */
@@ -1706,6 +2270,12 @@ export class ExportTemplatesService {
     /** Gets recoverable transactions without following unexpected links. */
     private async recoveries(): Promise<string[]> {
         const result: string[] = [];
+        const versionRecoveryId = await templateVersionMigrationRecoveryId();
+        if (
+            versionRecoveryId &&
+            !this.versionMigration.ownsActiveRecovery(versionRecoveryId)
+        )
+            result.push(versionRecoveryId);
         const roots = await this.storage.workRoots();
         if (await templateLstat(getSharedTemplateRoot()))
             roots.push(await fs.promises.realpath(getSharedTemplateRoot()));

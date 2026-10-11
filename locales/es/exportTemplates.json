@@ -72,7 +72,15 @@
         "decision": "Elige qué copia conservar para cada archivo en conflicto.",
         "recovery": "Es necesario recuperar una operación. Cierra Godot y recupera los archivos. Si cambiaron, revisa las carpetas antes de reintentar.",
         "failed": "No se pudo completar la operación. Revisa permisos, espacio y conexión e inténtalo de nuevo.",
-        "range": "Este servidor no admite descargas parciales o el paquete ha cambiado. Vuelve a abrir el selector o importa un archivo TPZ."
+        "range": "Este servidor no admite descargas parciales o el paquete ha cambiado. Vuelve a abrir el selector o importa un archivo TPZ.",
+        "downloadNetwork": "Falló la conexión de descarga.",
+        "downloadServer": "El servidor de descarga devolvió un error.",
+        "downloadPartial": "No se pudo cargar la lista de archivos de plantillas.",
+        "downloadChanged": "El paquete de plantillas ha cambiado.",
+        "downloadUnavailable": "El paquete de plantillas no está disponible.",
+        "downloadInvalid": "Paquete de plantillas no válido o ilegible.",
+        "fullChanged": "El paquete de plantillas ha cambiado.",
+        "downloadFailed": "No se pudieron cargar los archivos de plantillas."
     },
     "picker": {
         "title": "Añadir plantilla de exportación",
@@ -98,7 +106,24 @@
         "save": "Guardar cambios",
         "removalNotice": "Los archivos eliminados dejarán de estar disponibles para los proyectos que usan estas plantillas compartidas.",
         "loading": "Cargando archivos disponibles...",
-        "localOnly": "Solo están disponibles los archivos instalados. Vuelve a abrir este panel con conexión para añadir archivos oficiales."
+        "localOnly": "Solo están disponibles los archivos instalados. Vuelve a abrir este panel con conexión para añadir archivos oficiales.",
+        "tryAgain": "Reintentar",
+        "refreshFiles": "Actualizar lista de archivos",
+        "chooseAnotherVersion": "Elegir otra versión",
+        "refreshAfterChanges": "Guarda o deshaz los cambios antes de reintentar.",
+        "done": "Listo",
+        "fullCancelFailed": "No se ha confirmado la cancelación.",
+        "downloadFull": "Descargar paquete completo",
+        "fullOffer": "Paquete completo: {{size}}",
+        "fullKeepFiles": "Añade las plantillas que faltan para todas las plataformas. Conserva los archivos existentes.",
+        "fullDownloading": "Descargando el paquete completo",
+        "fullExtracting": "Extrayendo plantillas",
+        "fullInstalling": "Instalando plantillas",
+        "fullComplete": "Plantillas instaladas.",
+        "fullCancelled": "Descarga cancelada.",
+        "saveFailed": "No se pudieron guardar los cambios de las plantillas.",
+        "installFailed": "No se pudieron instalar las plantillas.",
+        "onlineFilesUnavailable": "No se pudo cargar la lista de archivos en línea. Se muestran los archivos instalados."
     },
     "manage": "Gestionar plantillas",
     "removeTemplates": "Eliminar plantillas",
@@ -269,7 +294,16 @@
         "save": "Guardar",
         "checking": "Comprobando plantillas de exportación...",
         "removeFile": "Quitar archivo seleccionado",
-        "affectedProjects": "Proyectos afectados"
+        "affectedProjects": "Proyectos afectados",
+        "chooseAnotherFile": "Elegir otro archivo",
+        "cannotReplace": "Este archivo no puede reemplazar estas plantillas",
+        "cannotImport": "Este archivo no se puede importar",
+        "existingBuild": "Compilación existente",
+        "selectedFile": "Archivo seleccionado",
+        "replacementMismatch": "Esta compilación necesita plantillas de {{expected}}. El archivo seleccionado contiene plantillas de {{actual}}.",
+        "replacingBuild": "Reemplazando \"{{label}}\"",
+        "replaceSummary": "Esto reemplaza todos los archivos de esta compilación. Los proyectos que la usan utilizarán el reemplazo.",
+        "packageDetails": "Detalles del paquete"
     },
     "storage": {
         "title": "Almacenamiento de plantillas de exportación",
@@ -345,5 +379,159 @@
         "moveSummary_two": "Estás a punto de mover {{count}} plantillas ({{size}}) a:",
         "moveSummary_few": "Estás a punto de mover {{count}} plantillas ({{size}}) a:",
         "moveSummary_many": "Estás a punto de mover {{count}} plantillas ({{size}}) a:"
+    },
+    "wizardMigration": {
+        "title": "Mover plantillas de exportación",
+        "stepsLabel": "Pasos de migración de plantillas",
+        "steps": {
+            "about": "Acerca de",
+            "options": "Opciones",
+            "choose": "Elegir",
+            "review": "Revisar",
+            "move": "Mover",
+            "done": "Listo"
+        },
+        "titles": {
+            "about": "Reúne tus plantillas de exportación en un solo lugar",
+            "options": "Qué significa cada opción",
+            "choose": "Elegir para todos los proyectos",
+            "review": "Revisa tus elecciones",
+            "move": "Moviendo plantillas de exportación",
+            "done": "Resultados de la migración"
+        },
+        "about": {
+            "intro": "Los proyectos antiguos guardan las plantillas de exportación en sus propias carpetas del editor. Godot Launcher ahora puede gestionar esos archivos desde Plantillas de exportación.",
+            "today": "Hoy",
+            "before": "Plantillas en la carpeta del editor de cada proyecto",
+            "after": "Después del traslado",
+            "destination": "Plantillas gestionadas desde Plantillas de exportación",
+            "why": "¿Por qué trasladarlas?",
+            "benefit1": "Consulta y gestiona tus plantillas en un solo lugar.",
+            "benefit2": "Conserva las plantillas de cada proyecto o permite que los proyectos usen archivos compartidos.",
+            "benefit3": "Reutiliza plantillas compartidas en lugar de guardar copias locales adicionales.",
+            "found": "Hemos encontrado plantillas en {{number}} proyectos.",
+            "next": "A continuación, conoce las opciones. Revisarás tus elecciones antes de mover cualquier archivo."
+        },
+        "optionsIntro": "En la siguiente pantalla, usa una opción para todas las versiones de un proyecto o elige para cada versión.",
+        "optionTitle": "Opción {{number}}: {{label}}",
+        "recommended": "Recomendado",
+        "choices": {
+            "save-imported": "Conservar plantillas actuales",
+            "share-project": "Compartir plantillas",
+            "use-shared": "Usar plantillas compartidas",
+            "later": "Decidir más tarde"
+        },
+        "explanations": {
+            "save-imported": "Mueve la carpeta de plantillas a Plantillas importadas. El proyecto sigue usando sus archivos.",
+            "share-project": "Añade los archivos que faltan a las plantillas compartidas y las usa para este proyecto. Los archivos compartidos existentes no cambian. Si difieren de tus archivos locales, el proyecto usará los compartidos.",
+            "use-shared": "Usa las plantillas compartidas. Puede que tengas que descargar las plantillas que faltan antes de exportar.",
+            "later": "Deja estas plantillas como están. Puedes decidir más tarde desde Plantillas de exportación."
+        },
+        "warnings": {
+            "share-project": "Las copias locales se eliminan sin guardar una copia aparte.",
+            "use-shared": "Los archivos de plantillas locales se eliminan sin guardar una copia aparte."
+        },
+        "infoReminder": "Usa el botón de información junto a una opción para volver a ver su explicación.",
+        "explain": "Explicar {{choice}} para {{project}}",
+        "scope": "Se aplica a estas versiones: {{versions}}.",
+        "chooseIntro": "Usa una opción por proyecto o elige para cada versión.",
+        "projectSummary": "Proyectos: {{projects}}, versiones de plantillas: {{versions}}",
+        "choiceSummary": "Elecciones por versión de plantillas",
+        "moreProjects": "Hay más proyectos abajo. Desplázate para verlos.",
+        "moreVersions": "Hay más versiones abajo. Desplázate para verlas.",
+        "choiceNotice": {
+            "save-imported": "Tus plantillas se conservan",
+            "share-project": "Copias locales eliminadas después de compartir",
+            "use-shared": "Archivos locales eliminados",
+            "later": "Los archivos quedan como están"
+        },
+        "keepAll": "Conservar las actuales para todos",
+        "keepNotice": "Conservar plantillas actuales mantiene los mismos archivos en uso. Puedes cambiar cualquier elección abajo.",
+        "projectColumn": "Proyecto",
+        "versionsColumn": "Versiones de plantillas",
+        "choiceColumn": "Tu elección",
+        "individual": "Elegir para cada versión",
+        "individualLabel": "Elegir para cada versión en {{project}}",
+        "allVersions": "Se aplica a las {{number}} versiones",
+        "choiceLabel": "Elección para {{project}}",
+        "versionChoiceLabel": "Elección para {{project}}, {{version}}",
+        "unavailable": "Deja este proyecto para más tarde hasta que esté listo.",
+        "reviewIntro": "Todavía no ha cambiado nada. Revisa la lista de abajo. Cierra los editores de Godot y detén las exportaciones antes de empezar.",
+        "reviewing": "Comprobando archivos de plantillas...",
+        "effectsColumn": "Qué ocurrirá",
+        "reviewVersions": "Versiones revisadas de {{project}}",
+        "reviewScope": {
+            "individual": "Elecciones separadas para cada versión",
+            "differentEffects": "Efectos distintos para cada versión"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "Usar tus plantillas de Plantillas importadas.",
+                "shared": "Usar plantillas compartidas. Puede que haya que descargar las que faltan antes de exportar.",
+                "local": "Seguir usando las plantillas locales."
+            },
+            "addMissing": "Añadir los archivos compartidos que faltan. Conservar los existentes.",
+            "localFiles": {
+                "remove-after-verification": "Conservar los archivos en Plantillas importadas y conectar este proyecto a ellos.",
+                "remove-after-connection": "Eliminar los archivos locales después de conectar el proyecto. No se guarda una copia aparte.",
+                "keep": "Conservar los archivos locales y decidir más tarde."
+            }
+        },
+        "files": "{{number}} archivos",
+        "effects": {
+            "save-imported": "Mover la carpeta a Plantillas importadas y seguir usando sus archivos.",
+            "share-project": "Añadir los archivos compartidos que faltan, conservar los existentes, usar las plantillas compartidas y eliminar las copias locales.",
+            "use-shared": "Usar plantillas compartidas y eliminar los archivos locales. Puede que haya que descargar las plantillas que faltan antes de exportar.",
+            "later": "Conservar los archivos locales y dejar esta versión para más tarde."
+        },
+        "nothingChanged": "Todavía no ha cambiado nada. Elige Atrás para cambiar una elección.",
+        "confirmRemoval": "Entiendo que Compartir plantillas y Usar plantillas compartidas eliminan los archivos locales indicados sin guardar una copia aparte.",
+        "leftLater": "Dejado para más tarde",
+        "laterProjects": "Proyectos dejados para más tarde",
+        "next": "Siguiente",
+        "seeOptions": "Ver opciones",
+        "chooseProjects": "Elegir para proyectos",
+        "reviewChoices": "Revisar elecciones",
+        "moveTemplates": "Mover plantillas",
+        "moving": "Moviendo plantillas...",
+        "back": "Volver",
+        "finishLater": "Terminar más tarde",
+        "done": "Listo",
+        "openTemplates": "Abrir plantillas de exportación",
+        "keepOpen": "Los traslados grandes pueden tardar. Godot Launcher permanecerá abierto hasta que termine el traslado.",
+        "progress": "{{completed}} de {{total}} versiones de plantillas completadas",
+        "progressLabel": "Versiones de plantillas completadas",
+        "status": {
+            "waiting": "En espera",
+            "checking": "Comprobando archivos de plantillas",
+            "copying": "Copiando plantillas",
+            "verifying": "Comprobando archivos copiados",
+            "connecting": "Actualizando la conexión del proyecto",
+            "cleaning": "Terminando el traslado",
+            "complete": "Listo",
+            "error": "No se pudo mover",
+            "later": "Dejado para más tarde"
+        },
+        "results": "Resultados por versión de plantillas",
+        "success": "Tus plantillas están listas",
+        "partial": "Algunas plantillas necesitan otra revisión",
+        "resultSummary": "Completadas: {{completed}}. No se pudieron mover: {{failed}}. Para más tarde: {{later}}.",
+        "resultNote": "Puedes gestionar los archivos trasladados desde Plantillas de exportación. Las versiones dejadas para más tarde siguen necesitando una decisión.",
+        "retryFailed": "Reintentar versiones fallidas",
+        "retryFailedCount": "Reintentar versiones fallidas ({{number}})",
+        "recover": "Recuperar traslado interrumpido",
+        "recovering": "Recuperando plantillas...",
+        "viewResults": "Ver migración",
+        "destination": {
+            "imported": "Usar tus plantillas de Plantillas importadas.",
+            "shared": "Usar plantillas compartidas. Puede que haya que descargar las plantillas que faltan antes de exportar.",
+            "local": "Seguir usando las plantillas locales."
+        },
+        "addMissing": "Añadir los archivos compartidos que faltan. Los archivos compartidos existentes no cambian.",
+        "localFiles": {
+            "remove-after-verification": "Conservar los archivos en Plantillas importadas y conectar este proyecto a ellos.",
+            "remove-after-connection": "Eliminar las copias locales después de conectar el proyecto, sin guardar una copia aparte.",
+            "keep": "Conservar los archivos locales y dejar esta versión para más tarde."
+        }
     }
 }

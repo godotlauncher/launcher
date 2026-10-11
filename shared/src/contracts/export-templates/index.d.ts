@@ -3,12 +3,19 @@ import type {
     TemplateProjectAssessment,
 } from './template-assessment.types.js';
 import type {
+    TemplateMigrationCheckProgress,
+    TemplateMigrationProjectDecision,
+    TemplateMigrationReview,
+    TemplateMigrationRun,
+} from './template-migration.types.js';
+import type {
     TemplateStorageKind,
     TemplateStorageMoveReview,
     TemplateStorageSettings,
 } from './template-storage.types.js';
 
 export type * from './template-assessment.types.js';
+export type * from './template-migration.types.js';
 export type * from './template-storage.types.js';
 
 /** An official, platform-independent template package. */
@@ -44,10 +51,10 @@ export type TemplateMigrationChoice =
     | 'share-project'
     | 'use-shared'
     | 'save-imported';
-/** Explicit decisions for every populated version in a dedicated collection. */
+/** Legacy execution supports only Share and Use shared per version. */
 export type TemplateMigrationVersionChoices = Record<
     string,
-    TemplateMigrationChoice
+    Exclude<TemplateMigrationChoice, 'save-imported'>
 >;
 /** Process-local preparation and commit status. */
 export type TemplateJob = {
@@ -67,6 +74,14 @@ export type TemplateJob = {
     receivedBytes?: number;
     totalBytes?: number;
     error?: string;
+    /** Complete official package download, with extraction reported separately. */
+    fullPackage?: {
+        releaseId: string;
+        assetId: string;
+        extracting?: boolean;
+    };
+    /** Reviewed batch progress, scoped by exact project and version identities. */
+    migration?: TemplateMigrationRun;
 };
 /** The filesystem inventory and any pending work. */
 export type ExportTemplateInventory = {
@@ -148,6 +163,18 @@ export type ExportTemplatesBridge = {
 
     connectEmptyProjects(): Promise<void>;
     getMigrationAssessment(): Promise<TemplateMigrationAssessment>;
+    reviewMigration(
+        decisions: TemplateMigrationProjectDecision[],
+        requestId?: string,
+    ): Promise<TemplateMigrationReview>;
+    getMigrationReviewProgress(
+        requestId: string,
+    ): Promise<TemplateMigrationCheckProgress | undefined>;
+    discardMigrationReview(token: string): Promise<void>;
+    applyMigrationReview(
+        token: string,
+        removalConfirmed: boolean,
+    ): Promise<string>;
     inspectProjectTemplates(
         projectPath: string,
         contents?: boolean,
@@ -159,6 +186,7 @@ export type ExportTemplatesBridge = {
     getLocalPackage(setId: string): Promise<TemplatePackage>;
     getPackage(releaseId: string, assetId: string): Promise<TemplatePackage>;
     savePackage(token: string, selected: string[]): Promise<void>;
+    downloadFullPackage(releaseId: string, assetId: string): Promise<string>;
 
     prepareMigration(
         projectPath: string,

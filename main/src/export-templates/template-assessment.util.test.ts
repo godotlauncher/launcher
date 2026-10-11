@@ -4,6 +4,7 @@ import type { ProjectDetails } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { assessProjectTemplates } from './template-assessment.util.js';
 import { compareTemplateTrees } from './template-comparison.util.js';
+import { readTemplateVersionLayout } from './template-version-migration.store.js';
 
 vi.mock('./template-comparison.util.js', () => ({
     compareTemplateTrees: vi.fn(),
@@ -15,6 +16,11 @@ import {
     templateLstat,
 } from './template-files.util.js';
 
+vi.mock('./template-version-migration.store.js', () => ({
+    readTemplateVersionLayout: vi.fn(),
+    readTemplateVersionMigration: vi.fn(),
+    templateVersionMigrationRecoveryId: vi.fn(),
+}));
 vi.mock('node:fs', () => ({
     promises: {
         readdir: vi.fn(),
@@ -59,6 +65,40 @@ beforeEach(() => {
 });
 
 describe('project template assessment', () => {
+    it('offers existing templates even when the editor is missing', async () => {
+        vi.mocked(templateLstat).mockImplementation(async (name) =>
+            name === project.launch_path
+                ? undefined
+                : name === path.join(project.path, 'project.godot')
+                  ? file
+                  : directory,
+        );
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+        ] as never);
+        expect(await assessProjectTemplates(project, root)).toMatchObject({
+            state: 'needs-review',
+            reason: 'unverified-files',
+            pending: true,
+            setIds: ['4.4.stable'],
+        });
+        expect(templateLstat).not.toHaveBeenCalledWith(project.launch_path);
+        expect(fs.promises.mkdir).not.toHaveBeenCalled();
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+    });
+    it('offers populated templates beside a macOS app bundle for review', async () => {
+        const macProject = {
+            ...project,
+            launch_path: path.resolve('project', 'editor', 'Godot.app'),
+        };
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+        ] as never);
+        expect(await assessProjectTemplates(macProject, root)).toMatchObject({
+            state: 'needs-review',
+            setIds: ['4.4.stable'],
+        });
+    });
     it('discovers an empty environment without hashes or mutations', async () => {
         expect(await assessProjectTemplates(project, root)).toMatchObject({
             state: 'ready',
@@ -69,6 +109,62 @@ describe('project template assessment', () => {
         expect(readTemplateTree).not.toHaveBeenCalled();
         expect(fs.promises.mkdir).not.toHaveBeenCalled();
         expect(fs.promises.rm).not.toHaveBeenCalled();
+    });
+    it.each([['.DS_Store'], ['Thumbs.db'], ['.DS_Store', 'Thumbs.db']])(
+        'treats metadata-only entries %j as an empty template collection',
+        async (...entries) => {
+            vi.mocked(fs.promises.readdir).mockResolvedValue(entries as never);
+            vi.mocked(templateLstat).mockImplementation(async (name) =>
+                name === path.join(project.path, 'project.godot') ||
+                entries.includes(path.basename(name))
+                    ? file
+                    : directory,
+            );
+            expect(await assessProjectTemplates(project, root)).toMatchObject({
+                state: 'ready',
+                reason: 'empty',
+                pending: true,
+                setIds: [],
+                metadata: entries.toSorted(),
+            });
+            expect(readTemplateTree).not.toHaveBeenCalled();
+            expect(fs.promises.rm).not.toHaveBeenCalled();
+        },
+    );
+    it.each(['directory', 'link'])(
+        'does not automatically connect a metadata name that is a %s',
+        async (kind) => {
+            vi.mocked(fs.promises.readdir).mockResolvedValue([
+                '.DS_Store',
+            ] as never);
+            vi.mocked(templateLstat).mockImplementation(async (name) =>
+                path.basename(name) === '.DS_Store'
+                    ? ({
+                          isFile: () => kind === 'link',
+                          isSymbolicLink: () => kind === 'link',
+                      } as fs.Stats)
+                    : name === path.join(project.path, 'project.godot')
+                      ? file
+                      : directory,
+            );
+            expect(await assessProjectTemplates(project, root)).toMatchObject({
+                state: 'needs-review',
+                reason: 'metadata-present',
+            });
+        },
+    );
+    it('offers real templates alongside both recognised metadata files', async () => {
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+            '.DS_Store',
+            'Thumbs.db',
+        ] as never);
+        expect(await assessProjectTemplates(project, root)).toMatchObject({
+            state: 'needs-review',
+            setIds: ['4.4.stable'],
+            metadata: ['.DS_Store', 'Thumbs.db'],
+            unexpected: [],
+        });
     });
     it('does not count a shared project as pending', async () => {
         vi.mocked(templateConnectionStatus).mockResolvedValue('shared');
@@ -132,7 +228,7 @@ describe('project template assessment', () => {
         );
         expect(fs.promises.readdir).not.toHaveBeenCalled();
     });
-    it('reports housekeeping separately from unknown user content', async () => {
+    it('offers version folders without blocking on unrelated user content', async () => {
         vi.mocked(fs.promises.readdir).mockResolvedValue([
             '4.4.stable',
             '.DS_Store',
@@ -141,14 +237,52 @@ describe('project template assessment', () => {
         ] as never);
         expect(await assessProjectTemplates(project, root, true)).toMatchObject(
             {
-                state: 'blocked',
-                reason: 'unexpected-content',
+                state: 'needs-review',
+                reason: 'metadata-present',
                 setIds: ['4.4.stable'],
                 metadata: ['.DS_Store', 'Thumbs.db'],
                 unexpected: ['.custom-key-material'],
             },
         );
         expect(readTemplateTree).not.toHaveBeenCalled();
+    });
+    it('recognises a completed layout with unrelated files and folders left in place', async () => {
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            'notes.txt',
+            'custom-folder',
+        ] as never);
+        vi.mocked(readTemplateVersionLayout).mockResolvedValue({
+            version: 1,
+            root: 'active',
+            managed: {},
+        });
+        expect(await assessProjectTemplates(project, root)).toMatchObject({
+            state: 'shared',
+            reason: 'connected',
+            pending: false,
+            setIds: [],
+            unexpected: ['custom-folder', 'notes.txt'],
+        });
+    });
+    it('blocks a version folder redirected through an unowned link', async () => {
+        vi.mocked(fs.promises.readdir).mockResolvedValue([
+            '4.4.stable',
+        ] as never);
+        vi.mocked(templateLstat).mockImplementation(async (name) =>
+            path.basename(name) === '4.4.stable'
+                ? ({
+                      isDirectory: () => false,
+                      isFile: () => false,
+                      isSymbolicLink: () => true,
+                  } as fs.Stats)
+                : name === path.join(project.path, 'project.godot')
+                  ? file
+                  : directory,
+        );
+        expect(await assessProjectTemplates(project, root)).toMatchObject({
+            state: 'blocked',
+            reason: 'unexpected-content',
+        });
     });
     it('lists every version without reading template contents during discovery', async () => {
         vi.mocked(fs.promises.readdir).mockResolvedValue([

@@ -72,7 +72,15 @@
         "decision": "Wybierz kopię dla każdego pliku powodującego konflikt.",
         "recovery": "Wymagane odzyskiwanie. Zamknij Godot i odzyskaj pliki. Jeśli zmieniły się, sprawdź foldery przed ponowieniem.",
         "failed": "Nie można ukończyć operacji. Sprawdź uprawnienia, miejsce i połączenie, a następnie ponów.",
-        "range": "Ten serwer nie obsługuje pobierania częściowego lub pakiet uległ zmianie. Otwórz ponownie wybór lub zaimportuj plik TPZ."
+        "range": "Ten serwer nie obsługuje pobierania częściowego lub pakiet uległ zmianie. Otwórz ponownie wybór lub zaimportuj plik TPZ.",
+        "downloadNetwork": "Połączenie pobierania nie powiodło się.",
+        "downloadServer": "Serwer pobierania zwrócił błąd.",
+        "downloadPartial": "Nie można wczytać listy plików szablonów.",
+        "downloadChanged": "Pakiet szablonów uległ zmianie.",
+        "downloadUnavailable": "Pakiet szablonów jest niedostępny.",
+        "downloadInvalid": "Nieprawidłowy lub nieczytelny pakiet szablonów.",
+        "fullChanged": "Pakiet szablonów uległ zmianie.",
+        "downloadFailed": "Nie można wczytać plików szablonów."
     },
     "picker": {
         "title": "Dodaj szablon eksportu",
@@ -98,7 +106,24 @@
         "save": "Zapisz zmiany",
         "removalNotice": "Usunięte pliki nie będą już dostępne dla projektów korzystających z tych współdzielonych szablonów.",
         "loading": "Wczytywanie dostępnych plików...",
-        "localOnly": "Dostępne są tylko zainstalowane pliki. Otwórz ten panel ponownie po połączeniu, aby dodać oficjalne pliki."
+        "localOnly": "Dostępne są tylko zainstalowane pliki. Otwórz ten panel ponownie po połączeniu, aby dodać oficjalne pliki.",
+        "tryAgain": "Spróbuj ponownie",
+        "refreshFiles": "Odśwież listę plików",
+        "chooseAnotherVersion": "Wybierz inną wersję",
+        "refreshAfterChanges": "Zapisz lub cofnij zmiany przed ponowną próbą.",
+        "done": "Gotowe",
+        "fullCancelFailed": "Anulowanie nie zostało potwierdzone.",
+        "downloadFull": "Pobierz pełny pakiet",
+        "fullOffer": "Pełny pakiet: {{size}}",
+        "fullKeepFiles": "Dodaje brakujące szablony dla wszystkich platform. Istniejące pliki zostają zachowane.",
+        "fullDownloading": "Pobieranie pełnego pakietu",
+        "fullExtracting": "Rozpakowywanie szablonów",
+        "fullInstalling": "Instalowanie szablonów",
+        "fullComplete": "Szablony zainstalowane.",
+        "fullCancelled": "Pobieranie anulowane.",
+        "saveFailed": "Nie można zapisać zmian w szablonach.",
+        "installFailed": "Nie można zainstalować szablonów.",
+        "onlineFilesUnavailable": "Nie można wczytać listy plików online. Wyświetlane są zainstalowane pliki."
     },
     "manage": "Zarządzaj szablonami",
     "removeTemplates": "Usuń szablony",
@@ -269,7 +294,16 @@
         "save": "Zapisz",
         "checking": "Sprawdzanie szablonów eksportu...",
         "removeFile": "Usuń wybrany plik",
-        "affectedProjects": "Projekty objęte zmianą"
+        "affectedProjects": "Projekty objęte zmianą",
+        "chooseAnotherFile": "Wybierz inny plik",
+        "cannotReplace": "Ten plik nie może zastąpić tych szablonów",
+        "cannotImport": "Nie można zaimportować tego pliku",
+        "existingBuild": "Istniejąca kompilacja",
+        "selectedFile": "Wybrany plik",
+        "replacementMismatch": "Ta kompilacja wymaga szablonów dla {{expected}}. Wybrany plik zawiera szablony dla {{actual}}.",
+        "replacingBuild": "Zastępowanie \"{{label}}\"",
+        "replaceSummary": "Spowoduje to zastąpienie wszystkich plików tej kompilacji. Korzystające z niej projekty będą używać nowych plików.",
+        "packageDetails": "Szczegóły pakietu"
     },
     "storage": {
         "title": "Przechowywanie szablonów eksportu",
@@ -345,5 +379,159 @@
         "cancelledNote": "Przenoszenie anulowano. Szablony nadal znajdują się w pierwotnej lokalizacji.",
         "done": "Gotowe",
         "moveSummary_two": "Zamierzasz przenieść {{count}} szablonów ({{size}}) do:"
+    },
+    "wizardMigration": {
+        "title": "Przenieś szablony eksportu",
+        "stepsLabel": "Etapy migracji szablonów",
+        "steps": {
+            "about": "Informacje",
+            "options": "Opcje",
+            "choose": "Wybór",
+            "review": "Przegląd",
+            "move": "Przenieś",
+            "done": "Gotowe"
+        },
+        "titles": {
+            "about": "Zbierz swoje szablony eksportu w jednym miejscu",
+            "options": "Co oznaczają poszczególne opcje",
+            "choose": "Wybierz dla wszystkich projektów",
+            "review": "Sprawdź swoje wybory",
+            "move": "Przenoszenie szablonów eksportu",
+            "done": "Wyniki migracji"
+        },
+        "about": {
+            "intro": "Starsze projekty przechowują szablony eksportu we własnych folderach edytora. Godot Launcher może teraz zarządzać tymi plikami w sekcji Szablony eksportu.",
+            "today": "Dzisiaj",
+            "before": "Szablony w folderze edytora każdego projektu",
+            "after": "Po przeniesieniu",
+            "destination": "Szablony zarządzane w sekcji Szablony eksportu",
+            "why": "Dlaczego je przenieść?",
+            "benefit1": "Przeglądaj swoje szablony i zarządzaj nimi w jednym miejscu.",
+            "benefit2": "Zachowaj szablony każdego projektu lub pozwól projektom korzystać ze współdzielonych plików.",
+            "benefit3": "Używaj ponownie współdzielonych szablonów zamiast przechowywać dodatkowe kopie lokalne.",
+            "found": "Znaleziono szablony w projektach: {{number}}.",
+            "next": "Teraz poznaj opcje. Przed przeniesieniem plików sprawdzisz swoje wybory."
+        },
+        "optionsIntro": "Na następnym ekranie wybierz jedną opcję dla wszystkich wersji w projekcie lub osobno dla każdej wersji.",
+        "optionTitle": "Opcja {{number}}: {{label}}",
+        "recommended": "Zalecane",
+        "choices": {
+            "save-imported": "Zachowaj obecne szablony",
+            "share-project": "Udostępnij szablony",
+            "use-shared": "Używaj współdzielonych szablonów",
+            "later": "Zdecyduj później"
+        },
+        "explanations": {
+            "save-imported": "Przenosi folder szablonów do sekcji Importowane szablony. Projekt nadal korzysta ze swoich plików.",
+            "share-project": "Dodaje brakujące pliki do współdzielonych szablonów i używa ich w tym projekcie. Istniejące współdzielone pliki pozostają bez zmian. Jeśli różnią się od lokalnych plików, projekt użyje współdzielonych plików.",
+            "use-shared": "Używa współdzielonych szablonów. Przed eksportem może być konieczne pobranie brakujących szablonów.",
+            "later": "Pozostawia te szablony bez zmian. Możesz zdecydować później w sekcji Szablony eksportu."
+        },
+        "warnings": {
+            "share-project": "Lokalne kopie zostają usunięte bez zapisania osobnej kopii.",
+            "use-shared": "Lokalne pliki szablonów zostają usunięte bez zapisania osobnej kopii."
+        },
+        "infoReminder": "Użyj przycisku informacji obok opcji, aby ponownie zobaczyć jej wyjaśnienie.",
+        "explain": "Wyjaśnij {{choice}} dla {{project}}",
+        "scope": "Dotyczy tych wersji: {{versions}}.",
+        "chooseIntro": "Wybierz jedną opcję dla projektu lub osobno dla każdej wersji.",
+        "projectSummary": "Projekty: {{projects}}, wersje szablonów: {{versions}}",
+        "choiceSummary": "Wybory według wersji szablonów",
+        "moreProjects": "Więcej projektów poniżej. Przewiń, aby je zobaczyć.",
+        "moreVersions": "Więcej wersji poniżej. Przewiń, aby je zobaczyć.",
+        "choiceNotice": {
+            "save-imported": "Twoje szablony zostaną zachowane",
+            "share-project": "Lokalne kopie usunięte po udostępnieniu",
+            "use-shared": "Lokalne pliki usunięte",
+            "later": "Pliki pozostawione bez zmian"
+        },
+        "keepAll": "Zachowaj obecne dla wszystkich",
+        "keepNotice": "Opcja Zachowaj obecne szablony pozostawia w użyciu te same pliki. Możesz zmienić dowolny wybór poniżej.",
+        "projectColumn": "Projekt",
+        "versionsColumn": "Wersje szablonów",
+        "choiceColumn": "Twój wybór",
+        "individual": "Wybierz dla każdej wersji",
+        "individualLabel": "Wybierz dla każdej wersji w {{project}}",
+        "allVersions": "Dotyczy wszystkich wersji: {{number}}",
+        "choiceLabel": "Wybór dla {{project}}",
+        "versionChoiceLabel": "Wybór dla {{project}}, {{version}}",
+        "unavailable": "Pozostaw ten projekt na później, aż będzie gotowy.",
+        "reviewIntro": "Nic się jeszcze nie zmieniło. Sprawdź listę poniżej. Przed rozpoczęciem zamknij edytory Godot i zatrzymaj eksporty.",
+        "reviewing": "Sprawdzanie plików szablonów...",
+        "effectsColumn": "Co się stanie",
+        "reviewVersions": "Sprawdzone wersje dla {{project}}",
+        "reviewScope": {
+            "individual": "Osobne wybory dla każdej wersji",
+            "differentEffects": "Różne skutki dla każdej wersji"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "Używaj swoich szablonów z sekcji Importowane szablony.",
+                "shared": "Używaj współdzielonych szablonów. Przed eksportem może być konieczne pobranie brakujących.",
+                "local": "Nadal używaj lokalnych szablonów."
+            },
+            "addMissing": "Dodaj brakujące współdzielone pliki. Zachowaj istniejące współdzielone pliki.",
+            "localFiles": {
+                "remove-after-verification": "Zachowaj pliki w sekcji Importowane szablony i połącz z nimi ten projekt.",
+                "remove-after-connection": "Usuń lokalne pliki po połączeniu projektu. Osobna kopia nie zostanie zapisana.",
+                "keep": "Zachowaj lokalne pliki i zdecyduj później."
+            }
+        },
+        "files": "Pliki: {{number}}",
+        "effects": {
+            "save-imported": "Przenieś folder do sekcji Importowane szablony i nadal używaj jego plików.",
+            "share-project": "Dodaj brakujące współdzielone pliki, zachowaj istniejące, a następnie używaj współdzielonych szablonów i usuń lokalne kopie.",
+            "use-shared": "Używaj współdzielonych szablonów i usuń lokalne pliki. Przed eksportem może być konieczne pobranie brakujących szablonów.",
+            "later": "Zachowaj lokalne pliki i pozostaw tę wersję na później."
+        },
+        "nothingChanged": "Nic się jeszcze nie zmieniło. Wybierz Wstecz, aby zmienić wybór.",
+        "confirmRemoval": "Rozumiem, że opcje Udostępnij szablony i Używaj współdzielonych szablonów usuwają wymienione lokalne pliki bez zapisania osobnej kopii.",
+        "leftLater": "Pozostawione na później",
+        "laterProjects": "Projekty pozostawione na później",
+        "next": "Dalej",
+        "seeOptions": "Zobacz opcje",
+        "chooseProjects": "Wybierz dla projektów",
+        "reviewChoices": "Sprawdź wybory",
+        "moveTemplates": "Przenieś szablony",
+        "moving": "Przenoszenie szablonów...",
+        "back": "Wróć",
+        "finishLater": "Dokończ później",
+        "done": "Gotowe",
+        "openTemplates": "Otwórz szablony eksportu",
+        "keepOpen": "Duże przeniesienia mogą potrwać. Godot Launcher pozostanie otwarty do zakończenia przenoszenia.",
+        "progress": "Ukończone wersje szablonów: {{completed}} z {{total}}",
+        "progressLabel": "Ukończone wersje szablonów",
+        "status": {
+            "waiting": "Oczekiwanie",
+            "checking": "Sprawdzanie plików szablonów",
+            "copying": "Kopiowanie szablonów",
+            "verifying": "Sprawdzanie skopiowanych plików",
+            "connecting": "Aktualizacja połączenia projektu",
+            "cleaning": "Kończenie przenoszenia",
+            "complete": "Gotowe",
+            "error": "Nie udało się przenieść",
+            "later": "Pozostawione na później"
+        },
+        "results": "Wyniki według wersji szablonów",
+        "success": "Twoje szablony są gotowe",
+        "partial": "Niektóre szablony wymagają ponownego sprawdzenia",
+        "resultSummary": "Ukończone: {{completed}}. Nieprzeniesione: {{failed}}. Na później: {{later}}.",
+        "resultNote": "Możesz zarządzać przeniesionymi plikami w sekcji Szablony eksportu. Wersje pozostawione na później nadal wymagają decyzji.",
+        "retryFailed": "Ponów próbę dla nieudanych wersji",
+        "retryFailedCount": "Ponów próbę dla nieudanych wersji ({{number}})",
+        "recover": "Odzyskaj przerwane przeniesienie",
+        "recovering": "Odzyskiwanie szablonów...",
+        "viewResults": "Pokaż migrację",
+        "destination": {
+            "imported": "Używaj swoich szablonów z sekcji Importowane szablony.",
+            "shared": "Używaj współdzielonych szablonów. Przed eksportem może być konieczne pobranie brakujących szablonów.",
+            "local": "Nadal używaj lokalnych szablonów."
+        },
+        "addMissing": "Dodaj brakujące współdzielone pliki. Istniejące współdzielone pliki pozostają bez zmian.",
+        "localFiles": {
+            "remove-after-verification": "Zachowaj pliki w sekcji Importowane szablony i połącz z nimi ten projekt.",
+            "remove-after-connection": "Usuń lokalne kopie po połączeniu projektu, bez zapisania osobnej kopii.",
+            "keep": "Zachowaj lokalne pliki i pozostaw tę wersję na później."
+        }
     }
 }

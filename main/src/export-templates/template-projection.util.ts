@@ -18,6 +18,11 @@ import {
     projectOfficialTemplateRoot,
     projectTemplateStorage,
 } from './template-paths.util.js';
+import {
+    synchroniseTemplateVersionLayout,
+    templateVersionCollection,
+} from './template-version-layout.util.js';
+import { readTemplateVersionLayout } from './template-version-migration.store.js';
 
 /** Connects Official through its parent folder, or one import through a local version link.
  * @param editorDirectory - Project-owned editor environment.
@@ -35,6 +40,24 @@ export async function projectTemplateBuilds(
 ): Promise<void> {
     if (currentSetId && !isTemplateIdentity(currentSetId))
         throw new Error('exportTemplates:errors.identity');
+    const versionLayout = await readTemplateVersionLayout(editorDirectory);
+    if (versionLayout) {
+        await synchroniseTemplateVersionLayout(
+            editorDirectory,
+            sharedRoot,
+            library,
+            selections,
+            versionLayout,
+            currentSetId,
+        );
+        if (versionLayout.root === 'official')
+            await connectVersionBackingView(
+                editorDirectory,
+                templateVersionCollection(editorDirectory, 'official'),
+                sharedRoot,
+            );
+        return;
+    }
     // Choices for other editors are remembered, but only the current editor is connected.
     const build = currentSetId
         ? resolveImportedTemplate(
@@ -125,6 +148,59 @@ export async function projectTemplateBuilds(
         await fs.promises.rename(next, active);
     } catch (error) {
         if (existing) await fs.promises.rename(previous, active);
+        throw error;
+    }
+    await removeManagedView(previous);
+}
+
+/** Points an older managed active view at its preserved per-version backing collection.
+ * @param editorDirectory - Project-owned editor environment.
+ * @param backing - Real collection containing local folders and owned version links.
+ * @param sharedRoot - Conventional shared root recognised by older views.
+ */
+async function connectVersionBackingView(
+    editorDirectory: string,
+    backing: string,
+    sharedRoot: string,
+): Promise<void> {
+    const active = path.join(
+        editorDirectory,
+        'editor_data',
+        'export_templates',
+    );
+    const previous = path.join(
+        path.dirname(active),
+        '.export_templates.launcher-previous',
+    );
+    const next = path.join(
+        path.dirname(active),
+        '.export_templates.launcher-next',
+    );
+    const roots = await managedImportedRoots();
+    /** Accepts only earlier managed views or the new backing link before changing it.
+     * @param filename - Active or temporary view being recovered.
+     */
+    const assertView = async (filename: string) => {
+        if (await isSharedTemplateLink(filename, backing)) return;
+        await assertManagedView(filename, sharedRoot, roots);
+    };
+    for (const filename of [active, previous, next]) await assertView(filename);
+    if (await isSharedTemplateLink(active, backing)) {
+        await removeManagedView(previous);
+        await removeManagedView(next);
+        return;
+    }
+    if (!(await templateLstat(active)) && (await templateLstat(previous)))
+        await fs.promises.rename(previous, active);
+    await removeManagedView(next);
+    await createLink(backing, next);
+    await removeManagedView(previous);
+    const current = await templateLstat(active);
+    if (current) await fs.promises.rename(active, previous);
+    try {
+        await fs.promises.rename(next, active);
+    } catch (error) {
+        if (current) await fs.promises.rename(previous, active);
         throw error;
     }
     await removeManagedView(previous);

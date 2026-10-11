@@ -3,6 +3,19 @@ import { describe, expect, it } from 'vitest';
 import { getTemplateRowJobs } from './template-jobs.model';
 
 describe('template row operations', () => {
+    it('keeps reviewed batch retries in the wizard rather than shared collection rows', () => {
+        expect(
+            getTemplateRowJobs([
+                {
+                    id: 'batch',
+                    kind: 'migrate',
+                    stage: 'error',
+                    setIds: ['4.4.stable'],
+                    migration: { status: 'complete', versions: [] },
+                },
+            ]).size,
+        ).toBe(0);
+    });
     it('keeps project operations out of shared rows, including errors and completed work', () => {
         const shared: TemplateJob = {
             id: 'shared',

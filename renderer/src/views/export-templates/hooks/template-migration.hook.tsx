@@ -1,4 +1,9 @@
-import type { TemplateMigrationAssessment } from '@shared/contracts';
+import type {
+    TemplateMigrationAssessment,
+    TemplateMigrationReview,
+    TemplateMigrationRun,
+    TemplateMigrationVersionIdentity,
+} from '@shared/contracts';
 import {
     createContext,
     type PropsWithChildren,
@@ -8,16 +13,23 @@ import {
     useRef,
     useState,
 } from 'react';
+import { useNavigate } from 'react-router';
+import { appRoutePaths } from '../../../app.routes';
 import { usePreferences } from '../../../hooks/preferences.hook';
 import { useProjects } from '../../../hooks/projects.hook';
 import { exportTemplatesBridge } from '../../../renderer.bridge';
-import { TemplateMigrationModal } from '../components/template-migration.modal';
-import { useTemplateJobs } from './template-jobs.hook';
+import { TemplateMigrationWizardModal } from '../components/template-migration-wizard.modal';
+import {
+    mergeMigrationRuns,
+    migrationRetryDecisions,
+} from '../template-migration-run.util';
+import { refreshTemplateJobs, useTemplateJobs } from './template-jobs.hook';
 
 type MigrationContext = {
     assessment: TemplateMigrationAssessment | null;
     refresh: () => Promise<void>;
     open: () => void;
+    active: boolean;
 };
 const context = createContext<MigrationContext | null>(null);
 
@@ -33,13 +45,33 @@ export function useTemplateMigration(): MigrationContext {
  */
 export function TemplateMigrationProvider({ children }: PropsWithChildren) {
     const { preferences, loadPreferences, savePreferences } = usePreferences();
-    const { projects } = useProjects();
+    const { projects, refreshProjects } = useProjects();
+    const navigate = useNavigate();
     const jobs = useTemplateJobs();
     const [assessment, setAssessment] =
         useState<TemplateMigrationAssessment | null>(null);
     const [error, setError] = useState('');
     const [visible, setVisible] = useState(false);
     const [introduction, setIntroduction] = useState(false);
+    const [jobIds, setJobIds] = useState<string[]>([]);
+    const [seedRun, setSeedRun] = useState<TemplateMigrationRun>();
+    const [initialReview, setInitialReview] =
+        useState<TemplateMigrationReview>();
+    const refreshProjectsRef = useRef(refreshProjects);
+    refreshProjectsRef.current = refreshProjects;
+    const refreshedJobs = useRef(new Set<string>());
+    const active = jobs.some(
+        (job) =>
+            job.migration &&
+            (job.stage === 'error' || job.migration.status === 'running'),
+    );
+    let run: TemplateMigrationRun | undefined;
+    for (const id of jobIds) {
+        const progress = jobs.find((job) => job.id === id)?.migration;
+        if (progress) run = mergeMigrationRuns(run, progress);
+    }
+    if (seedRun && !jobs.some((job) => job.id === jobIds[jobIds.length - 1]))
+        run = mergeMigrationRuns(run, seedRun);
     const offered = useRef(false);
     const request = useRef(0);
     const focusTarget = useRef<HTMLElement | null>(null);
@@ -48,7 +80,7 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
     const projectLifecycle = projects
         .map(
             (project) =>
-                `${project.path}:${project.launch_path}:${project.exportTemplateMode}`,
+                `${project.path}:${project.launch_path}:${project.exportTemplateMode}:${JSON.stringify(project.exportTemplateBuilds)}`,
         )
         .join('|');
 
@@ -81,6 +113,20 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
     useEffect(() => {
         void refresh();
     }, [lifecycle, refresh]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Refresh saved project choices once for each completed migration job.
+    useEffect(() => {
+        for (const job of jobs) {
+            if (
+                job.migration?.status !== 'complete' ||
+                refreshedJobs.current.has(job.id)
+            )
+                continue;
+            refreshedJobs.current.add(job.id);
+            void refreshProjectsRef
+                .current()
+                .catch(() => setError('exportTemplates:errors.read'));
+        }
+    }, [lifecycle]);
     useEffect(() => {
         const focused = () => {
             void refresh();
@@ -131,6 +177,9 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
                 '[data-testid="btnExportTemplates"]',
             );
             setIntroduction(true);
+            setInitialReview(undefined);
+            setJobIds([]);
+            setSeedRun(undefined);
             setVisible(true);
             window.clearInterval(timer);
         }, 500);
@@ -145,9 +194,24 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
             '[data-testid="btnExportTemplates"]',
         );
         setIntroduction(false);
+        const previous = [...jobs]
+            .reverse()
+            .find(
+                (job) =>
+                    job.migration?.review &&
+                    (job.stage === 'error' ||
+                        job.migration.status === 'running'),
+            );
+        setInitialReview(
+            previous?.migration?.review
+                ? { ...previous.migration.review, token: previous.id }
+                : undefined,
+        );
+        setJobIds(previous ? [previous.id] : []);
+        setSeedRun(undefined);
         setVisible(true);
         void refresh();
-    }, [refresh]);
+    }, [refresh, jobs]);
 
     // Completion can remove the header trigger just after the dialog returns focus.
     // biome-ignore lint/correctness/useExhaustiveDependencies: Assessment changes can remove the saved focus target from the DOM.
@@ -162,39 +226,113 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
         }
     }, [visible, assessment]);
 
-    /** Leaves queued work running when the modal is dismissed. */
+    /** Records Finish later or Done before closing the session. */
     const close = async () => {
         try {
             await acknowledge();
         } catch {
             setError('exportTemplates:errors.failed');
-            return;
+            return false;
         }
         setVisible(false);
+        return true;
+    };
+
+    /** Starts only a consumed main-owned review and follows its exact returned job.
+     * @param review - Fresh reviewed effects.
+     * @param confirmed - Explicit removal acknowledgement from this Review.
+     */
+    const apply = async (
+        review: TemplateMigrationReview,
+        confirmed: boolean,
+    ) => {
+        await acknowledge();
+        const id = await exportTemplatesBridge.applyMigrationReview(
+            review.token,
+            confirmed,
+        );
+        setIntroduction(false);
+        setSeedRun(
+            mergeMigrationRuns(run, {
+                status: 'running',
+                versions: review.projects.flatMap((project) =>
+                    project.versions.map((version) => ({
+                        projectPath: project.projectPath,
+                        setId: version.setId,
+                        status:
+                            version.choice === 'later'
+                                ? ('later' as const)
+                                : ('waiting' as const),
+                    })),
+                ),
+            }),
+        );
+        setJobIds((previous) => [...previous, id]);
+        await refreshTemplateJobs().catch(() => undefined);
+    };
+    /** Reads fresh discovery and prepares a new review limited to failed identities.
+     * @param review - Earlier reviewed choices whose failures are being retried.
+     * @param versions - Failed identities selected from real results.
+     * @param requestId - Identifier for retry preparation progress.
+     */
+    const retry = async (
+        review: TemplateMigrationReview,
+        versions: TemplateMigrationVersionIdentity[],
+        requestId?: string,
+    ) => {
+        const current = await exportTemplatesBridge.getMigrationAssessment();
+        return exportTemplatesBridge.reviewMigration(
+            migrationRetryDecisions(review, versions, current),
+            requestId,
+        );
+    };
+    /** Attempts only discovered recovery records, then refreshes real outcomes even after failure. */
+    const recover = async () => {
+        const current = await exportTemplatesBridge.getMigrationAssessment();
+        try {
+            for (const id of current.recoveryIds)
+                await exportTemplatesBridge.recover(id);
+        } finally {
+            await Promise.all([refresh(), refreshTemplateJobs()]);
+        }
     };
 
     return (
-        <context.Provider value={{ assessment, refresh, open }}>
+        <context.Provider value={{ assessment, refresh, open, active }}>
             {children}
-            {visible && (
-                <TemplateMigrationModal
+            {visible && assessment && (
+                <TemplateMigrationWizardModal
                     assessment={assessment}
-                    jobs={jobs}
-                    introduction={introduction}
+                    reviewActions={{
+                        review: (decisions, requestId) =>
+                            exportTemplatesBridge.reviewMigration(
+                                decisions,
+                                requestId,
+                            ),
+                        progress: (requestId) =>
+                            exportTemplatesBridge.getMigrationReviewProgress(
+                                requestId,
+                            ),
+                        discard: (token) =>
+                            exportTemplatesBridge.discardMigrationReview(token),
+                    }}
+                    run={run}
+                    initialReview={initialReview}
                     error={error}
                     returnFocusRef={focusTarget}
                     fallbackReturnFocusRef={fallbackFocusTarget}
+                    onApply={apply}
+                    onRetry={retry}
+                    onRecover={recover}
                     onRefresh={refresh}
+                    onAboutDone={() => setIntroduction(false)}
                     onClose={() => {
                         void close();
                     }}
-                    onStart={async () => {
-                        try {
-                            await acknowledge();
-                            setIntroduction(false);
-                        } catch {
-                            setError('exportTemplates:errors.failed');
-                        }
+                    onOpenTemplates={() => {
+                        void close().then((closed) => {
+                            if (closed) navigate(appRoutePaths.exportTemplates);
+                        });
                     }}
                 />
             )}

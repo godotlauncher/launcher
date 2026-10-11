@@ -12,6 +12,7 @@ import logger from 'electron-log';
 import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import semver from 'semver';
 import { LAUNCHER_DOWNLOAD_URL } from './constants.js';
+import { isTemplateExitBlocked } from './export-templates/template-exit-guard.util.js';
 import { findExecutable } from './utils/platform.utils.js';
 import { ipcWebContentsSend } from './utils.js';
 
@@ -270,7 +271,8 @@ async function runScheduledCheck() {
 
 /** Install a downloaded release once, after an explicit restart request. */
 export function installUpdateAndRestart() {
-    if (!currentStatus.downloaded || installing) return;
+    if (!currentStatus.downloaded || installing || isTemplateExitBlocked())
+        return;
     installing = true;
     logger.info('Installing update and restarting app');
     autoUpdater.autoRunAppAfterInstall = true;
