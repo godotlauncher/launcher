@@ -32,6 +32,10 @@ type Props = {
     search: string;
     revision: Pick<ExportTemplateInventory, 'sets'> | null;
     onChanged: () => void;
+    onInventoryChange: (
+        inventory: ImportedTemplateInventory | null,
+        readError: boolean,
+    ) => void;
 };
 /** Lists whole imported packages separately from editable official collections.
  * @param props - Search, refresh trigger and shared import button state.
@@ -43,6 +47,7 @@ export function ImportedTemplateLibrary({
     search,
     revision,
     onChanged,
+    onInventoryChange,
 }: Props) {
     const { t, i18n } = useTranslation('exportTemplates');
     const [library, setLibrary] = useState<ImportedTemplateInventory | null>(
@@ -56,6 +61,9 @@ export function ImportedTemplateLibrary({
     const [busy, setBusy] = useState(false);
     const [readError, setReadError] = useState('');
     const [actionError, setActionError] = useState('');
+    useEffect(() => {
+        onInventoryChange(library, !!readError);
+    }, [library, readError, onInventoryChange]);
     // biome-ignore lint/correctness/useExhaustiveDependencies: Refresh imports alongside the official inventory.
     useEffect(() => {
         let alive = true;

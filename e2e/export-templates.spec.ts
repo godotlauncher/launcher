@@ -1,7 +1,11 @@
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type { EditorCatalogRelease } from '@shared/contracts';
+import type {
+    EditorCatalogRelease,
+    ExportTemplateInventory,
+    ImportedTemplateInventory,
+} from '@shared/contracts';
 import {
     _electron,
     type ElectronApplication,
@@ -150,6 +154,96 @@ test.beforeAll(async () => {
 test.afterAll(async () => {
     await app?.close();
     await fs.rm(home, { recursive: true, force: true });
+});
+
+test('includes every stored Official and Imported package in the header totals', async () => {
+    const official: ExportTemplateInventory = {
+        root,
+        sets: [{
+            id: '4.4.stable', version: '4.4.stable', edition: 'standard',
+            sizeBytes: 1024, fileCount: 1, platforms: ['web'],
+            projects: ['First project', 'Second project'],
+        }],
+        totalBytes: 1024, issues: [], connections: [], recoveries: [], job: null,
+    };
+    const imported: ImportedTemplateInventory = {
+        schemaVersion: 1,
+        builds: [2048, 4096].map((sizeBytes, index) => ({
+            id: `summary-${index}`, revision: `summary-revision-${index}`,
+            directoryName: `Summary import ${index}`, label: `Summary import ${index}`,
+            setId: '4.4.stable', importedAt: '', archiveName: 'summary.tpz',
+            files: ['web_release.zip'], sizeBytes, available: true,
+        })),
+        usage: { 'summary-0': ['First project', 'Second project'] },
+        references: {},
+    };
+    await app.evaluate(({ ipcMain }, data) => {
+        const handlers = (ipcMain as typeof ipcMain & {
+            _invokeHandlers: Map<string, (...args: unknown[]) => unknown>;
+        })._invokeHandlers;
+        const state = { ...data, restore: () => {} };
+        const originals = ['exportTemplates.getInventory', 'exportTemplates.getImportedTemplates'].map(channel => {
+            const handler = handlers.get(channel)!;
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, () => ({
+                success: true,
+                data: channel.endsWith('getInventory') ? state.official : state.imported,
+            }));
+            return { channel, handler };
+        });
+        state.restore = () => {
+            for (const { channel, handler } of originals) {
+                ipcMain.removeHandler(channel);
+                ipcMain.handle(channel, handler);
+            }
+        };
+        (globalThis as any).templateTotalsFixture = state;
+    }, { official, imported });
+    const toolbar = page.getByTestId('exportTemplatesToolbar');
+    const count = toolbar.locator('dd').nth(0);
+    const size = toolbar.locator('dd').nth(1);
+    const refresh = page.getByRole('button', { name: 'Refresh', exact: true });
+    const search = page.getByRole('textbox', { name: 'Search installed versions' });
+    try {
+        await refresh.click();
+        await expect(count).toHaveText('3');
+        await expect(size).toHaveText('7 KiB');
+        await search.fill('no-such-template');
+        await expect(page.getByRole('article')).toHaveCount(0);
+        await expect(count).toHaveText('3');
+        await expect(size).toHaveText('7 KiB');
+        await search.fill('');
+
+        await app.evaluate(() => {
+            (globalThis as any).templateTotalsFixture.imported.builds[1].available = false;
+        });
+        await refresh.click();
+        await expect(count).toHaveText('3');
+        await expect(size).toHaveText('Size unavailable');
+        await app.evaluate(() => {
+            const fixture = (globalThis as any).templateTotalsFixture;
+            fixture.imported.builds[1].available = true;
+            fixture.official.sizeIncomplete = true;
+        });
+        await refresh.click();
+        await expect(page.getByRole('article', { name: 'Summary import 1', exact: true }).getByText('4.4.stable · 1 files · 4 KiB', { exact: true })).toBeVisible();
+        await expect(size).toHaveText('Size unavailable');
+        await app.evaluate(() => {
+            const fixture = (globalThis as any).templateTotalsFixture;
+            fixture.official.sizeIncomplete = false;
+            fixture.imported.builds.pop();
+        });
+        await refresh.click();
+        await expect(count).toHaveText('2');
+        await expect(size).toHaveText('3 KiB');
+    } finally {
+        await search.fill('');
+        await app.evaluate(() => {
+            (globalThis as any).templateTotalsFixture.restore();
+            delete (globalThis as any).templateTotalsFixture;
+        });
+        await refresh.click();
+    }
 });
 
 /** Counts template reads through the real preload bridge until restored. */
@@ -316,6 +410,7 @@ test('clears transient inventory and imported-library read errors after refresh'
             }, source);
             await refresh.click();
             await expect(page.getByText(message, { exact: true })).toBeVisible();
+            await expect(page.getByTestId('exportTemplatesToolbar').locator('dd').nth(1)).toHaveText('Size unavailable');
             await app.evaluate(() => {
                 (globalThis as typeof globalThis & {
                     __templateReadFixture: { fail: string | null };
@@ -382,6 +477,7 @@ test('shows a library read error after a committed import and recovers on refres
         await modal.getByRole('button', { name: 'Save', exact: true }).click();
         await expect(modal).toBeHidden();
         await expect(page.getByText('The shared folder could not be read. Check its location and permissions, then refresh.', { exact: true })).toBeVisible();
+        await expect(page.getByTestId('exportTemplatesToolbar').locator('dd').nth(1)).toHaveText('Size unavailable');
         const registry = JSON.parse(await fs.readFile(registryPath, 'utf8'));
         expect(registry.builds.some((build: { label: string }) => build.label === 'Read recovery fixture')).toBe(true);
         await restoreReadAfterAction();
@@ -432,6 +528,7 @@ test('opens an imported build folder from its row', async () => {
         await fs.rm(folder, { recursive: true, force: true });
         await page.getByRole('button', { name: 'Refresh', exact: true }).click();
         await expect(row.getByText('4.8.stable · 1 files · Size unavailable', { exact: true })).toBeVisible();
+        await expect(page.getByTestId('exportTemplatesToolbar').locator('dd').nth(1)).toHaveText('Size unavailable');
     } finally {
         await app.evaluate(() => { (globalThis as any).restoreTemplateOpenPath(); delete (globalThis as any).restoreTemplateOpenPath; delete (globalThis as any).openedTemplateFolder; });
         if (original === undefined) await fs.rm(registryPath, { force: true });
@@ -447,6 +544,9 @@ test('stores imported builds under readable names and rejects folder collisions'
     const original = await fs.readFile(registryPath, 'utf8').catch(() => undefined);
     const archive = path.join(home, 'readable-template.tpz');
     const replacementContents = 'r'.repeat(2038);
+    const toolbar = page.getByTestId('exportTemplatesToolbar');
+    await expect(toolbar.locator('dd').nth(1)).not.toHaveText('Size unavailable');
+    const originalCount = Number(await toolbar.locator('dd').nth(0).textContent());
     await fs.writeFile(archive, storedZip({
         'templates/version.txt': '4.4.stable',
         'templates/web_release.zip': 'readable build',
@@ -467,6 +567,8 @@ test('stores imported builds under readable names and rejects folder collisions'
         expect(await fs.readFile(path.join(firstFolder, 'web_release.zip'), 'utf8')).toBe('readable build');
         const importedRow = page.getByRole('article', { name: 'Cloud: Build', exact: true });
         await expect(importedRow.getByText('4.4.stable · 1 files · 24 B', { exact: true })).toBeVisible();
+        await expect(toolbar.locator('dd').nth(0)).toHaveText(String(originalCount + 1));
+        const importedSize = await toolbar.locator('dd').nth(1).textContent();
 
         await fs.writeFile(archive, storedZip({
             'templates/version.txt': '4.4.stable',
@@ -487,6 +589,8 @@ test('stores imported builds under readable names and rejects folder collisions'
         expect(replacedBuild).toMatchObject({ label: 'Cloud: Build', directoryName: 'Cloud- Build', sizeBytes: 2048 });
         expect(replacedBuild.revision).not.toBe(build.revision);
         await expect(importedRow.getByText('4.4.stable · 1 files · 2 KiB', { exact: true })).toBeVisible();
+        await expect(toolbar.locator('dd').nth(0)).toHaveText(String(originalCount + 1));
+        await expect(toolbar.locator('dd').nth(1)).not.toHaveText(importedSize!);
         await page.getByRole('button', { name: 'Refresh', exact: true }).click();
         await expect(importedRow.getByText('4.4.stable · 1 files · 2 KiB', { exact: true })).toBeVisible();
 

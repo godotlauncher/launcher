@@ -1,4 +1,7 @@
-import type { ExportTemplateSet } from '@shared/contracts';
+import type {
+    ExportTemplateSet,
+    ImportedTemplateInventory,
+} from '@shared/contracts';
 import {
     Download,
     FileOutput,
@@ -7,7 +10,7 @@ import {
     RefreshCw,
     Upload,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 import { EditorVersionGroup } from '../components/editor-version-group.component';
@@ -34,8 +37,17 @@ export function ExportTemplatesView() {
         'common',
         'installs',
     ]);
-    const { inventory, jobs, error, pending, loading, busy, refresh, run } =
-        useExportTemplates();
+    const {
+        inventory,
+        inventoryError,
+        jobs,
+        error,
+        pending,
+        loading,
+        busy,
+        refresh,
+        run,
+    } = useExportTemplates();
     const migration = useTemplateMigration();
     const [params, setParams] = useSearchParams();
     const [search, setSearch] = useState('');
@@ -43,6 +55,33 @@ export function ExportTemplatesView() {
     const [downloadOpen, setDownloadOpen] = useState(false);
     const [manageSet, setManageSet] = useState<ExportTemplateSet | null>(null);
     const [remove, setRemove] = useState<ExportTemplateSet | null>(null);
+    const [importedInventory, setImportedInventory] =
+        useState<ImportedTemplateInventory | null>(null);
+    const [importedReadError, setImportedReadError] = useState(false);
+    /** Shares the imported row snapshot with the library totals.
+     * @param value - Last successfully read imported inventory.
+     * @param failed - Whether the latest library read failed.
+     */
+    const updateImportedInventory = useCallback(
+        (value: ImportedTemplateInventory | null, failed: boolean) => {
+            setImportedInventory(value);
+            setImportedReadError(failed);
+        },
+        [],
+    );
+    const importedBuilds = importedInventory?.builds ?? [];
+    const installedCount =
+        (inventory?.sets.length ?? 0) + importedBuilds.length;
+    const installedBytes =
+        (inventory?.totalBytes ?? 0) +
+        importedBuilds.reduce((total, build) => total + build.sizeBytes, 0);
+    const sizeIncomplete =
+        !inventory ||
+        !importedInventory ||
+        !!inventoryError ||
+        importedReadError ||
+        inventory.sizeIncomplete ||
+        importedBuilds.some((build) => build.available === false);
     useEffect(() => {
         const id = params.get('set');
         if (!id || !inventory) return;
@@ -200,7 +239,7 @@ export function ExportTemplatesView() {
                                 {t('sets')}
                             </dt>
                             <dd className="font-semibold tabular-nums">
-                                {inventory?.sets.length ?? 0}
+                                {installedCount}
                             </dd>
                         </div>
                         <div className="flex items-baseline gap-2">
@@ -208,9 +247,9 @@ export function ExportTemplatesView() {
                                 {t('installedSize')}
                             </dt>
                             <dd className="font-semibold tabular-nums">
-                                {inventory?.sizeIncomplete
+                                {sizeIncomplete
                                     ? t('sizeUnavailable')
-                                    : bytes(inventory?.totalBytes ?? 0)}
+                                    : bytes(installedBytes)}
                             </dd>
                         </div>
                     </dl>
@@ -276,6 +315,7 @@ export function ExportTemplatesView() {
                         search={search}
                         revision={inventory}
                         onChanged={() => void refresh()}
+                        onInventoryChange={updateImportedInventory}
                     />
                     <h2 className="text-lg font-semibold">
                         {t('library.official')}

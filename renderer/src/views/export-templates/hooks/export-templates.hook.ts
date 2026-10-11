@@ -144,6 +144,7 @@ export function useExportTemplates() {
     };
     return {
         inventory,
+        inventoryError: readError,
         jobs,
         error: actionError || readError || jobReadError,
         pending,
