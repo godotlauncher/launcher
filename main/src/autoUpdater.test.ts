@@ -1,5 +1,6 @@
 import type { BrowserWindow } from 'electron';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { withTemplateExitBlocked } from './export-templates/template-exit-guard.util.js';
 
 const mocks = vi.hoisted(() => {
     const checkForUpdates = vi.fn();
@@ -513,6 +514,18 @@ describe('update operation ordering', () => {
         installUpdateAndRestart();
         expect(mocks.quitAndInstall).toHaveBeenCalledTimes(1);
     });
+    it('holds update installation during migration and permits an explicit retry afterwards', async () => {
+        await readyUpdate();
+        await withTemplateExitBlocked(async () => {
+            installUpdateAndRestart();
+            expect(mocks.quitAndInstall).not.toHaveBeenCalled();
+            expect(lastStatus()).toMatchObject({ downloaded: true });
+        });
+        expect(mocks.quitAndInstall).not.toHaveBeenCalled();
+        installUpdateAndRestart();
+        expect(mocks.quitAndInstall).toHaveBeenCalledOnce();
+    });
+
     it('retains the downloaded release after an install error and allows restart retry', async () => {
         await readyUpdate();
         mocks.quitAndInstall.mockImplementationOnce(() => {

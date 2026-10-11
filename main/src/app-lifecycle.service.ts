@@ -24,6 +24,10 @@ import { getUserPreferences } from './commands/userPreferences.js';
 import type { AppConfig } from './config/index.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { InstalledEditorService } from './editor-installs/installed-editor.service.js';
+import {
+    isTemplateExitBlocked,
+    withTemplateExitBlocked,
+} from './export-templates/template-exit-guard.util.js';
 import { recoverTemplateStorageOnStartup } from './export-templates/template-storage.service.js';
 import { createEditingMenu, createMenu } from './helpers/menu.helper.js';
 import { setupFocusRevalidation } from './helpers/revalidate.helper.js';
@@ -84,7 +88,7 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
     async recoverTemplateStorage(): Promise<void> {
         const startedAt = Date.now();
         try {
-            await recoverTemplateStorageOnStartup();
+            await withTemplateExitBlocked(recoverTemplateStorageOnStartup);
         } catch (error) {
             const reason =
                 error instanceof Error
@@ -303,11 +307,17 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         this.showMainWindow();
     };
 
-    private readonly handleBeforeQuit = (): void => {
+    /** Leaves services running when the framework is checking or refusing an exit.
+     * @param event - Native quit request, including cancellation by an exit guard.
+     */
+    private readonly handleBeforeQuit = (event: Electron.Event): void => {
+        if (event.defaultPrevented || isTemplateExitBlocked()) return;
         this.prepareForQuit('Quitting app');
     };
 
+    /** Starts updater shutdown only when template work permits an exit. */
     private readonly handleBeforeQuitForUpdate = (): void => {
+        if (isTemplateExitBlocked()) return;
         if (this.prepareForQuit('Quitting app to install update')) {
             this.electronAppService.quit();
         }

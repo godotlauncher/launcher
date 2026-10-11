@@ -42,4 +42,54 @@ describe('imported template switch journal', () => {
             }).success,
         ).toBe(false);
     });
+
+    it('accepts folder-move recovery with complete metadata and no content hashes', () => {
+        const snapshot = {
+            directory: { ino: 1, dev: 1 },
+            files: [
+                {
+                    relative: 'web.zip',
+                    size: 10,
+                    mode: 0o644,
+                    metadata: { mtimeMs: 1, ctimeMs: 1, ino: 2, dev: 1 },
+                },
+            ],
+        };
+        const journal = {
+            ...rename,
+            version: 2,
+            kind: 'replace',
+            beforeSnapshot: snapshot,
+            afterSnapshot: snapshot,
+        };
+        expect(switchJournalSchema.parse(journal)).toEqual(journal);
+        // Node exposes large filesystem identifiers as ordinary numbers.
+        expect(
+            switchJournalSchema.safeParse({
+                ...journal,
+                afterSnapshot: {
+                    ...snapshot,
+                    directory: { ino: 2 ** 60, dev: 1 },
+                },
+            }).success,
+        ).toBe(true);
+        expect(
+            switchJournalSchema.safeParse({
+                ...journal,
+                afterSnapshot: {
+                    ...snapshot,
+                    files: [{ relative: 'web.zip', size: 10, mode: 0o644 }],
+                },
+            }).success,
+        ).toBe(false);
+        expect(
+            switchJournalSchema.safeParse({
+                ...journal,
+                afterSnapshot: {
+                    ...snapshot,
+                    files: [snapshot.files[0], snapshot.files[0]],
+                },
+            }).success,
+        ).toBe(false);
+    });
 });

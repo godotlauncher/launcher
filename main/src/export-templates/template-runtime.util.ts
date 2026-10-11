@@ -16,6 +16,7 @@ import {
     projectTemplateBuilds,
 } from './template-projection.util.js';
 import { assertTemplateStorageAvailable } from './template-storage.service.js';
+import { readTemplateVersionLayout } from './template-version-migration.store.js';
 
 /** Resolves production storage or the isolated development fixture root. */
 export function getSharedTemplateRoot(): string {
@@ -78,19 +79,25 @@ export async function connectProjectTemplates(
             logger.warn('Could not connect shared export templates', error);
         }
         const backing = projectOfficialTemplateRoot(editorDirectory);
+        const versionLayout = await readTemplateVersionLayout(editorDirectory);
         if (
             (await templateConnectionStatus(
                 backing,
                 getSharedTemplateRoot(),
             )) === 'local' &&
-            (await fs.promises.readdir(backing)).length
+            (await fs.promises.readdir(backing)).length &&
+            !versionLayout
         )
             return;
         try {
             await projectTemplateBuilds(
                 editorDirectory,
                 getSharedTemplateRoot(),
-                importedSelected
+                importedSelected ||
+                    (versionLayout &&
+                        Object.values(selections ?? {}).some(
+                            (selection) => selection !== 'official',
+                        ))
                     ? await readImportedTemplates()
                     : { schemaVersion: 1, builds: [] },
                 selections,

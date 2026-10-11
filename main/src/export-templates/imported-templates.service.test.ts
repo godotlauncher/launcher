@@ -56,6 +56,11 @@ vi.mock('../json-store/atomic-json-file.adapter.js', () => ({
         });
     },
 }));
+vi.mock('./template-version-migration.store.js', () => ({
+    readTemplateVersionLayout: vi.fn(),
+    readTemplateVersionMigration: vi.fn(),
+    templateVersionMigrationRecoveryId: vi.fn(),
+}));
 vi.mock('node:fs', () => ({
     promises: {
         readdir: vi.fn(),
@@ -174,6 +179,7 @@ beforeEach(() => {
         builds: [structuredClone(first), structuredClone(second)],
     };
     importedDirectories = new Set([
+        path.resolve('extracted'),
         path.resolve('imports', 'imported', first.setId, first.directoryName),
         path.resolve('imports', 'imported', second.setId, second.directoryName),
     ]);
@@ -200,14 +206,23 @@ beforeEach(() => {
     });
     vi.mocked(fs.promises.rmdir).mockResolvedValue(undefined);
     vi.mocked(readTemplateTree).mockResolvedValue([
-        { relative: 'web.zip', size: 1, hash: '', mode: 0o644 },
+        {
+            relative: 'web.zip',
+            size: 1,
+            hash: '',
+            mode: 0o644,
+            metadata: { mtimeMs: 1, ctimeMs: 1, ino: 1, dev: 1 },
+        },
     ]);
     vi.mocked(templateLstat).mockImplementation(async (filename) =>
-        !String(filename).startsWith(path.resolve('imports')) ||
+        (!String(filename).startsWith(path.resolve('imports')) &&
+            String(filename) !== path.resolve('extracted')) ||
         importedDirectories.has(String(filename))
             ? ({
                   isDirectory: () => true,
                   isSymbolicLink: () => false,
+                  ino: 1,
+                  dev: 1,
               } as fs.Stats)
             : undefined,
     );
@@ -225,6 +240,410 @@ beforeEach(() => {
     service = new ImportedTemplatesService(
         { list: async () => projects, update } as unknown as ProjectsStore,
         {} as TemplateArchiveAdapter,
+    );
+});
+
+/** Prepares a package using mocked archive extraction and filesystem metadata. */
+async function prepareSwitchPackage(): Promise<string> {
+    vi.mocked(dialog.showOpenDialog).mockResolvedValue({
+        canceled: false,
+        filePaths: [path.resolve('replacement.tpz')],
+    });
+    vi.mocked(fs.promises.stat).mockResolvedValue({
+        isFile: () => true,
+        size: 10,
+        mtimeMs: 1,
+        ctimeMs: 1,
+        ino: 1,
+        dev: 1,
+    } as fs.Stats);
+    service = new ImportedTemplatesService(
+        { list: async () => projects, update } as unknown as ProjectsStore,
+        {
+            extract: vi.fn(async () => ({
+                identity: '4.4.stable',
+                contents: path.resolve('extracted'),
+            })),
+        } as unknown as TemplateArchiveAdapter,
+    );
+    const selected = await service.choose();
+    if (!selected) throw new Error('Expected selected archive');
+    await service.prepare(selected.token);
+    switchRecording.enabled = true;
+    return selected.token;
+}
+
+describe('metadata-checked package moves', () => {
+    it.each([false, true])(
+        'recognises a new import saved before the reported write failure (read also fails: %s)',
+        async (readFails) => {
+            const token = await prepareSwitchPackage();
+            const write = vi
+                .mocked(writeImportedTemplates)
+                .getMockImplementation();
+            if (!write) throw new Error('Expected registry write mock');
+            vi.mocked(writeImportedTemplates).mockImplementationOnce(
+                async (next) => {
+                    await write(next);
+                    if (readFails)
+                        vi.mocked(readImportedTemplates).mockRejectedValueOnce(
+                            new Error('registry read failed'),
+                        );
+                    throw new Error('reported after commit');
+                },
+            );
+            if (readFails) {
+                await expect(
+                    service.install(token, 'New import'),
+                ).rejects.toThrow('registry read failed');
+                const saved = structuredClone(library.builds);
+                const id = await service.install(token, 'New import');
+                expect(library.builds).toEqual(saved);
+                expect(
+                    saved.some(
+                        (build) =>
+                            build.id === id && build.label === 'New import',
+                    ),
+                ).toBe(true);
+            } else {
+                const id = await service.install(token, 'New import');
+                expect(
+                    library.builds.some(
+                        (build) =>
+                            build.id === id && build.label === 'New import',
+                    ),
+                ).toBe(true);
+            }
+            expect(fs.promises.cp).not.toHaveBeenCalled();
+        },
+    );
+
+    it('restores the original registry and preview when project links fail', async () => {
+        projects[0].exportTemplateBuilds = { '4.4.stable': first.id };
+        const token = await prepareSwitchPackage();
+        vi.mocked(projectTemplateBuilds).mockRejectedValueOnce(
+            new Error('link update failed'),
+        );
+        await expect(service.install(token, '', first.id)).rejects.toThrow(
+            'link update failed',
+        );
+        expect(library.builds).toEqual([first, second]);
+        expect(importedDirectories.has(path.resolve('extracted'))).toBe(true);
+        expect(layoutRecords.size).toBe(0);
+        await expect(service.install(token, '', first.id)).resolves.toBe(
+            first.id,
+        );
+    });
+
+    it('keeps a live preview through interrupted rollback recovery and a later retry', async () => {
+        projects[0].exportTemplateBuilds = { '4.4.stable': first.id };
+        const token = await prepareSwitchPackage();
+        vi.mocked(projectTemplateBuilds)
+            .mockRejectedValueOnce(new Error('link update failed'))
+            .mockRejectedValueOnce(new Error('rollback link update failed'));
+        await expect(service.install(token, '', first.id)).rejects.toThrow(
+            'rollback link update failed',
+        );
+        expect(library.builds).toEqual([first, second]);
+        expect(layoutRecords.size).toBe(1);
+        expect(importedDirectories.has(path.resolve('extracted'))).toBe(false);
+        await service.recoverSavedProjects();
+        expect(importedDirectories.has(path.resolve('extracted'))).toBe(true);
+        expect(layoutRecords.size).toBe(0);
+        const preview = await service.prepare(token);
+        expect(preview).not.toHaveProperty('operation');
+        expect(preview).not.toHaveProperty('installed');
+        await expect(service.install(token, '', first.id)).resolves.toBe(
+            first.id,
+        );
+    });
+
+    it('recognises a committed recovery when restoring the old registry failed', async () => {
+        projects[0].exportTemplateBuilds = { '4.4.stable': first.id };
+        const token = await prepareSwitchPackage();
+        vi.mocked(projectTemplateBuilds).mockRejectedValueOnce(
+            new Error('link update failed'),
+        );
+        const write = vi.mocked(writeImportedTemplates).getMockImplementation();
+        if (!write) throw new Error('Expected registry write mock');
+        vi.mocked(writeImportedTemplates)
+            .mockImplementationOnce(write)
+            .mockRejectedValueOnce(new Error('rollback registry failed'));
+        await expect(service.install(token, '', first.id)).rejects.toThrow(
+            'rollback registry failed',
+        );
+        const saved = structuredClone(
+            library.builds.find((build) => build.id === first.id),
+        );
+        expect(saved?.revision).not.toBe(first.revision);
+        expect(layoutRecords.size).toBe(1);
+        await service.recoverSavedProjects();
+        await expect(service.install(token, '', first.id)).resolves.toBe(
+            first.id,
+        );
+        expect(library.builds.find((build) => build.id === first.id)).toEqual(
+            saved,
+        );
+        expect(layoutRecords.size).toBe(0);
+    });
+
+    it('returns the saved build on retry after committed backup cleanup failed', async () => {
+        const token = await prepareSwitchPackage();
+        const remove = vi.mocked(fs.promises.rm).getMockImplementation();
+        if (!remove) throw new Error('Expected remove mock');
+        let failures = 2;
+        vi.mocked(fs.promises.rm).mockImplementation(async (...args) => {
+            if (
+                String(args[0]).includes(`backup-${first.id}-`) &&
+                failures-- > 0
+            )
+                throw new Error('backup cleanup failed');
+            return remove(...args);
+        });
+        await expect(service.install(token, '', first.id)).rejects.toThrow(
+            'backup cleanup failed',
+        );
+        const saved = structuredClone(
+            library.builds.find((build) => build.id === first.id),
+        );
+        expect(saved?.revision).not.toBe(first.revision);
+        expect(layoutRecords.size).toBe(1);
+        await service.recoverSavedProjects();
+        await expect(service.install(token, '', first.id)).resolves.toBe(
+            first.id,
+        );
+        expect(library.builds.find((build) => build.id === first.id)).toEqual(
+            saved,
+        );
+        expect(layoutRecords.size).toBe(0);
+    });
+
+    it('completes the save if a temporary backup cleanup failure is recovered immediately', async () => {
+        const token = await prepareSwitchPackage();
+        vi.mocked(fs.promises.rm).mockRejectedValueOnce(
+            new Error('backup cleanup failed'),
+        );
+        await expect(service.install(token, '', first.id)).resolves.toBe(
+            first.id,
+        );
+        expect(layoutRecords.size).toBe(0);
+    });
+
+    it.each([false, true])(
+        'restores the preview for retry when saving fails (replace: %s)',
+        async (replace) => {
+            const token = await prepareSwitchPackage();
+            vi.mocked(writeImportedTemplates).mockRejectedValueOnce(
+                new Error('registry failed'),
+            );
+            await expect(
+                service.install(
+                    token,
+                    'New import',
+                    replace ? first.id : undefined,
+                ),
+            ).rejects.toThrow('registry failed');
+            expect(importedDirectories.has(path.resolve('extracted'))).toBe(
+                true,
+            );
+            expect(library.builds).toEqual([first, second]);
+            expect(layoutRecords.size).toBe(0);
+            await expect(
+                service.install(
+                    token,
+                    'New import',
+                    replace ? first.id : undefined,
+                ),
+            ).resolves.toEqual(expect.any(String));
+            expect(fs.promises.cp).not.toHaveBeenCalled();
+            expect(
+                vi
+                    .mocked(readTemplateTree)
+                    .mock.calls.some(([, hashFiles]) => hashFiles === true),
+            ).toBe(false);
+        },
+    );
+
+    /** Records a committed replacement whose old backup still needs cleanup.
+     * @param remaining - Files surviving in the backup after interrupted cleanup.
+     */
+    function movedBackup(remaining: typeof snapshot.files) {
+        const backup = path.resolve(
+            'imports',
+            '.staging',
+            `backup-${first.id}-${first.revision}`,
+        );
+        importedDirectories.add(backup);
+        library.builds[0].revision = 'new-revision';
+        const journalPath = path.resolve(
+            'imports',
+            'imported-template-switch.json',
+        );
+        layoutRecords.set(
+            journalPath,
+            JSON.stringify({
+                version: 2,
+                kind: 'replace',
+                id: first.id,
+                setId: first.setId,
+                beforeRevision: first.revision,
+                afterRevision: 'new-revision',
+                beforeDirectoryName: first.directoryName,
+                afterDirectoryName: first.directoryName,
+                beforeSnapshot: snapshot,
+                afterSnapshot: snapshot,
+            }),
+        );
+        vi.mocked(readTemplateTree).mockImplementation(async (folder) =>
+            (String(folder) === backup ? remaining : snapshot.files).map(
+                (file) => ({ ...file, hash: '' }),
+            ),
+        );
+        return { backup, journalPath };
+    }
+    const snapshot = {
+        directory: { ino: 1, dev: 1 },
+        files: [
+            {
+                relative: 'web.zip',
+                size: 1,
+                mode: 0o644,
+                metadata: { mtimeMs: 1, ctimeMs: 1, ino: 1, dev: 1 },
+            },
+        ],
+    };
+
+    it.each(['staged', 'backed up', 'switched', 'committed'] as const)(
+        'recovers a replacement interrupted after it was %s',
+        async (stage) => {
+            const target = path.resolve(
+                'imports',
+                'imported',
+                first.setId,
+                first.directoryName,
+            );
+            const incoming = path.resolve(
+                'imports',
+                '.staging',
+                `incoming-${first.id}-new-revision`,
+            );
+            const backup = path.resolve(
+                'imports',
+                '.staging',
+                `backup-${first.id}-${first.revision}`,
+            );
+            const journalPath = path.resolve(
+                'imports',
+                'imported-template-switch.json',
+            );
+            const nextSnapshot = structuredClone(snapshot);
+            nextSnapshot.directory.ino = 2;
+            nextSnapshot.files[0].metadata.ino = 2;
+            const newFolders = new Set<string>();
+            if (stage === 'switched') newFolders.add(target);
+            else newFolders.add(incoming);
+            importedDirectories.add(stage === 'switched' ? backup : incoming);
+            if (stage !== 'staged') importedDirectories.add(backup);
+            if (stage === 'backed up' || stage === 'committed')
+                importedDirectories.delete(target);
+            if (stage === 'committed')
+                library.builds[0].revision = 'new-revision';
+            const originalStat = vi
+                .mocked(templateLstat)
+                .getMockImplementation();
+            if (!originalStat) throw new Error('Expected filesystem mock');
+            const originalMove = vi
+                .mocked(fs.promises.rename)
+                .getMockImplementation();
+            if (!originalMove) throw new Error('Expected move mock');
+            vi.mocked(templateLstat).mockImplementation(async (filename) => {
+                const stat = await originalStat(filename);
+                return stat && newFolders.has(String(filename))
+                    ? ({ ...stat, ino: 2 } as fs.Stats)
+                    : stat;
+            });
+            vi.mocked(fs.promises.rename).mockImplementation(
+                async (from, to) => {
+                    await originalMove(from, to);
+                    if (newFolders.delete(String(from)))
+                        newFolders.add(String(to));
+                },
+            );
+            vi.mocked(readTemplateTree).mockImplementation(async (folder) =>
+                (newFolders.has(String(folder))
+                    ? nextSnapshot
+                    : snapshot
+                ).files.map((file) => ({ ...file, hash: '' })),
+            );
+            layoutRecords.set(
+                journalPath,
+                JSON.stringify({
+                    version: 2,
+                    kind: 'replace',
+                    id: first.id,
+                    setId: first.setId,
+                    beforeRevision: first.revision,
+                    afterRevision: 'new-revision',
+                    beforeDirectoryName: first.directoryName,
+                    afterDirectoryName: first.directoryName,
+                    beforeSnapshot: snapshot,
+                    afterSnapshot: nextSnapshot,
+                }),
+            );
+            await service.recoverSavedProjects();
+            expect(importedDirectories.has(target)).toBe(true);
+            expect(newFolders.has(target)).toBe(stage === 'committed');
+            expect(importedDirectories.has(backup)).toBe(false);
+            expect(importedDirectories.has(incoming)).toBe(false);
+            expect(layoutRecords.has(journalPath)).toBe(false);
+            expect(
+                vi
+                    .mocked(readTemplateTree)
+                    .mock.calls.some(([, hashFiles]) => hashFiles === true),
+            ).toBe(false);
+        },
+    );
+
+    it('resumes interrupted backup cleanup without reading file contents', async () => {
+        const { backup, journalPath } = movedBackup([]);
+        await service.recoverSavedProjects();
+        expect(importedDirectories.has(backup)).toBe(false);
+        expect(layoutRecords.has(journalPath)).toBe(false);
+        expect(
+            vi
+                .mocked(readTemplateTree)
+                .mock.calls.some(([, hashFiles]) => hashFiles === true),
+        ).toBe(false);
+    });
+
+    it.each(['changed', 'unexpected', 'replaced folder'] as const)(
+        'retains recovery files when cleanup detects %s',
+        async (problem) => {
+            const files = structuredClone(snapshot.files);
+            if (problem === 'changed') files[0].metadata.ctimeMs += 1;
+            if (problem === 'unexpected')
+                files.push({ ...files[0], relative: 'notes.txt' });
+            const { backup, journalPath } = movedBackup(files);
+            if (problem === 'replaced folder') {
+                const original = vi
+                    .mocked(templateLstat)
+                    .getMockImplementation();
+                if (!original) throw new Error('Expected filesystem mock');
+                vi.mocked(templateLstat).mockImplementation(
+                    async (filename) => {
+                        const stat = await original(filename);
+                        return String(filename) === backup && stat
+                            ? ({ ...stat, ino: 2 } as fs.Stats)
+                            : stat;
+                    },
+                );
+            }
+            await expect(service.recoverSavedProjects()).rejects.toThrow(
+                'errors.recovery',
+            );
+            expect(importedDirectories.has(backup)).toBe(true);
+            expect(layoutRecords.has(journalPath)).toBe(true);
+        },
     );
 });
 describe('central imported library', () => {
@@ -1252,6 +1671,12 @@ describe('central imported library', () => {
         await service.prepare(selected.token);
         await service.install(selected.token, 'New import');
         expect(library.builds).toHaveLength(3);
+        expect(fs.promises.cp).not.toHaveBeenCalled();
+        expect(fs.promises.rename).toHaveBeenCalledWith(
+            path.resolve('extracted'),
+            path.resolve('imports', 'imported', '4.4.stable', 'New import'),
+        );
+        expect(checkTemplateCapacity).not.toHaveBeenCalled();
         expect(projectTemplateBuilds).not.toHaveBeenCalled();
         expect(projects[0].exportTemplateBuilds).toEqual({
             '4.4.stable': 'missing',
@@ -1312,8 +1737,14 @@ describe('central imported library', () => {
                 path.resolve('imports', 'imported', '4.4.stable', 'sTeAm'),
             ),
         ).toBe(false);
+        expect(fs.promises.cp).not.toHaveBeenCalled();
+        expect(
+            vi
+                .mocked(readTemplateTree)
+                .mock.calls.some(([, hashFiles]) => hashFiles === true),
+        ).toBe(false);
     });
-    it('removes a partial incoming copy when replacement staging fails before journalling', async () => {
+    it('preserves the preview and original when moving replacement staging fails', async () => {
         vi.mocked(dialog.showOpenDialog).mockResolvedValue({
             canceled: false,
             filePaths: [path.resolve('replacement.tpz')],
@@ -1338,24 +1769,21 @@ describe('central imported library', () => {
         const selected = await service.choose();
         if (!selected) throw new Error('Expected selected archive');
         await service.prepare(selected.token);
-        vi.mocked(fs.promises.cp).mockImplementationOnce(
-            async (_source, target) => {
-                importedDirectories.add(String(target));
-                throw new Error('copy interrupted');
-            },
+        switchRecording.enabled = true;
+        vi.mocked(fs.promises.rename).mockRejectedValueOnce(
+            new Error('move interrupted'),
         );
 
         await expect(
             service.install(selected.token, '', first.id),
-        ).rejects.toThrow('copy interrupted');
+        ).rejects.toThrow('move interrupted');
 
-        const incoming = vi.mocked(fs.promises.cp).mock.calls[0]?.[1];
+        const incoming = vi.mocked(fs.promises.rename).mock.calls[0]?.[1];
         expect(incoming).toBeDefined();
-        expect(fs.promises.rm).toHaveBeenCalledWith(incoming, {
-            recursive: true,
-        });
+        expect(fs.promises.cp).not.toHaveBeenCalled();
         expect(importedDirectories.has(String(incoming))).toBe(false);
         expect(library.builds[0]).toEqual(first);
+        expect(layoutRecords.size).toBe(0);
     });
     it('removes the verified incoming copy after rolling back a failed replacement', async () => {
         const build = {

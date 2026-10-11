@@ -94,11 +94,25 @@
 @media (forced-colors: none) {
     :focus-visible,
     .btn:has(:focus-visible),
-    label:has(:focus-visible) {
+    label:has(:focus-visible),
+    .input:focus,
+    .input:focus-within,
+    .select:focus,
+    .select:focus-within,
+    .select:open {
         outline-width: 1px;
         outline-color: color-mix(
             in oklch,
             var(--color-base-content) 20%,
+            transparent
+        );
+    }
+
+    .input:not(.input-error):is(:focus, :focus-within),
+    .select:not(.select-error):is(:focus, :focus-within, :open) {
+        --input-color: color-mix(
+            in oklab,
+            var(--color-base-content) 40%,
             transparent
         );
     }

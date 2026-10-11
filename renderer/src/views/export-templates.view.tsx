@@ -135,14 +135,8 @@ export function ExportTemplatesView() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {migration.assessment?.pendingCount ||
-                        jobs.some(
-                            (job) =>
-                                job.projectPath &&
-                                job.kind === 'migrate' &&
-                                !['complete', 'cancelled', 'error'].includes(
-                                    job.stage,
-                                ),
-                        ) ? (
+                        migration.assessment?.recoveryIds.length ||
+                        migration.active ? (
                             <button
                                 type="button"
                                 className="btn btn-ghost bg-base-content/5"
@@ -152,10 +146,13 @@ export function ExportTemplatesView() {
                                     className="size-4"
                                     aria-hidden="true"
                                 />
-                                {t('migration.header', {
-                                    number:
-                                        migration.assessment?.pendingCount ?? 0,
-                                })}
+                                {migration.active
+                                    ? t('wizardMigration.viewResults')
+                                    : t('migration.header', {
+                                          number:
+                                              migration.assessment
+                                                  ?.pendingCount ?? 0,
+                                      })}
                             </button>
                         ) : null}
                         <button
@@ -363,6 +360,8 @@ export function ExportTemplatesView() {
                 </div>
             </div>
             <TemplateDownloadDrawer
+                onImport={() => setImportOpen(true)}
+                onChooseVersion={() => setManageSet(null)}
                 open={downloadOpen}
                 sets={inventory?.sets ?? []}
                 manageSet={manageSet}

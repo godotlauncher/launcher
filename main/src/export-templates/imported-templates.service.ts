@@ -17,6 +17,7 @@ import { AtomicJsonFileAdapter } from '../json-store/atomic-json-file.adapter.js
 import type { ProjectsStore } from '../projects/projects.store.js';
 import {
     type SwitchJournal,
+    type SwitchPackageSnapshot,
     switchJournalSchema,
 } from './imported-template-switch.schema.js';
 import {
@@ -39,12 +40,15 @@ import {
     isSharedTemplateLink,
     isTemplateIdentity,
     readTemplateTree,
+    type TemplateFile,
     templateFingerprint,
     templateLstat,
+    templateMetadataSnapshot,
 } from './template-files.util.js';
 import { projectTemplateStorage } from './template-paths.util.js';
 import { projectTemplateBuilds } from './template-projection.util.js';
 import { getSharedTemplateRoot } from './template-runtime.util.js';
+import { readTemplateVersionLayout } from './template-version-migration.store.js';
 
 const layoutAdapter = new AtomicJsonFileAdapter();
 const UUID_SOURCE =
@@ -67,7 +71,16 @@ export class ImportedTemplatesService {
     private selected = new Map<string, SelectedTemplateImport>();
     private prepared = new Map<
         string,
-        PreparedTemplateImport & { directory: string; contents: string }
+        PreparedTemplateImport & {
+            directory: string;
+            contents: string;
+            operation?: {
+                kind: 'import' | 'replace';
+                id: string;
+                revision: string;
+            };
+            installed?: { id: string; revision: string };
+        }
     >();
     private preparing = new Map<
         string,
@@ -168,6 +181,8 @@ export class ImportedTemplatesService {
             const {
                 directory: _directory,
                 contents: _contents,
+                operation: _operation,
+                installed: _installed,
                 ...preview
             } = existing;
             return preview;
@@ -347,7 +362,7 @@ export class ImportedTemplatesService {
         }
     }
 
-    /** Commits a preview after its token has been reserved against cancellation.
+    /** Moves a staged import into place after reserving its token against cancellation.
      * @param token - Prepared package token.
      * @param label - Name for a new build; ignored when replacing one.
      * @param replaceId - Existing build to replace.
@@ -360,6 +375,25 @@ export class ImportedTemplatesService {
         const preview = this.prepared.get(token);
         if (!preview) throw new Error('exportTemplates:errors.changed');
         const library = await readImportedTemplates();
+        const completed =
+            preview.installed ??
+            (preview.operation?.kind === 'import'
+                ? preview.operation
+                : undefined);
+        if (completed) {
+            const saved = library.builds.find(
+                (build) =>
+                    build.id === completed.id &&
+                    build.revision === completed.revision,
+            );
+            if (!saved && preview.installed)
+                throw new Error('exportTemplates:errors.changed');
+            if (saved) {
+                if (!(await this.isBuildAvailable(saved)))
+                    throw new Error('exportTemplates:library.missing');
+                return this.finishImport(token, preview.directory, saved.id);
+            }
+        }
         const previous = replaceId
             ? library.builds.find((build) => build.id === replaceId)
             : undefined;
@@ -403,7 +437,6 @@ export class ImportedTemplatesService {
         const target = importedTemplateFiles(build);
         const parent = path.dirname(target);
         await fs.promises.mkdir(parent, { recursive: true });
-        await checkTemplateCapacity(parent, preview.sizeBytes);
         if (previous) {
             const old = importedTemplateFiles(previous);
             const incoming = path.join(
@@ -436,22 +469,8 @@ export class ImportedTemplatesService {
                 'imported-template-switch.json',
             );
             try {
-                await fs.promises.cp(preview.contents, incoming, {
-                    recursive: true,
-                    errorOnExist: true,
-                    force: false,
-                });
-                const source = templateFingerprint(
-                    await readTemplateTree(preview.contents, true),
-                );
-                if (
-                    source !==
-                    templateFingerprint(await readTemplateTree(incoming, true))
-                )
-                    throw new Error('exportTemplates:errors.changed');
-                const beforeFiles = await readTemplateTree(old, true);
                 const journal: SwitchJournal = {
-                    version: 1,
+                    version: 2,
                     kind: 'replace',
                     id: build.id,
                     setId: build.setId,
@@ -459,14 +478,19 @@ export class ImportedTemplatesService {
                     afterRevision: build.revision,
                     beforeDirectoryName: previous.directoryName,
                     afterDirectoryName: directoryName,
-                    beforeFingerprint: templateFingerprint(beforeFiles),
-                    afterFingerprint: source,
-                    beforeCleanupFiles: beforeFiles,
+                    beforeSnapshot: await this.switchSnapshot(old),
+                    afterSnapshot: await this.switchSnapshot(preview.contents),
+                };
+                preview.operation = {
+                    kind: 'replace',
+                    id: build.id,
+                    revision: build.revision,
                 };
                 await layoutAdapter.write(
                     journalPath,
                     JSON.stringify(journal, null, 2),
                 );
+                await fs.promises.rename(preview.contents, incoming);
             } catch (error) {
                 if ((await layoutAdapter.read(journalPath)) === undefined) {
                     const partial = await templateLstat(incoming);
@@ -475,49 +499,121 @@ export class ImportedTemplatesService {
                             throw new Error('exportTemplates:errors.recovery');
                         await fs.promises.rm(incoming, { recursive: true });
                     }
-                }
+                } else await this.recoverSwitch(preview.contents);
                 throw error;
             }
+            let linksSaved = false;
             try {
-                if (old === target) await fs.promises.rename(old, backup);
+                // Keep both packages until the registry and project links commit.
+                await fs.promises.rename(old, backup);
                 await fs.promises.rename(incoming, target);
                 await writeImportedTemplates(next);
                 await this.synchronise(next, affected);
+                linksSaved = true;
+                preview.installed = { id: build.id, revision: build.revision };
                 await this.recoverSwitch();
             } catch (error) {
-                await this.recoverSwitch();
-                throw error;
+                if (!linksSaved) {
+                    const saved = await readImportedTemplates();
+                    const registered = saved.builds.find(
+                        (item) => item.id === build.id,
+                    );
+                    if (registered?.revision === build.revision)
+                        await writeImportedTemplates(library);
+                    else if (registered?.revision !== previous.revision)
+                        throw new Error('exportTemplates:errors.recovery', {
+                            cause: error,
+                        });
+                }
+                await this.recoverSwitch(preview.contents);
+                if (!linksSaved) throw error;
             }
         } else {
+            if (await templateLstat(target))
+                throw new Error('exportTemplates:library.folderConflict');
+            preview.operation = {
+                kind: 'import',
+                id: build.id,
+                revision: build.revision,
+            };
+            let moved = false;
             try {
-                await fs.promises.cp(preview.contents, target, {
-                    recursive: true,
-                    errorOnExist: true,
-                    force: false,
-                });
+                await fs.promises.rename(preview.contents, target);
+                moved = true;
                 await this.commit(library, next, affected);
             } catch (error) {
                 const saved = await readImportedTemplates();
                 if (
-                    !saved.builds.some(
-                        (item) => item.revision === build.revision,
+                    saved.builds.some(
+                        (item) =>
+                            item.id === build.id &&
+                            item.revision === build.revision,
                     )
-                )
-                    await fs.promises.rm(target, {
-                        recursive: true,
-                        force: true,
-                    });
-                throw error;
+                ) {
+                    await this.synchronise(saved, affected);
+                    preview.installed = {
+                        id: build.id,
+                        revision: build.revision,
+                    };
+                } else {
+                    if (moved)
+                        await fs.promises.rename(target, preview.contents);
+                    throw error;
+                }
             }
         }
+        return this.finishImport(token, preview.directory, build.id);
+    }
+
+    /** Retires a completed preview after the saved build and recovery are confirmed.
+     * @param token - Process-owned preview token.
+     * @param directory - Empty staging directory left by the package move.
+     * @param id - Committed imported build identifier.
+     */
+    private async finishImport(
+        token: string,
+        directory: string,
+        id: string,
+    ): Promise<string> {
         this.selected.delete(token);
         this.prepared.delete(token);
         await fs.promises
-            .rm(preview.directory, { recursive: true, force: true })
+            .rm(directory, { recursive: true, force: true })
             .catch((error) =>
                 logger.warn('Could not clean completed import staging', error),
             );
-        return build.id;
+        return id;
+    }
+
+    /** Allocates a distinct imported build for one reviewed local version without copying it.
+     * @param project - Project whose files will be kept.
+     * @param setId - Exact reviewed version and edition.
+     * @param files - Main-owned hashed version files.
+     */
+    async prepareSavedVersion(
+        project: ProjectDetails,
+        setId: string,
+        files: TemplateFile[],
+    ): Promise<ImportedTemplateBuild> {
+        const library = await readImportedTemplates();
+        const label = await this.uniqueMigrationLabel(
+            library.builds,
+            setId,
+            this.label(project.name.slice(0, 80)),
+        );
+        return {
+            id: randomUUID(),
+            revision: randomUUID(),
+            directoryName: importedTemplateDirectoryName(label),
+            label,
+            setId,
+            importedAt: new Date().toISOString(),
+            archiveName: '',
+            files: files
+                .map((file) => file.relative)
+                .filter((name) => name !== 'version.txt'),
+            sizeBytes: files.reduce((total, file) => total + file.size, 0),
+        };
     }
 
     /** Copies local versions before committing project choices, then removes originals.
@@ -882,6 +978,65 @@ export class ImportedTemplatesService {
             throw new Error('exportTemplates:errors.recovery');
     }
 
+    /** Records file metadata and the folder identity without reading file contents.
+     * @param folder - Package folder retained by a switch operation.
+     */
+    private async switchSnapshot(
+        folder: string,
+    ): Promise<SwitchPackageSnapshot> {
+        const stat = await templateLstat(folder);
+        if (!stat?.isDirectory() || stat.isSymbolicLink())
+            throw new Error('exportTemplates:errors.recovery');
+        const files = await readTemplateTree(folder, false, undefined, true);
+        const after = await templateLstat(folder);
+        if (
+            !after?.isDirectory() ||
+            after.isSymbolicLink() ||
+            after.ino !== stat.ino ||
+            after.dev !== stat.dev
+        )
+            throw new Error('exportTemplates:errors.recovery');
+        return {
+            directory: { ino: stat.ino, dev: stat.dev },
+            files: files.map(({ relative, size, mode, metadata }) => {
+                if (!metadata)
+                    throw new Error('exportTemplates:errors.recovery');
+                return { relative, size, mode, metadata };
+            }),
+        };
+    }
+
+    /** Refuses changed files or a replaced folder before recovery moves or removes it.
+     * @param folder - Original, incoming or backup package folder.
+     * @param expected - Metadata captured before the switch.
+     * @param partial - Whether interrupted cleanup may already have removed files.
+     */
+    private async assertSwitchSnapshot(
+        folder: string,
+        expected: SwitchPackageSnapshot,
+        partial = false,
+    ): Promise<void> {
+        const actual = await this.switchSnapshot(folder);
+        if (
+            actual.directory.ino !== expected.directory.ino ||
+            actual.directory.dev !== expected.directory.dev ||
+            (!partial && actual.files.length !== expected.files.length)
+        )
+            throw new Error('exportTemplates:errors.recovery');
+        const known = new Map(
+            expected.files.map((file) => [file.relative, file]),
+        );
+        for (const file of actual.files) {
+            const original = known.get(file.relative);
+            if (
+                !original ||
+                templateMetadataSnapshot([{ ...file, hash: '' }]) !==
+                    templateMetadataSnapshot([{ ...original, hash: '' }])
+            )
+                throw new Error('exportTemplates:errors.recovery');
+        }
+    }
+
     /** Allows resumed cleanup only for unchanged files from the recorded package.
      * @param folder - Old or incoming package being removed.
      * @param expected - Complete verified file snapshot before cleanup began.
@@ -889,7 +1044,9 @@ export class ImportedTemplatesService {
      */
     private async assertSwitchCleanupFiles(
         folder: string,
-        expected: NonNullable<SwitchJournal['beforeCleanupFiles']>,
+        expected: NonNullable<
+            Extract<SwitchJournal, { version: 1 }>['beforeCleanupFiles']
+        >,
         fingerprint: string,
     ): Promise<void> {
         if (templateFingerprint(expected) !== fingerprint)
@@ -907,8 +1064,10 @@ export class ImportedTemplatesService {
         }
     }
 
-    /** Resolves an interrupted rename or replacement from the committed registry. */
-    private async recoverSwitch(): Promise<void> {
+    /** Resolves an interrupted switch from the committed registry.
+     * @param rollbackContents - Live preview to restore after a failed replacement.
+     */
+    private async recoverSwitch(rollbackContents?: string): Promise<void> {
         const journalPath = path.join(
             importedTemplateRoot(),
             'imported-template-switch.json',
@@ -916,6 +1075,18 @@ export class ImportedTemplatesService {
         const raw = await layoutAdapter.read(journalPath);
         if (raw === undefined) return;
         const journal = switchJournalSchema.parse(JSON.parse(raw));
+        const livePreview =
+            journal.version === 2
+                ? [...this.prepared].find(
+                      ([token, preview]) =>
+                          this.selected.has(token) &&
+                          !this.discarding.has(token) &&
+                          preview.operation?.kind === 'replace' &&
+                          preview.operation.id === journal.id &&
+                          preview.operation.revision === journal.afterRevision,
+                  )?.[1]
+                : undefined;
+        rollbackContents ??= livePreview?.contents;
         await this.assertReadableParent(journal.setId);
         const staging = await templateLstat(
             path.join(importedTemplateRoot(), '.staging'),
@@ -936,7 +1107,45 @@ export class ImportedTemplatesService {
             current.directoryName === journal.beforeDirectoryName;
         if (!committed && !uncommitted)
             throw new Error('exportTemplates:errors.recovery');
-        if (journal.kind === 'rename') {
+        if (journal.version === 2) {
+            if (before !== after || committed === uncommitted)
+                throw new Error('exportTemplates:errors.recovery');
+            const backup = this.switchBackup(journal);
+            const incoming = this.switchIncoming(journal);
+            if (committed) {
+                if (
+                    !(await templateLstat(after)) &&
+                    (await templateLstat(incoming))
+                ) {
+                    await this.assertSwitchSnapshot(
+                        incoming,
+                        journal.afterSnapshot,
+                    );
+                    await fs.promises.rename(incoming, after);
+                }
+                await this.assertSwitchSnapshot(after, journal.afterSnapshot);
+                if (await templateLstat(incoming))
+                    throw new Error('exportTemplates:errors.recovery');
+            } else {
+                if (await templateLstat(backup)) {
+                    await this.assertSwitchSnapshot(
+                        backup,
+                        journal.beforeSnapshot,
+                    );
+                    if (await templateLstat(after)) {
+                        await this.assertSwitchSnapshot(
+                            after,
+                            journal.afterSnapshot,
+                        );
+                        if (await templateLstat(incoming))
+                            throw new Error('exportTemplates:errors.recovery');
+                        await fs.promises.rename(after, incoming);
+                    }
+                    await fs.promises.rename(backup, before);
+                }
+                await this.assertSwitchSnapshot(before, journal.beforeSnapshot);
+            }
+        } else if (journal.kind === 'rename') {
             const caseOnly =
                 journal.beforeDirectoryName !== journal.afterDirectoryName &&
                 journal.beforeDirectoryName.normalize('NFKC').toLowerCase() ===
@@ -1057,7 +1266,29 @@ export class ImportedTemplatesService {
                 project.exportTemplateBuilds?.[journal.setId] === journal.id,
         );
         await this.synchronise(library, affectedProjects);
-        if (!committed && journal.kind === 'replace') {
+        if (committed && livePreview)
+            livePreview.installed = {
+                id: journal.id,
+                revision: journal.afterRevision,
+            };
+        if (journal.version === 2) {
+            const discarded = committed
+                ? this.switchBackup(journal)
+                : this.switchIncoming(journal);
+            if (await templateLstat(discarded)) {
+                await this.assertSwitchSnapshot(
+                    discarded,
+                    committed ? journal.beforeSnapshot : journal.afterSnapshot,
+                    committed || !rollbackContents,
+                );
+                if (!committed && rollbackContents) {
+                    if (await templateLstat(rollbackContents))
+                        throw new Error('exportTemplates:errors.recovery');
+                    await fs.promises.rename(discarded, rollbackContents);
+                } else await fs.promises.rm(discarded, { recursive: true });
+            }
+        }
+        if (!committed && journal.kind === 'replace' && journal.version === 1) {
             const incoming = this.switchIncoming(journal);
             const stat = await templateLstat(incoming);
             if (stat) {
@@ -1087,7 +1318,7 @@ export class ImportedTemplatesService {
                 await fs.promises.rm(incoming, { recursive: true });
             }
         }
-        if (committed && journal.kind === 'replace') {
+        if (committed && journal.kind === 'replace' && journal.version === 1) {
             const old = before === after ? this.switchBackup(journal) : before;
             const stat = await templateLstat(old);
             if (stat) {
@@ -1513,9 +1744,22 @@ export class ImportedTemplatesService {
         projects?: ProjectDetails[],
     ): Promise<void> {
         const targets = projects ?? (await this.projects.list());
-        const needsImports = targets.some((project) => {
+        const versionLayouts = await Promise.all(
+            targets.map((project) =>
+                project.launch_path
+                    ? readTemplateVersionLayout(
+                          path.dirname(project.launch_path),
+                      )
+                    : undefined,
+            ),
+        );
+        const needsImports = targets.some((project, index) => {
             if (!project.launch_path || project.release.source === 'custom')
                 return false;
+            if (versionLayouts[index])
+                return Object.values(project.exportTemplateBuilds ?? {}).some(
+                    (selection) => selection !== 'official',
+                );
             const choice =
                 project.exportTemplateBuilds?.[this.identity(project)];
             return choice && choice !== 'official';

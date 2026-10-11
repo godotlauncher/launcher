@@ -6,6 +6,7 @@ import {
     _electron,
     type ElectronApplication,
     expect,
+    type Locator,
     type Page,
     test,
 } from '@playwright/test';
@@ -420,12 +421,17 @@ test('opens an imported build folder from its row', async () => {
     });
     try {
         await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-        const openFolder = page.getByRole('article', { name: label, exact: true }).getByRole('button', { name: 'Open template folder' });
+        const row = page.getByRole('article', { name: label, exact: true });
+        await expect(row.getByText('4.8.stable · 1 files · 7 B', { exact: true })).toBeVisible();
+        const openFolder = row.getByRole('button', { name: 'Open template folder' });
         await expect(openFolder).toBeVisible();
         await openFolder.hover();
         await expect(page.getByRole('tooltip')).toHaveText('Open template folder');
         await openFolder.click();
         await expect.poll(() => app.evaluate(() => (globalThis as any).openedTemplateFolder)).toBe(folder);
+        await fs.rm(folder, { recursive: true, force: true });
+        await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+        await expect(row.getByText('4.8.stable · 1 files · Size unavailable', { exact: true })).toBeVisible();
     } finally {
         await app.evaluate(() => { (globalThis as any).restoreTemplateOpenPath(); delete (globalThis as any).restoreTemplateOpenPath; delete (globalThis as any).openedTemplateFolder; });
         if (original === undefined) await fs.rm(registryPath, { force: true });
@@ -440,6 +446,7 @@ test('stores imported builds under readable names and rejects folder collisions'
     const registryPath = path.join(libraryRoot, 'imported-templates.json');
     const original = await fs.readFile(registryPath, 'utf8').catch(() => undefined);
     const archive = path.join(home, 'readable-template.tpz');
+    const replacementContents = 'r'.repeat(2038);
     await fs.writeFile(archive, storedZip({
         'templates/version.txt': '4.4.stable',
         'templates/web_release.zip': 'readable build',
@@ -458,7 +465,13 @@ test('stores imported builds under readable names and rejects folder collisions'
         expect(build.directoryName).toBe('Cloud- Build');
         const firstFolder = path.join(libraryRoot, 'imported', build.setId, build.directoryName);
         expect(await fs.readFile(path.join(firstFolder, 'web_release.zip'), 'utf8')).toBe('readable build');
+        const importedRow = page.getByRole('article', { name: 'Cloud: Build', exact: true });
+        await expect(importedRow.getByText('4.4.stable · 1 files · 24 B', { exact: true })).toBeVisible();
 
+        await fs.writeFile(archive, storedZip({
+            'templates/version.txt': '4.4.stable',
+            'templates/web_release.zip': replacementContents,
+        }));
         await chooseArchive(archive);
         await page.getByRole('article', { name: 'Cloud: Build', exact: true })
             .getByRole('button', { name: 'Replace TPZ', exact: true }).click();
@@ -466,13 +479,16 @@ test('stores imported builds under readable names and rejects folder collisions'
         await replacement.getByRole('button', { name: 'Choose TPZ file', exact: true }).click();
         await replacement.getByRole('button', { name: 'Next', exact: true }).click();
         await expect(replacement.getByRole('textbox', { name: 'Name', exact: true })).toHaveCount(0);
-        await expect(replacement.getByText('Cloud: Build', { exact: true })).toBeVisible();
+        await expect(replacement.getByText('Replacing "Cloud: Build"', { exact: true })).toBeVisible();
         await replacement.getByRole('button', { name: 'Save', exact: true }).click();
         await expect(replacement).toBeHidden();
         const replaced = JSON.parse(await fs.readFile(registryPath, 'utf8'));
         const replacedBuild = replaced.builds.find((item: { id: string }) => item.id === build.id);
-        expect(replacedBuild).toMatchObject({ label: 'Cloud: Build', directoryName: 'Cloud- Build' });
+        expect(replacedBuild).toMatchObject({ label: 'Cloud: Build', directoryName: 'Cloud- Build', sizeBytes: 2048 });
         expect(replacedBuild.revision).not.toBe(build.revision);
+        await expect(importedRow.getByText('4.4.stable · 1 files · 2 KiB', { exact: true })).toBeVisible();
+        await page.getByRole('button', { name: 'Refresh', exact: true }).click();
+        await expect(importedRow.getByText('4.4.stable · 1 files · 2 KiB', { exact: true })).toBeVisible();
 
         await chooseArchive(archive);
         await page.getByRole('button', { name: 'Import .tpz', exact: true }).click();
@@ -492,7 +508,7 @@ test('stores imported builds under readable names and rejects folder collisions'
         await expect(renamedRow.getByRole('textbox', { name: 'Name', exact: true })).toHaveCount(0);
         await expect(renamedRow.getByRole('button', { name: 'Rename', exact: true })).toBeEnabled();
         const nextFolder = path.join(libraryRoot, 'imported', build.setId, 'Renamed Build');
-        expect(await fs.readFile(path.join(nextFolder, 'web_release.zip'), 'utf8')).toBe('readable build');
+        expect(await fs.readFile(path.join(nextFolder, 'web_release.zip'), 'utf8')).toBe(replacementContents);
         expect(await fs.stat(firstFolder).catch(() => null)).toBeNull();
 
         const caseOnly = await page.evaluate(async (id: string) =>
@@ -500,7 +516,7 @@ test('stores imported builds under readable names and rejects folder collisions'
         build.id) as { success: boolean };
         expect(caseOnly.success).toBe(true);
         expect(await fs.readdir(path.join(libraryRoot, 'imported', build.setId))).toContain('renamed build');
-        expect(await fs.readFile(path.join(libraryRoot, 'imported', build.setId, 'renamed build', 'web_release.zip'), 'utf8')).toBe('readable build');
+        expect(await fs.readFile(path.join(libraryRoot, 'imported', build.setId, 'renamed build', 'web_release.zip'), 'utf8')).toBe(replacementContents);
     } finally {
         const modal = page.getByRole('dialog', { name: 'Import export templates', exact: true });
         if (await modal.isVisible())
@@ -708,7 +724,6 @@ test('merges project files, links a project and removes only shared templates', 
     await fs.writeFile(path.join(root, '4.4.stable', 'version.txt'), '4.4.stable\n');
     await fs.writeFile(path.join(root, '4.4.stable', 'windows_release_x86_64.exe'), 'shared bytes');
     await fs.writeFile(path.join(root, '4.4.stable', 'web_release.zip'), 'web template');
-    const apply = page.getByRole('button', { name: 'Apply changes' });
     if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
     await fs.mkdir(path.join(local, '4.4.stable'), { recursive: true });
     if (process.platform !== 'win32')
@@ -726,13 +741,14 @@ test('merges project files, links a project and removes only shared templates', 
         'linux template',
     );
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-    await openMigrationChoices();
-    await expect(page.getByTestId('templateMigrationModal').getByRole('button', { name: /^Template migration:/ })).toHaveCount(1);
-    await apply.click();
+    const migration = await openMigrationChoices();
+    await expect(migration.getByRole('checkbox')).toBeChecked();
+    await migration.getByRole('button', { name: 'Move templates', exact: true }).click();
     await waitForTemplateStage('complete');
-    await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Done', exact: true }).click();
-    await expect(page.getByTestId('templateMigrationModal')).toBeHidden();
-    expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
+    await migration.getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(migration).toBeHidden();
+    expect((await fs.lstat(path.join(local, '4.4.stable'))).isSymbolicLink()).toBe(true);
+    expect(await fs.realpath(path.join(local, '4.4.stable'))).toBe(await fs.realpath(path.join(root, '4.4.stable')));
     if (process.platform !== 'win32')
         expect((await fs.stat(path.join(root, '4.4.stable', 'version.txt'))).mode & 0o777).toBe(0o600);
     expect(
@@ -767,7 +783,7 @@ test('merges project files, links a project and removes only shared templates', 
     await expect(
         page.getByText('No export templates installed', { exact: true }),
     ).toBeVisible();
-    expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(local, '4.4.stable'))).isSymbolicLink()).toBe(true);
     expect(await fs.readFile(path.join(home, 'editor', 'Godot'), 'utf8')).toBe(
         'fixture editor',
     );
@@ -889,7 +905,7 @@ test('cancels an imported package preview and refuses damaged contents', async (
     await expect(modal.getByRole('textbox', { name: 'Name', exact: true })).toHaveValue('');
     await expect(modal.getByRole('textbox', { name: 'Name', exact: true })).toHaveAttribute('placeholder', 'Encrypted');
     await expect(modal.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
-    await expect(modal.getByText('windows_release_x86_64.exe', { exact: true })).toHaveCount(0);
+    await expect(modal.getByText('windows_release_x86_64.exe', { exact: true })).toBeHidden();
     await modal.getByRole('textbox', { name: 'Name', exact: true }).fill('Encrypted');
     await modal.getByRole('button', { name: 'Back', exact: true }).click();
     await expect(modal.getByText(archive, { exact: true })).toBeVisible();
@@ -954,7 +970,7 @@ test('cancels TPZ preparation with Cancel and Escape and cleans staging', async 
 
 test('keeps original project files when the final project link cannot be created', async () => {
     const originalEntries = await fs.readdir(path.dirname(local));
-    await fs.unlink(local);
+    await fs.rm(local, { recursive: true });
     const id = '4.6.stable';
     await fs.mkdir(path.join(local, id), {recursive: true});
     await fs.writeFile(path.join(local, id, 'version.txt'), id);
@@ -962,7 +978,7 @@ test('keeps original project files when the final project link cannot be created
     await fs.mkdir(path.join(root, id), {recursive: true});
     await fs.writeFile(path.join(root, id, 'web_release.zip'), 'existing web template');
     await page.getByRole('button', {name:'Refresh', exact:true}).click();
-    await openMigrationChoices();
+    const migration = await openMigrationChoices();
     await app.evaluate(async (_electron, target) => {
         const {promises} = process.getBuiltinModule('node:fs');
         const state = globalThis as typeof globalThis & {templateSymlink?: typeof promises.symlink};
@@ -971,11 +987,11 @@ test('keeps original project files when the final project link cannot be created
             if (String(args[1]) === target) throw new Error('Fixture link permission failure');
             return state.templateSymlink?.(...args);
         };
-    }, await fs.realpath(local));
+    }, path.join(local, id));
     try {
-        await page.getByRole('button', {name:'Apply changes'}).click();
+        await migration.getByRole('button', {name:'Move templates', exact:true}).click();
         await waitForTemplateStage('error');
-        await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Finish later', exact: true }).click();
+        await migration.getByRole('button', { name: 'Done', exact: true }).click();
         expect((await fs.lstat(local)).isDirectory()).toBe(true);
         expect(await fs.readFile(path.join(local, id, 'linux_release.x86_64'), 'utf8')).toBe('local template');
         expect((await fs.readdir(path.join(root, id))).sort()).toEqual(['linux_release.x86_64', 'version.txt', 'web_release.zip']);
@@ -999,14 +1015,15 @@ test('connects an unchanged merge without replacing shared files and keeps the r
     await fs.writeFile(path.join(root, id, 'linux_release.x86_64'), 'shared template');
     const before = await fs.stat(path.join(root, id));
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-    await openMigrationChoices();
-    await page.getByRole('button', { name: 'Apply changes' }).click();
+    const migration = await openMigrationChoices();
+    await migration.getByRole('button', { name: 'Move templates', exact: true }).click();
     await waitForTemplateStage('complete');
-    await page.getByTestId('templateMigrationModal').getByRole('button', { name: 'Done', exact: true }).click();
-    await expect(page.getByTestId('templateMigrationModal')).toBeHidden();
+    await migration.getByRole('button', { name: 'Done', exact: true }).click();
+    await expect(migration).toBeHidden();
     expect((await fs.stat(path.join(root, id))).ino).toBe(before.ino);
     expect(await fs.readFile(path.join(root, id, 'linux_release.x86_64'), 'utf8')).toBe('shared template');
-    expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
+    expect((await fs.lstat(path.join(local, id))).isSymbolicLink()).toBe(true);
+    expect(await fs.realpath(path.join(local, id))).toBe(await fs.realpath(path.join(root, id)));
     const newEntries = (await fs.readdir(path.dirname(local))).filter(name => !originalEntries.includes(name));
     expect(newEntries).toHaveLength(0);
 
@@ -1118,12 +1135,30 @@ async function waitForTemplateStage(stage: string): Promise<void> {
     })).toBe(stage);
 }
 
-/** Opens the migration modal and selects the missing-files policy. */
-async function openMigrationChoices(): Promise<void> {
-    await page.getByRole('button', { name: /Migrate projects/ }).click();
-    const modal = page.getByTestId('templateMigrationModal');
-    await modal.getByRole('button', { name: 'Template migration: Choose an option', exact: true }).click();
-    await modal.getByRole('option', { name: 'Switch to shared export templates', exact: true }).click();
+/** Reviews the selected policy through the production wizard, acknowledging removals.
+ * @param choice - Visible migration policy for the fixture project.
+ */
+async function openMigrationChoices(choice = 'Share templates'): Promise<Locator> {
+    await page
+        .getByRole('button', { name: /^(Migrate projects|View migration)/ })
+        .click();
+    const modal = page.getByTestId('templateMigrationWizard');
+    const retry = modal.getByRole('button', { name: /^Try failed versions again/ });
+    if (await retry.count()) {
+        await retry.click();
+        await expect(modal.getByRole('list', { name: 'Choices by template version', exact: true })).toContainText(choice);
+    }
+    else {
+        await modal.getByRole('button', { name: 'See options', exact: true }).click();
+        await modal.getByRole('button', { name: 'Choose for projects', exact: true }).click();
+        await modal.getByRole('button', { name: 'Choice for Template migration:', exact: false }).click();
+        await modal.getByRole('listbox').getByRole('option', { name: choice, exact: true }).click();
+        await modal.getByRole('button', { name: 'Review choices', exact: true }).click();
+    }
+    await expect(modal.getByRole('button', { name: 'Move templates', exact: true })).toBeVisible();
+    const confirmation = modal.getByRole('checkbox');
+    if (await confirmation.count()) await confirmation.check();
+    return modal;
 }
 
 
@@ -1177,7 +1212,7 @@ async function chooseProjectBuild(drawer: ReturnType<Page['getByRole']>, name: s
     await page.getByRole('option', { name, exact: true }).click();
 }
 
-test('saves local versions as named imports and switches parent and version links on Update', async () => {
+test('saves local versions as named imports and switches version links on Update', async () => {
     await app.close();
     await fs.rm(path.join(home, 'editor', 'editor_data', 'launcher_export_templates'), { recursive: true, force: true });
     if ((await fs.lstat(local).catch(() => null))?.isSymbolicLink()) await fs.unlink(local);
@@ -1199,12 +1234,8 @@ test('saves local versions as named imports and switches parent and version link
     await restartTemplatesApp();
     await page.getByTestId('btnExportTemplates').click();
     await page.getByRole('button', { name: 'Refresh', exact: true }).click();
-    await page.getByRole('button', { name: /Migrate projects/ }).click();
-    const migration = page.getByTestId('templateMigrationModal');
-    await migration.getByRole('button', { name: 'Template migration: Choose an option', exact: true }).click();
-    await page.screenshot({ path: test.info().outputPath('template-migration-options.png') });
-    await migration.getByRole('option', { name: 'Save as imported templates', exact: true }).click();
-    await expect(migration.getByRole('option', { name: 'Keep export templates for this project only', exact: true })).toHaveCount(0);
+    const migration = await openMigrationChoices('Keep current templates');
+    await page.screenshot({ path: test.info().outputPath('template-migration-review.png') });
     // A direct import migration must never connect the active parent to Official.
     await app.evaluate((_electron, active) => {
         const fs = process.getBuiltinModule('node:fs');
@@ -1215,7 +1246,7 @@ test('saves local versions as named imports and switches parent and version link
         };
         (globalThis as any).restoreMigrationSymlink = () => { fs.promises.symlink = symlink; };
     }, local);
-    await migration.getByRole('button', { name: 'Apply changes', exact: true }).click();
+    await migration.getByRole('button', { name: 'Move templates', exact: true }).click();
     await waitForTemplateStage('complete');
     await app.evaluate(() => { (globalThis as any).restoreMigrationSymlink(); delete (globalThis as any).restoreMigrationSymlink; });
     await migration.getByRole('button', { name: 'Done', exact: true }).click();
@@ -1226,7 +1257,9 @@ test('saves local versions as named imports and switches parent and version link
     expect(registry.builds.every((item: { label: string }) => item.label === 'Template migration')).toBe(true);
     expect(registry.defaults).toBeUndefined();
     expect((await fs.lstat(local)).isSymbolicLink()).toBe(false);
-    expect(await fs.readdir(local)).toEqual(['4.4.stable']);
+    expect((await fs.lstat(path.join(local, '4.3.stable.mono'))).isSymbolicLink()).toBe(true);
+    expect(await fs.readFile(path.join(local, '4.3.stable.mono', 'linux_release.x86_64'), 'utf8')).toBe('older dotnet');
+    expect(await fs.readFile(path.join(local, '__MACOSX', '._templates'), 'utf8')).toBe('finder metadata');
     expect((await fs.lstat(path.join(local, '4.4.stable'))).isSymbolicLink()).toBe(true);
     expect(await fs.readFile(path.join(local, '4.4.stable', 'web_release.zip'), 'utf8')).toBe('project custom build');
     expect((await fs.stat(path.join(local, '4.4.stable', 'web_release.zip'))).mode).toBe(originalTemplate.mode);
@@ -1246,26 +1279,29 @@ test('saves local versions as named imports and switches parent and version link
     drawer = await openProjectTemplates();
     await expect(drawer.getByRole('button', { name: /^Export template build:/ })).toContainText('Template migration');
     await chooseProjectBuild(drawer, 'Official - 4.4.stable - Standard');
-    // Failed parent replacement must keep both the saved choice and the original view.
-    await app.evaluate(() => {
+    // A failed version-link replacement keeps the saved choice and restores its view.
+    await app.evaluate((_, destination) => {
         const fs = process.getBuiltinModule('node:fs');
-        const rename = fs.promises.rename;
-        fs.promises.rename = async (source, destination) => {
-            if (String(source).endsWith('.export_templates.launcher-next')) {
-                fs.promises.rename = rename;
+        const symlink = fs.promises.symlink;
+        (globalThis as any).templateSwitchFaultTriggered = false;
+        fs.promises.symlink = async (...args) => {
+            if (String(args[1]) === destination) {
+                fs.promises.symlink = symlink;
+                (globalThis as any).templateSwitchFaultTriggered = true;
                 throw new Error('fixture link failure');
             }
-            return rename(source, destination);
+            return symlink(...args);
         };
-    });
+    }, path.join(local, '4.4.stable'));
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();
     await expect(drawer.getByRole('alert')).toBeVisible();
+    expect(await app.evaluate(() => (globalThis as any).templateSwitchFaultTriggered)).toBe(true);
     expect(JSON.parse(await fs.readFile(projectsFile, 'utf8'))[0].exportTemplateBuilds['4.4.stable']).toBe(build.id);
     expect(await fs.readFile(path.join(local, '4.4.stable', 'web_release.zip'), 'utf8')).toBe('project custom build');
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();
     await expect(drawer).toBeHidden();
-    expect((await fs.lstat(local)).isSymbolicLink()).toBe(true);
-    expect(await fs.realpath(local)).toBe(await fs.realpath(root));
+    expect((await fs.lstat(path.join(local, '4.4.stable'))).isSymbolicLink()).toBe(true);
+    expect(await fs.realpath(path.join(local, '4.4.stable'))).toBe(await fs.realpath(path.join(root, '4.4.stable')));
     drawer = await openProjectTemplates();
     await page.screenshot({ path: test.info().outputPath('project-official-selection.png') });
     await chooseProjectBuild(drawer, 'Template migration - 4.4.stable - Standard');
@@ -1321,7 +1357,7 @@ test('imports do not change projects and Official file edits apply to shared sto
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();
     await expect(drawer).toBeHidden();
     expect(await fs.readFile(path.join(root, '4.4.stable', 'linux_debug.x86_64'), 'utf8')).toBe('official debug');
-    expect(await fs.realpath(local)).toBe(await fs.realpath(root));
+    expect(await fs.realpath(path.join(local, '4.4.stable'))).toBe(await fs.realpath(path.join(root, '4.4.stable')));
 });
 
 test('saves the chosen imported source without applying a hidden Official draft', async () => {
@@ -1353,7 +1389,7 @@ test('uses Official for a new editor version and restores remembered imports wit
     await restartTemplatesApp();
     let drawer = await openProjectTemplates();
     await expect(drawer.getByRole('button', { name: /^Export template build:/ })).toContainText('Official - 4.5.stable - Standard');
-    expect(await fs.realpath(local)).toBe(await fs.realpath(root));
+    expect(await fs.realpath(path.join(local, '4.5.stable'))).toBe(await fs.realpath(path.join(root, '4.5.stable')));
     await drawer.getByRole('button', { name: /^Export template build:/ }).click();
     await expect(page.getByRole('option')).toHaveCount(1);
     await page.keyboard.press('Escape');
@@ -1373,5 +1409,5 @@ test('uses Official for a new editor version and restores remembered imports wit
     await chooseProjectBuild(drawer, 'Official - 4.4.stable - Standard');
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();
     await expect(drawer).toBeHidden();
-    expect(await fs.realpath(local)).toBe(await fs.realpath(root));
+    expect(await fs.realpath(path.join(local, '4.4.stable'))).toBe(await fs.realpath(path.join(root, '4.4.stable')));
 });

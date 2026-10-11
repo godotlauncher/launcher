@@ -8,6 +8,8 @@ export type SelectFieldOption = {
     value: string;
     label: string;
     selectedLabel?: string;
+    /** Decorative cue shown beside this option's text. */
+    startIcon?: React.ReactNode;
     disabled?: boolean;
     separatorBefore?: boolean;
 };
@@ -80,7 +82,7 @@ export function getEnabledOptionEdgeIndex(
 /**
  * Renders a controlled select trigger with an anchored keyboard-accessible list.
  *
- * @param props - Selection state, options, callbacks, and field presentation.
+ * @param props - Selection state, options with optional icons, callbacks and field presentation.
  * @returns A reusable select form field.
  */
 export const SelectField: React.FC<SelectFieldProps> = ({
@@ -325,7 +327,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 )}
                 style={triggerStyle}
             >
-                {startIcon}
+                {startIcon ?? selectedOption?.startIcon}
                 <span className="min-w-0 flex-1 truncate">{selectedLabel}</span>
                 {appearance !== 'field' && (
                     <ChevronDown size={14} aria-hidden="true" />
@@ -338,10 +340,10 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                 role="listbox"
                 aria-labelledby={id}
                 onKeyDown={handleListKeyDown}
-                className="dropdown dropdown-bottom dropdown-start max-h-64 overflow-auto rounded-md bg-base-100 shadow-md"
+                className="dropdown dropdown-bottom dropdown-start max-h-64 overflow-auto rounded-md border border-base-content/20 bg-base-100 shadow-md"
                 style={popoverStyle}
             >
-                <ul className="menu w-full p-1 text-base">
+                <ul className="menu w-full gap-[1px] p-1 text-base">
                     {options.map((option, index) => (
                         <li
                             key={option.value}
@@ -366,6 +368,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                                 onFocus={() => setActiveIndex(index)}
                                 onClick={() => selectOption(index)}
                             >
+                                {option.startIcon}
                                 {showSelectedCheck && (
                                     <span
                                         className="flex size-4 shrink-0 items-center justify-center"

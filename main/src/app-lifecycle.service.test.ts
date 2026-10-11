@@ -2,6 +2,10 @@ import { app } from 'electron';
 import logger from 'electron-log/main.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppLifecycleService } from './app-lifecycle.service.js';
+import {
+    isTemplateExitBlocked,
+    withTemplateExitBlocked,
+} from './export-templates/template-exit-guard.util.js';
 
 const mocks = vi.hoisted(() => ({
     appReadyHooks: [] as Array<{
@@ -225,13 +229,13 @@ describe('AppLifecycleService', () => {
     function getRegisteredListener(
         listenerMock: typeof mocks.appOn,
         event: string,
-    ): () => void {
+    ): (...args: unknown[]) => void {
         const listener = listenerMock.mock.calls.find(
             ([registeredEvent]) => registeredEvent === event,
         )?.[1];
 
         expect(listener).toBeTypeOf('function');
-        return listener as () => void;
+        return listener as (...args: unknown[]) => void;
     }
 
     async function initializeLifecycle(service: AppLifecycleService) {
@@ -302,9 +306,11 @@ describe('AppLifecycleService', () => {
         });
         await Promise.resolve();
         expect(settled).toBe(false);
+        expect(isTemplateExitBlocked()).toBe(true);
 
         finishRecovery?.();
         await pending;
+        expect(isTemplateExitBlocked()).toBe(false);
         await service.beforeWindowReady();
         expect(mocks.recoverTemplateStorageOnStartup).toHaveBeenCalledOnce();
         expect(projectsService.checkAllProjectsValid).toHaveBeenCalledOnce();
@@ -723,7 +729,7 @@ describe('AppLifecycleService', () => {
         expect(mocks.getUserPreferences).toHaveBeenCalledOnce();
         expect(mocks.appQuit).not.toHaveBeenCalled();
 
-        appBeforeQuit();
+        appBeforeQuit({ defaultPrevented: false });
         windowClosed();
         service.onAppQuit();
 
@@ -740,12 +746,31 @@ describe('AppLifecycleService', () => {
         );
     });
 
+    it('keeps services running during a held quit and an updater exit until a new exit is allowed', async () => {
+        const service = createService();
+        const { appBeforeQuit, updaterBeforeQuit } =
+            await initializeLifecycle(service);
+
+        appBeforeQuit({ defaultPrevented: true });
+        await withTemplateExitBlocked(async () => {
+            appBeforeQuit({ defaultPrevented: false });
+            updaterBeforeQuit();
+            expect(mocks.stopAutoUpdateChecks).not.toHaveBeenCalled();
+            expect(mocks.disposeFocusRevalidation).not.toHaveBeenCalled();
+            expect(electronAppService.quit).not.toHaveBeenCalled();
+        });
+
+        appBeforeQuit({ defaultPrevented: false });
+        expect(mocks.stopAutoUpdateChecks).toHaveBeenCalledOnce();
+        expect(mocks.disposeFocusRevalidation).toHaveBeenCalledOnce();
+    });
+
     it('cleans up once during a regular quit', async () => {
         const service = createService();
         const { appBeforeQuit, updaterBeforeQuit, windowClosed } =
             await initializeLifecycle(service);
 
-        appBeforeQuit();
+        appBeforeQuit({ defaultPrevented: false });
         await service.onMainWindowClose();
         service.onAppQuit();
         windowClosed();

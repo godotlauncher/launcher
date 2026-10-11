@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { EditableTextField } from '../../../components/ui/editable-text-field.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { exportTemplatesBridge } from '../../../renderer.bridge';
+import { formatTemplateBytes } from '../template-format.util';
 import { TemplateFileList } from './template-file-list.component';
 import { TemplateImportModal } from './template-import.modal';
 import {
@@ -43,7 +44,7 @@ export function ImportedTemplateLibrary({
     revision,
     onChanged,
 }: Props) {
-    const { t } = useTranslation('exportTemplates');
+    const { t, i18n } = useTranslation('exportTemplates');
     const [library, setLibrary] = useState<ImportedTemplateInventory | null>(
         null,
     );
@@ -284,7 +285,14 @@ export function ImportedTemplateLibrary({
                             </div>
                             <p>
                                 {build.setId} ·{' '}
-                                {t('fileCount', { number: build.files.length })}
+                                {t('fileCount', { number: build.files.length })}{' '}
+                                ·{' '}
+                                {build.available === false
+                                    ? t('sizeUnavailable')
+                                    : formatTemplateBytes(
+                                          build.sizeBytes,
+                                          i18n.language,
+                                      )}
                             </p>
                             <TemplatePlatformBadges
                                 platforms={importedTemplatePlatforms(

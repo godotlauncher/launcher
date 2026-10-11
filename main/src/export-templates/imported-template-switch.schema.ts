@@ -31,7 +31,7 @@ const switchJournalBase = z.object({
 /** Rename recovery checks folder locations; replacement also verifies contents.
  * Older rename records may contain fingerprints, which are no longer needed.
  */
-export const switchJournalSchema = z.discriminatedUnion('kind', [
+const legacySwitchJournalSchema = z.discriminatedUnion('kind', [
     switchJournalBase.extend({ kind: z.literal('rename') }),
     switchJournalBase.extend({
         kind: z.literal('replace'),
@@ -40,4 +40,44 @@ export const switchJournalSchema = z.discriminatedUnion('kind', [
     }),
 ]);
 
+const metadataFileSchema = cleanupFileSchema.omit({ hash: true }).extend({
+    metadata: z.object({
+        mtimeMs: z.number().finite(),
+        ctimeMs: z.number().finite(),
+        ino: z.number().finite().nonnegative(),
+        dev: z.number().finite().nonnegative(),
+    }),
+});
+const packageSnapshotSchema = z.object({
+    directory: z.object({
+        ino: z.number().finite().nonnegative(),
+        dev: z.number().finite().nonnegative(),
+    }),
+    files: z
+        .array(metadataFileSchema)
+        .refine(
+            (files) =>
+                new Set(files.map((file) => file.relative)).size ===
+                files.length,
+        ),
+});
+
+/** Reads legacy content-checked switches and new folder moves with metadata checks. */
+export const switchJournalSchema = z.union([
+    legacySwitchJournalSchema,
+    switchJournalBase
+        .omit({
+            version: true,
+            beforeCleanupFiles: true,
+            rollbackCleanupFiles: true,
+        })
+        .extend({
+            version: z.literal(2),
+            kind: z.literal('replace'),
+            beforeSnapshot: packageSnapshotSchema,
+            afterSnapshot: packageSnapshotSchema,
+        }),
+]);
+
+export type SwitchPackageSnapshot = z.infer<typeof packageSnapshotSchema>;
 export type SwitchJournal = z.infer<typeof switchJournalSchema>;

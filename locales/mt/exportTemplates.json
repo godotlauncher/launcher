@@ -72,7 +72,15 @@
         "decision": "Agħżel liema kopja żżomm għal kull fajl f'kunflitt.",
         "recovery": "Operazzjoni interrotta teħtieġ irkupru. Agħlaq Godot u rkupra l-fajls. Jekk inbidlu, iċċekkja l-folders qabel terġa' tipprova.",
         "failed": "L-operazzjoni ma setgħetx titlesta. Iċċekkja l-permessi, l-ispazju u l-konnessjoni, imbagħad erġa' pprova.",
-        "range": "Dan is-server ma jappoġġjax downloads parzjali, jew il-pakkett inbidel. Erġa’ iftaħ l-għażla jew importa fajl TPZ."
+        "range": "Dan is-server ma jappoġġjax downloads parzjali, jew il-pakkett inbidel. Erġa’ iftaħ l-għażla jew importa fajl TPZ.",
+        "downloadNetwork": "Il-konnessjoni tat-tniżżil falliet.",
+        "downloadServer": "Is-server tat-tniżżil irritorna żball.",
+        "downloadPartial": "Ma setgħetx titgħabba l-lista tal-fajls tal-mudelli.",
+        "downloadChanged": "Il-pakkett tal-mudelli nbidel.",
+        "downloadUnavailable": "Il-pakkett tal-mudelli mhux disponibbli.",
+        "downloadInvalid": "Pakkett tal-mudelli mhux validu jew li ma jistax jinqara.",
+        "fullChanged": "Il-pakkett tal-mudelli nbidel.",
+        "downloadFailed": "Ma setgħux jitgħabbew il-fajls tal-mudelli."
     },
     "picker": {
         "title": "Żid mudell ta’ esportazzjoni",
@@ -98,7 +106,24 @@
         "save": "Issejvja l-bidliet",
         "removalNotice": "Il-fajls imneħħija ma jibqgħux disponibbli għall-proġetti li jużaw dawn il-mudelli kondiviżi.",
         "loading": "Qed jitgħabbew il-fajls disponibbli...",
-        "localOnly": "Il-fajls installati biss huma disponibbli. Erġa’ iftaħ dan il-panel b’konnessjoni biex iżżid fajls uffiċjali."
+        "localOnly": "Il-fajls installati biss huma disponibbli. Erġa’ iftaħ dan il-panel b’konnessjoni biex iżżid fajls uffiċjali.",
+        "tryAgain": "Erġa' pprova",
+        "refreshFiles": "Aġġorna l-lista tal-fajls",
+        "chooseAnotherVersion": "Agħżel verżjoni oħra",
+        "refreshAfterChanges": "Issejvja jew reġġa' lura l-bidliet qabel terġa' tipprova.",
+        "done": "Lest",
+        "fullCancelFailed": "Il-kanċellazzjoni ma ġietx ikkonfermata.",
+        "downloadFull": "Niżżel il-pakkett sħiħ",
+        "fullOffer": "Pakkett sħiħ: {{size}}",
+        "fullKeepFiles": "Iżid il-mudelli neqsin għall-pjattaformi kollha. Il-fajls eżistenti jinżammu.",
+        "fullDownloading": "Qed jitniżżel il-pakkett sħiħ",
+        "fullExtracting": "Qed jiġu estratti l-mudelli",
+        "fullInstalling": "Qed jiġu installati l-mudelli",
+        "fullComplete": "Il-mudelli ġew installati.",
+        "fullCancelled": "It-tniżżil ġie kkanċellat.",
+        "saveFailed": "Ma setgħux jiġu ssejvjati l-bidliet fil-mudelli.",
+        "installFailed": "Ma setgħux jiġu installati l-mudelli.",
+        "onlineFilesUnavailable": "Ma setgħetx titgħabba l-lista tal-fajls online. Qed jintwerew il-fajls installati."
     },
     "manage": "Immaniġġja l-mudelli",
     "removeTemplates": "Neħħi l-mudelli",
@@ -269,7 +294,16 @@
         "save": "Issejvja",
         "checking": "Qed jiġu ċċekkjati l-mudelli tal-esportazzjoni...",
         "removeFile": "Neħħi l-fajl magħżul",
-        "affectedProjects": "Proġetti affettwati"
+        "affectedProjects": "Proġetti affettwati",
+        "chooseAnotherFile": "Agħżel fajl ieħor",
+        "cannotReplace": "Dan il-fajl ma jistax jissostitwixxi dawn il-mudelli",
+        "cannotImport": "Dan il-fajl ma jistax jiġi importat",
+        "existingBuild": "Build eżistenti",
+        "selectedFile": "Fajl magħżul",
+        "replacementMismatch": "Din il-build teħtieġ mudelli għal {{expected}}. Il-fajl magħżul fih mudelli għal {{actual}}.",
+        "replacingBuild": "Qed tiġi ssostitwita \"{{label}}\"",
+        "replaceSummary": "Dan jissostitwixxi l-fajls kollha ta' din il-build. Il-proġetti li jużawha se jużaw is-sostituzzjoni.",
+        "packageDetails": "Dettalji tal-pakkett"
     },
     "storage": {
         "title": "Ħażna tal-mudelli tal-esportazzjoni",
@@ -345,5 +379,159 @@
         "finishedNote": "Il-mudelli tiegħek jinsabu fil-post il-ġdid u l-proġetti tiegħek lesti biex jużawhom.",
         "cancelledNote": "Iċ-ċaqliq ġie kkanċellat. Il-mudelli tiegħek għadhom fil-post oriġinali tagħhom.",
         "done": "Lest"
+    },
+    "wizardMigration": {
+        "title": "Mexxi mudelli ta' esportazzjoni",
+        "stepsLabel": "Passi tal-migrazzjoni tal-mudelli",
+        "steps": {
+            "about": "Dwar",
+            "options": "Għażliet",
+            "choose": "Agħżel",
+            "review": "Irrevedi",
+            "move": "Mexxi",
+            "done": "Lest"
+        },
+        "titles": {
+            "about": "Iġbor il-mudelli tal-esportazzjoni tiegħek f'post wieħed",
+            "options": "Xi tfisser kull għażla",
+            "choose": "Agħżel għall-proġetti kollha",
+            "review": "Iċċekkja l-għażliet tiegħek",
+            "move": "Qed jitmexxew il-mudelli ta' esportazzjoni",
+            "done": "Ir-riżultati tal-migrazzjoni tiegħek"
+        },
+        "about": {
+            "intro": "Proġetti eqdem iżommu l-mudelli tal-esportazzjoni fil-folders tal-editur tagħhom stess. Godot Launcher issa jista' jimmaniġġja dawn il-fajls minn Mudelli għall-esportazzjoni.",
+            "today": "Illum",
+            "before": "Mudelli fil-folder tal-editur ta' kull proġett",
+            "after": "Wara ċ-ċaqliq",
+            "destination": "Mudelli mmaniġġjati minn Mudelli għall-esportazzjoni",
+            "why": "Għaliex iċċaqlaqhom?",
+            "benefit1": "Ara u mmaniġġja l-mudelli tiegħek f'post wieħed.",
+            "benefit2": "Żomm il-mudelli ta' kull proġett jew ħalli l-proġetti jużaw fajls kondiviżi.",
+            "benefit3": "Erġa' uża mudelli kondiviżi minflok iżżomm kopji lokali żejda.",
+            "found": "Sibna mudelli fi {{number}} proġetti.",
+            "next": "Issa tgħallem dwar l-għażliet. Se tirrevedi l-għażliet tiegħek qabel ma jitmexxew il-fajls."
+        },
+        "optionsIntro": "Fl-iskrin li jmiss, uża għażla waħda għall-verżjonijiet kollha ta' proġett jew agħżel għal kull verżjoni.",
+        "optionTitle": "Għażla {{number}}: {{label}}",
+        "recommended": "Rakkomandat",
+        "choices": {
+            "save-imported": "Żomm il-mudelli attwali",
+            "share-project": "Aqsam il-mudelli",
+            "use-shared": "Uża mudelli kondiviżi",
+            "later": "Iddeċiedi aktar tard"
+        },
+        "explanations": {
+            "save-imported": "Iċaqlaq il-folder tal-mudelli għal Mudelli importati. Il-proġett ikompli juża l-fajls tiegħu.",
+            "share-project": "Iżid il-fajls neqsin mal-mudelli kondiviżi u jużahom għal dan il-proġett. Il-fajls kondiviżi eżistenti jibqgħu kif inhuma. Jekk ikunu differenti mill-fajls lokali tiegħek, il-proġett se juża l-fajls kondiviżi.",
+            "use-shared": "Juża l-mudelli kondiviżi. Jista' jkollok bżonn tniżżel il-mudelli neqsin qabel tesporta.",
+            "later": "Iħalli dawn il-mudelli kif inhuma. Tista' tiddeċiedi aktar tard minn Mudelli għall-esportazzjoni."
+        },
+        "warnings": {
+            "share-project": "Il-kopji lokali jitneħħew mingħajr ma tiġi ssejvjata kopja separata.",
+            "use-shared": "Il-fajls tal-mudelli lokali jitħassru mingħajr ma tiġi ssejvjata kopja separata."
+        },
+        "infoReminder": "Uża l-buttuna tal-informazzjoni ħdejn għażla biex terġa' tara l-ispjegazzjoni tagħha.",
+        "explain": "Spjega {{choice}} għal {{project}}",
+        "scope": "Japplika għal dawn il-verżjonijiet: {{versions}}.",
+        "chooseIntro": "Uża għażla waħda għal kull proġett jew agħżel għal kull verżjoni.",
+        "projectSummary": "Proġetti: {{projects}}, verżjonijiet tal-mudelli: {{versions}}",
+        "choiceSummary": "Għażliet skont il-verżjoni tal-mudelli",
+        "moreProjects": "Hemm aktar proġetti taħt. Skrollja biex tarahom.",
+        "moreVersions": "Hemm aktar verżjonijiet taħt. Skrollja biex tarahom.",
+        "choiceNotice": {
+            "save-imported": "Il-mudelli tiegħek jinżammu",
+            "share-project": "Kopji lokali mneħħija wara l-kondiviżjoni",
+            "use-shared": "Fajls lokali mħassra",
+            "later": "Fajls miżmuma kif inhuma"
+        },
+        "keepAll": "Żomm l-attwali għal kulħadd",
+        "keepNotice": "Żomm il-mudelli attwali jżomm l-istess fajls fl-użu. Tista' tbiddel kull għażla hawn taħt.",
+        "projectColumn": "Proġett",
+        "versionsColumn": "Verżjonijiet tal-mudelli",
+        "choiceColumn": "L-għażla tiegħek",
+        "individual": "Agħżel għal kull verżjoni",
+        "individualLabel": "Agħżel għal kull verżjoni f'{{project}}",
+        "allVersions": "Japplika għall-{{number}} verżjonijiet kollha",
+        "choiceLabel": "Għażla għal {{project}}",
+        "versionChoiceLabel": "Għażla għal {{project}}, {{version}}",
+        "unavailable": "Ħalli dan il-proġett għal aktar tard sakemm ikun lest.",
+        "reviewIntro": "Għadu ma nbidel xejn. Iċċekkja l-lista hawn taħt. Agħlaq l-edituri ta' Godot u waqqaf l-esportazzjonijiet qabel tibda.",
+        "reviewing": "Qed jiġu ċċekkjati l-fajls tal-mudelli...",
+        "effectsColumn": "X'se jiġri",
+        "reviewVersions": "Verżjonijiet riveduti għal {{project}}",
+        "reviewScope": {
+            "individual": "Għażliet separati għal kull verżjoni",
+            "differentEffects": "Effetti differenti għal kull verżjoni"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "Uża l-mudelli tiegħek minn Mudelli importati.",
+                "shared": "Uża mudelli kondiviżi. Dawk neqsin jista' jkollhom bżonn jitniżżlu qabel tesporta.",
+                "local": "Kompli uża l-mudelli lokali."
+            },
+            "addMissing": "Żid il-fajls kondiviżi neqsin. Żomm il-fajls kondiviżi eżistenti.",
+            "localFiles": {
+                "remove-after-verification": "Żomm il-fajls f'Mudelli importati u qabbad dan il-proġett magħhom.",
+                "remove-after-connection": "Neħħi l-fajls lokali wara li tqabbad il-proġett. Ma tiġix issejvjata kopja separata.",
+                "keep": "Żomm il-fajls lokali u ddeċiedi aktar tard."
+            }
+        },
+        "files": "{{number}} fajls",
+        "effects": {
+            "save-imported": "Mexxi l-folder għal Mudelli importati u kompli uża l-fajls tiegħu.",
+            "share-project": "Żid il-fajls kondiviżi neqsin, żomm dawk eżistenti, imbagħad uża l-mudelli kondiviżi u neħħi l-kopji lokali.",
+            "use-shared": "Uża mudelli kondiviżi u neħħi l-fajls lokali. Il-mudelli neqsin jista' jkollhom bżonn jitniżżlu qabel tesporta.",
+            "later": "Żomm il-fajls lokali u ħalli din il-verżjoni għal aktar tard."
+        },
+        "nothingChanged": "Għadu ma nbidel xejn. Agħżel Lura biex tbiddel għażla.",
+        "confirmRemoval": "Nifhem li Aqsam il-mudelli u Uża mudelli kondiviżi jneħħu l-fajls lokali elenkati mingħajr ma tiġi ssejvjata kopja separata.",
+        "leftLater": "Tħalla għal aktar tard",
+        "laterProjects": "Proġetti li tħallew għal aktar tard",
+        "next": "Li jmiss",
+        "seeOptions": "Ara l-għażliet",
+        "chooseProjects": "Agħżel għall-proġetti",
+        "reviewChoices": "Irrevedi l-għażliet",
+        "moveTemplates": "Mexxi l-mudelli",
+        "moving": "Qed jitmexxew il-mudelli...",
+        "back": "Lura",
+        "finishLater": "Kompli aktar tard",
+        "done": "Lest",
+        "openTemplates": "Iftaħ il-Mudelli ta’ Esportazzjoni",
+        "keepOpen": "Ċaqliq kbir jista' jieħu ftit ħin. Godot Launcher jibqa' miftuħ sakemm jintemm iċ-ċaqliq.",
+        "progress": "{{completed}} minn {{total}} verżjonijiet tal-mudelli lesti",
+        "progressLabel": "Verżjonijiet tal-mudelli lesti",
+        "status": {
+            "waiting": "Qed jistenna",
+            "checking": "Qed jiġu ċċekkjati l-fajls tal-mudelli",
+            "copying": "Qed jiġu kkupjati l-mudelli",
+            "verifying": "Qed jiġu ċċekkjati l-fajls ikkupjati",
+            "connecting": "Qed tiġi aġġornata l-konnessjoni tal-proġett",
+            "cleaning": "Qed jintemm iċ-ċaqliq",
+            "complete": "Lest",
+            "error": "Ma setax jitmexxa",
+            "later": "Tħalla għal aktar tard"
+        },
+        "results": "Riżultati skont il-verżjoni tal-mudelli",
+        "success": "Il-mudelli tiegħek lesti",
+        "partial": "Xi mudelli jeħtieġu ħarsa oħra",
+        "resultSummary": "Lesti: {{completed}}. Ma tmexxewx: {{failed}}. Għal aktar tard: {{later}}.",
+        "resultNote": "Tista' timmaniġġja l-fajls li tmexxew minn Mudelli għall-esportazzjoni. Il-verżjonijiet li tħallew għal aktar tard għad għandhom bżonn deċiżjoni.",
+        "retryFailed": "Erġa' pprova l-verżjonijiet li fallew",
+        "retryFailedCount": "Erġa' pprova l-verżjonijiet li fallew ({{number}})",
+        "recover": "Irkupra ċaqliq interrott",
+        "recovering": "Qed jiġu rkuprati l-mudelli...",
+        "viewResults": "Ara l-migrazzjoni",
+        "destination": {
+            "imported": "Uża l-mudelli tiegħek minn Mudelli importati.",
+            "shared": "Uża mudelli kondiviżi. Il-mudelli neqsin jista' jkollhom bżonn jitniżżlu qabel tesporta.",
+            "local": "Kompli uża l-mudelli lokali."
+        },
+        "addMissing": "Żid il-fajls kondiviżi neqsin. Il-fajls kondiviżi eżistenti jibqgħu kif inhuma.",
+        "localFiles": {
+            "remove-after-verification": "Żomm il-fajls f'Mudelli importati u qabbad dan il-proġett magħhom.",
+            "remove-after-connection": "Neħħi l-kopji lokali wara li tqabbad il-proġett, mingħajr ma tiġi ssejvjata kopja separata.",
+            "keep": "Żomm il-fajls lokali u ħalli din il-verżjoni għal aktar tard."
+        }
     }
 }

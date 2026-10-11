@@ -72,7 +72,15 @@
         "decision": "请为每个冲突文件选择要保留的副本。",
         "recovery": "中断的操作需要恢复。请关闭 Godot 并恢复文件。如果文件已更改，请先检查文件夹再重试。",
         "failed": "无法完成操作。请检查权限、可用空间和网络连接，然后重试。",
-        "range": "此服务器不支持部分下载，或软件包已更改。请重新打开选择器或导入 TPZ 文件。"
+        "range": "此服务器不支持部分下载，或软件包已更改。请重新打开选择器或导入 TPZ 文件。",
+        "downloadNetwork": "下载连接失败。",
+        "downloadServer": "下载服务器返回了错误。",
+        "downloadPartial": "无法加载模板文件列表。",
+        "downloadChanged": "模板包已更改。",
+        "downloadUnavailable": "模板包不可用。",
+        "downloadInvalid": "模板包无效或无法读取。",
+        "fullChanged": "模板包已更改。",
+        "downloadFailed": "无法加载模板文件。"
     },
     "picker": {
         "title": "添加导出模板",
@@ -98,7 +106,24 @@
         "save": "保存更改",
         "removalNotice": "移除的文件将不再可供使用这些共享模板的项目使用。",
         "loading": "正在加载可用文件...",
-        "localOnly": "仅可使用已安装的文件。请连接网络后重新打开此面板以添加官方文件。"
+        "localOnly": "仅可使用已安装的文件。请连接网络后重新打开此面板以添加官方文件。",
+        "tryAgain": "重试",
+        "refreshFiles": "刷新文件列表",
+        "chooseAnotherVersion": "选择其他版本",
+        "refreshAfterChanges": "重试前请保存或撤销更改。",
+        "done": "完成",
+        "fullCancelFailed": "未确认取消操作。",
+        "downloadFull": "下载完整包",
+        "fullOffer": "完整包：{{size}}",
+        "fullKeepFiles": "添加所有平台缺少的模板。保留现有文件。",
+        "fullDownloading": "正在下载完整包",
+        "fullExtracting": "正在解压模板",
+        "fullInstalling": "正在安装模板",
+        "fullComplete": "模板已安装。",
+        "fullCancelled": "下载已取消。",
+        "saveFailed": "无法保存模板更改。",
+        "installFailed": "无法安装模板。",
+        "onlineFilesUnavailable": "无法加载在线文件列表。正在显示已安装的文件。"
     },
     "manage": "管理模板",
     "removeTemplates": "移除模板",
@@ -269,7 +294,16 @@
         "save": "保存",
         "checking": "正在检查导出模板...",
         "removeFile": "移除所选文件",
-        "affectedProjects": "受影响的项目"
+        "affectedProjects": "受影响的项目",
+        "chooseAnotherFile": "选择其他文件",
+        "cannotReplace": "此文件无法替换这些模板",
+        "cannotImport": "无法导入此文件",
+        "existingBuild": "现有构建",
+        "selectedFile": "所选文件",
+        "replacementMismatch": "此构建需要 {{expected}} 的模板。所选文件包含 {{actual}} 的模板。",
+        "replacingBuild": "正在替换“{{label}}”",
+        "replaceSummary": "这会替换此构建中的所有文件。使用此构建的项目将使用替换后的文件。",
+        "packageDetails": "包详情"
     },
     "storage": {
         "title": "导出模板存储",
@@ -345,5 +379,159 @@
         "moveSummary_two": "即将把 {{count}} 个模板 ({{size}}) 移动到:",
         "moveSummary_few": "即将把 {{count}} 个模板 ({{size}}) 移动到:",
         "moveSummary_many": "即将把 {{count}} 个模板 ({{size}}) 移动到:"
+    },
+    "wizardMigration": {
+        "title": "移动导出模板",
+        "stepsLabel": "模板迁移步骤",
+        "steps": {
+            "about": "介绍",
+            "options": "选项",
+            "choose": "选择",
+            "review": "检查",
+            "move": "移动",
+            "done": "完成"
+        },
+        "titles": {
+            "about": "将导出模板集中到一个位置",
+            "options": "各个选项的含义",
+            "choose": "为所有项目选择",
+            "review": "检查您的选择",
+            "move": "正在移动导出模板",
+            "done": "迁移结果"
+        },
+        "about": {
+            "intro": "旧项目将导出模板保存在各自的编辑器文件夹中。Godot Launcher 现在可以通过导出模板页面管理这些文件。",
+            "today": "现在",
+            "before": "各项目编辑器文件夹中的模板",
+            "after": "移动后",
+            "destination": "通过导出模板页面管理的模板",
+            "why": "为什么移动？",
+            "benefit1": "在一个位置查看和管理您的模板。",
+            "benefit2": "保留各项目的模板，或让项目使用共享文件。",
+            "benefit3": "重复使用共享模板，无需保留额外的本地副本。",
+            "found": "在 {{number}} 个项目中找到了模板。",
+            "next": "接下来了解各个选项。在移动任何文件之前，您可以检查自己的选择。"
+        },
+        "optionsIntro": "在下一页中，为一个项目的所有版本使用同一选项，或为每个版本单独选择。",
+        "optionTitle": "选项 {{number}}：{{label}}",
+        "recommended": "推荐",
+        "choices": {
+            "save-imported": "保留当前模板",
+            "share-project": "共享模板",
+            "use-shared": "使用共享模板",
+            "later": "稍后决定"
+        },
+        "explanations": {
+            "save-imported": "将模板文件夹移动到导入的模板中。项目继续使用自己的文件。",
+            "share-project": "将缺少的文件添加到共享模板中，然后让此项目使用共享模板。现有共享文件保持不变。如果它们与本地文件不同，项目将使用共享文件。",
+            "use-shared": "使用共享模板。导出前可能需要下载缺少的模板。",
+            "later": "保持这些模板不变。您可以稍后从导出模板页面决定。"
+        },
+        "warnings": {
+            "share-project": "删除本地副本，不另存副本。",
+            "use-shared": "删除本地模板文件，不另存副本。"
+        },
+        "infoReminder": "使用选项旁的信息按钮可再次查看其说明。",
+        "explain": "为 {{project}} 解释{{choice}}",
+        "scope": "适用于这些版本：{{versions}}。",
+        "chooseIntro": "为每个项目使用同一选项，或为每个版本单独选择。",
+        "projectSummary": "项目数：{{projects}}，模板版本数：{{versions}}",
+        "choiceSummary": "按模板版本选择",
+        "moreProjects": "下方还有更多项目。请滚动查看。",
+        "moreVersions": "下方还有更多版本。请滚动查看。",
+        "choiceNotice": {
+            "save-imported": "保留您的模板",
+            "share-project": "共享后删除本地副本",
+            "use-shared": "删除本地文件",
+            "later": "文件保持不变"
+        },
+        "keepAll": "全部保留当前模板",
+        "keepNotice": "保留当前模板会继续使用相同的文件。您可以更改下方的任何选择。",
+        "projectColumn": "项目",
+        "versionsColumn": "模板版本",
+        "choiceColumn": "您的选择",
+        "individual": "为每个版本选择",
+        "individualLabel": "为 {{project}} 中的每个版本选择",
+        "allVersions": "适用于全部 {{number}} 个版本",
+        "choiceLabel": "为 {{project}} 选择",
+        "versionChoiceLabel": "为 {{project}}、{{version}} 选择",
+        "unavailable": "将此项目留到稍后，等它准备好后再处理。",
+        "reviewIntro": "尚未进行任何更改。请检查下方列表。开始前请关闭 Godot 编辑器并停止导出。",
+        "reviewing": "正在检查模板文件...",
+        "effectsColumn": "将执行的操作",
+        "reviewVersions": "{{project}} 的已检查版本",
+        "reviewScope": {
+            "individual": "为每个版本单独选择",
+            "differentEffects": "每个版本有不同的处理结果"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "使用导入的模板中的自有模板。",
+                "shared": "使用共享模板。导出前可能需要下载缺少的模板。",
+                "local": "继续使用本地模板。"
+            },
+            "addMissing": "添加缺少的共享文件。保留现有共享文件。",
+            "localFiles": {
+                "remove-after-verification": "将文件保存在导入的模板中，并将此项目连接到这些文件。",
+                "remove-after-connection": "连接项目后删除本地文件。不另存副本。",
+                "keep": "保留本地文件，稍后决定。"
+            }
+        },
+        "files": "{{number}} 个文件",
+        "effects": {
+            "save-imported": "将文件夹移动到导入的模板中，并继续使用其中的文件。",
+            "share-project": "添加缺少的共享文件并保留现有文件，然后使用共享模板并删除本地副本。",
+            "use-shared": "使用共享模板并删除本地文件。导出前可能需要下载缺少的模板。",
+            "later": "保留本地文件，将此版本留到稍后处理。"
+        },
+        "nothingChanged": "尚未进行任何更改。选择返回可更改选项。",
+        "confirmRemoval": "我理解，共享模板和使用共享模板会删除列出的本地文件，不另存副本。",
+        "leftLater": "留待稍后处理",
+        "laterProjects": "留待稍后处理的项目",
+        "next": "下一步",
+        "seeOptions": "查看选项",
+        "chooseProjects": "为项目选择",
+        "reviewChoices": "检查选择",
+        "moveTemplates": "移动模板",
+        "moving": "正在移动模板...",
+        "back": "返回",
+        "finishLater": "稍后完成",
+        "done": "完成",
+        "openTemplates": "打开导出模板",
+        "keepOpen": "较大的移动操作可能需要一些时间。Godot Launcher 将保持打开，直到移动完成。",
+        "progress": "已完成 {{completed}} 个模板版本，共 {{total}} 个",
+        "progressLabel": "已完成的模板版本",
+        "status": {
+            "waiting": "等待中",
+            "checking": "正在检查模板文件",
+            "copying": "正在复制模板",
+            "verifying": "正在检查复制的文件",
+            "connecting": "正在更新项目连接",
+            "cleaning": "正在完成移动",
+            "complete": "完成",
+            "error": "无法移动",
+            "later": "留待稍后处理"
+        },
+        "results": "模板版本结果",
+        "success": "模板已准备好",
+        "partial": "部分模板需要再次检查",
+        "resultSummary": "已完成：{{completed}}。无法移动：{{failed}}。稍后处理：{{later}}。",
+        "resultNote": "您可以在导出模板页面管理已移动的文件。留待稍后处理的版本仍需要做出选择。",
+        "retryFailed": "重试失败的版本",
+        "retryFailedCount": "重试失败的版本（{{number}}）",
+        "recover": "恢复中断的移动",
+        "recovering": "正在恢复模板...",
+        "viewResults": "查看迁移",
+        "destination": {
+            "imported": "使用导入的模板中的自有模板。",
+            "shared": "使用共享模板。导出前可能需要下载缺少的模板。",
+            "local": "继续使用本地模板。"
+        },
+        "addMissing": "添加缺少的共享文件。现有共享文件保持不变。",
+        "localFiles": {
+            "remove-after-verification": "将文件保存在导入的模板中，并将此项目连接到这些文件。",
+            "remove-after-connection": "连接项目后删除本地副本，不另存副本。",
+            "keep": "保留本地文件，将此版本留到稍后处理。"
+        }
     }
 }

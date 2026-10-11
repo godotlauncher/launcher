@@ -33,16 +33,14 @@ import {
     type SettingsTab,
 } from './app.routes';
 import IconDiscord from './assets/icons/discord-symbol-blurple.svg';
-import rocketBlack from './assets/icons/godot-launcher-black.svg';
-import rocketWhite from './assets/icons/godot-launcher-white.svg';
 import { AppUpdateNotification } from './components/app-update-notification.component';
+import { LoadingRocket } from './components/loading-rocket.component';
 import { MenuDivider } from './components/ui/menu-divider.component';
 import { Tooltip } from './components/ui/tooltip.component';
 import { useApp } from './hooks/app.hook';
 import { useAppNavigation } from './hooks/app-navigation.hook';
 import { usePreferences } from './hooks/preferences.hook';
 import { useRelease } from './hooks/release.hook';
-import { useTheme } from './hooks/theme.hook';
 import { useSplashscreenHandoff } from './splashscreen/splashscreen-handoff.hook';
 import { useTemplateActivity } from './views/export-templates/hooks/template-jobs.hook';
 import { TemplateMigrationProvider } from './views/export-templates/hooks/template-migration.hook';
@@ -92,16 +90,10 @@ function App() {
 
 function LoadingView() {
     const { t } = useTranslation('common');
-    const { theme, systemTheme } = useTheme();
-    const themeToUse = (theme ?? 'auto') === 'auto' ? systemTheme : theme;
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-base-100">
-            <img
-                src={themeToUse === 'dark' ? rocketWhite : rocketBlack}
-                alt="Godot Launcher Logo"
-                className="w-10 h-10 animate-bounce"
-            />
+            <LoadingRocket />
             <span>{t('app.loadingMessage')}</span>
         </div>
     );
@@ -119,6 +111,7 @@ function WelcomeRoutes() {
     );
 }
 
+/** Renders the application routes. */
 function MainAppRoutes() {
     return (
         <Routes>

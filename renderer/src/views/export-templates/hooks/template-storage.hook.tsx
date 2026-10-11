@@ -4,6 +4,7 @@ import type {
     TemplateStorageMoveReview,
     TemplateStorageSettings,
 } from '@shared/contracts';
+import { TriangleAlert } from 'lucide-react';
 import {
     createContext,
     type PropsWithChildren,
@@ -225,8 +226,15 @@ export function TemplateStorageProvider({ children }: PropsWithChildren) {
                 return;
             await prepare(location, next, currentRequest);
         } catch (failure) {
-            if (alive.current && currentRequest === request.current)
+            if (alive.current && currentRequest === request.current) {
+                if (!visible) {
+                    setSelection(location);
+                    setDestination('');
+                    setReview(null);
+                    setShowJob(false);
+                }
                 setActionError(storageErrorKey(failure));
+            }
         } finally {
             if (alive.current && currentRequest === request.current)
                 setPickerOpen(false);
@@ -343,6 +351,27 @@ export function TemplateStorageProvider({ children }: PropsWithChildren) {
           })
         : '';
 
+    const reviewing = Boolean(review && !showJob && operation !== 'starting');
+    const failureKey =
+        actionError ||
+        (operation === 'recovering'
+            ? ''
+            : job?.error
+              ? storageErrorKey(job.error)
+              : job?.stage === 'error'
+                ? 'storage.errors.failed'
+                : '');
+    const notices = [
+        failureKey,
+        loadError ? 'storage.loadError' : '',
+        reviewing && review?.spaceSufficient === false
+            ? 'storage.spaceInsufficient'
+            : '',
+        reviewing && settings?.busy && !failureKey ? 'storage.errors.busy' : '',
+    ].filter(Boolean);
+    const locationKind = review?.kind ?? job?.kind ?? selection?.kind;
+    const target = review?.destination ?? job?.destination ?? destination;
+
     return (
         <context.Provider
             value={{
@@ -372,101 +401,139 @@ export function TemplateStorageProvider({ children }: PropsWithChildren) {
                 <Dialog
                     title={title}
                     testId="templateStorageMoveDialog"
-                    panelClassName="h-[min(26rem,85vh)] max-w-lg"
+                    panelClassName={`max-w-2xl ${reviewing ? 'h-[min(36rem,85vh)]' : ''}`}
+                    bodyClassName="flex min-h-0 flex-col gap-3 overflow-hidden"
                     returnFocusRef={returnFocus}
                     onRequestClose={close}
                     tone={
-                        actionError || job?.stage === 'error'
+                        failureKey || loadError
                             ? 'error'
-                            : job?.stage === 'complete'
-                              ? 'success'
-                              : 'neutral'
+                            : reviewing && review?.spaceSufficient === false
+                              ? 'warning'
+                              : job?.stage === 'complete'
+                                ? 'success'
+                                : 'neutral'
                     }
                     footer={
-                        locked ? (
-                            job?.cancellable &&
-                            operation !== 'recovering' && (
-                                <button
-                                    type="button"
-                                    className="btn btn-ghost text-base"
-                                    disabled={cancelRequested}
-                                    onClick={() => void cancel()}
+                        <div className="flex w-full min-w-0 flex-col gap-3">
+                            {!!notices.length && (
+                                <div
+                                    role="alert"
+                                    className="flex items-start gap-2 text-sm text-error-content dark:text-error"
                                 >
-                                    {t('common:buttons.cancel')}
-                                </button>
-                            )
-                        ) : job || (showJob && !selection) ? (
-                            <>
-                                {job?.recoveryRequired && (
+                                    <TriangleAlert
+                                        className="mt-0.5 size-4 shrink-0"
+                                        aria-hidden="true"
+                                    />
+                                    <div className="min-w-0 space-y-1 break-words">
+                                        {notices.map((key) => (
+                                            <p key={key}>{t(key)}</p>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            <div className="flex min-h-10 flex-wrap justify-end gap-2">
+                                {loadError && (
                                     <button
                                         type="button"
-                                        className="btn btn-warning text-base"
-                                        onClick={() => void recover()}
+                                        className="btn btn-ghost mr-auto"
+                                        onClick={() => void refresh()}
                                     >
-                                        {t('storage.recover')}
+                                        {t('storage.retry')}
                                     </button>
                                 )}
-                                <button
-                                    type="button"
-                                    className="btn btn-primary text-base"
-                                    onClick={close}
-                                >
-                                    {t('storage.done')}
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    type="button"
-                                    className="btn btn-ghost text-base"
-                                    onClick={close}
-                                >
-                                    {t('common:buttons.cancel')}
-                                </button>
-                                {selection && operation !== 'preparing' && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-ghost text-base"
-                                        disabled={pickerOpen}
-                                        onClick={() => void choose(selection)}
-                                    >
-                                        {t('storage.chooseAnother')}
-                                    </button>
+                                {locked ? (
+                                    job?.cancellable &&
+                                    operation !== 'recovering' && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost text-base"
+                                            disabled={cancelRequested}
+                                            onClick={() => void cancel()}
+                                        >
+                                            {t('common:buttons.cancel')}
+                                        </button>
+                                    )
+                                ) : job || (showJob && !selection) ? (
+                                    <>
+                                        {job?.recoveryRequired && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-warning text-base"
+                                                onClick={() => void recover()}
+                                            >
+                                                {t('storage.recover')}
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary text-base"
+                                            onClick={close}
+                                        >
+                                            {t('storage.done')}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            type="button"
+                                            className="btn btn-ghost text-base"
+                                            onClick={close}
+                                        >
+                                            {t('common:buttons.cancel')}
+                                        </button>
+                                        {selection &&
+                                            operation !== 'preparing' && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-ghost text-base"
+                                                    disabled={pickerOpen}
+                                                    onClick={() =>
+                                                        void choose(selection)
+                                                    }
+                                                >
+                                                    {t('storage.chooseAnother')}
+                                                </button>
+                                            )}
+                                        {review && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary text-base"
+                                                disabled={
+                                                    review.spaceSufficient ===
+                                                        false ||
+                                                    Boolean(operation) ||
+                                                    pickerOpen ||
+                                                    Boolean(settings?.busy)
+                                                }
+                                                onClick={() => void start()}
+                                            >
+                                                {t('storage.moveTemplates')}
+                                            </button>
+                                        )}
+                                    </>
                                 )}
-                                {review && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary text-base"
-                                        disabled={
-                                            review.spaceSufficient === false ||
-                                            Boolean(operation) ||
-                                            pickerOpen ||
-                                            Boolean(settings?.busy)
-                                        }
-                                        onClick={() => void start()}
-                                    >
-                                        {t('storage.moveTemplates')}
-                                    </button>
-                                )}
-                            </>
-                        )
+                            </div>
+                        </div>
                     }
                 >
-                    <div
-                        className="flex min-w-0 flex-col gap-4 text-base"
-                        aria-busy={locked || operation === 'preparing'}
-                    >
-                        {operation === 'preparing' ? (
-                            <p
-                                role="status"
-                                className="flex items-center gap-2"
-                            >
-                                <span className="loading loading-spinner loading-sm" />
-                                {t('storage.preparingReview')}
-                            </p>
-                        ) : review && !showJob && operation !== 'starting' ? (
-                            <>
-                                <p>
+                    {locationKind && (
+                        <p className="shrink-0 font-semibold">
+                            {t(`storage.${locationKind}`)}
+                        </p>
+                    )}
+                    {operation === 'preparing' ? (
+                        <p role="status" className="flex items-center gap-2">
+                            <span
+                                className="loading loading-spinner loading-sm"
+                                aria-hidden="true"
+                            />
+                            {t('storage.preparingReview')}
+                        </p>
+                    ) : (
+                        <>
+                            {reviewing && review && (
+                                <p className="shrink-0 text-sm">
                                     {t('storage.moveSummary', {
                                         count: review.templateCount,
                                         size: formatTemplateBytes(
@@ -475,111 +542,118 @@ export function TemplateStorageProvider({ children }: PropsWithChildren) {
                                         ),
                                     })}
                                 </p>
-                                <p className="break-all font-semibold">
-                                    {review.destination}
-                                </p>
-                                <div className="flex flex-col gap-1">
-                                    <p>
-                                        {review.availableBytes === null
-                                            ? t('storage.spaceUnknown')
-                                            : `${t('storage.availableSpace')}: ${formatTemplateBytes(
-                                                  review.availableBytes,
-                                                  i18n.language,
-                                              )}`}
-                                    </p>
-                                    {review.spaceSufficient !== null && (
-                                        <p
-                                            className={
-                                                review.spaceSufficient
-                                                    ? 'text-success-content dark:text-success'
-                                                    : 'text-error'
-                                            }
-                                            role={
-                                                review.spaceSufficient
-                                                    ? undefined
-                                                    : 'alert'
-                                            }
-                                        >
-                                            {t(
-                                                review.spaceSufficient
-                                                    ? 'storage.spaceEnough'
-                                                    : 'storage.spaceInsufficient',
-                                            )}
+                            )}
+                            {target && (
+                                <div className="shrink-0 min-w-0">
+                                    {!reviewing && (
+                                        <p className="text-sm text-base-content/70">
+                                            {t('storage.destinationSummary')}
                                         </p>
                                     )}
+                                    <p
+                                        className="truncate font-medium"
+                                        title={target}
+                                    >
+                                        {target}
+                                    </p>
                                 </div>
-                                <p className="text-base-content/75">
-                                    {t('storage.warning')}
-                                </p>
-                            </>
-                        ) : null}
-                        {(locked || job) && (
-                            <div
-                                data-testid="templateStorageProgress"
-                                className="flex flex-col gap-3"
-                                role="status"
-                                aria-live="polite"
-                            >
+                            )}
+                            {reviewing && review && (
+                                <>
+                                    <div className="shrink-0 space-y-1 text-sm">
+                                        <p>
+                                            {review.availableBytes === null
+                                                ? t('storage.spaceUnknown')
+                                                : `${t('storage.availableSpace')}: ${formatTemplateBytes(review.availableBytes, i18n.language)}`}
+                                        </p>
+                                        {review.spaceSufficient === true && (
+                                            <p className="text-success-content dark:text-success">
+                                                {t('storage.spaceEnough')}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <p className="shrink-0 text-sm text-[color:var(--color-warning-readable)]">
+                                        {t('storage.warning')}
+                                    </p>
+                                    {!!review.projects.length && (
+                                        <div
+                                            className="min-h-0 flex-1 overflow-y-auto"
+                                            data-testid="templateStorageProjects"
+                                        >
+                                            <details>
+                                                <summary className="cursor-pointer text-sm font-medium">
+                                                    {t(
+                                                        'storage.affectedProjects',
+                                                    )}{' '}
+                                                    ({review.projects.length})
+                                                </summary>
+                                                <p className="mt-2 whitespace-pre-line text-sm text-base-content/75">
+                                                    {review.projects.join('\n')}
+                                                </p>
+                                            </details>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
+                    {(locked || job) && (
+                        <div
+                            data-testid="templateStorageProgress"
+                            className="shrink-0 flex flex-col gap-3 text-sm"
+                            role="status"
+                            aria-live="polite"
+                            aria-busy={locked}
+                        >
+                            {(locked || job?.stage !== 'error') && (
                                 <p>
                                     {t(
                                         locked
                                             ? 'storage.movingNote'
                                             : job?.stage === 'complete'
                                               ? 'storage.finishedNote'
-                                              : job?.stage === 'cancelled'
-                                                ? 'storage.cancelledNote'
-                                                : 'storage.errors.failed',
+                                              : 'storage.cancelledNote',
                                     )}
                                 </p>
-                                {job && (
-                                    <p>
-                                        {t(`storage.stages.${job.stage}`)} -{' '}
-                                        {progress}
-                                    </p>
-                                )}
-                                {locked && (
-                                    <progress
-                                        className="progress progress-primary w-full"
-                                        aria-label={title}
-                                        max={100}
-                                        value={
-                                            job &&
-                                            ['moving', 'verifying'].includes(
-                                                job.stage,
-                                            ) &&
-                                            job.totalBytes
-                                                ? Math.min(
-                                                      100,
-                                                      (100 *
-                                                          job.completedBytes) /
-                                                          job.totalBytes,
-                                                  )
-                                                : undefined
-                                        }
-                                    />
-                                )}
-                            </div>
-                        )}
-                        {(actionError || job?.error) && (
-                            <p className="text-error" role="alert">
-                                {t(actionError || storageErrorKey(job?.error))}
-                            </p>
-                        )}
-                        {loadError && (
-                            <div role="alert">
-                                <p className="text-error">
-                                    {t('storage.loadError')}
+                            )}
+                            {job && (
+                                <p className="flex items-center gap-2">
+                                    {locked && (
+                                        <span
+                                            className="loading loading-spinner loading-sm"
+                                            aria-hidden="true"
+                                        />
+                                    )}
+                                    {t(
+                                        operation === 'recovering'
+                                            ? 'storage.recover'
+                                            : `storage.stages.${job.stage}`,
+                                    )}{' '}
+                                    - {progress}
                                 </p>
-                                <button
-                                    type="button"
-                                    className="btn btn-ghost text-base"
-                                    onClick={() => void refresh()}
-                                >
-                                    {t('storage.retry')}
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                            {locked && (
+                                <progress
+                                    className="progress progress-primary w-full"
+                                    aria-label={title}
+                                    max={100}
+                                    value={
+                                        job &&
+                                        ['moving', 'verifying'].includes(
+                                            job.stage,
+                                        ) &&
+                                        job.totalBytes
+                                            ? Math.min(
+                                                  100,
+                                                  (100 * job.completedBytes) /
+                                                      job.totalBytes,
+                                              )
+                                            : undefined
+                                    }
+                                />
+                            )}
+                        </div>
+                    )}
                 </Dialog>
             )}
         </context.Provider>
