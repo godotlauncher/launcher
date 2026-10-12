@@ -6,6 +6,7 @@ import type {
     ExportTemplatesBridge,
     RemoveImportedTemplateOptions,
     TemplateMigrationChoice,
+    TemplateMigrationProjectDecision,
     TemplateMigrationVersionChoices,
     TemplateStorageKind,
 } from '@shared/contracts';
@@ -137,6 +138,14 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
     savePackage(token: string, selected: string[]) {
         return this.service.savePackage(token, selected);
     }
+    /** Downloads a complete official package when file selection is unavailable.
+     * @param releaseId - Cached official release identity.
+     * @param assetId - Template package within that release.
+     */
+    @Handler('downloadFullPackage')
+    downloadFullPackage(releaseId: string, assetId: string) {
+        return this.service.downloadFullPackage(releaseId, assetId);
+    }
     /** Delegates imported library operations.
      */
     @Handler('getImportedTemplates')
@@ -215,6 +224,41 @@ export class ExportTemplatesController implements ExportTemplatesBridge {
         choices: Record<string, string>,
     ) {
         return this.service.setProjectTemplateBuilds(projectPath, choices);
+    }
+    /** Reviews the entire project list without changing files or preferences.
+     * @param decisions - Selected project and version policies.
+     * @param requestId - Identifier for progress polling.
+     */
+    @Handler('reviewMigration')
+    reviewMigration(
+        decisions: TemplateMigrationProjectDecision[],
+        requestId?: string,
+    ) {
+        return this.service.reviewMigration(decisions, requestId);
+    }
+    /** Reads the current request's file-checking progress.
+     * @param requestId - Identifier supplied by the requesting wizard.
+     */
+    @Handler('getMigrationReviewProgress')
+    async getMigrationReviewProgress(requestId: string) {
+        return this.service.getMigrationReviewProgress(requestId);
+    }
+
+    /** Releases a closed process-local review.
+     * @param token - Review being closed by the renderer.
+     */
+    @Handler('discardMigrationReview')
+    discardMigrationReview(token: string) {
+        return this.service.discardMigrationReview(token);
+    }
+
+    /** Starts the reviewed batch after its explicit removal acknowledgement.
+     * @param token - Latest main-owned batch review.
+     * @param removalConfirmed - Whether Share and Use shared removal was acknowledged.
+     */
+    @Handler('applyMigrationReview')
+    applyMigrationReview(token: string, removalConfirmed: boolean) {
+        return this.service.applyMigrationReview(token, removalConfirmed);
     }
     /** Delegates prepareMigration to the template service.
      * @param projectPath - Requested operation input.

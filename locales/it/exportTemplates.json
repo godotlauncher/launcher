@@ -72,7 +72,15 @@
         "decision": "Scegli quale copia mantenere per ogni file in conflitto.",
         "recovery": "È necessario un ripristino. Chiudi Godot e ripristina i file. Se sono cambiati, controlla le cartelle prima di riprovare.",
         "failed": "Operazione non riuscita. Controlla permessi, spazio e connessione, quindi riprova.",
-        "range": "Il server non supporta download parziali oppure il pacchetto è cambiato. Riapri il selettore o importa un file TPZ."
+        "range": "Il server non supporta download parziali oppure il pacchetto è cambiato. Riapri il selettore o importa un file TPZ.",
+        "downloadNetwork": "Connessione di download non riuscita.",
+        "downloadServer": "Il server di download ha restituito un errore.",
+        "downloadPartial": "Impossibile caricare l'elenco dei file dei modelli.",
+        "downloadChanged": "Il pacchetto dei modelli è cambiato.",
+        "downloadUnavailable": "Pacchetto dei modelli non disponibile.",
+        "downloadInvalid": "Pacchetto dei modelli non valido o illeggibile.",
+        "fullChanged": "Il pacchetto dei modelli è cambiato.",
+        "downloadFailed": "Impossibile caricare i file dei modelli."
     },
     "picker": {
         "title": "Aggiungi template di esportazione",
@@ -98,7 +106,24 @@
         "save": "Salva modifiche",
         "removalNotice": "I file rimossi non saranno più disponibili per i progetti che usano questi template condivisi.",
         "loading": "Caricamento dei file disponibili...",
-        "localOnly": "Sono disponibili solo i file installati. Riapri questo pannello con una connessione per aggiungere file ufficiali."
+        "localOnly": "Sono disponibili solo i file installati. Riapri questo pannello con una connessione per aggiungere file ufficiali.",
+        "tryAgain": "Riprova",
+        "refreshFiles": "Aggiorna elenco dei file",
+        "chooseAnotherVersion": "Scegli un'altra versione",
+        "refreshAfterChanges": "Salva o annulla le modifiche prima di riprovare.",
+        "done": "Fatto",
+        "fullCancelFailed": "Annullamento non confermato.",
+        "downloadFull": "Scarica pacchetto completo",
+        "fullOffer": "Pacchetto completo: {{size}}",
+        "fullKeepFiles": "Aggiunge i modelli mancanti per tutte le piattaforme. I file esistenti vengono conservati.",
+        "fullDownloading": "Download del pacchetto completo",
+        "fullExtracting": "Estrazione dei modelli",
+        "fullInstalling": "Installazione dei modelli",
+        "fullComplete": "Modelli installati.",
+        "fullCancelled": "Download annullato.",
+        "saveFailed": "Impossibile salvare le modifiche ai modelli.",
+        "installFailed": "Impossibile installare i modelli.",
+        "onlineFilesUnavailable": "Impossibile caricare l'elenco dei file online. Vengono mostrati i file installati."
     },
     "manage": "Gestisci modelli",
     "removeTemplates": "Rimuovi modelli",
@@ -269,7 +294,16 @@
         "save": "Salva",
         "checking": "Verifica dei modelli di esportazione...",
         "removeFile": "Rimuovi file selezionato",
-        "affectedProjects": "Progetti interessati"
+        "affectedProjects": "Progetti interessati",
+        "chooseAnotherFile": "Scegli un altro file",
+        "cannotReplace": "Questo file non può sostituire questi modelli",
+        "cannotImport": "Questo file non può essere importato",
+        "existingBuild": "Build esistente",
+        "selectedFile": "File selezionato",
+        "replacementMismatch": "Questa build richiede modelli per {{expected}}. Il file selezionato contiene modelli per {{actual}}.",
+        "replacingBuild": "Sostituzione di \"{{label}}\"",
+        "replaceSummary": "Verranno sostituiti tutti i file di questa build. I progetti che la usano utilizzeranno la sostituzione.",
+        "packageDetails": "Dettagli del pacchetto"
     },
     "storage": {
         "title": "Archiviazione dei modelli di esportazione",
@@ -345,5 +379,159 @@
         "moveSummary_two": "Stai per spostare {{count}} modelli ({{size}}) in:",
         "moveSummary_few": "Stai per spostare {{count}} modelli ({{size}}) in:",
         "moveSummary_many": "Stai per spostare {{count}} modelli ({{size}}) in:"
+    },
+    "wizardMigration": {
+        "title": "Sposta i modelli di esportazione",
+        "stepsLabel": "Passaggi della migrazione dei modelli",
+        "steps": {
+            "about": "Informazioni",
+            "options": "Opzioni",
+            "choose": "Scegli",
+            "review": "Verifica",
+            "move": "Sposta",
+            "done": "Fatto"
+        },
+        "titles": {
+            "about": "Riunisci i modelli di esportazione in un unico posto",
+            "options": "Il significato di ogni opzione",
+            "choose": "Scegli per tutti i progetti",
+            "review": "Verifica le tue scelte",
+            "move": "Spostamento dei modelli di esportazione",
+            "done": "Risultati della migrazione"
+        },
+        "about": {
+            "intro": "I progetti più vecchi conservano i modelli di esportazione nelle proprie cartelle dell'editor. Godot Launcher ora può gestire questi file da Modelli di esportazione.",
+            "today": "Oggi",
+            "before": "Modelli nella cartella dell'editor di ogni progetto",
+            "after": "Dopo lo spostamento",
+            "destination": "Modelli gestiti da Modelli di esportazione",
+            "why": "Perché spostarli?",
+            "benefit1": "Visualizza e gestisci i modelli in un unico posto.",
+            "benefit2": "Conserva i modelli di ogni progetto oppure consenti ai progetti di usare file condivisi.",
+            "benefit3": "Riutilizza i modelli condivisi anziché conservare ulteriori copie locali.",
+            "found": "Abbiamo trovato modelli in {{number}} progetti.",
+            "next": "Ora scopri le opzioni. Verificherai le tue scelte prima che vengano spostati i file."
+        },
+        "optionsIntro": "Nella schermata successiva, scegli un'opzione per tutte le versioni di un progetto oppure per ogni versione.",
+        "optionTitle": "Opzione {{number}}: {{label}}",
+        "recommended": "Consigliato",
+        "choices": {
+            "save-imported": "Mantieni i modelli attuali",
+            "share-project": "Condividi modelli",
+            "use-shared": "Usa modelli condivisi",
+            "later": "Decidi più tardi"
+        },
+        "explanations": {
+            "save-imported": "Sposta la cartella dei modelli in Modelli importati. Il progetto continua a usare i propri file.",
+            "share-project": "Aggiunge i file mancanti ai modelli condivisi e li usa per questo progetto. I file condivisi esistenti rimangono invariati. Se differiscono dai file locali, il progetto userà quelli condivisi.",
+            "use-shared": "Usa i modelli condivisi. Potrebbe essere necessario scaricare i modelli mancanti prima di esportare.",
+            "later": "Lascia questi modelli invariati. Puoi decidere più tardi da Modelli di esportazione."
+        },
+        "warnings": {
+            "share-project": "Le copie locali vengono rimosse senza salvare una copia separata.",
+            "use-shared": "I file dei modelli locali vengono eliminati senza salvare una copia separata."
+        },
+        "infoReminder": "Usa il pulsante delle informazioni accanto a una scelta per rivederne la spiegazione.",
+        "explain": "Spiega {{choice}} per {{project}}",
+        "scope": "Si applica a queste versioni: {{versions}}.",
+        "chooseIntro": "Scegli un'opzione per progetto oppure per ogni versione.",
+        "projectSummary": "Progetti: {{projects}}, versioni dei modelli: {{versions}}",
+        "choiceSummary": "Scelte per versione dei modelli",
+        "moreProjects": "Altri progetti più in basso. Scorri per vederli.",
+        "moreVersions": "Altre versioni più in basso. Scorri per vederle.",
+        "choiceNotice": {
+            "save-imported": "I tuoi modelli vengono conservati",
+            "share-project": "Copie locali rimosse dopo la condivisione",
+            "use-shared": "File locali eliminati",
+            "later": "File lasciati invariati"
+        },
+        "keepAll": "Mantieni gli attuali per tutti",
+        "keepNotice": "Mantieni i modelli attuali continua a usare gli stessi file. Puoi cambiare qualsiasi scelta qui sotto.",
+        "projectColumn": "Progetto",
+        "versionsColumn": "Versioni dei modelli",
+        "choiceColumn": "La tua scelta",
+        "individual": "Scegli per ogni versione",
+        "individualLabel": "Scegli per ogni versione in {{project}}",
+        "allVersions": "Si applica a tutte le {{number}} versioni",
+        "choiceLabel": "Scelta per {{project}}",
+        "versionChoiceLabel": "Scelta per {{project}}, {{version}}",
+        "unavailable": "Lascia questo progetto per più tardi finché non è pronto.",
+        "reviewIntro": "Non è ancora cambiato nulla. Verifica l'elenco qui sotto. Chiudi gli editor Godot e interrompi le esportazioni prima di iniziare.",
+        "reviewing": "Verifica dei file dei modelli...",
+        "effectsColumn": "Cosa accadrà",
+        "reviewVersions": "Versioni verificate per {{project}}",
+        "reviewScope": {
+            "individual": "Scelte separate per ogni versione",
+            "differentEffects": "Effetti diversi per ogni versione"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "Usa i tuoi modelli da Modelli importati.",
+                "shared": "Usa modelli condivisi. Potrebbe essere necessario scaricare quelli mancanti prima di esportare.",
+                "local": "Continua a usare i modelli locali."
+            },
+            "addMissing": "Aggiungi i file condivisi mancanti. Mantieni i file condivisi esistenti.",
+            "localFiles": {
+                "remove-after-verification": "Conserva i file in Modelli importati e collega questo progetto a essi.",
+                "remove-after-connection": "Rimuovi i file locali dopo aver collegato il progetto. Non viene salvata una copia separata.",
+                "keep": "Conserva i file locali e decidi più tardi."
+            }
+        },
+        "files": "{{number}} file",
+        "effects": {
+            "save-imported": "Sposta la cartella in Modelli importati e continua a usarne i file.",
+            "share-project": "Aggiungi i file condivisi mancanti, conserva quelli esistenti, poi usa i modelli condivisi e rimuovi le copie locali.",
+            "use-shared": "Usa modelli condivisi e rimuovi i file locali. Potrebbe essere necessario scaricare i modelli mancanti prima di esportare.",
+            "later": "Conserva i file locali e lascia questa versione per più tardi."
+        },
+        "nothingChanged": "Non è ancora cambiato nulla. Scegli Indietro per modificare una scelta.",
+        "confirmRemoval": "Comprendo che Condividi modelli e Usa modelli condivisi rimuovono i file locali elencati senza salvare una copia separata.",
+        "leftLater": "Lasciato per più tardi",
+        "laterProjects": "Progetti lasciati per più tardi",
+        "next": "Avanti",
+        "seeOptions": "Vedi opzioni",
+        "chooseProjects": "Scegli per i progetti",
+        "reviewChoices": "Verifica scelte",
+        "moveTemplates": "Sposta modelli",
+        "moving": "Spostamento dei modelli...",
+        "back": "Indietro",
+        "finishLater": "Completa più tardi",
+        "done": "Fatto",
+        "openTemplates": "Apri modelli di esportazione",
+        "keepOpen": "Gli spostamenti grandi possono richiedere tempo. Godot Launcher rimane aperto fino al termine dello spostamento.",
+        "progress": "{{completed}} versioni dei modelli completate su {{total}}",
+        "progressLabel": "Versioni dei modelli completate",
+        "status": {
+            "waiting": "In attesa",
+            "checking": "Verifica dei file dei modelli",
+            "copying": "Copia dei modelli",
+            "verifying": "Verifica dei file copiati",
+            "connecting": "Aggiornamento del collegamento del progetto",
+            "cleaning": "Completamento dello spostamento",
+            "complete": "Fatto",
+            "error": "Spostamento non riuscito",
+            "later": "Lasciato per più tardi"
+        },
+        "results": "Risultati per versione dei modelli",
+        "success": "I tuoi modelli sono pronti",
+        "partial": "Alcuni modelli richiedono un'altra verifica",
+        "resultSummary": "Completate: {{completed}}. Non spostate: {{failed}}. Per più tardi: {{later}}.",
+        "resultNote": "Puoi gestire i file spostati in Modelli di esportazione. Le versioni lasciate per più tardi richiedono ancora una decisione.",
+        "retryFailed": "Riprova le versioni non riuscite",
+        "retryFailedCount": "Riprova le versioni non riuscite ({{number}})",
+        "recover": "Recupera spostamento interrotto",
+        "recovering": "Recupero dei modelli...",
+        "viewResults": "Visualizza migrazione",
+        "destination": {
+            "imported": "Usa i tuoi modelli da Modelli importati.",
+            "shared": "Usa modelli condivisi. Potrebbe essere necessario scaricare i modelli mancanti prima di esportare.",
+            "local": "Continua a usare i modelli locali."
+        },
+        "addMissing": "Aggiungi i file condivisi mancanti. I file condivisi esistenti rimangono invariati.",
+        "localFiles": {
+            "remove-after-verification": "Conserva i file in Modelli importati e collega questo progetto a essi.",
+            "remove-after-connection": "Rimuovi le copie locali dopo aver collegato il progetto, senza salvare una copia separata.",
+            "keep": "Conserva i file locali e lascia questa versione per più tardi."
+        }
     }
 }

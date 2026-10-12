@@ -43,9 +43,13 @@ export type DialogProps = {
     title: string;
     children: ReactNode;
     footer?: ReactNode;
+    /** Covers the entire panel and makes its underlying contents inert. */
+    overlay?: ReactNode;
     testId?: string;
     panelClassName?: string;
     bodyClassName?: string;
+    /** Fills the available window with a 10px inset for larger workflows. */
+    fillWindow?: boolean;
     initialFocusRef?: RefObject<HTMLElement | null>;
     returnFocusRef?: RefObject<HTMLElement | null>;
     /** Used when the original trigger disappears before focus is restored. */
@@ -56,7 +60,7 @@ export type DialogProps = {
 /**
  * Renders application content in the browser's modal top layer.
  *
- * @param props - Dialog tone, optional icon override, content, focus target and close callback.
+ * @param props - Dialog tone, content, optional window layout, focus target and close callback.
  * @returns The native modal dialog.
  */
 export const Dialog: React.FC<DialogProps> = ({
@@ -65,9 +69,11 @@ export const Dialog: React.FC<DialogProps> = ({
     title,
     children,
     footer,
+    overlay,
     testId,
     panelClassName = '',
     bodyClassName = 'overflow-auto',
+    fillWindow = false,
     initialFocusRef,
     returnFocusRef,
     fallbackReturnFocusRef,
@@ -77,8 +83,23 @@ export const Dialog: React.FC<DialogProps> = ({
     const titleRef = useRef<HTMLHeadingElement>(null);
     const onRequestCloseRef = useRef(onRequestClose);
     onRequestCloseRef.current = onRequestClose;
+    const overlayRef = useRef<HTMLDivElement>(null);
+    const previousFocus = useRef<HTMLElement | null>(null);
+    const covered = !!overlay;
+    useLayoutEffect(() => {
+        if (covered) overlayRef.current?.focus({ preventScroll: true });
+        else if (
+            document.activeElement === document.body &&
+            previousFocus.current?.isConnected &&
+            !previousFocus.current.matches(':disabled')
+        )
+            previousFocus.current.focus({ preventScroll: true });
+    }, [covered]);
     const titleId = useId();
     const widthClassName = panelClassName ? '' : 'max-w-lg';
+    const panelSizeClassName = fillWindow
+        ? 'h-full max-h-full max-w-none'
+        : `max-h-[85vh] ${widthClassName}`;
     const { Icon, iconClassName, headerClassName } = dialogTones[tone];
     const resolvedIcon =
         icon === undefined ? (
@@ -142,37 +163,54 @@ export const Dialog: React.FC<DialogProps> = ({
             ref={dialogRef}
             data-testid={testId}
             aria-labelledby={titleId}
-            className="modal z-60 select-none p-4 open:bg-black/65"
+            className={`modal z-60 select-none open:bg-black/65 ${fillWindow ? 'p-[10px]' : 'p-4'}`}
         >
             <section
-                className={`modal-box w-full max-h-[85vh] flex flex-col overflow-hidden p-0 ${widthClassName} ${panelClassName}`}
+                className={`modal-box relative w-full flex flex-col overflow-hidden p-0 ${panelSizeClassName} ${panelClassName}`}
             >
-                <header
-                    className={`flex shrink-0 items-center gap-3 px-5 py-4 ${headerClassName}`}
-                >
-                    {resolvedIcon && (
-                        <div className="w-6 h-6 shrink-0 flex items-center justify-center">
-                            {resolvedIcon}
-                        </div>
-                    )}
-                    <OverlayTitle
-                        as="h1"
-                        ref={titleRef}
-                        id={titleId}
-                        className="text-lg font-semibold"
-                    >
-                        {title}
-                    </OverlayTitle>
-                </header>
                 <div
-                    className={`min-h-0 flex-1 px-5 py-4 text-base ${bodyClassName}`}
+                    className="flex min-h-0 flex-1 flex-col"
+                    inert={covered}
+                    onFocusCapture={(event) => {
+                        previousFocus.current = event.target as HTMLElement;
+                    }}
                 >
-                    {children}
+                    <header
+                        className={`flex shrink-0 items-center gap-3 px-5 py-4 ${headerClassName}`}
+                    >
+                        {resolvedIcon && (
+                            <div className="w-6 h-6 shrink-0 flex items-center justify-center">
+                                {resolvedIcon}
+                            </div>
+                        )}
+                        <OverlayTitle
+                            as="h1"
+                            ref={titleRef}
+                            id={titleId}
+                            className="text-lg font-semibold"
+                        >
+                            {title}
+                        </OverlayTitle>
+                    </header>
+                    <div
+                        className={`min-h-0 flex-1 px-5 py-4 text-base ${bodyClassName}`}
+                    >
+                        {children}
+                    </div>
+                    {footer && (
+                        <footer className="shrink-0 bg-base-200/40 px-5 py-4 flex flex-wrap justify-end gap-2">
+                            {footer}
+                        </footer>
+                    )}
                 </div>
-                {footer && (
-                    <footer className="shrink-0 bg-base-200/40 px-5 py-4 flex flex-wrap justify-end gap-2">
-                        {footer}
-                    </footer>
+                {overlay && (
+                    <div
+                        ref={overlayRef}
+                        tabIndex={-1}
+                        className="absolute inset-0 z-20 outline-none"
+                    >
+                        {overlay}
+                    </div>
                 )}
             </section>
         </dialog>

@@ -3,7 +3,6 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { PassThrough, Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import type { ReadableStream } from 'node:stream/web';
 import { crc32, createInflateRaw } from 'node:zlib';
 import {
     type Entry,
@@ -11,7 +10,13 @@ import {
     RandomAccessReader,
     type ZipFile,
 } from 'yauzl';
+import { ArchiveError } from '../archives/archive.error.js';
 import { validateZipEntry } from '../archives/checked-zip.adapter.js';
+import {
+    requestTemplateDownload,
+    templateResponseChunks,
+} from './template-download.adapter.js';
+import { TemplateDownloadError } from './template-download.error.js';
 import { templateChild } from './template-files.util.js';
 
 /** A validated remote package directory. */
@@ -23,25 +28,6 @@ export type TemplateRangeIndex = {
     prefix: string;
     entries: Entry[];
 };
-
-/** Fetches official HTTPS assets with bounded redirects and cancellation.
- * @param url - Catalogue asset URL or HTTPS redirect.
- * @param init - Request options.
- */
-async function request(url: string, init: RequestInit): Promise<Response> {
-    for (let redirects = 0; redirects < 6; redirects++) {
-        if (new URL(url).protocol !== 'https:')
-            throw new Error('exportTemplates:errors.package');
-        const response = await fetch(url, { ...init, redirect: 'manual' });
-        if (![301, 302, 303, 307, 308].includes(response.status))
-            return response;
-        const location = response.headers.get('location');
-        await response.body?.cancel();
-        if (!location) break;
-        url = new URL(location, url).href;
-    }
-    throw new Error('exportTemplates:errors.package');
-}
 
 /** Chooses the HTTP validator used to keep all ranges on one representation.
  * @param headers - Asset response headers.
@@ -111,29 +97,40 @@ class RangeReader extends RandomAccessReader {
         const to = small
             ? Math.min(blockStart + blockSize, this.index.size)
             : end;
-        const response = await request(this.index.url, {
+        const rangeSignal = AbortSignal.any([
+            this.signal,
+            AbortSignal.timeout(30 * 60_000),
+        ]);
+        const response = await requestTemplateDownload(this.index.url, {
             headers: {
                 Range: `bytes=${from}-${to - 1}`,
                 'If-Range': this.index.validator,
                 'Accept-Encoding': 'identity',
             },
-            signal: AbortSignal.any([
-                this.signal,
-                AbortSignal.timeout(30 * 60_000),
-            ]),
+            signal: rangeSignal,
         });
+        const validator = representationValidator(response.headers);
+        const contentRange = response.headers.get('content-range');
+        const responseSize = contentRange?.match(/\/(\d+)$/)?.[1];
+        if (
+            (validator && validator !== this.index.validator) ||
+            (responseSize && Number(responseSize) !== this.index.size)
+        ) {
+            await response.body?.cancel();
+            throw new TemplateDownloadError('changed');
+        }
         if (
             response.status !== 206 ||
             response.headers.get('content-range') !==
                 `bytes ${from}-${to - 1}/${this.index.size}` ||
             (response.headers.get('content-encoding') &&
                 response.headers.get('content-encoding') !== 'identity') ||
-            representationValidator(response.headers) !== this.index.validator
+            validator !== this.index.validator
         ) {
             await response.body?.cancel();
-            throw new Error('exportTemplates:errors.range');
+            throw new TemplateDownloadError('partial');
         }
-        if (!response.body) throw new Error('exportTemplates:errors.range');
+        if (!response.body) throw new TemplateDownloadError('partial');
         let bytes = 0;
         const chunks: Buffer[] = [];
         const verify = new Transform({
@@ -147,8 +144,8 @@ class RangeReader extends RandomAccessReader {
                 );
             },
         });
-        const stream = Readable.fromWeb(
-            response.body as ReadableStream<Uint8Array>,
+        const stream = Readable.from(
+            templateResponseChunks(response.body, rangeSignal),
         );
         if (small) {
             const collect = new Transform({
@@ -181,26 +178,34 @@ export async function openTemplateRange(
     url: string,
     signal: AbortSignal,
 ): Promise<{ index: TemplateRangeIndex; zip: ZipFile }> {
-    const head = await request(url, {
+    const head = await requestTemplateDownload(url, {
         method: 'HEAD',
         headers: { 'Accept-Encoding': 'identity' },
         signal,
     });
     const size = Number(head.headers.get('content-length'));
     const validator = representationValidator(head.headers);
-    if (!head.ok || !Number.isSafeInteger(size) || size < 22 || !validator)
-        throw new Error('exportTemplates:errors.range');
+    if (
+        !head.ok ||
+        !head.headers.has('content-length') ||
+        !Number.isSafeInteger(size) ||
+        size < 0 ||
+        !validator
+    )
+        throw new TemplateDownloadError('partial');
+    if (size < 22) throw new TemplateDownloadError('invalid');
     const reader = new RangeReader(
         { url: head.url || url, size, validator },
         signal,
     );
-    const zip = await fromRandomAccessReaderPromise(reader, size, {
-        lazyEntries: true,
-        autoClose: false,
-        strictFileNames: true,
-    });
-    zip.on('error', () => undefined);
+    let zip: ZipFile | undefined;
     try {
+        zip = await fromRandomAccessReaderPromise(reader, size, {
+            lazyEntries: true,
+            autoClose: false,
+            strictFileNames: true,
+        });
+        zip.on('error', () => undefined);
         const entries: Entry[] = [];
         const names = new Set<string>();
         let total = 0;
@@ -255,8 +260,22 @@ export async function openTemplateRange(
             index: { url, size, validator, prefix, entries, fingerprint },
         };
     } catch (error) {
-        zip.close();
-        throw error;
+        zip?.close();
+        if (signal.aborted && signal.reason?.name === 'TimeoutError')
+            throw new TemplateDownloadError('network', { cause: error });
+        signal.throwIfAborted();
+        if (error instanceof ArchiveError)
+            throw new Error(
+                `exportTemplates:errors.${error.code === 'corrupt' ? 'archive' : error.code}`,
+                { cause: error },
+            );
+        if (
+            error instanceof TemplateDownloadError ||
+            (error instanceof Error &&
+                error.message.startsWith('exportTemplates:'))
+        )
+            throw error;
+        throw new TemplateDownloadError('invalid', { cause: error });
     }
 }
 

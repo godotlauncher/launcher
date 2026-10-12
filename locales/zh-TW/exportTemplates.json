@@ -72,7 +72,15 @@
         "decision": "請為每個衝突檔案選擇要保留的副本。",
         "recovery": "中斷的操作需要還原。請關閉 Godot 並還原檔案。如果檔案已變更，請先檢查資料夾再重試。",
         "failed": "無法完成操作。請檢查權限、可用空間和網路連線，然後重試。",
-        "range": "此伺服器不支援部分下載，或套件已變更。請重新開啟選擇器或匯入 TPZ 檔案。"
+        "range": "此伺服器不支援部分下載，或套件已變更。請重新開啟選擇器或匯入 TPZ 檔案。",
+        "downloadNetwork": "下載連線失敗。",
+        "downloadServer": "下載伺服器傳回錯誤。",
+        "downloadPartial": "無法載入範本檔案清單。",
+        "downloadChanged": "範本套件已變更。",
+        "downloadUnavailable": "範本套件無法使用。",
+        "downloadInvalid": "範本套件無效或無法讀取。",
+        "fullChanged": "範本套件已變更。",
+        "downloadFailed": "無法載入範本檔案。"
     },
     "picker": {
         "title": "新增匯出範本",
@@ -98,7 +106,24 @@
         "save": "儲存變更",
         "removalNotice": "移除的檔案將無法再供使用這些共用範本的專案使用。",
         "loading": "正在載入可用檔案...",
-        "localOnly": "僅可使用已安裝的檔案。請連線後重新開啟此面板以新增官方檔案。"
+        "localOnly": "僅可使用已安裝的檔案。請連線後重新開啟此面板以新增官方檔案。",
+        "tryAgain": "重試",
+        "refreshFiles": "重新整理檔案清單",
+        "chooseAnotherVersion": "選擇其他版本",
+        "refreshAfterChanges": "重試前請儲存或復原變更。",
+        "done": "完成",
+        "fullCancelFailed": "尚未確認取消操作。",
+        "downloadFull": "下載完整套件",
+        "fullOffer": "完整套件：{{size}}",
+        "fullKeepFiles": "加入所有平台缺少的範本。保留現有檔案。",
+        "fullDownloading": "正在下載完整套件",
+        "fullExtracting": "正在解壓縮範本",
+        "fullInstalling": "正在安裝範本",
+        "fullComplete": "範本已安裝。",
+        "fullCancelled": "下載已取消。",
+        "saveFailed": "無法儲存範本變更。",
+        "installFailed": "無法安裝範本。",
+        "onlineFilesUnavailable": "無法載入線上檔案清單。正在顯示已安裝的檔案。"
     },
     "manage": "管理範本",
     "removeTemplates": "移除範本",
@@ -269,7 +294,16 @@
         "save": "儲存",
         "checking": "正在檢查匯出範本...",
         "removeFile": "移除所選檔案",
-        "affectedProjects": "受影響的專案"
+        "affectedProjects": "受影響的專案",
+        "chooseAnotherFile": "選擇其他檔案",
+        "cannotReplace": "此檔案無法取代這些範本",
+        "cannotImport": "無法匯入此檔案",
+        "existingBuild": "現有組建",
+        "selectedFile": "所選檔案",
+        "replacementMismatch": "此組建需要 {{expected}} 的範本。所選檔案包含 {{actual}} 的範本。",
+        "replacingBuild": "正在取代「{{label}}」",
+        "replaceSummary": "這會取代此組建中的所有檔案。使用此組建的專案將使用取代後的檔案。",
+        "packageDetails": "套件詳細資訊"
     },
     "storage": {
         "title": "匯出範本儲存空間",
@@ -345,5 +379,159 @@
         "moveSummary_two": "即將把 {{count}} 個範本 ({{size}}) 移至:",
         "moveSummary_few": "即將把 {{count}} 個範本 ({{size}}) 移至:",
         "moveSummary_many": "即將把 {{count}} 個範本 ({{size}}) 移至:"
+    },
+    "wizardMigration": {
+        "title": "移動匯出範本",
+        "stepsLabel": "範本移轉步驟",
+        "steps": {
+            "about": "介紹",
+            "options": "選項",
+            "choose": "選擇",
+            "review": "檢查",
+            "move": "移動",
+            "done": "完成"
+        },
+        "titles": {
+            "about": "將匯出範本集中到同一個位置",
+            "options": "各個選項的含義",
+            "choose": "為所有專案選擇",
+            "review": "檢查您的選擇",
+            "move": "正在移動匯出範本",
+            "done": "移轉結果"
+        },
+        "about": {
+            "intro": "舊專案將匯出範本儲存在各自的編輯器資料夾中。Godot Launcher 現在可以透過匯出範本頁面管理這些檔案。",
+            "today": "現在",
+            "before": "各專案編輯器資料夾中的範本",
+            "after": "移動後",
+            "destination": "透過匯出範本頁面管理的範本",
+            "why": "為什麼要移動？",
+            "benefit1": "在同一個位置檢視和管理您的範本。",
+            "benefit2": "保留各專案的範本，或讓專案使用共用檔案。",
+            "benefit3": "重複使用共用範本，無需保留額外的本機副本。",
+            "found": "在 {{number}} 個專案中找到了範本。",
+            "next": "接著了解各個選項。在移動任何檔案之前，您可以檢查自己的選擇。"
+        },
+        "optionsIntro": "在下一頁中，為一個專案的所有版本使用同一選項，或為每個版本個別選擇。",
+        "optionTitle": "選項 {{number}}：{{label}}",
+        "recommended": "建議",
+        "choices": {
+            "save-imported": "保留目前範本",
+            "share-project": "共用範本",
+            "use-shared": "使用共用範本",
+            "later": "稍後決定"
+        },
+        "explanations": {
+            "save-imported": "將範本資料夾移動到匯入的範本中。專案繼續使用自己的檔案。",
+            "share-project": "將缺少的檔案加入共用範本，然後讓此專案使用共用範本。現有共用檔案保持不變。如果它們與本機檔案不同，專案將使用共用檔案。",
+            "use-shared": "使用共用範本。匯出前可能需要下載缺少的範本。",
+            "later": "保持這些範本不變。您可以稍後從匯出範本頁面決定。"
+        },
+        "warnings": {
+            "share-project": "移除本機副本，不另存副本。",
+            "use-shared": "刪除本機範本檔案，不另存副本。"
+        },
+        "infoReminder": "使用選項旁的資訊按鈕可再次檢視其說明。",
+        "explain": "為 {{project}} 說明{{choice}}",
+        "scope": "適用於這些版本：{{versions}}。",
+        "chooseIntro": "為每個專案使用同一選項，或為每個版本個別選擇。",
+        "projectSummary": "專案數：{{projects}}，範本版本數：{{versions}}",
+        "choiceSummary": "依範本版本選擇",
+        "moreProjects": "下方還有更多專案。請捲動檢視。",
+        "moreVersions": "下方還有更多版本。請捲動檢視。",
+        "choiceNotice": {
+            "save-imported": "保留您的範本",
+            "share-project": "共用後移除本機副本",
+            "use-shared": "刪除本機檔案",
+            "later": "檔案保持不變"
+        },
+        "keepAll": "全部保留目前範本",
+        "keepNotice": "保留目前範本會繼續使用相同的檔案。您可以變更下方的任何選擇。",
+        "projectColumn": "專案",
+        "versionsColumn": "範本版本",
+        "choiceColumn": "您的選擇",
+        "individual": "為每個版本選擇",
+        "individualLabel": "為 {{project}} 中的每個版本選擇",
+        "allVersions": "適用於全部 {{number}} 個版本",
+        "choiceLabel": "為 {{project}} 選擇",
+        "versionChoiceLabel": "為 {{project}}、{{version}} 選擇",
+        "unavailable": "將此專案留待稍後，等它準備好後再處理。",
+        "reviewIntro": "尚未進行任何變更。請檢查下方清單。開始前請關閉 Godot 編輯器並停止匯出。",
+        "reviewing": "正在檢查範本檔案...",
+        "effectsColumn": "將執行的操作",
+        "reviewVersions": "{{project}} 的已檢查版本",
+        "reviewScope": {
+            "individual": "為每個版本個別選擇",
+            "differentEffects": "每個版本有不同的處理結果"
+        },
+        "reviewDetails": {
+            "destination": {
+                "imported": "使用匯入的範本中的自有範本。",
+                "shared": "使用共用範本。匯出前可能需要下載缺少的範本。",
+                "local": "繼續使用本機範本。"
+            },
+            "addMissing": "加入缺少的共用檔案。保留現有共用檔案。",
+            "localFiles": {
+                "remove-after-verification": "將檔案儲存在匯入的範本中，並將此專案連接到這些檔案。",
+                "remove-after-connection": "連接專案後移除本機檔案。不另存副本。",
+                "keep": "保留本機檔案，稍後決定。"
+            }
+        },
+        "files": "{{number}} 個檔案",
+        "effects": {
+            "save-imported": "將資料夾移動到匯入的範本中，並繼續使用其中的檔案。",
+            "share-project": "加入缺少的共用檔案並保留現有檔案，然後使用共用範本並移除本機副本。",
+            "use-shared": "使用共用範本並移除本機檔案。匯出前可能需要下載缺少的範本。",
+            "later": "保留本機檔案，將此版本留待稍後處理。"
+        },
+        "nothingChanged": "尚未進行任何變更。選擇返回可變更選項。",
+        "confirmRemoval": "我理解，共用範本和使用共用範本會移除列出的本機檔案，不另存副本。",
+        "leftLater": "留待稍後處理",
+        "laterProjects": "留待稍後處理的專案",
+        "next": "下一步",
+        "seeOptions": "檢視選項",
+        "chooseProjects": "為專案選擇",
+        "reviewChoices": "檢查選擇",
+        "moveTemplates": "移動範本",
+        "moving": "正在移動範本...",
+        "back": "返回",
+        "finishLater": "稍後完成",
+        "done": "完成",
+        "openTemplates": "開啟匯出範本",
+        "keepOpen": "較大的移動操作可能需要一些時間。Godot Launcher 將保持開啟，直到移動完成。",
+        "progress": "已完成 {{completed}} 個範本版本，共 {{total}} 個",
+        "progressLabel": "已完成的範本版本",
+        "status": {
+            "waiting": "等待中",
+            "checking": "正在檢查範本檔案",
+            "copying": "正在複製範本",
+            "verifying": "正在檢查複製的檔案",
+            "connecting": "正在更新專案連接",
+            "cleaning": "正在完成移動",
+            "complete": "完成",
+            "error": "無法移動",
+            "later": "留待稍後處理"
+        },
+        "results": "範本版本結果",
+        "success": "範本已準備好",
+        "partial": "部分範本需要再次檢查",
+        "resultSummary": "已完成：{{completed}}。無法移動：{{failed}}。稍後處理：{{later}}。",
+        "resultNote": "您可以在匯出範本頁面管理已移動的檔案。留待稍後處理的版本仍需要做出選擇。",
+        "retryFailed": "重試失敗的版本",
+        "retryFailedCount": "重試失敗的版本（{{number}}）",
+        "recover": "復原中斷的移動",
+        "recovering": "正在復原範本...",
+        "viewResults": "檢視移轉",
+        "destination": {
+            "imported": "使用匯入的範本中的自有範本。",
+            "shared": "使用共用範本。匯出前可能需要下載缺少的範本。",
+            "local": "繼續使用本機範本。"
+        },
+        "addMissing": "加入缺少的共用檔案。現有共用檔案保持不變。",
+        "localFiles": {
+            "remove-after-verification": "將檔案儲存在匯入的範本中，並將此專案連接到這些檔案。",
+            "remove-after-connection": "連接專案後移除本機副本，不另存副本。",
+            "keep": "保留本機檔案，將此版本留待稍後處理。"
+        }
     }
 }

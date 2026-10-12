@@ -15,6 +15,11 @@ import { projectTemplateBuilds } from './template-projection.util.js';
 import { connectProjectTemplates } from './template-runtime.util.js';
 import { assertTemplateStorageAvailable } from './template-storage.service.js';
 
+vi.mock('./template-version-migration.store.js', () => ({
+    readTemplateVersionLayout: vi.fn(),
+    readTemplateVersionMigration: vi.fn(),
+    templateVersionMigrationRecoveryId: vi.fn(),
+}));
 vi.mock('node:fs', () => ({
     promises: { unlink: vi.fn(), mkdir: vi.fn(), readdir: vi.fn() },
 }));

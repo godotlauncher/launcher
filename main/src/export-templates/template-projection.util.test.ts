@@ -12,6 +12,11 @@ import {
     projectTemplateBuilds,
 } from './template-projection.util.js';
 
+vi.mock('./template-version-migration.store.js', () => ({
+    readTemplateVersionLayout: vi.fn(),
+    readTemplateVersionMigration: vi.fn(),
+    templateVersionMigrationRecoveryId: vi.fn(),
+}));
 vi.mock('node:fs', () => ({
     promises: {
         mkdir: vi.fn(),

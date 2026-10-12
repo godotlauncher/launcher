@@ -9,15 +9,24 @@ import { ExportTemplatesService } from './export-templates.service.js';
 import { readImportedTemplates } from './imported-templates.store.js';
 import type { TemplateArchiveAdapter } from './template-archive.adapter.js';
 import { assessProjectTemplates } from './template-assessment.util.js';
+import { downloadTemplatePackage } from './template-download.adapter.js';
+import { TemplateDownloadError } from './template-download.error.js';
 import { updateTemplateFiles } from './template-file-update.util.js';
+import { readTemplateMigrationSource } from './template-migration-source.util.js';
 import {
     extractTemplateRange,
     openTemplateRange,
 } from './template-range.adapter.js';
 
+vi.mock('./template-download.adapter.js', () => ({
+    downloadTemplatePackage: vi.fn(),
+}));
 vi.mock('./template-file-update.util.js', () => ({
     updateTemplateFiles: vi.fn(),
     pruneEmptyTemplateDirectories: vi.fn(),
+}));
+vi.mock('./template-migration-source.util.js', () => ({
+    readTemplateMigrationSource: vi.fn(),
 }));
 vi.mock('./template-storage.service.js', () => ({
     TemplateStorageService: class {
@@ -62,6 +71,11 @@ vi.mock('./template-range.adapter.js', () => ({
     openTemplateRange: vi.fn(),
     extractTemplateRange: vi.fn(),
 }));
+vi.mock('./template-version-migration.store.js', () => ({
+    readTemplateVersionLayout: vi.fn(),
+    readTemplateVersionMigration: vi.fn(),
+    templateVersionMigrationRecoveryId: vi.fn(),
+}));
 vi.mock('node:fs', () => ({
     promises: {
         mkdir: vi.fn(),
@@ -79,6 +93,8 @@ vi.mock('../editor-catalog/editor-catalog.service.js', () => ({
 vi.mock('../projects/projects.store.js', () => ({ ProjectsStore: class {} }));
 vi.mock('@mariodebono/di-electron', () => ({
     AppReady: () => () => {},
+    BeforeAppQuit: () => () => {},
+    BeforeMainWindowClose: () => () => {},
     AppReadyOrder: { BeforeWindow: 'beforeWindow' },
 }));
 vi.mock('./template-editor-running.util.js', () => ({
@@ -282,6 +298,87 @@ describe('template migration policy', () => {
                 : [sharedWeb];
         });
     });
+    it('reviews mixed choices without queuing work or changing files or project settings', async () => {
+        vi.mocked(readTemplateMigrationSource).mockResolvedValue({
+            projectPath: project.path,
+            name: project.name,
+            launchPath: project.launch_path,
+            setId: '4.4.stable',
+            buildSelections: {},
+            localRoot: local,
+            localRealPath: local,
+            sharedRoot: path.resolve('fixture-shared'),
+            entries: ['4.4.stable', '4.3.stable'],
+            files: [
+                { ...web, relative: '4.4.stable/web.zip' },
+                { ...linux, relative: '4.3.stable/linux' },
+            ],
+        });
+        const review = await service.reviewMigration([
+            {
+                projectPath: project.path,
+                selection: {
+                    mode: 'per-version',
+                    choices: {
+                        '4.4.stable': 'save-imported',
+                        '4.3.stable': 'later',
+                    },
+                },
+            },
+        ]);
+        expect(
+            review.projects[0].versions.map(({ setId, choice }) => [
+                setId,
+                choice,
+            ]),
+        ).toEqual([
+            ['4.3.stable', 'later'],
+            ['4.4.stable', 'save-imported'],
+        ]);
+        await service.discardMigrationReview(review.token);
+        expect(await service.getJobs()).toEqual([]);
+        expect(importedMocks.saveProject).not.toHaveBeenCalled();
+        expect(updateTemplateFiles).not.toHaveBeenCalled();
+        expect(commitTemplateTransaction).not.toHaveBeenCalled();
+        expect(fs.promises.rm).not.toHaveBeenCalled();
+        expect(fs.promises.mkdir).not.toHaveBeenCalled();
+        expect(updateProjects).not.toHaveBeenCalled();
+    });
+    it('refuses an editor changed during the read-only review', async () => {
+        vi.mocked(readTemplateMigrationSource).mockResolvedValue({
+            projectPath: project.path,
+            name: project.name,
+            launchPath: path.resolve('old-editor', 'Godot'),
+            setId: '4.4.stable',
+            buildSelections: {},
+            localRoot: local,
+            localRealPath: local,
+            sharedRoot: path.resolve('fixture-shared'),
+            entries: ['4.4.stable'],
+            files: [],
+        });
+        await expect(
+            service.reviewMigration([
+                {
+                    projectPath: project.path,
+                    selection: {
+                        mode: 'all-versions',
+                        choice: 'save-imported',
+                    },
+                },
+            ]),
+        ).rejects.toThrow('exportTemplates:errors.changed');
+        expect(await service.getJobs()).toEqual([]);
+    });
+    it('rejects legacy Keep with individual decisions instead of ignoring them', async () => {
+        await expect(
+            service.prepareMigration(project.path, 'save-imported', {
+                '4.4.stable': 'use-shared',
+            }),
+        ).rejects.toThrow('exportTemplates:errors.decision');
+        expect(importedMocks.saveProject).not.toHaveBeenCalled();
+        expect(await service.getJobs()).toEqual([]);
+    });
     it('migrates local templates through the imported library without repeating its synchronisation', async () => {
         importedMocks.synchronise.mockRejectedValue(
             new Error('Unexpected second synchronisation'),
@@ -296,6 +393,24 @@ describe('template migration policy', () => {
         expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
         expect(importedMocks.saveProject).toHaveBeenCalledWith(project, local);
         expect(importedMocks.synchronise).not.toHaveBeenCalled();
+    });
+    it('keeps legacy background migration protected after the request returns and releases protection on failure', async () => {
+        let fail!: (error: Error) => void;
+        importedMocks.saveProject.mockReturnValueOnce(
+            new Promise<void>((_resolve, reject) => {
+                fail = reject;
+            }),
+        );
+        await service.prepareMigration(project.path, 'save-imported');
+        await vi.waitFor(() =>
+            expect(importedMocks.saveProject).toHaveBeenCalledOnce(),
+        );
+        expect(service.canExitDuringTemplateOperation()).toBe(false);
+        fail(new Error('copy failed'));
+        await vi.waitFor(async () =>
+            expect((await service.getJobs()).at(-1)?.stage).toBe('error'),
+        );
+        expect(service.canExitDuringTemplateOperation()).toBe(true);
     });
     it('adds missing files and preserves existing shared contents and permissions without review', async () => {
         await service.prepareMigration(project.path, 'share-project');
@@ -656,6 +771,97 @@ describe('template migration policy', () => {
         expect(connectEmptyTemplateFolder).not.toHaveBeenCalled();
         expect(commitTemplateTransaction).not.toHaveBeenCalled();
     });
+    it.each(['.DS_Store', 'Thumbs.db'])(
+        'automatically connects a folder containing only %s',
+        async (metadata) => {
+            vi.mocked(assessProjectTemplates).mockResolvedValue({
+                projectPath: project.path,
+                name: project.name,
+                state: 'ready',
+                reason: 'empty',
+                pending: true,
+                compared: false,
+                provenance: 'unverified',
+                setIds: [],
+                metadata: [metadata],
+                unexpected: [],
+            });
+            vi.mocked(fs.promises.readdir).mockResolvedValue([
+                metadata,
+            ] as never);
+            vi.mocked(templateLstat).mockImplementation(async (filename) =>
+                path.basename(filename) === metadata
+                    ? ({
+                          isFile: () => true,
+                          isSymbolicLink: () => false,
+                      } as fs.Stats)
+                    : undefined,
+            );
+            vi.mocked(readTemplateTree).mockResolvedValue([
+                { relative: metadata, size: 4, mode: 0o644 },
+            ]);
+
+            await service.connectEmptyProjects();
+            await vi.waitFor(async () =>
+                expect((await service.getJobs()).at(-1)?.stage).toBe(
+                    'complete',
+                ),
+            );
+
+            expect(commitTemplateTransaction).toHaveBeenCalledExactlyOnceWith(
+                path.resolve('fixture-shared'),
+                expect.any(String),
+                expect.objectContaining({
+                    projectPath: project.path,
+                    metadataOnly: true,
+                    sets: [],
+                }),
+                local,
+                path.resolve('fixture-shared'),
+            );
+            expect(updateTemplateFiles).not.toHaveBeenCalled();
+        },
+    );
+    it.each(['4.4.stable/web.zip', '.custom-file'])(
+        'refuses automatically connecting metadata when %s appears during preparation',
+        async (relative) => {
+            vi.mocked(assessProjectTemplates).mockResolvedValue({
+                projectPath: project.path,
+                name: project.name,
+                state: 'ready',
+                reason: 'empty',
+                pending: true,
+                compared: false,
+                provenance: 'unverified',
+                setIds: [],
+                metadata: ['Thumbs.db'],
+                unexpected: [],
+            });
+            vi.mocked(fs.promises.readdir).mockResolvedValue([
+                'Thumbs.db',
+            ] as never);
+            vi.mocked(templateLstat).mockImplementation(async (filename) =>
+                path.basename(filename) === 'Thumbs.db'
+                    ? ({
+                          isFile: () => true,
+                          isSymbolicLink: () => false,
+                      } as fs.Stats)
+                    : undefined,
+            );
+            vi.mocked(readTemplateTree).mockResolvedValue([
+                { relative: 'Thumbs.db', size: 4, mode: 0o644 },
+                { relative, size: 10, mode: 0o644 },
+            ]);
+
+            await service.connectEmptyProjects();
+            await vi.waitFor(async () =>
+                expect((await service.getJobs()).at(-1)?.stage).toBe('error'),
+            );
+
+            expect(commitTemplateTransaction).not.toHaveBeenCalled();
+            expect(updateTemplateFiles).not.toHaveBeenCalled();
+        },
+    );
 });
 
 describe('template migration recovery', () => {
@@ -778,6 +984,32 @@ describe('partial template saves', () => {
         ).rejects.toThrow('exportTemplates:errors.package');
         expect(openTemplateRange).not.toHaveBeenCalled();
     });
+    it('preserves a changed-download error and fetches a new index on retry', async () => {
+        index();
+        const failure = new TemplateDownloadError('changed');
+        vi.mocked(openTemplateRange).mockRejectedValueOnce(failure);
+        await expect(service.getPackage(release.id, 'templates')).rejects.toBe(
+            failure,
+        );
+        await expect(
+            service.getPackage(release.id, 'templates'),
+        ).resolves.toMatchObject({ files: [{ path: 'macos.zip' }] });
+        expect(openTemplateRange).toHaveBeenCalledTimes(2);
+    });
+    it.each(['official', 'local'] as const)(
+        'keeps %s folder read failures distinct from invalid archives',
+        async (source) => {
+            index();
+            vi.mocked(readTemplateTree).mockRejectedValueOnce(
+                new Error('exportTemplates:errors.unsafe'),
+            );
+            await expect(
+                source === 'official'
+                    ? service.getPackage(release.id, 'templates')
+                    : service.getLocalPackage('4.6.stable'),
+            ).rejects.toThrow('exportTemplates:errors.read');
+        },
+    );
     it('caches the archive index without refreshing GitHub on repeated selections', async () => {
         index();
         const first = await service.getPackage(release.id, 'templates');
@@ -1256,6 +1488,9 @@ describe('project export template settings', () => {
         );
         vi.mocked(templateConnectionStatus).mockResolvedValue('local');
         vi.mocked(fs.promises.readdir).mockResolvedValue([]);
+        vi.mocked(assessProjectTemplates).mockResolvedValue({
+            state: 'needs-review',
+        } as never);
         updateProjects.mockImplementation(async (mutator) =>
             mutator([project]),
         );
@@ -1300,6 +1535,33 @@ describe('project export template settings', () => {
                 .mock.calls.every(([, hash]) => hash === false),
         ).toBe(true);
     });
+    it.each([
+        { state: 'shared', hasLocalFiles: false },
+        { state: 'ready', reason: 'empty', hasLocalFiles: false },
+        { state: 'needs-review', hasLocalFiles: true },
+        { state: 'blocked', hasLocalFiles: true },
+        { state: 'unavailable', hasLocalFiles: true },
+    ])(
+        'reports the migration requirement for a $state collection',
+        async ({ state, reason, hasLocalFiles }) => {
+            vi.mocked(fs.promises.readdir).mockResolvedValue([
+                '4.4.stable',
+                '.DS_Store',
+            ] as never);
+            vi.mocked(assessProjectTemplates).mockResolvedValue({
+                state,
+                reason,
+            } as never);
+
+            const settings = await service.getProjectSettings(project.path);
+
+            expect(settings).toMatchObject({ status: 'local', hasLocalFiles });
+            expect(assessProjectTemplates).toHaveBeenCalledWith(
+                project,
+                path.resolve('fixture-shared'),
+            );
+        },
+    );
     it('checks completeness only for imported builds matching the selected version', async () => {
         vi.mocked(readImportedTemplates).mockResolvedValue({
             schemaVersion: 1,
@@ -1399,3 +1661,190 @@ vi.mock('./template-paths.util.js', () => ({
     projectOfficialTemplateRoot: (editor: string) =>
         path.join(editor, 'editor_data', 'export_templates'),
 }));
+
+describe('complete package fallback', () => {
+    /** Waits for a terminal queue entry rather than inspecting private service state.
+     * @param jobId - Submitted complete-package operation.
+     */
+    async function finished(jobId: string) {
+        await vi.waitFor(async () =>
+            expect(
+                (await service.getJobs()).find((job) => job.id === jobId)
+                    ?.stage,
+            ).toMatch(/^(complete|error|cancelled)$/),
+        );
+        return (await service.getJobs()).find((job) => job.id === jobId);
+    }
+    it('rejects unknown catalogue IDs without downloading', async () => {
+        await expect(
+            service.downloadFullPackage(
+                release.id,
+                'https://untrusted.invalid/templates.tpz',
+            ),
+        ).rejects.toThrow('errors.package');
+        expect(downloadTemplatePackage).not.toHaveBeenCalled();
+    });
+    it('downloads and validates the full archive before adding files without removals or a remote index', async () => {
+        const files = [
+            { relative: 'version.txt', size: 10, hash: '', mode: 0o644 },
+            { relative: 'macos.zip', size: 20, hash: '', mode: 0o644 },
+        ];
+        vi.mocked(readTemplateTree).mockImplementation(async (root) =>
+            root === path.resolve('extracted')
+                ? files
+                : [{ relative: 'custom.bin', size: 5, hash: '', mode: 0o644 }],
+        );
+        const jobId = await service.downloadFullPackage(
+            release.id,
+            'templates',
+        );
+        expect(await finished(jobId)).toMatchObject({
+            stage: 'complete',
+            fullPackage: {
+                releaseId: release.id,
+                assetId: 'templates',
+                extracting: true,
+            },
+        });
+        expect(downloadTemplatePackage).toHaveBeenCalledWith(
+            release.templateAssets?.[0],
+            expect.stringContaining('package.tpz'),
+            expect.any(AbortSignal),
+            expect.any(Function),
+        );
+        expect(extractTemplateArchive).toHaveBeenCalledWith(
+            expect.stringContaining('package.tpz'),
+            expect.stringContaining('extracted'),
+            expect.any(AbortSignal),
+            expect.any(Function),
+        );
+        expect(updateTemplateFiles).toHaveBeenCalledWith(
+            path.resolve('fixture-shared', '4.4.stable'),
+            path.resolve('extracted'),
+            ['version.txt', 'macos.zip'],
+            [],
+        );
+        expect(openTemplateRange).not.toHaveBeenCalled();
+        expect(readTemplateTree).toHaveBeenCalledWith(
+            path.resolve('extracted'),
+            false,
+            expect.any(AbortSignal),
+        );
+        expect(fs.promises.rm).toHaveBeenCalledWith(
+            expect.stringContaining('.godot-launcher-template-work'),
+            { recursive: true, force: true },
+        );
+    });
+    it('reports an unreadable installed folder without blaming the downloaded package', async () => {
+        vi.mocked(readTemplateTree)
+            .mockResolvedValueOnce([
+                { relative: 'macos.zip', size: 20, hash: '', mode: 0o644 },
+            ])
+            .mockRejectedValueOnce(new Error('exportTemplates:errors.unsafe'));
+        const jobId = await service.downloadFullPackage(
+            release.id,
+            'templates',
+        );
+        expect(await finished(jobId)).toMatchObject({
+            stage: 'error',
+            error: 'exportTemplates:errors.read',
+        });
+        expect(updateTemplateFiles).not.toHaveBeenCalled();
+    });
+    it('does not touch installed files when the package version differs', async () => {
+        extractTemplateArchive.mockResolvedValueOnce({
+            identity: '4.5.stable',
+            contents: path.resolve('extracted'),
+        });
+        const jobId = await service.downloadFullPackage(
+            release.id,
+            'templates',
+        );
+        expect(await finished(jobId)).toMatchObject({
+            stage: 'error',
+            error: 'exportTemplates:errors.identity',
+        });
+        expect(updateTemplateFiles).not.toHaveBeenCalled();
+    });
+    it('does not extract or install after download failure, and retains the full-package retry action', async () => {
+        vi.mocked(downloadTemplatePackage).mockRejectedValueOnce(
+            new TemplateDownloadError('network'),
+        );
+        const first = await service.downloadFullPackage(
+            release.id,
+            'templates',
+        );
+        expect(await finished(first)).toMatchObject({
+            stage: 'error',
+            error: 'exportTemplates:errors.downloadNetwork',
+        });
+        expect(extractTemplateArchive).not.toHaveBeenCalled();
+        expect(updateTemplateFiles).not.toHaveBeenCalled();
+        vi.mocked(readTemplateTree).mockResolvedValue([
+            { relative: 'macos.zip', size: 20, hash: '', mode: 0o644 },
+        ]);
+        await service.retryJob(first);
+        await vi.waitFor(async () =>
+            expect((await service.getJobs()).at(-1)).toMatchObject({
+                stage: 'complete',
+                fullPackage: { releaseId: release.id, assetId: 'templates' },
+            }),
+        );
+        expect(downloadTemplatePackage).toHaveBeenCalledTimes(2);
+        expect(openTemplateRange).not.toHaveBeenCalled();
+    });
+    it('cancels during download and cleans staging without installing', async () => {
+        vi.mocked(downloadTemplatePackage).mockImplementationOnce(
+            async (_asset, _destination, signal) =>
+                new Promise((_resolve, reject) =>
+                    signal.addEventListener(
+                        'abort',
+                        () => reject(signal.reason),
+                        { once: true },
+                    ),
+                ),
+        );
+        const jobId = await service.downloadFullPackage(
+            release.id,
+            'templates',
+        );
+        await vi.waitFor(() =>
+            expect(downloadTemplatePackage).toHaveBeenCalledOnce(),
+        );
+        await service.cancel(jobId);
+        expect(await finished(jobId)).toMatchObject({ stage: 'cancelled' });
+        expect(updateTemplateFiles).not.toHaveBeenCalled();
+        expect(fs.promises.rm).toHaveBeenCalled();
+    });
+});
+
+describe('full-package extraction cancellation', () => {
+    it('does not publish files if extraction is cancelled', async () => {
+        extractTemplateArchive.mockImplementationOnce(
+            async (_archive, _destination, signal: AbortSignal) =>
+                new Promise((_resolve, reject) =>
+                    signal.addEventListener(
+                        'abort',
+                        () => reject(signal.reason),
+                        { once: true },
+                    ),
+                ),
+        );
+        const jobId = await service.downloadFullPackage(
+            release.id,
+            'templates',
+        );
+        await vi.waitFor(() =>
+            expect(extractTemplateArchive).toHaveBeenCalledOnce(),
+        );
+        await service.cancel(jobId);
+        await vi.waitFor(async () =>
+            expect(
+                (await service.getJobs()).find((job) => job.id === jobId)
+                    ?.stage,
+            ).toBe('cancelled'),
+        );
+        expect(updateTemplateFiles).not.toHaveBeenCalled();
+        expect(fs.promises.rm).toHaveBeenCalled();
+    });
+});

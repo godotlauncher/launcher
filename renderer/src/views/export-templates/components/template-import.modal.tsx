@@ -4,7 +4,7 @@ import type {
     SelectedTemplateImport,
     TemplateImportProgress,
 } from '@shared/contracts';
-import { X } from 'lucide-react';
+import { TriangleAlert, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '../../../components/dialog.component';
@@ -43,6 +43,9 @@ export function TemplateImportModal({
         null,
     );
     const [error, setError] = useState('');
+    const [errorStage, setErrorStage] = useState<
+        'choose' | 'prepare' | 'save' | 'cleanup'
+    >('choose');
     const [progress, setProgress] = useState<TemplateImportProgress | null>(
         null,
     );
@@ -94,6 +97,7 @@ export function TemplateImportModal({
         )
             return;
         if (busy === 'prepare' && token.current) {
+            setErrorStage('cleanup');
             cancelRequested.current = true;
             setCancelling(true);
             try {
@@ -127,6 +131,7 @@ export function TemplateImportModal({
     };
     /** Selects a file without processing the archive. */
     const choose = async () => {
+        setErrorStage('choose');
         setBusy('choose');
         setError('');
         try {
@@ -143,6 +148,7 @@ export function TemplateImportModal({
     };
     /** Removes the selected file and any prepared contents. */
     const remove = async () => {
+        setErrorStage('cleanup');
         setBusy('choose');
         try {
             await clear();
@@ -160,6 +166,7 @@ export function TemplateImportModal({
             setReview(true);
             return;
         }
+        setErrorStage('prepare');
         setProgress(null);
         setBusy('prepare');
         try {
@@ -179,7 +186,15 @@ export function TemplateImportModal({
     };
     /** Saves the reviewed package using the existing library operation. */
     const save = async () => {
-        if (!preview || blocked) return;
+        if (
+            !preview ||
+            blocked ||
+            !label.trim() ||
+            label.trim().length > 80 ||
+            (replace && replace.setId !== preview.setId)
+        )
+            return;
+        setErrorStage('save');
         setBusy('save');
         setError('');
         try {
@@ -203,57 +218,137 @@ export function TemplateImportModal({
         preview &&
         replace.setId !== preview.setId
     );
+    const errorKey =
+        error.match(/exportTemplates:([\w.]+)/)?.[1] ??
+        (error ? 'errors.failed' : '');
+    const invalidFile =
+        incompatible ||
+        (errorStage === 'prepare' &&
+            ['errors.archive', 'errors.identity', 'errors.unsafe'].includes(
+                errorKey,
+            ));
+    const nameInvalid =
+        review && !replace && (!label.trim() || label.trim().length > 80);
+    const recoveryRequired = errorKey === 'errors.recovery';
+    const missingBuild = errorKey === 'library.missing';
+    const needsNewFile = errorKey === 'errors.changed';
+    const processing = busy === 'prepare' || busy === 'save';
+    /** Formats the version and edition for a package comparison.
+     * @param setId - Package version identity, including an optional .NET suffix.
+     */
+    const packageVersion = (setId: string) =>
+        `${setId.replace(/\.mono$/, '')} - ${t(setId.endsWith('.mono') ? 'editions.dotnet' : 'editions.standard')}`;
+    const notice = errorKey
+        ? t(errorKey)
+        : incompatible
+          ? t('library.replacementMismatch', {
+                expected: packageVersion(replace.setId),
+                actual: packageVersion(preview.setId),
+            })
+          : blocked
+            ? t('errors.busy')
+            : nameInvalid
+              ? t('library.invalidLabel')
+              : '';
     return (
         <Dialog
             title={t(replace ? 'library.replace' : 'library.importTitle')}
-            tone={replace ? 'warning' : 'neutral'}
+            tone={invalidFile ? 'error' : replace ? 'warning' : 'neutral'}
+            testId="templateImportModal"
+            panelClassName={`max-w-2xl ${processing || (review && !invalidFile) ? 'h-[min(36rem,85vh)]' : ''}`}
+            bodyClassName="flex min-h-0 flex-col overflow-hidden"
             onRequestClose={() => void close()}
             footer={
-                <>
-                    <button
-                        type="button"
-                        className="btn btn-ghost"
-                        disabled={
-                            cancelling || busy === 'choose' || busy === 'save'
-                        }
-                        onClick={() => void close()}
-                    >
-                        {t('cancel')}
-                    </button>
-                    {review && (
+                <div className="flex w-full min-w-0 flex-col gap-3">
+                    {notice && !processing && (
+                        <p
+                            role={
+                                blocked && !errorKey && !incompatible
+                                    ? 'status'
+                                    : 'alert'
+                            }
+                            className="flex items-start gap-2 text-sm text-error-content dark:text-error"
+                        >
+                            <TriangleAlert
+                                className="mt-0.5 size-4 shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span className="min-w-0 break-words">
+                                {notice}
+                            </span>
+                        </p>
+                    )}
+                    <div className="flex flex-wrap justify-end gap-2">
                         <button
                             type="button"
                             className="btn btn-ghost"
-                            disabled={!!busy}
-                            onClick={() => {
-                                setReview(false);
-                                setError('');
-                            }}
+                            disabled={
+                                cancelling ||
+                                busy === 'choose' ||
+                                busy === 'save'
+                            }
+                            onClick={() => void close()}
                         >
-                            {t('common:buttons.back')}
+                            {t('cancel')}
                         </button>
-                    )}
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        disabled={
-                            !!busy ||
-                            blocked ||
-                            (review ? !label.trim() || incompatible : !selected)
-                        }
-                        onClick={() => void (review ? save() : next())}
-                    >
-                        {t(review ? 'library.save' : 'library.next')}
-                    </button>
-                </>
+                        {invalidFile || needsNewFile ? (
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                disabled={!!busy || blocked}
+                                onClick={() => void choose()}
+                            >
+                                {t('library.chooseAnotherFile')}
+                            </button>
+                        ) : recoveryRequired || missingBuild ? null : (
+                            <>
+                                {review && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-ghost"
+                                        disabled={!!busy}
+                                        onClick={() => {
+                                            setReview(false);
+                                            setError('');
+                                        }}
+                                    >
+                                        {t('common:buttons.back')}
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    disabled={
+                                        !!busy ||
+                                        blocked ||
+                                        (review
+                                            ? nameInvalid || incompatible
+                                            : !selected)
+                                    }
+                                    onClick={() =>
+                                        void (review ? save() : next())
+                                    }
+                                >
+                                    {t(
+                                        review
+                                            ? 'library.save'
+                                            : 'library.next',
+                                    )}
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
             }
         >
-            <div className="space-y-4 text-base" aria-busy={!!busy}>
-                {blocked && <p role="status">{t('errors.busy')}</p>}
-                {busy === 'prepare' || busy === 'save' ? (
+            <div
+                className="flex min-h-0 flex-1 flex-col gap-3 text-base"
+                aria-busy={!!busy}
+            >
+                {processing ? (
                     <div
                         role="status"
-                        className="flex min-h-48 flex-col items-center justify-center gap-4"
+                        className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4"
                     >
                         <span
                             className="loading loading-spinner loading-lg text-primary"
@@ -277,7 +372,7 @@ export function TemplateImportModal({
                                                     progress.totalBytes) *
                                                     100,
                                             ),
-                                        )}
+                                        )}{' '}
                                         %
                                     </p>
                                     <p>
@@ -301,26 +396,60 @@ export function TemplateImportModal({
                             )}
                         </p>
                     </div>
+                ) : invalidFile ? (
+                    <div className="flex min-h-0 flex-col gap-4">
+                        <h2 className="font-semibold">
+                            {t(
+                                incompatible
+                                    ? 'library.cannotReplace'
+                                    : 'library.cannotImport',
+                            )}
+                        </h2>
+                        <p
+                            className="truncate font-medium"
+                            title={selected?.archiveName}
+                        >
+                            {selected?.archiveName}
+                        </p>
+                        {incompatible && replace && preview && (
+                            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-md bg-base-200/50 p-3 text-sm">
+                                <dt>{t('library.existingBuild')}</dt>
+                                <dd className="break-words">
+                                    {packageVersion(replace.setId)}
+                                </dd>
+                                <dt>{t('library.selectedFile')}</dt>
+                                <dd className="break-words">
+                                    {packageVersion(preview.setId)}
+                                </dd>
+                            </dl>
+                        )}
+                    </div>
                 ) : !review ? (
                     <>
-                        <p className="text-base-content/75">
+                        <p className="shrink-0 text-base-content/75">
                             {t('library.importDetail')}
                         </p>
                         <button
                             type="button"
-                            className="btn"
+                            className="btn shrink-0 self-start"
                             disabled={!!busy}
                             onClick={() => void choose()}
                         >
                             {t('library.chooseFile')}
                         </button>
                         {selected && (
-                            <div className="flex items-start gap-3 rounded-md border border-base-content/10 bg-base-200/50 p-3">
+                            <div className="flex min-h-0 items-start gap-3 rounded-md border border-base-content/10 bg-base-200/50 p-3">
                                 <div className="min-w-0 flex-1 space-y-1">
-                                    <p className="break-all font-medium">
+                                    <p
+                                        className="truncate font-medium"
+                                        title={selected.archiveName}
+                                    >
                                         {selected.archiveName}
                                     </p>
-                                    <p className="break-all text-base-content/70">
+                                    <p
+                                        className="truncate text-sm text-base-content/70"
+                                        title={selected.sourcePath}
+                                    >
                                         {selected.sourcePath}
                                     </p>
                                 </div>
@@ -339,24 +468,20 @@ export function TemplateImportModal({
                 ) : (
                     preview && (
                         <>
-                            <div className="space-y-3 rounded-md border border-base-content/10 bg-base-200/50 p-3">
-                                <p className="break-all font-medium">
+                            <div className="shrink-0 space-y-1 rounded-md border border-base-content/10 bg-base-200/50 px-3 py-2">
+                                <p
+                                    className="truncate font-medium"
+                                    title={preview.archiveName}
+                                >
                                     {preview.archiveName}
                                 </p>
-                                <p>
-                                    {preview.setId.replace(/\.mono$/, '')} -{' '}
-                                    {t(
-                                        preview.setId.endsWith('.mono')
-                                            ? 'migration.edition.dotnet'
-                                            : 'migration.edition.standard',
-                                    )}
-                                </p>
-                                <TemplatePlatformBadges platforms={platforms} />
-                                <p className="text-base-content/70">
+                                <p className="text-sm">
+                                    <span>{packageVersion(preview.setId)}</span>{' '}
+                                    -{' '}
                                     {t('fileCount', {
                                         number: preview.files.length,
                                     })}{' '}
-                                    ·{' '}
+                                    -{' '}
                                     {formatTemplateBytes(
                                         preview.sizeBytes,
                                         i18n.language,
@@ -364,66 +489,99 @@ export function TemplateImportModal({
                                 </p>
                             </div>
                             {replace ? (
-                                <fieldset className="space-y-2">
-                                    <legend className="font-medium">
-                                        {t('library.tagName')}
-                                    </legend>
-                                    <p className="break-all rounded-md border border-base-content/10 bg-base-200/50 p-3">
-                                        {replace.label}
-                                    </p>
-                                </fieldset>
-                            ) : (
-                                <>
-                                    <label className="block space-y-2">
-                                        <span className="font-medium">
-                                            {t('library.tagName')}
-                                        </span>
-                                        <input
-                                            className="input input-bordered w-full"
-                                            maxLength={80}
-                                            placeholder={t(
-                                                'library.tagPlaceholder',
-                                            )}
-                                            value={label}
-                                            onChange={(event) =>
-                                                setLabel(event.target.value)
-                                            }
-                                        />
-                                    </label>
-                                    <p className="text-base-content/70">
-                                        {t('library.tagFolderDetail')}
-                                    </p>
-                                </>
-                            )}
-                            {replace && (
-                                <div className="alert alert-warning alert-soft block">
-                                    <p>
-                                        {t('library.replaceDetail', {
+                                <div className="shrink-0 space-y-2">
+                                    <p
+                                        className="truncate font-medium"
+                                        title={replace.label}
+                                    >
+                                        {t('library.replacingBuild', {
                                             label: replace.label,
                                         })}
                                     </p>
-                                    {!!users.length && (
-                                        <p className="mt-2">
+                                    <p className="text-sm text-[color:var(--color-warning-readable)]">
+                                        {t('library.replaceSummary')}
+                                    </p>
+                                </div>
+                            ) : (
+                                <label className="block shrink-0 space-y-1">
+                                    <span className="font-medium">
+                                        {t('library.tagName')}
+                                    </span>
+                                    <input
+                                        className="input input-bordered w-full"
+                                        maxLength={80}
+                                        placeholder={t(
+                                            'library.tagPlaceholder',
+                                        )}
+                                        value={label}
+                                        aria-invalid={
+                                            !!nameInvalid ||
+                                            [
+                                                'library.invalidLabel',
+                                                'library.duplicateLabel',
+                                                'library.folderConflict',
+                                            ].includes(errorKey)
+                                        }
+                                        onChange={(event) => {
+                                            setLabel(event.target.value);
+                                            if (
+                                                [
+                                                    'library.invalidLabel',
+                                                    'library.duplicateLabel',
+                                                    'library.folderConflict',
+                                                ].includes(errorKey)
+                                            )
+                                                setError('');
+                                        }}
+                                    />
+                                </label>
+                            )}
+                            <div
+                                className="min-h-0 flex-1 overflow-y-auto overscroll-contain text-sm"
+                                data-testid="templateImportDetails"
+                            >
+                                <details>
+                                    <summary className="cursor-pointer font-medium">
+                                        {t('library.packageDetails')}
+                                    </summary>
+                                    <div className="space-y-3 py-2">
+                                        <TemplatePlatformBadges
+                                            platforms={platforms}
+                                        />
+                                        {!replace && (
+                                            <p className="text-base-content/70">
+                                                {t('library.tagFolderDetail')}
+                                            </p>
+                                        )}
+                                        <ul
+                                            aria-label={t('picker.files')}
+                                            className="space-y-1 rounded-md bg-base-200 p-3"
+                                        >
+                                            {preview.files.map((file) => (
+                                                <li
+                                                    className="break-all"
+                                                    key={file}
+                                                >
+                                                    {file}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </details>
+                                {replace && !!users.length && (
+                                    <details className="mt-2">
+                                        <summary className="cursor-pointer font-medium">
+                                            {t('library.affectedProjects')} (
+                                            {users.length})
+                                        </summary>
+                                        <p className="break-words py-2">
                                             {users.join(', ')}
                                         </p>
-                                    )}
-                                </div>
-                            )}
-                            {incompatible && (
-                                <p role="alert" className="text-error">
-                                    {t('library.incompatible')}
-                                </p>
-                            )}
+                                    </details>
+                                )}
+                            </div>
                         </>
                     )
-                )}
-                {error && (
-                    <p role="alert" className="text-error">
-                        {t(
-                            error.match(/exportTemplates:([\w.]+)/)?.[1] ??
-                                'errors.failed',
-                        )}
-                    </p>
                 )}
             </div>
         </Dialog>

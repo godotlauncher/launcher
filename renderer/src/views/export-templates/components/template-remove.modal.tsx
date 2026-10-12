@@ -2,6 +2,7 @@ import type {
     ImportedTemplateBuild,
     ImportedTemplateInventory,
 } from '@shared/contracts';
+import { TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '../../../components/dialog.component';
@@ -101,56 +102,101 @@ export function TemplateRemoveModal({
         <Dialog
             title={t('library.remove')}
             tone="error"
+            testId="templateRemoveModal"
+            panelClassName={`max-w-2xl ${references.length ? 'h-[min(36rem,85vh)]' : ''}`}
+            bodyClassName="flex min-h-0 flex-col gap-3 overflow-hidden"
             onRequestClose={() => {
                 if (!pending) onClose();
             }}
             footer={
-                <>
-                    <button
-                        type="button"
-                        className="btn btn-ghost"
-                        disabled={pending}
-                        onClick={onClose}
-                    >
-                        {t('cancel')}
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-error"
-                        disabled={
-                            pending || blocked || loading || !current || !!error
-                        }
-                        onClick={() => void remove()}
-                    >
-                        {pending && (
-                            <span
-                                className="loading loading-spinner loading-sm"
+                <div className="flex w-full min-w-0 flex-col gap-3">
+                    {(error || blocked) && (
+                        <p
+                            role={error ? 'alert' : 'status'}
+                            className="flex items-start gap-2 text-sm text-error-content dark:text-error"
+                        >
+                            <TriangleAlert
+                                className="mt-0.5 size-4 shrink-0"
                                 aria-hidden="true"
                             />
+                            <span className="min-w-0 break-words">
+                                {t(
+                                    error
+                                        ? (error.match(
+                                              /exportTemplates:([\w.]+)/,
+                                          )?.[1] ?? 'errors.failed')
+                                        : 'errors.busy',
+                                )}
+                            </span>
+                        </p>
+                    )}
+                    <div className="flex flex-wrap justify-end gap-2">
+                        {error && (
+                            <button
+                                type="button"
+                                className="btn btn-ghost mr-auto"
+                                disabled={pending || loading || blocked}
+                                onClick={() => setRefresh((value) => value + 1)}
+                            >
+                                {t('refresh')}
+                            </button>
                         )}
-                        {t(
-                            references.length
-                                ? 'library.switchAndRemove'
-                                : 'library.remove',
-                        )}
-                    </button>
-                </>
+                        <button
+                            type="button"
+                            className="btn btn-ghost"
+                            disabled={pending}
+                            onClick={onClose}
+                        >
+                            {t('cancel')}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-error"
+                            disabled={
+                                pending ||
+                                blocked ||
+                                loading ||
+                                !current ||
+                                !!error
+                            }
+                            onClick={() => void remove()}
+                        >
+                            {pending && (
+                                <span
+                                    className="loading loading-spinner loading-sm"
+                                    aria-hidden="true"
+                                />
+                            )}
+                            {t(
+                                references.length
+                                    ? 'library.switchAndRemove'
+                                    : 'library.remove',
+                            )}
+                        </button>
+                    </div>
+                </div>
             }
         >
-            <div className="space-y-3" aria-busy={pending || loading}>
-                <p className="font-semibold">
-                    {current?.label ?? build.label} - {version}
+            <div className="shrink-0 space-y-1" aria-busy={pending || loading}>
+                <p
+                    className="truncate font-semibold"
+                    title={current?.label ?? build.label}
+                >
+                    {current?.label ?? build.label}
                 </p>
-                <p>{t('library.removeDetail')}</p>
-                {loading && <p role="status">{t('loading')}</p>}
-                {!!references.length && (
-                    <>
-                        <p>
-                            {t('library.removeReferencedDetail', { version })}
-                        </p>
+                <p className="text-sm text-base-content/70">{version}</p>
+            </div>
+            <p className="shrink-0 text-sm">{t('library.removeDetail')}</p>
+            {loading && <p role="status">{t('loading')}</p>}
+            {!!references.length && (
+                <>
+                    <div className="shrink-0">
                         <SelectField
                             id="remove-template-replacement"
                             label={t('library.replacement')}
+                            help={t('library.removeReferencedDetail', {
+                                version,
+                            })}
                             value={replacement}
                             disabled={pending || blocked || !!error}
                             onChange={setReplacement}
@@ -165,55 +211,48 @@ export function TemplateRemoveModal({
                                 })),
                             ]}
                         />
-                        {replacement === 'official' && !officialInstalled && (
-                            <p className="text-sm text-base-content/75">
-                                {t('library.officialUnavailable')}
-                            </p>
-                        )}
-                        <ul
-                            className="max-h-48 space-y-2 overflow-y-auto"
-                            aria-label={t('library.affectedProjects')}
-                        >
-                            {references.map((reference) => (
-                                <li
-                                    key={reference.projectPath}
-                                    className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 rounded-md bg-base-content/5 px-3 py-2"
-                                >
-                                    <p className="break-words font-medium">
-                                        {reference.projectName}
-                                    </p>
-                                    <p className="text-sm text-base-content/70">
-                                        {t(
-                                            reference.active
-                                                ? 'library.usingNow'
-                                                : 'library.rememberedSelection',
-                                            { version },
-                                        )}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-                {error && (
-                    <div role="alert" className="space-y-2 text-error">
-                        <p>
-                            {t(
-                                error.match(/exportTemplates:([\w.]+)/)?.[1] ??
-                                    'errors.failed',
-                            )}
-                        </p>
-                        <button
-                            type="button"
-                            className="btn btn-sm"
-                            disabled={pending || loading}
-                            onClick={() => setRefresh((value) => value + 1)}
-                        >
-                            {t('refresh')}
-                        </button>
                     </div>
-                )}
-            </div>
+                    {replacement === 'official' && !officialInstalled && (
+                        <p className="shrink-0 text-sm text-[color:var(--color-warning-readable)]">
+                            {t('library.officialUnavailable')}
+                        </p>
+                    )}
+                    <div
+                        className="min-h-0 flex-1 overflow-y-auto"
+                        data-testid="templateRemoveProjects"
+                    >
+                        <details>
+                            <summary className="cursor-pointer text-sm font-medium">
+                                {t('library.affectedProjects')} (
+                                {references.length})
+                            </summary>
+                            <ul
+                                className="mt-2 space-y-2"
+                                aria-label={t('library.affectedProjects')}
+                            >
+                                {references.map((reference) => (
+                                    <li
+                                        key={reference.projectPath}
+                                        className="rounded-md bg-base-content/5 px-3 py-2"
+                                    >
+                                        <p className="break-words text-sm font-medium">
+                                            {reference.projectName}
+                                        </p>
+                                        <p className="text-sm text-base-content/70">
+                                            {t(
+                                                reference.active
+                                                    ? 'library.usingNow'
+                                                    : 'library.rememberedSelection',
+                                                { version },
+                                            )}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </details>
+                    </div>
+                </>
+            )}
         </Dialog>
     );
 }

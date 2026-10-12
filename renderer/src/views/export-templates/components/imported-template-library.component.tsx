@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { EditableTextField } from '../../../components/ui/editable-text-field.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { exportTemplatesBridge } from '../../../renderer.bridge';
+import { formatTemplateBytes } from '../template-format.util';
 import { TemplateFileList } from './template-file-list.component';
 import { TemplateImportModal } from './template-import.modal';
 import {
@@ -31,6 +32,10 @@ type Props = {
     search: string;
     revision: Pick<ExportTemplateInventory, 'sets'> | null;
     onChanged: () => void;
+    onInventoryChange: (
+        inventory: ImportedTemplateInventory | null,
+        readError: boolean,
+    ) => void;
 };
 /** Lists whole imported packages separately from editable official collections.
  * @param props - Search, refresh trigger and shared import button state.
@@ -42,8 +47,9 @@ export function ImportedTemplateLibrary({
     search,
     revision,
     onChanged,
+    onInventoryChange,
 }: Props) {
-    const { t } = useTranslation('exportTemplates');
+    const { t, i18n } = useTranslation('exportTemplates');
     const [library, setLibrary] = useState<ImportedTemplateInventory | null>(
         null,
     );
@@ -55,6 +61,9 @@ export function ImportedTemplateLibrary({
     const [busy, setBusy] = useState(false);
     const [readError, setReadError] = useState('');
     const [actionError, setActionError] = useState('');
+    useEffect(() => {
+        onInventoryChange(library, !!readError);
+    }, [library, readError, onInventoryChange]);
     // biome-ignore lint/correctness/useExhaustiveDependencies: Refresh imports alongside the official inventory.
     useEffect(() => {
         let alive = true;
@@ -284,7 +293,14 @@ export function ImportedTemplateLibrary({
                             </div>
                             <p>
                                 {build.setId} ·{' '}
-                                {t('fileCount', { number: build.files.length })}
+                                {t('fileCount', { number: build.files.length })}{' '}
+                                ·{' '}
+                                {build.available === false
+                                    ? t('sizeUnavailable')
+                                    : formatTemplateBytes(
+                                          build.sizeBytes,
+                                          i18n.language,
+                                      )}
                             </p>
                             <TemplatePlatformBadges
                                 platforms={importedTemplatePlatforms(

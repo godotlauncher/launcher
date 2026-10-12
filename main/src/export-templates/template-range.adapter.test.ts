@@ -117,6 +117,97 @@ describe('remote template index', () => {
         expect(fs.createWriteStream).not.toHaveBeenCalled();
     });
 
+    it.each([
+        { status: 403, error: 'downloadUnavailable' },
+        { status: 404, error: 'downloadUnavailable' },
+        { status: 410, error: 'downloadUnavailable' },
+        { status: 429, error: 'downloadServer' },
+        { status: 503, error: 'downloadServer' },
+        { status: 405, error: 'downloadPartial' },
+        { status: 501, error: 'downloadPartial' },
+        { status: 400, error: 'downloadFailed' },
+    ])(
+        'classifies HTTP $status before reading ZIP metadata',
+        async ({ status, error }) => {
+            fetchMock.mockResolvedValueOnce(new Response(null, { status }));
+            await expect(
+                openTemplateRange(url, new AbortController().signal),
+            ).rejects.toThrow(`errors.${error}`);
+            expect(fromRandomAccessReaderPromise).not.toHaveBeenCalled();
+        },
+    );
+
+    it.each([
+        {
+            headers: { 'content-length': String(size) },
+            reason: 'a missing validator',
+        },
+        { headers: { etag: '"fixture"' }, reason: 'a missing size' },
+    ])(
+        'identifies $reason without claiming ranges are unsupported',
+        async ({ headers }) => {
+            fetchMock.mockResolvedValueOnce(new Response(null, { headers }));
+            await expect(
+                openTemplateRange(url, new AbortController().signal),
+            ).rejects.toThrow('errors.downloadPartial');
+        },
+    );
+
+    it.each([
+        { cause: new TypeError('fetch failed'), error: 'downloadNetwork' },
+        {
+            cause: new DOMException('timed out', 'TimeoutError'),
+            error: 'downloadNetwork',
+        },
+        { cause: new Error('unexpected failure'), error: 'downloadFailed' },
+    ])('classifies request failures as $error', async ({ cause, error }) => {
+        fetchMock.mockRejectedValueOnce(cause);
+        await expect(
+            openTemplateRange(url, new AbortController().signal),
+        ).rejects.toThrow(`errors.${error}`);
+    });
+
+    it('keeps user cancellation separate from a failed connection', async () => {
+        const controller = new AbortController();
+        controller.abort();
+        fetchMock.mockRejectedValueOnce(controller.signal.reason);
+        await expect(
+            openTemplateRange(url, controller.signal),
+        ).rejects.toMatchObject({ name: 'AbortError' });
+    });
+
+    it('classifies parser failures as an unreadable package', async () => {
+        vi.mocked(fromRandomAccessReaderPromise).mockRejectedValueOnce(
+            new Error('invalid ZIP signature'),
+        );
+        await expect(
+            openTemplateRange(url, new AbortController().signal),
+        ).rejects.toThrow('errors.downloadInvalid');
+    });
+
+    it.each([
+        {
+            name: 'TimeoutError',
+            expected: 'exportTemplates:errors.downloadNetwork',
+        },
+        { name: 'AbortError', expected: 'cancelled by user' },
+    ])(
+        'preserves $name during file-list discovery',
+        async ({ name, expected }) => {
+            const controller = new AbortController();
+            vi.mocked(fromRandomAccessReaderPromise).mockImplementationOnce(
+                async () => {
+                    const reason = new DOMException('cancelled by user', name);
+                    controller.abort(reason);
+                    throw reason;
+                },
+            );
+            await expect(
+                openTemplateRange(url, controller.signal),
+            ).rejects.toThrow(expected);
+        },
+    );
+
     it('closes the parser when an entry escapes the package', async () => {
         entries[0].fileName = '../escaped';
         await expect(
@@ -178,35 +269,104 @@ describe('remote template ranges', () => {
             new Response('whole archive', { status: 200 }),
         );
         await expect(read(reader._readStreamForRange(0, 10))).rejects.toThrow(
-            'errors.range',
+            'errors.downloadPartial',
         );
     });
 
     it.each([
         {
             reason: 'a changed validator',
+            error: 'errors.downloadChanged',
             range: `bytes 0-131071/${size}`,
             etag: '"changed"',
         },
         {
             reason: 'an incorrect content range',
+            error: 'errors.downloadPartial',
             range: `bytes 1-131072/${size}`,
             etag: '"fixture"',
         },
-    ])('rejects $reason in a partial response', async ({ range, etag }) => {
+    ])(
+        'rejects $reason in a partial response',
+        async ({ range, etag, error }) => {
+            const { reader } = await openReader();
+            fetchMock.mockResolvedValueOnce(
+                new Response(new Uint8Array(128 * 1024), {
+                    status: 206,
+                    headers: { 'content-range': range, etag },
+                }),
+            );
+
+            await expect(
+                read(reader._readStreamForRange(0, 10)),
+            ).rejects.toThrow(error);
+        },
+    );
+
+    it('identifies an archive size change in a range response', async () => {
         const { reader } = await openReader();
         fetchMock.mockResolvedValueOnce(
             new Response(new Uint8Array(128 * 1024), {
                 status: 206,
-                headers: { 'content-range': range, etag },
+                headers: {
+                    'content-range': `bytes 0-131071/${size + 1}`,
+                    etag: '"fixture"',
+                },
             }),
         );
-
         await expect(read(reader._readStreamForRange(0, 10))).rejects.toThrow(
-            'errors.range',
+            'errors.downloadChanged',
         );
     });
 
+    it('identifies a missing response validator without claiming the package changed', async () => {
+        const { reader } = await openReader();
+        fetchMock.mockResolvedValueOnce(
+            new Response(new Uint8Array(128 * 1024), {
+                status: 206,
+                headers: { 'content-range': `bytes 0-131071/${size}` },
+            }),
+        );
+        await expect(read(reader._readStreamForRange(0, 10))).rejects.toThrow(
+            'errors.downloadPartial',
+        );
+    });
+
+    it('identifies a changed package even when the server returns the whole archive', async () => {
+        const { reader } = await openReader();
+        fetchMock.mockResolvedValueOnce(
+            new Response('new archive', {
+                status: 200,
+                headers: { etag: '"changed"' },
+            }),
+        );
+        await expect(read(reader._readStreamForRange(0, 10))).rejects.toThrow(
+            'errors.downloadChanged',
+        );
+    });
+    it.each([10, 65536])(
+        'keeps a dropped connection distinct from an unreadable archive for %i bytes',
+        async (length) => {
+            const { reader } = await openReader();
+            const stream = new ReadableStream({
+                start(controller) {
+                    controller.error(new TypeError('terminated'));
+                },
+            });
+            fetchMock.mockResolvedValueOnce(
+                new Response(stream, {
+                    status: 206,
+                    headers: {
+                        'content-range': `bytes 0-${length === 10 ? 131071 : length - 1}/${size}`,
+                        etag: '"fixture"',
+                    },
+                }),
+            );
+            await expect(
+                read(reader._readStreamForRange(0, length)),
+            ).rejects.toThrow('errors.downloadNetwork');
+        },
+    );
     it('honours cancellation before requesting another range', async () => {
         const { reader, controller } = await openReader();
         controller.abort();

@@ -8,7 +8,7 @@ export function getTemplateRowJobs(
 ): Map<string, TemplateJob> {
     const latest = new Map<string, TemplateJob>();
     for (const job of jobs) {
-        if (job.projectPath) continue;
+        if (job.projectPath || job.migration) continue;
         for (const id of job.setIds?.length ? job.setIds : [`job-${job.id}`])
             latest.set(id, job);
     }
