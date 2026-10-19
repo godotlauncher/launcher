@@ -35,6 +35,8 @@
         "deleteRelease": "Удалить версию с этого устройства"
     },
     "tray": {
+        "pinnedProjects": "Закреплённые проекты",
+        "moreProjects": "Ещё...",
         "recentProjects": "Недавние проекты",
         "invalidProject": "{{project}} (Недействителен)",
         "showGodotLauncher": "Показать Godot Launcher",

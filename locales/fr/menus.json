@@ -35,6 +35,8 @@
         "deleteRelease": "Supprimer la version de cet appareil"
     },
     "tray": {
+        "pinnedProjects": "Projets épinglés",
+        "moreProjects": "Plus...",
         "recentProjects": "Projets récents",
         "invalidProject": "{{project}} (Invalide)",
         "showGodotLauncher": "Afficher Godot Launcher",

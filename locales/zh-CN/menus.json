@@ -35,6 +35,8 @@
         "deleteRelease": "从此设备删除该发行版"
     },
     "tray": {
+        "pinnedProjects": "已固定的项目",
+        "moreProjects": "更多...",
         "recentProjects": "最近的项目",
         "invalidProject": "{{project}}（无效）",
         "showGodotLauncher": "显示 Godot Launcher",

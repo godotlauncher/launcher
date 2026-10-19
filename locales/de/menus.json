@@ -35,6 +35,8 @@
         "deleteRelease": "Release von diesem Gerät löschen"
     },
     "tray": {
+        "pinnedProjects": "Angeheftete Projekte",
+        "moreProjects": "Weitere...",
         "recentProjects": "Zuletzt verwendete Projekte",
         "invalidProject": "{{project}} (Ungültig)",
         "showGodotLauncher": "Godot Launcher anzeigen",

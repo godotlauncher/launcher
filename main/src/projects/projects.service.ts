@@ -480,10 +480,6 @@ export class ProjectsService {
         }
         this.publishProjects(projects);
 
-        if (process.platform === 'linux') {
-            await updateLinuxTray();
-        }
-
         return projects;
     }
 
@@ -841,6 +837,7 @@ export class ProjectsService {
             project.editor_settings_path = updatedProject.editor_settings_path;
             project.valid = updatedProject.valid;
             project.codeEditorId = updatedProject.codeEditorId;
+            void updateLinuxTray();
         }
 
         return {
@@ -1478,10 +1475,6 @@ export class ProjectsService {
                 break;
         }
 
-        if (process.platform === 'linux') {
-            await updateLinuxTray();
-        }
-
         this.publishProjects(projects);
         return { launched: true };
     }
@@ -1508,6 +1501,8 @@ export class ProjectsService {
         );
         if (options.publishResult) {
             this.publishProjects(projects);
+        } else {
+            void updateLinuxTray();
         }
         return projects;
     }
@@ -1671,11 +1666,12 @@ export class ProjectsService {
     }
 
     /**
-     * Publishes a successfully persisted project list to the renderer.
+     * Refreshes the tray and publishes successfully persisted projects.
      *
      * @param projects - Final persisted project list.
      */
     private publishProjects(projects: ProjectDetails[]): void {
+        void updateLinuxTray();
         const webContents = getMainWindow()?.webContents;
         if (!webContents || webContents.isDestroyed?.()) {
             return;

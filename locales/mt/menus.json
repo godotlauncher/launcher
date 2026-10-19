@@ -35,6 +35,8 @@
         "deleteRelease": "Ħassar Release minn dan it-Tagħmir"
     },
     "tray": {
+        "pinnedProjects": "Proġetti mwaħħla",
+        "moreProjects": "Aktar...",
         "recentProjects": "Proġetti Riċenti",
         "invalidProject": "{{project}} (Invalidu)",
         "showGodotLauncher": "Uri Godot Launcher",
