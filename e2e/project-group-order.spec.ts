@@ -41,7 +41,7 @@ async function restorePreferences() {
 
 /** Opens the view-options modal and returns its accessible locator. */
 async function openOptions() {
-    await page.getByRole('button', { name: 'View options', exact: true }).click();
+    await page.getByTestId('btnProjectViewOptions').click();
     const modal = page.getByRole('dialog', { name: 'View options', exact: true });
     await expect(modal.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
     return modal;
@@ -80,7 +80,7 @@ test.beforeEach(async () => {
 
 test('defaults, drafts, Cancel, Escape and keyboard sorting preserve the saved order', async () => {
     expect(await groupNames()).toEqual(defaultNames);
-    await expect(page.getByRole('button', { name: 'View options', exact: true })).toHaveText('');
+    await expect(page.getByTestId('btnProjectViewOptions')).toHaveText('');
     let modal = await openOptions();
     const rows = modal.getByRole('list', { name: 'Group order', exact: true }).getByRole('button');
     await expect(rows).toHaveText(defaultNames);
@@ -88,7 +88,7 @@ test('defaults, drafts, Cancel, Escape and keyboard sorting preserve the saved o
     await expect(rows).toHaveText(['New', 'Pinned', 'Recents']);
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
     expect(await groupNames()).toEqual(defaultNames);
-    await expect(page.getByRole('button', { name: 'View options', exact: true })).toBeFocused();
+    await expect(page.getByTestId('btnProjectViewOptions')).toBeFocused();
 
     modal = await openOptions();
     const pinned = modal.getByRole('button', { name: 'Reorder Pinned', exact: true });

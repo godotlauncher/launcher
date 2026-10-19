@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "Zapisano kolejność grup",
+        "restored": "Przywrócono poprzednią kolejność",
         "title": "Opcje widoku",
         "groupOrder": "Kolejność grup",
         "dragHelp": "Przeciągnij wiersz, aby zmienić kolejność grup.",

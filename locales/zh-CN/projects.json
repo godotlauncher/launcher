@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "分组顺序已保存",
+        "restored": "已恢复之前的顺序",
         "title": "视图选项",
         "groupOrder": "分组顺序",
         "dragHelp": "拖动整行以更改分组顺序。",

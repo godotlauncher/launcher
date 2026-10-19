@@ -1,4 +1,10 @@
 {
+    "notifications": {
+        "label": "通知",
+        "dismiss": "通知を閉じる",
+        "actionFailed": "操作を完了できませんでした。もう一度お試しください。",
+        "undo": "元に戻す"
+    },
     "buttons": {
         "copy": "コピー",
         "ok": "OK",

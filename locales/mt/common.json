@@ -1,4 +1,10 @@
 {
+    "notifications": {
+        "label": "Notifiki",
+        "dismiss": "Agħlaq in-notifika",
+        "actionFailed": "L-azzjoni ma setgħetx titlesta. Erġa' pprova.",
+        "undo": "Ħassar l-aħħar azzjoni"
+    },
     "buttons": {
         "copy": "Ikkopja",
         "ok": "Ok",

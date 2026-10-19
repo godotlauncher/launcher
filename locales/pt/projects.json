@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "Ordem dos grupos guardada",
+        "restored": "Ordem anterior reposta",
         "title": "Opções de visualização",
         "groupOrder": "Ordem dos grupos",
         "dragHelp": "Arraste uma linha para alterar a ordem dos grupos.",

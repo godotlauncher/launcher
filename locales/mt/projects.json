@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "L-ordni tal-gruppi ġiet issejvjata",
+        "restored": "L-ordni preċedenti ġiet irrestawrata",
         "title": "Għażliet tal-vista",
         "groupOrder": "Ordni tal-gruppi",
         "dragHelp": "Iddreggja ringiela biex tibdel l-ordni tal-gruppi.",

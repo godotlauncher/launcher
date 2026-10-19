@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appRoutePaths } from '../app.routes';
+import type { NotificationOptions } from '../components/notifications/notification.types';
 import {
     ProjectTagFilter,
     type ProjectTagFilterHandle,
@@ -23,12 +24,13 @@ import { Tooltip } from '../components/ui/tooltip.component';
 import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
 import { useAlerts } from '../hooks/alerts.hook';
 import { useAppNavigation } from '../hooks/app-navigation.hook';
+import { useNotifications } from '../hooks/notifications.hook';
 import { usePreferences } from '../hooks/preferences.hook';
 import { useProjectTags } from '../hooks/project-tags.hook';
 import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
 import { useToolIntegrations } from '../hooks/tool-integrations.hook';
-import { terminalBridge } from '../renderer.bridge';
+import { appBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
@@ -138,9 +140,22 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     );
 
     const { addAlert, addCustomConfirm } = useAlerts();
+    const { showNotification, dismissNotification, replaceNotification } =
+        useNotifications();
+    const groupOrderNotification = useRef<number | null>(null);
+    const viewMounted = useRef(false);
+    useEffect(() => {
+        viewMounted.current = true;
+        return () => {
+            viewMounted.current = false;
+            if (groupOrderNotification.current !== null)
+                dismissNotification(groupOrderNotification.current);
+        };
+    }, [dismissNotification]);
     const navigate = useNavigate();
 
-    const { preferences, updatePreferences, platform } = usePreferences();
+    const { preferences, updatePreferences, savePreferences, platform } =
+        usePreferences();
     const searchInput = useRef<HTMLInputElement>(null);
     const tagFilterControl = useRef<ProjectTagFilterHandle>(null);
     const shortcutModifier = platform === 'darwin' ? '⌘' : 'Ctrl';
@@ -212,6 +227,97 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const projectGroupOrder =
         preferences?.projects_group_order ?? DEFAULT_PROJECT_GROUP_ORDER;
     /**
+     * Shows a feature-owned confirmation using the reusable notification API.
+     * @param order - Order described by the confirmation.
+     * @param previousOrder - Optional previous order offered by Undo.
+     * @param expectedId - Existing notification that owns an action result.
+     */
+    const notifyGroupOrder = (
+        order: readonly ProjectSectionKey[],
+        previousOrder?: readonly ProjectSectionKey[],
+        expectedId?: number,
+    ) => {
+        const options: NotificationOptions = {
+            title: t(
+                previousOrder ? 'viewOptions.saved' : 'viewOptions.restored',
+            ),
+            description: order
+                .map((group) => t(`sections.${group}`))
+                .join(' > '),
+            tone: 'success',
+            returnFocusElement: viewOptionsButtonRef.current,
+            actions: [
+                ...(previousOrder
+                    ? [
+                          {
+                              label: t('common:notifications.undo'),
+                              variant: 'primary' as const,
+                              onClick: async () => {
+                                  const sourceNotificationId =
+                                      groupOrderNotification.current;
+                                  if (
+                                      savingGroupOrderRef.current ||
+                                      savingViewModeRef.current ||
+                                      savingTagFilterRef.current
+                                  )
+                                      throw new Error(
+                                          'A project preference save is already running',
+                                      );
+                                  savingGroupOrderRef.current = true;
+                                  setSavingGroupOrder(true);
+                                  try {
+                                      const current =
+                                          await appBridge.getUserPreferences();
+                                      const currentOrder =
+                                          current.projects_group_order ??
+                                          DEFAULT_PROJECT_GROUP_ORDER;
+                                      if (
+                                          !order.every(
+                                              (group, index) =>
+                                                  group === currentOrder[index],
+                                          )
+                                      )
+                                          throw new Error(
+                                              'The project group order has changed',
+                                          );
+                                      await savePreferences({
+                                          ...current,
+                                          projects_group_order: [
+                                              ...previousOrder,
+                                          ],
+                                      });
+                                      if (
+                                          viewMounted.current &&
+                                          sourceNotificationId !== null
+                                      )
+                                          notifyGroupOrder(
+                                              previousOrder,
+                                              undefined,
+                                              sourceNotificationId,
+                                          );
+                                  } finally {
+                                      savingGroupOrderRef.current = false;
+                                      if (viewMounted.current)
+                                          setSavingGroupOrder(false);
+                                  }
+                              },
+                          },
+                      ]
+                    : []),
+                {
+                    label: t('viewOptions.title'),
+                    variant: 'secondary' as const,
+                    onClick: () => setViewOptionsOpen(true),
+                },
+            ],
+        };
+        const id =
+            expectedId === undefined
+                ? showNotification(options)
+                : replaceNotification(expectedId, options);
+        if (id !== null) groupOrderNotification.current = id;
+    };
+    /**
      * Saves a group order before applying it to the project list.
      * @param order - All project groups in their requested display order.
      */
@@ -230,6 +336,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         try {
             await updatePreferences({ projects_group_order: order });
             setViewOptionsOpen(false);
+            notifyGroupOrder(order, projectGroupOrder);
             return true;
         } catch {
             return false;

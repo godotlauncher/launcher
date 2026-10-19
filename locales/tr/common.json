@@ -1,4 +1,10 @@
 {
+    "notifications": {
+        "label": "Bildirimler",
+        "dismiss": "Bildirimi kapat",
+        "actionFailed": "İşlem tamamlanamadı. Lütfen tekrar deneyin.",
+        "undo": "Geri al"
+    },
     "buttons": {
         "copy": "Kopyala",
         "ok": "Tamam",

@@ -7,6 +7,7 @@ import './index.css';
 import { AlertsProvider } from './hooks/alerts.hook.tsx';
 import { AppProvider } from './hooks/app.hook.tsx';
 import { AppNavigationProvider } from './hooks/app-navigation.hook.tsx';
+import { NotificationsProvider } from './hooks/notifications.hook.tsx';
 import { PreferencesProvider } from './hooks/preferences.hook.tsx';
 import { ProjectTagsProvider } from './hooks/project-tags.hook.tsx';
 import { ProjectsProvider } from './hooks/projects.hook.tsx';
@@ -29,11 +30,13 @@ ReactDOM.createRoot(rootElement).render(
                             <AppNavigationProvider>
                                 <ReleaseProvider>
                                     <AlertsProvider>
-                                        <ProjectsProvider>
-                                            <ProjectTagsProvider>
-                                                <App />
-                                            </ProjectTagsProvider>
-                                        </ProjectsProvider>
+                                        <NotificationsProvider>
+                                            <ProjectsProvider>
+                                                <ProjectTagsProvider>
+                                                    <App />
+                                                </ProjectTagsProvider>
+                                            </ProjectsProvider>
+                                        </NotificationsProvider>
                                     </AlertsProvider>
                                 </ReleaseProvider>
                             </AppNavigationProvider>

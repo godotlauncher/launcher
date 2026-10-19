@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "Grup sırası kaydedildi",
+        "restored": "Önceki sıra geri yüklendi",
         "title": "Görünüm seçenekleri",
         "groupOrder": "Grup sırası",
         "dragHelp": "Grup sırasını değiştirmek için bir satırı sürükleyin.",

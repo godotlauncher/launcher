@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "Group order saved",
+        "restored": "Previous order restored",
         "title": "View options",
         "groupOrder": "Group order",
         "dragHelp": "Drag a row to change the group order.",

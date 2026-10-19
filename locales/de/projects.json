@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "Gruppenreihenfolge gespeichert",
+        "restored": "Vorherige Reihenfolge wiederhergestellt",
         "title": "Ansichtsoptionen",
         "groupOrder": "Gruppenreihenfolge",
         "dragHelp": "Ziehe eine Zeile, um die Gruppenreihenfolge zu ändern.",

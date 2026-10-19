@@ -40,6 +40,14 @@ vi.mock('../hooks/alerts.hook', () => ({
     }),
 }));
 
+vi.mock('../hooks/notifications.hook', () => ({
+    useNotifications: () => ({
+        showNotification: vi.fn(),
+        dismissNotification: vi.fn(),
+        replaceNotification: vi.fn(),
+    }),
+}));
+
 vi.mock('../hooks/app-navigation.hook', () => ({
     useAppNavigation: () => ({
         setCurrentView: vi.fn(),

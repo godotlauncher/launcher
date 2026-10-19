@@ -1,0 +1,52 @@
+.app-notification {
+    background: light-dark(#ffffff, #303030);
+    color: light-dark(#24272d, #f0f0f0);
+    border-color: light-dark(#c7cbd2, #555555);
+    box-shadow:
+        0 12px 36px light-dark(rgb(0 0 0 / 0.22), rgb(0 0 0 / 0.5)),
+        0 2px 8px light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.28));
+}
+.app-notification-description,
+.app-notification-close {
+    color: light-dark(#575b63, #bdbdbd);
+}
+.app-notification-secondary {
+    border-color: light-dark(#c7cbd2, #555555);
+}
+.app-notification-secondary:not(:disabled) {
+    color: inherit;
+}
+.app-notification-secondary:hover,
+.app-notification-close:hover {
+    background: light-dark(#eceff3, #414141);
+}
+.app-notification-progress {
+    background: light-dark(#c7cbd2, #555555);
+}
+.app-notification-progress > span {
+    display: block;
+    height: 100%;
+    background: var(--color-primary);
+    transform-origin: left;
+    animation: notification-countdown var(--notification-duration) linear
+        forwards;
+}
+@keyframes notification-countdown {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .app-notification-progress > span {
+        animation: none;
+    }
+}
+@media (pointer: coarse) {
+    .app-notification button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+}

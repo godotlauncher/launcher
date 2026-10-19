@@ -1,5 +1,7 @@
 {
     "viewOptions": {
+        "saved": "群組順序已儲存",
+        "restored": "已還原先前的順序",
         "title": "檢視選項",
         "groupOrder": "群組順序",
         "dragHelp": "拖曳整列以變更群組順序。",
