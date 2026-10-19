@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type { CodeEditorId } from '@shared/contracts';
 import type {
+    CodeEditorFolderLaunchConfiguration,
     CodeEditorInstallation,
     CodeEditorIntegration,
     CodeEditorPathValidation,
@@ -68,6 +69,23 @@ export class VSCodiumIntegration implements CodeEditorIntegration {
      */
     async isConfiguredForProject(projectPath: string): Promise<boolean> {
         return fs.existsSync(path.resolve(projectPath, '.vscode'));
+    }
+
+    /**
+     * Resolves folder arguments independently of Godot's file-navigation flags.
+     * @param installation - Validated VSCodium installation.
+     * @param projectPath - Registered project directory.
+     */
+    resolveFolderLaunchConfiguration(
+        installation: CodeEditorInstallation,
+        projectPath: string,
+    ): CodeEditorFolderLaunchConfiguration {
+        const args =
+            process.platform === 'linux' &&
+            path.posix.basename(installation.path) === 'flatpak'
+                ? ['run', 'com.vscodium.codium', projectPath]
+                : [projectPath];
+        return { command: installation.path, args };
     }
 
     resolveGodotConfiguration(input: {

@@ -28,7 +28,8 @@
         "projects": {
             "title": "專案",
             "description": "選擇 Godot Launcher 在專案中的行為。",
-            "confirmRemove": "移除專案時要求確認。"
+            "confirmRemove": "移除專案時要求確認。",
+            "autoOpenCodeEditor": "編輯專案時開啟程式碼編輯器"
         },
         "autoStart": {
             "title": "啟動偏好",

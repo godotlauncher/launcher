@@ -462,6 +462,15 @@ export class ProjectsController implements ProjectsBridge {
     }
 
     /**
+     * Opens the registered project's associated code editor.
+     * @param projectPath - Exact registered project folder.
+     */
+    @ProjectsHandler('openProjectCodeEditor')
+    openProjectCodeEditor(projectPath: string) {
+        return this.projects.openProjectCodeEditor(projectPath);
+    }
+
+    /**
      * Launches a project with its configured post-launch action.
      *
      * @param project - Project to launch.

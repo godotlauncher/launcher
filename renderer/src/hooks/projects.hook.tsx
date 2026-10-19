@@ -16,6 +16,7 @@ import type {
     InstalledRelease,
     LaunchProjectResult,
     ListCreateProjectPublicationTargetsResult,
+    OpenProjectCodeEditorResult,
     ProjectDetails,
     ProjectEditorSelection,
     ProjectEditorSelectionExpectation,
@@ -132,6 +133,7 @@ interface ProjectsContext {
     ) => Promise<RenameProjectResult>;
     getProjectGodotName: (project: ProjectDetails) => Promise<string | null>;
     removeProject: (project: ProjectDetails) => Promise<void>;
+    openProjectCodeEditor: (project: ProjectDetails) => Promise<void>;
     launchProject: (
         project: ProjectDetails,
     ) => Promise<ProjectDetails | undefined>;
@@ -731,9 +733,64 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         );
     };
 
+    /**
+     * Shows an actionable folder-opening error from either launch entry point.
+     * @param result - Failed code editor dispatch.
+     */
+    const showCodeEditorOpenFailure = (
+        result: Extract<OpenProjectCodeEditorResult, { success: false }>,
+    ) => {
+        addCustomConfirm(
+            t('messages.codeEditorOpen.title'),
+            t(`messages.codeEditorOpen.${result.reason}`, {
+                editor: result.editor,
+            }),
+            [
+                {
+                    typeClass: 'btn-primary',
+                    text: t('messages.codeEditorLaunch.openSettings'),
+                    onClick: () => {
+                        navigate(appRoutePaths.settingsTab('codeEditors'));
+                        return true;
+                    },
+                },
+                {
+                    isCancel: true,
+                    typeClass: 'btn-ghost',
+                    text: t('common:buttons.ok'),
+                },
+            ],
+            <TriangleAlert className="stroke-warning" />,
+        );
+    };
+
+    /**
+     * Opens the selected project's external editor independently of Godot.
+     * @param project - Registered project whose folder should open.
+     */
+    const openProjectCodeEditor = async (project: ProjectDetails) => {
+        try {
+            const result = await projectsBridge.openProjectCodeEditor(
+                project.path,
+            );
+            if (!result.success) showCodeEditorOpenFailure(result);
+        } catch (error) {
+            addAlert(
+                t('common:error'),
+                error instanceof Error ? error.message : t('common:error'),
+            );
+        }
+    };
+
+    /**
+     * Launches Godot and presents optional code editor dispatch feedback.
+     * @param project - Project to edit.
+     */
     const launchProject = async (project: ProjectDetails) => {
         try {
             const result = await projectsBridge.launchProject(project);
+            if (result.launched && result.codeEditorWarning)
+                showCodeEditorOpenFailure(result.codeEditorWarning);
             if (!result.launched) {
                 if (result.reason === 'code_editor_unavailable') {
                     showMissingCodeEditorWarning(project, result);
@@ -775,6 +832,10 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             ({ project, result }) =>
                 showMissingCodeEditorWarning(project, result),
         );
+        const offEditorOpenFailure = subscribeAppEvent(
+            'project-code-editor-open-failed',
+            showCodeEditorOpenFailure,
+        );
         // Initial data fetching on mount
         getProjects();
 
@@ -782,6 +843,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             off();
             offCodeEditorIntegrations();
             offLaunchWarning();
+            offEditorOpenFailure();
         };
     }, []);
 
@@ -818,6 +880,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 getProjectGodotName,
                 removeProject,
                 launchProject,
+                openProjectCodeEditor,
                 refreshProjects,
                 checkProjectValid,
                 createProject,

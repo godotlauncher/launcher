@@ -385,6 +385,13 @@
             "launchAnyway": "Trotzdem starten",
             "openSettings": "Einstellungen öffnen",
             "disableAndLaunch": "Deaktivieren & starten"
+        },
+        "codeEditorOpen": {
+            "title": "Code-Editor konnte nicht geöffnet werden",
+            "project-unavailable": "Der Projektordner ist nicht verfügbar.",
+            "editor-not-configured": "Für dieses Projekt ist kein Code-Editor ausgewählt.",
+            "editor-unavailable": "{{editor}} ist nicht verfügbar. Prüfe die Installation in den Code-Editor-Einstellungen.",
+            "launch-failed": "{{editor}} konnte nicht gestartet werden. Prüfe die ausführbare Datei in den Code-Editor-Einstellungen."
         }
     },
     "changeEditor": {

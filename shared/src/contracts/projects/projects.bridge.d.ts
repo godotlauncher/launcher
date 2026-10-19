@@ -1,4 +1,7 @@
-import type { CodeEditorId } from '../codeEditorIntegration/index.js';
+import type {
+    CodeEditorId,
+    OpenProjectCodeEditorResult,
+} from '../codeEditorIntegration/index.js';
 import type { InstalledRelease } from '../releases/index.js';
 import type {
     AddProjectOptions,
@@ -231,7 +234,17 @@ export type ProjectsBridge = {
     /** Imports Godot editor settings into a project. */
     importProjectEditorSettings(project: ProjectDetails): Promise<void>;
 
-    /** Launches a project with its configured editor and post-launch action. */
+    /** Opens the registered project's associated code editor.
+     * @param projectPath - Exact registered project folder.
+     */
+    openProjectCodeEditor(
+        projectPath: string,
+    ): Promise<OpenProjectCodeEditorResult>;
+
+    /** Launches a project with its configured editor and post-launch action.
+     * @param project - Project to edit in Godot.
+     * @param options - Optional launch overrides.
+     */
     launchProject(
         project: ProjectDetails,
         options?: LaunchProjectOptions,

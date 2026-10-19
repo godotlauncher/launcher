@@ -377,6 +377,13 @@
             "launchAnyway": "Démarrer quand même",
             "openSettings": "Ouvrir les paramètres",
             "disableAndLaunch": "Désactiver et lancer"
+        },
+        "codeEditorOpen": {
+            "title": "Impossible d’ouvrir l’éditeur de code",
+            "project-unavailable": "Le dossier du projet est indisponible.",
+            "editor-not-configured": "Aucun éditeur de code n’est sélectionné pour ce projet.",
+            "editor-unavailable": "{{editor}} est indisponible. Vérifiez son installation dans les paramètres des éditeurs de code.",
+            "launch-failed": "Impossible de démarrer {{editor}}. Vérifiez son exécutable dans les paramètres des éditeurs de code."
         }
     },
     "changeEditor": {

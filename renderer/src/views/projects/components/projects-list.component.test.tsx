@@ -76,6 +76,7 @@ const downloadableRelease: ReleaseSummary = {
 };
 
 type RenderOptions = {
+    terminalAvailable?: boolean;
     groupOrder?: ProjectSectionKey[];
     viewMode?: 'cards' | 'list' | 'dense';
     isInstalledRelease?: (version: string, mono: boolean) => boolean;
@@ -93,7 +94,7 @@ type RenderOptions = {
  * @param pinnedReorderingDisabled - Whether search disables reordering.
  * @param projectGitHubUrls - Cached repository URLs.
  * @param translate - Translation stub.
- * @param options - View and editor status overrides.
+ * @param options - View, terminal availability and editor status overrides.
  */
 function renderProjectsList(
     sections: Partial<ProjectSections>,
@@ -132,6 +133,7 @@ function renderProjectsList(
             busyProjects={[]}
             projectGitHubUrls={projectGitHubUrls}
             codeEditorSettings={codeEditorSettings}
+            terminalAvailable={options.terminalAvailable ?? true}
             highlightedPinnedProjectPath={null}
             pinnedReorderingDisabled={pinnedReorderingDisabled}
             onPinnedHighlightComplete={vi.fn()}
@@ -145,6 +147,7 @@ function renderProjectsList(
             }
             onInstallRequiredProjectEditor={vi.fn()}
             onLaunchProject={vi.fn()}
+            onOpenCodeEditor={vi.fn()}
             onOpenTerminal={vi.fn()}
             onProjectFoldersOptions={vi.fn()}
             onTogglePinned={vi.fn()}
@@ -406,6 +409,88 @@ describe('ProjectsList', () => {
             'data-testid="btnReorderPinnedProject" disabled=""',
         );
     });
+
+    describe.each(['cards', 'list', 'dense'] as const)(
+        '%s project opening actions',
+        (viewMode) => {
+            it.each(['vscode', 'vscodium'] as const)(
+                'opens %s directly when the terminal is unavailable',
+                (codeEditorId) => {
+                    const editorName =
+                        codeEditorId === 'vscode'
+                            ? 'Visual Studio Code'
+                            : 'VSCodium';
+                    const editorSettings = {
+                        ...availableVSCodeSettings,
+                        integration: {
+                            ...availableVSCodeSettings.integration,
+                            id: codeEditorId,
+                            displayName: editorName,
+                        },
+                    };
+                    const html = renderProjectsList(
+                        { recentProjects: [{ ...baseProject, codeEditorId }] },
+                        [editorSettings],
+                        'en',
+                        false,
+                        new Map(),
+                        undefined,
+                        { viewMode, terminalAvailable: false },
+                    );
+                    expect(html).toContain(
+                        `aria-label="project.openCodeEditor: ${editorName}"`,
+                    );
+                    expect(html).toContain(
+                        'data-testid="btnProjectCodeEditor"',
+                    );
+                    expect(html).not.toContain(
+                        'data-testid="btnProjectTerminal"',
+                    );
+                    expect(html).not.toContain(
+                        'data-testid="btnProjectOpenTools"',
+                    );
+                },
+            );
+
+            it('retains the terminal and dropdown when both tools are available', () => {
+                const html = renderProjectsList(
+                    {
+                        recentProjects: [
+                            { ...baseProject, codeEditorId: 'vscode' },
+                        ],
+                    },
+                    undefined,
+                    'en',
+                    false,
+                    new Map(),
+                    undefined,
+                    { viewMode, terminalAvailable: true },
+                );
+                expect(html).toContain('aria-label="project.openTerminal"');
+                expect(html).toContain('data-testid="btnProjectOpenTools"');
+                expect(html).not.toContain(
+                    'data-testid="btnProjectCodeEditor"',
+                );
+            });
+
+            it('retains the terminal warning action without an associated editor', () => {
+                const html = renderProjectsList(
+                    { recentProjects: [baseProject] },
+                    undefined,
+                    'en',
+                    false,
+                    new Map(),
+                    undefined,
+                    { viewMode, terminalAvailable: false },
+                );
+                expect(html).toContain('aria-label="project.openTerminal"');
+                expect(html).not.toContain('data-testid="btnProjectOpenTools"');
+                expect(html).not.toContain(
+                    'data-testid="btnProjectCodeEditor"',
+                );
+            });
+        },
+    );
 
     it('renders unavailable code editors as warnings', () => {
         const html = renderProjectsList(

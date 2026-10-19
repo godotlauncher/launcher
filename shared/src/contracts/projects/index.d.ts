@@ -2,6 +2,7 @@ import type { BackendResult } from '../app/index.js';
 import type {
     CodeEditorId,
     CodeEditorIntegrationSummary,
+    OpenProjectCodeEditorResult,
 } from '../codeEditorIntegration/index.js';
 import type { GitLfsTrackingPolicy } from '../git-lfs/index.js';
 import type {
@@ -203,7 +204,13 @@ export type LaunchProjectOptions = {
 };
 
 export type LaunchProjectResult =
-    | { launched: true }
+    | {
+          launched: true;
+          codeEditorWarning?: Extract<
+              OpenProjectCodeEditorResult,
+              { success: false }
+          >;
+      }
     | {
           launched: false;
           reason: 'project_unavailable';

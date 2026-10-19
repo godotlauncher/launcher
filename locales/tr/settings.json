@@ -28,7 +28,8 @@
         "projects": {
             "title": "Projeler",
             "description": "Projeler için Godot Launcher davranışını seçin.",
-            "confirmRemove": "Projeleri kaldırırken onay iste."
+            "confirmRemove": "Projeleri kaldırırken onay iste.",
+            "autoOpenCodeEditor": "Projeyi düzenlerken kod düzenleyiciyi aç"
         },
         "autoStart": {
             "title": "Başlangıç Tercihi",

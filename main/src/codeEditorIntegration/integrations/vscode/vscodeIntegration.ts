@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type { CodeEditorId } from '@shared/contracts';
 import type {
+    CodeEditorFolderLaunchConfiguration,
     CodeEditorInstallation,
     CodeEditorIntegration,
     CodeEditorPathValidation,
@@ -91,6 +92,18 @@ export class VSCodeIntegration implements CodeEditorIntegration {
 
     async isConfiguredForProject(projectPath: string): Promise<boolean> {
         return fs.existsSync(path.resolve(projectPath, '.vscode'));
+    }
+
+    /**
+     * Opens a folder using the configured executable or supported command wrapper.
+     * @param installation - Validated VS Code installation.
+     * @param projectPath - Registered project directory.
+     */
+    resolveFolderLaunchConfiguration(
+        installation: CodeEditorInstallation,
+        projectPath: string,
+    ): CodeEditorFolderLaunchConfiguration {
+        return { command: installation.path, args: [projectPath] };
     }
 
     resolveGodotConfiguration(input: {

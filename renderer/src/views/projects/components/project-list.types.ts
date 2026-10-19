@@ -31,6 +31,7 @@ export type ProjectsListProps = {
     locale: string;
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];
+    terminalAvailable: boolean;
     highlightedPinnedProjectPath: string | null;
     pinnedReorderingDisabled: boolean;
     onPinnedHighlightComplete: () => void;
@@ -45,6 +46,7 @@ export type ProjectsListProps = {
         release: ReleaseSummary,
     ) => void;
     onLaunchProject: (project: ProjectDetails) => void;
+    onOpenCodeEditor: (project: ProjectDetails) => void;
     onOpenTerminal: (project: ProjectDetails) => void;
     onProjectFoldersOptions: (
         event: React.MouseEvent,

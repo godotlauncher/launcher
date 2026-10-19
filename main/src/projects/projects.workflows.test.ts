@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events';
 import path from 'node:path';
 import type {
     CodeEditorId,
@@ -79,6 +80,12 @@ vi.mock('node:child_process', () => ({
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
+    stat: vi.fn(),
+}));
+
+vi.mock('node:fs/promises', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('node:fs/promises')>()),
+    stat: fsMocks.stat,
 }));
 
 vi.mock('node:fs', () => ({
@@ -145,6 +152,7 @@ vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
 
 const mainMocks = vi.hoisted(() => ({
     getMainWindow: vi.fn(),
+    revealMainWindow: vi.fn(),
 }));
 
 vi.mock('../mainWindow.js', () => mainMocks);
@@ -234,6 +242,7 @@ const codeEditorIntegrationService = {
     applyToProject: vi.fn(),
     disableForProject: vi.fn(),
     rescanIntegration: vi.fn(),
+    openProjectFolder: vi.fn(),
 } as unknown as CodeEditorIntegrationService;
 
 const integrationMocks = codeEditorIntegrationService as unknown as {
@@ -241,6 +250,7 @@ const integrationMocks = codeEditorIntegrationService as unknown as {
     applyToProject: ReturnType<typeof vi.fn>;
     disableForProject: ReturnType<typeof vi.fn>;
     rescanIntegration: ReturnType<typeof vi.fn>;
+    openProjectFolder: ReturnType<typeof vi.fn>;
 };
 
 const gitService = {
@@ -476,6 +486,8 @@ describe('launchProject', () => {
         };
         getMainWindow.mockReturnValue(windowMock);
         getUserPreferences.mockResolvedValue({ post_launch_action: 'none' });
+        fsMocks.stat.mockResolvedValue({ isDirectory: () => true });
+        integrationMocks.openProjectFolder.mockResolvedValue({ success: true });
         macTerminalMocks.createMacOSTerminalLaunchScript.mockResolvedValue(
             '/tmp/godot-launch-test/launch.command',
         );
@@ -520,6 +532,277 @@ describe('launchProject', () => {
         if (originalPlatform) {
             Object.defineProperty(process, 'platform', originalPlatform);
         }
+    });
+
+    it.each([undefined, false])(
+        'does not automatically open an editor when preference is %s',
+        async (auto_open_code_editor) => {
+            const project = createProjectDetails();
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            getUserPreferences.mockResolvedValue({
+                post_launch_action: 'none',
+                auto_open_code_editor,
+            });
+            await launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            );
+            expect(integrationMocks.openProjectFolder).not.toHaveBeenCalled();
+        },
+    );
+
+    it('waits for successful Godot dispatch before opening the associated editor', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'linux',
+        });
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getUserPreferences.mockResolvedValue({
+            post_launch_action: 'none',
+            auto_open_code_editor: true,
+        });
+        const child = Object.assign(new EventEmitter(), {
+            unref: vi.fn(),
+            stderr: null,
+        });
+        childProcessMocks.spawn.mockReturnValueOnce(child as never);
+        const launching = launchProject(
+            project,
+            codeEditorIntegrationService,
+            trayAvailabilityService as never,
+        );
+        await vi.waitFor(() => expect(child.listenerCount('spawn')).toBe(1));
+        expect(integrationMocks.openProjectFolder).not.toHaveBeenCalled();
+        child.emit('spawn');
+        await expect(launching).resolves.toEqual({ launched: true });
+        expect(integrationMocks.openProjectFolder).toHaveBeenCalledWith(
+            'vscode',
+            project.path,
+        );
+    });
+
+    it.each([0, 1])(
+        'waits for macOS open dispatch to exit with code %s',
+        async (code) => {
+            const project = createProjectDetails();
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            getUserPreferences.mockResolvedValue({
+                auto_open_code_editor: true,
+            });
+            const child = Object.assign(new EventEmitter(), {
+                unref: vi.fn(),
+                stderr: null,
+            });
+            childProcessMocks.spawn.mockReturnValueOnce(child as never);
+            const launching = launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            );
+            const expected =
+                code === 0
+                    ? expect(launching).resolves.toEqual({ launched: true })
+                    : expect(launching).rejects.toThrow(
+                          'projects:terminal.errors.launch-failed',
+                      );
+            await vi.waitFor(() => expect(child.listenerCount('exit')).toBe(1));
+            child.emit('spawn');
+            expect(integrationMocks.openProjectFolder).not.toHaveBeenCalled();
+            child.emit('exit', code);
+            await expected;
+            expect(integrationMocks.openProjectFolder).toHaveBeenCalledTimes(
+                code === 0 ? 1 : 0,
+            );
+        },
+    );
+
+    it('does not open an editor after failed Godot dispatch', async () => {
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'linux',
+        });
+        const project = createProjectDetails();
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getUserPreferences.mockResolvedValue({ auto_open_code_editor: true });
+        const child = Object.assign(new EventEmitter(), {
+            unref: vi.fn(),
+            stderr: null,
+        });
+        childProcessMocks.spawn.mockReturnValueOnce(child as never);
+        const result = expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).rejects.toThrow('Godot missing');
+        await vi.waitFor(() => expect(child.listenerCount('error')).toBe(1));
+        child.emit('error', new Error('Godot missing'));
+        await result;
+        expect(integrationMocks.openProjectFolder).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ['darwin', true],
+        ['darwin', false],
+        ['win32', true],
+        ['win32', false],
+        ['linux', true],
+        ['linux', false],
+    ] as const)(
+        'opens the code editor only after %s terminal hand-off succeeds: %s',
+        async (platform, succeeds) => {
+            Object.defineProperty(process, 'platform', {
+                configurable: true,
+                value: platform,
+            });
+            const project = createProjectDetails({ launch_with_console: true });
+            getProjectsSnapshot.mockResolvedValue({
+                projects: [project],
+                version: 'v1',
+            });
+            getUserPreferences.mockResolvedValue({
+                auto_open_code_editor: true,
+                post_launch_action: 'none',
+            });
+            let accept!: (value: { success: true }) => void;
+            let reject!: (error: Error) => void;
+            const handOff = new Promise<{ success: true }>((resolve, fail) => {
+                accept = resolve;
+                reject = fail;
+            });
+            const dispatch =
+                platform === 'darwin'
+                    ? macTerminalMocks.openMacOSTerminalLaunchScript
+                    : platform === 'win32'
+                      ? windowsTerminalMocks.launchWindowsTerminal
+                      : terminals.launchEditorScript;
+            dispatch.mockReturnValueOnce(handOff);
+            const launching = launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            );
+            const expected = succeeds
+                ? expect(launching).resolves.toEqual({ launched: true })
+                : expect(launching).rejects.toThrow();
+            await vi.waitFor(() => expect(dispatch).toHaveBeenCalledOnce());
+            expect(integrationMocks.openProjectFolder).not.toHaveBeenCalled();
+            if (succeeds) accept({ success: true });
+            else reject(new Error('Terminal rejected the hand-off'));
+            await expected;
+            expect(integrationMocks.openProjectFolder).toHaveBeenCalledTimes(
+                succeeds ? 1 : 0,
+            );
+        },
+    );
+
+    it('reveals the launcher and preserves Godot success if the code editor fails', async () => {
+        const project = createProjectDetails({ launch_with_console: true });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getUserPreferences.mockResolvedValue({
+            auto_open_code_editor: true,
+            post_launch_action: 'close_to_tray',
+        });
+        const failure = {
+            success: false,
+            reason: 'launch-failed',
+            editor: 'Visual Studio Code',
+        };
+        integrationMocks.openProjectFolder.mockResolvedValue(failure);
+        await expect(
+            launchProject(
+                project,
+                codeEditorIntegrationService,
+                trayAvailabilityService as never,
+            ),
+        ).resolves.toEqual({ launched: true, codeEditorWarning: failure });
+        expect(mainMocks.revealMainWindow).toHaveBeenCalledOnce();
+        expect(windowMock.hide).not.toHaveBeenCalled();
+    });
+
+    it('skips automatic opening when launching anyway without the missing editor', async () => {
+        const project = createProjectDetails({ launch_with_console: true });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        getUserPreferences.mockResolvedValue({ auto_open_code_editor: true });
+        await launchProject(
+            project,
+            codeEditorIntegrationService,
+            trayAvailabilityService as never,
+            { allowMissingCodeEditor: true },
+        );
+        expect(integrationMocks.openProjectFolder).not.toHaveBeenCalled();
+    });
+
+    it('opens the stored association manually without Godot side effects', async () => {
+        const project = createProjectDetails({
+            valid: false,
+            codeEditorId: 'vscodium',
+        });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        await expect(
+            createProjectsService().openProjectCodeEditor(project.path),
+        ).resolves.toEqual({ success: true });
+        expect(integrationMocks.openProjectFolder).toHaveBeenCalledWith(
+            'vscodium',
+            project.path,
+        );
+        expect(childProcessMocks.spawn).not.toHaveBeenCalled();
+        expect(storeProjectsList).not.toHaveBeenCalled();
+        expect(templateMocks.connectProjectTemplates).not.toHaveBeenCalled();
+        expect(windowMock.hide).not.toHaveBeenCalled();
+    });
+
+    it('rejects unregistered or missing folders and absent associations', async () => {
+        const project = createProjectDetails({ codeEditorId: null });
+        getProjectsSnapshot.mockResolvedValue({
+            projects: [project],
+            version: 'v1',
+        });
+        const service = createProjectsService();
+        await expect(
+            service.openProjectCodeEditor('/unregistered'),
+        ).resolves.toMatchObject({
+            success: false,
+            reason: 'project-unavailable',
+        });
+        await expect(
+            service.openProjectCodeEditor(project.path),
+        ).resolves.toMatchObject({
+            success: false,
+            reason: 'editor-not-configured',
+        });
+        fsMocks.stat.mockRejectedValueOnce(new Error('ENOENT'));
+        await expect(
+            service.openProjectCodeEditor(project.path),
+        ).resolves.toMatchObject({
+            success: false,
+            reason: 'project-unavailable',
+        });
+        expect(integrationMocks.openProjectFolder).not.toHaveBeenCalled();
     });
 
     it('writes project launcher config when launching a stored project', async () => {

@@ -66,6 +66,22 @@ export const BehaviorSettingsPanel: React.FC<BehaviorSettingsPanelProps> = ({
                     />
                     <span>{t('behavior.projects.confirmRemove')}</span>
                 </label>
+                <label className="flex min-h-8 items-center gap-2">
+                    <input
+                        type="checkbox"
+                        className="checkbox checkbox-sm"
+                        data-testid="chkAutoOpenCodeEditor"
+                        checked={preferences?.auto_open_code_editor === true}
+                        onChange={(event) => {
+                            if (preferences)
+                                onPreferencesChange({
+                                    ...preferences,
+                                    auto_open_code_editor: event.target.checked,
+                                });
+                        }}
+                    />
+                    <span>{t('behavior.projects.autoOpenCodeEditor')}</span>
+                </label>
             </SettingsSection>
             <ContentDivider />
 

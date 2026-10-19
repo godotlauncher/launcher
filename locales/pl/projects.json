@@ -377,6 +377,13 @@
             "launchAnyway": "Uruchom mimo to",
             "openSettings": "Otwórz ustawienia",
             "disableAndLaunch": "Wyłącz i uruchom"
+        },
+        "codeEditorOpen": {
+            "title": "Nie udało się otworzyć edytora kodu",
+            "project-unavailable": "Folder projektu jest niedostępny.",
+            "editor-not-configured": "Nie wybrano edytora kodu dla tego projektu.",
+            "editor-unavailable": "{{editor}} jest niedostępny. Sprawdź instalację w ustawieniach edytorów kodu.",
+            "launch-failed": "Nie udało się uruchomić {{editor}}. Sprawdź plik wykonywalny w ustawieniach edytorów kodu."
         }
     },
     "changeEditor": {

@@ -377,6 +377,13 @@
             "launchAnyway": "Iftaħ xorta waħda",
             "openSettings": "Iftaħ is-settings",
             "disableAndLaunch": "Iddiżattiva u niedi"
+        },
+        "codeEditorOpen": {
+            "title": "Ma setax jinfetaħ l-editur tal-kodiċi",
+            "project-unavailable": "Il-fowlder tal-proġett mhuwiex disponibbli.",
+            "editor-not-configured": "Ma ntgħażel ebda editur tal-kodiċi għal dan il-proġett.",
+            "editor-unavailable": "{{editor}} mhuwiex disponibbli. Iċċekkja l-installazzjoni fis-settings tal-edituri tal-kodiċi.",
+            "launch-failed": "{{editor}} ma setax jinbeda. Iċċekkja l-fajl eżegwibbli fis-settings tal-edituri tal-kodiċi."
         }
     },
     "changeEditor": {
