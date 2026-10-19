@@ -349,6 +349,22 @@ export class ProjectsController implements ProjectsBridge {
         );
     }
 
+    /** Clears a project's New status and offers a matching Undo.
+     * @param project - Project whose New flag should be cleared.
+     */
+    @ProjectsHandler('clearProjectNewStatus')
+    clearProjectNewStatus(project: ProjectDetails) {
+        return this.projects.clearProjectNewStatus(project);
+    }
+
+    /** Restores the New status owned by an unopened project's clear operation.
+     * @param undoToken - Transient identity returned by the matching clear.
+     */
+    @ProjectsHandler('undoClearProjectNewStatus')
+    undoClearProjectNewStatus(undoToken: string) {
+        return this.projects.undoClearProjectNewStatus(undoToken);
+    }
+
     /**
      * Changes whether a project is pinned.
      *

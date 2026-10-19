@@ -12,6 +12,8 @@ import {
 import './notification.component.css';
 
 type NotificationProps = NotificationOptions & { onDismiss: () => void };
+const blockingDialogSelector =
+    'dialog[open], [role="dialog"][aria-modal="true"]:not(dialog)';
 const icons = {
     neutral: Info,
     success: CircleCheck,
@@ -54,7 +56,7 @@ export function Notification({
     const [modalOpen, setModalOpen] = useState(
         () =>
             typeof document !== 'undefined' &&
-            !!document.querySelector('dialog[open]'),
+            !!document.querySelector(blockingDialogSelector),
     );
     const [pendingAction, setPendingAction] = useState<number | null>(null);
     const actionRunning = useRef(false);
@@ -102,14 +104,14 @@ export function Notification({
         /** Updates visibility and dialog pauses when the surrounding application changes. */
         const update = () => {
             setHidden(document.hidden);
-            setModalOpen(!!document.querySelector('dialog[open]'));
+            setModalOpen(!!document.querySelector(blockingDialogSelector));
         };
         const observer = new MutationObserver(update);
         observer.observe(document.body, {
             subtree: true,
             childList: true,
             attributes: true,
-            attributeFilter: ['open'],
+            attributeFilter: ['open', 'role', 'aria-modal'],
         });
         document.addEventListener('visibilitychange', update);
         update();
@@ -130,7 +132,7 @@ export function Notification({
                     target?.isConnected &&
                     !target.matches(':disabled') &&
                     !target.closest('[inert]') &&
-                    !document.querySelector('dialog[open]')
+                    !document.querySelector(blockingDialogSelector)
                 )
                     target.focus({ preventScroll: true });
             });

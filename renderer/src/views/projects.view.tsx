@@ -46,6 +46,7 @@ import {
 import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hook';
 import { useProjectActions } from './projects/hooks/project-actions.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
+import { useProjectNewStatus } from './projects/hooks/project-new-status.hook';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
 import { DEFAULT_PROJECT_GROUP_ORDER } from './projects/project-group-order.model';
 import type { ProjectViewMode } from './projects/project-view.types';
@@ -364,6 +365,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectLaunchWithConsole,
         setProjectPinned,
         reorderPinnedProjects,
+        clearProjectNewStatus,
+        undoClearProjectNewStatus,
         setProjectCodeEditor,
         resetProjectCodeEditorConfig,
         initializeProjectGit,
@@ -383,6 +386,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         loading,
     } = useProjects();
     const { openExternalLink } = useAppNavigation();
+    const { clearNewStatus } = useProjectNewStatus({
+        projects,
+        clearProjectNewStatus,
+        undoClearProjectNewStatus,
+    });
     const {
         projectActionsMenu,
         setProjectActionsMenu,
@@ -1002,6 +1010,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 }
                 onImportEditorSettings={handleImportEditorSettings}
                 onRemoveProject={handleRemoveProject}
+                onClearNewStatus={(project) => void clearNewStatus(project)}
             />
             <ProjectSettingsDrawer
                 project={

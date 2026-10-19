@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Ne plus marquer comme nouveau",
+        "cleared": "Statut Nouveau supprimé",
+        "restored": "Statut Nouveau rétabli",
+        "clearedRecent": "{{name}} a été déplacé dans Récents.",
+        "clearedPinned": "{{name}} reste dans Épinglés.",
+        "restoredNew": "{{name}} est de retour dans Nouveaux.",
+        "restoredPinned": "{{name}} est toujours épinglé.",
+        "clearFailed": "Impossible de supprimer le statut Nouveau",
+        "unavailable": "Le statut Nouveau ne peut plus être modifié pour ce projet."
+    },
     "viewOptions": {
         "saved": "Ordre des groupes enregistré",
         "restored": "Ordre précédent rétabli",

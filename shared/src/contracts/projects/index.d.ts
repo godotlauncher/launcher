@@ -226,6 +226,8 @@ export type ProjectDetails = {
     editor_settings_file: string;
     added_at?: Date;
     last_opened: Date | null;
+    /** True only for a newly created project whose New status is still active. */
+    is_new?: boolean;
     pinned?: boolean;
     pinned_order?: number;
     open_windowed?: boolean;
@@ -243,6 +245,12 @@ export type ProjectDetails = {
     withGit: boolean;
     valid: boolean;
     invalid_reason?: ProjectInvalidReason;
+};
+
+/** Result of clearing New, with a transient identity for the matching Undo. */
+export type ClearProjectNewStatusResult = {
+    project: ProjectDetails;
+    undoToken: string;
 };
 
 export type CreateProjectResult = BackendResult & {

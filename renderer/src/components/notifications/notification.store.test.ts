@@ -2,6 +2,31 @@ import { describe, expect, it, vi } from 'vitest';
 import { createNotificationsStore } from './notification.store';
 
 describe('notification ownership', () => {
+    it('preserves newer feedback when an earlier operation finishes, even after that feedback is dismissed', () => {
+        const store = createNotificationsStore();
+        const startedAt = store.getNotificationRevision();
+        const newer = store.showNotification({ title: 'Group order saved' });
+        expect(
+            store.showNotificationIfUnchanged(startedAt, {
+                title: 'New status cleared',
+            }),
+        ).toBeNull();
+        store.dismissNotification(newer);
+        expect(
+            store.showNotificationIfUnchanged(startedAt, {
+                title: 'Could not clear New status',
+            }),
+        ).toBeNull();
+        expect(store.getSnapshot()).toBeNull();
+        const current = store.getNotificationRevision();
+        expect(
+            store.showNotificationIfUnchanged(current, {
+                title: 'Settings saved',
+            }),
+        ).not.toBeNull();
+        expect(store.getSnapshot()?.title).toBe('Settings saved');
+    });
+
     it('keeps a newer notification when an earlier async action completes', async () => {
         const store = createNotificationsStore();
         const first = store.showNotification({ title: 'Order saved' });

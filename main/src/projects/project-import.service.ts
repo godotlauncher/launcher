@@ -971,6 +971,7 @@ export class ProjectImportService {
                     renderer,
                     added_at: new Date(),
                     last_opened: null,
+                    is_new: false,
                     launch_path,
                     editor_settings_path: editorSettingsFile
                         ? path.dirname(editorSettingsFile)

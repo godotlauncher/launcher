@@ -52,6 +52,17 @@ export function createNotificationsStore() {
     };
     /** Returns the current immutable message snapshot. */
     const getSnapshot = () => current;
+    /** Returns the latest shown identity so delayed operations can preserve newer feedback. */
+    const getNotificationRevision = () => sequence;
+    /** Shows a delayed result only if no newer notification has been shown.
+     * @param revision - Revision captured before the operation began.
+     * @param options - Saved result or failure feedback for that operation.
+     */
+    const showNotificationIfUnchanged = (
+        revision: number,
+        options: NotificationOptions,
+    ): number | null =>
+        sequence === revision ? showNotification(options) : null;
     /** Returns an empty viewport during server rendering. */
     const getServerSnapshot = () => null;
     return {
@@ -60,6 +71,8 @@ export function createNotificationsStore() {
         replaceNotification,
         subscribe,
         getSnapshot,
+        getNotificationRevision,
+        showNotificationIfUnchanged,
         getServerSnapshot,
     };
 }

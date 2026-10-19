@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Oznacz jako nie nowy",
+        "cleared": "Usunięto status Nowy",
+        "restored": "Przywrócono status Nowy",
+        "clearedRecent": "{{name}} przeniesiono do Ostatnich.",
+        "clearedPinned": "{{name}} pozostaje w Przypiętych.",
+        "restoredNew": "{{name}} znów jest w Nowych.",
+        "restoredPinned": "{{name}} nadal jest przypięty.",
+        "clearFailed": "Nie udało się usunąć statusu Nowy",
+        "unavailable": "Nie można już zmienić statusu Nowy tego projektu."
+    },
     "viewOptions": {
         "saved": "Zapisano kolejność grup",
         "restored": "Przywrócono poprzednią kolejność",

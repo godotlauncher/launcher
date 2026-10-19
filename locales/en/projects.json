@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Mark as not new",
+        "cleared": "New status cleared",
+        "restored": "New status restored",
+        "clearedRecent": "{{name}} moved to Recents.",
+        "clearedPinned": "{{name}} stays in Pinned.",
+        "restoredNew": "{{name}} is back in New.",
+        "restoredPinned": "{{name}} is still pinned.",
+        "clearFailed": "Could not clear New status",
+        "unavailable": "New status can no longer be changed for this project."
+    },
     "viewOptions": {
         "saved": "Group order saved",
         "restored": "Previous order restored",

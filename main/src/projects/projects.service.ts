@@ -1,11 +1,13 @@
 import type { ChildProcess, ChildProcessByStdio } from 'node:child_process';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type {
     AddProjectOptions,
     ChangeProjectEditorResult,
+    ClearProjectNewStatusResult,
     CodeEditorId,
     CreateProjectDestinationInspection,
     CreateProjectGitOptions,
@@ -163,6 +165,10 @@ function hasProjectFile(projectPath: string): boolean {
 /** Provides the application-facing boundary for existing project workflows. */
 @Injectable()
 export class ProjectsService {
+    private readonly newStatusUndo = new Map<
+        string,
+        { token: string; addedAt: number | undefined }
+    >();
     /**
      * Creates the project service.
      *
@@ -462,6 +468,7 @@ export class ProjectsService {
     async removeProject(project: ProjectDetails) {
         await removeProjectEditor(project);
         const projects = await this.store.remove(project.path);
+        this.newStatusUndo.delete(project.path);
         try {
             await this.projectTags.removeProjectAssignments(project.path);
         } catch (error) {
@@ -894,6 +901,82 @@ export class ProjectsService {
     }
 
     /**
+     * Clears only the current project's New flag after an atomic save.
+     * @param project - Project whose currently displayed New status is being cleared.
+     */
+    async clearProjectNewStatus(
+        project: ProjectDetails,
+    ): Promise<ClearProjectNewStatusResult> {
+        const token = randomUUID();
+        const projects = await this.store.update((currentProjects) => {
+            const current = currentProjects.find(
+                (candidate) => candidate.path === project.path,
+            );
+            if (
+                !current?.is_new ||
+                current.last_opened ||
+                current.added_at?.getTime() !== project.added_at?.getTime()
+            )
+                throw new Error(t('projects:newStatus.unavailable'));
+            return currentProjects.map((candidate) =>
+                candidate === current
+                    ? { ...candidate, is_new: false }
+                    : candidate,
+            );
+        });
+        const updated = projects.find(
+            (candidate) => candidate.path === project.path,
+        );
+        if (!updated) throw new Error(t('projects:newStatus.unavailable'));
+        this.newStatusUndo.set(project.path, {
+            token,
+            addedAt: updated.added_at?.getTime(),
+        });
+        this.publishProjects(projects);
+        return { project: updated, undoToken: token };
+    }
+
+    /**
+     * Restores New only for the unchanged, unopened project owned by this Undo.
+     * @param undoToken - Transient identity returned by the matching clear operation.
+     */
+    async undoClearProjectNewStatus(
+        undoToken: string,
+    ): Promise<ProjectDetails> {
+        const entry = [...this.newStatusUndo].find(
+            ([, undo]) => undo.token === undoToken,
+        );
+        if (!entry) throw new Error(t('projects:newStatus.unavailable'));
+        const [projectPath, undo] = entry;
+        const projects = await this.store.update((currentProjects) => {
+            const current = currentProjects.find(
+                (candidate) => candidate.path === projectPath,
+            );
+            if (
+                this.newStatusUndo.get(projectPath) !== undo ||
+                !current ||
+                current.last_opened ||
+                current.is_new ||
+                current.added_at?.getTime() !== undo.addedAt
+            )
+                throw new Error(t('projects:newStatus.unavailable'));
+            return currentProjects.map((candidate) =>
+                candidate === current
+                    ? { ...candidate, is_new: true }
+                    : candidate,
+            );
+        });
+        if (this.newStatusUndo.get(projectPath) === undo)
+            this.newStatusUndo.delete(projectPath);
+        this.publishProjects(projects);
+        const restored = projects.find(
+            (candidate) => candidate.path === projectPath,
+        );
+        if (!restored) throw new Error(t('projects:newStatus.unavailable'));
+        return restored;
+    }
+
+    /**
      * Changes whether a project is pinned.
      *
      * @param project - Project to update.
@@ -1224,13 +1307,20 @@ export class ProjectsService {
         const projects = await this.store.update((currentProjects) =>
             currentProjects.map((candidate) =>
                 candidate.path === project.path
-                    ? { ...candidate, last_opened: new Date() }
+                    ? {
+                          ...candidate,
+                          last_opened: new Date(),
+                          ...(candidate.is_new !== undefined
+                              ? { is_new: false }
+                              : {}),
+                      }
                     : candidate,
             ),
         );
         const launchedProject = projects.find(
             (candidate) => candidate.path === project.path,
         );
+        this.newStatusUndo.delete(project.path);
 
         if (launchedProject) {
             project = launchedProject;

@@ -94,6 +94,7 @@ describe('ProjectActionsMenu', () => {
                 onClose={vi.fn()}
                 onExportEditorSettings={vi.fn()}
                 onImportEditorSettings={vi.fn()}
+                onClearNewStatus={vi.fn()}
                 onRemoveProject={vi.fn()}
             />,
         );
@@ -111,6 +112,51 @@ describe('ProjectActionsMenu', () => {
         expect(html).not.toContain('project.initGit');
     });
 
+    it.each([
+        { is_new: true, last_opened: null, pinned: false, available: true },
+        { is_new: true, last_opened: null, pinned: true, available: true },
+        { is_new: false, last_opened: null, pinned: false, available: false },
+        {
+            is_new: undefined,
+            last_opened: null,
+            pinned: false,
+            available: false,
+        },
+        {
+            is_new: true,
+            last_opened: new Date('2026-10-19T10:00:00Z'),
+            pinned: false,
+            available: false,
+        },
+    ])(
+        'offers Clear New only for a currently new unopened project: %s',
+        async ({ available, ...state }) => {
+            const selected = { ...project, ...state };
+            const clear = vi.fn();
+            renderToStaticMarkup(
+                <ProjectActionsMenu
+                    project={selected}
+                    anchorRect={null}
+                    t={(key) => key}
+                    onClose={vi.fn()}
+                    onExportEditorSettings={vi.fn()}
+                    onImportEditorSettings={vi.fn()}
+                    onRemoveProject={vi.fn()}
+                    onClearNewStatus={clear}
+                />,
+            );
+            const action = menuCapture.items.find(
+                (item) => item.key === 'clear-new-status',
+            );
+            expect(Boolean(action)).toBe(available);
+            if (available) {
+                expect(action?.label).toBe('newStatus.markAsNotNew');
+                await action?.onSelect?.();
+                expect(clear).toHaveBeenCalledWith(selected);
+            }
+        },
+    );
+
     it('does not restore moved actions for pinned projects', () => {
         const html = renderToStaticMarkup(
             <ProjectActionsMenu
@@ -127,6 +173,7 @@ describe('ProjectActionsMenu', () => {
                 onClose={vi.fn()}
                 onExportEditorSettings={vi.fn()}
                 onImportEditorSettings={vi.fn()}
+                onClearNewStatus={vi.fn()}
                 onRemoveProject={vi.fn()}
             />,
         );

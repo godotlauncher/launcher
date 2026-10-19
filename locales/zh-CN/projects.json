@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "标记为非新项目",
+        "cleared": "已清除新项目状态",
+        "restored": "已恢复新项目状态",
+        "clearedRecent": "{{name}} 已移至最近使用。",
+        "clearedPinned": "{{name}} 保持固定。",
+        "restoredNew": "{{name}} 已回到新项目。",
+        "restoredPinned": "{{name}} 仍保持固定。",
+        "clearFailed": "无法清除新项目状态",
+        "unavailable": "无法再更改此项目的新项目状态。"
+    },
     "viewOptions": {
         "saved": "分组顺序已保存",
         "restored": "已恢复之前的顺序",

@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Als nicht neu markieren",
+        "cleared": "Neu-Status entfernt",
+        "restored": "Neu-Status wiederhergestellt",
+        "clearedRecent": "{{name}} wurde nach Zuletzt verwendet verschoben.",
+        "clearedPinned": "{{name}} bleibt unter Angeheftet.",
+        "restoredNew": "{{name}} ist wieder unter Neu.",
+        "restoredPinned": "{{name}} ist weiterhin angeheftet.",
+        "clearFailed": "Neu-Status konnte nicht entfernt werden",
+        "unavailable": "Der Neu-Status dieses Projekts kann nicht mehr geändert werden."
+    },
     "viewOptions": {
         "saved": "Gruppenreihenfolge gespeichert",
         "restored": "Vorherige Reihenfolge wiederhergestellt",

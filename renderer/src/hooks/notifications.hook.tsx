@@ -14,6 +14,11 @@ import type {
 } from '../components/notifications/notification.types';
 
 type NotificationsContextValue = {
+    getNotificationRevision: () => number;
+    showNotificationIfUnchanged: (
+        revision: number,
+        options: NotificationOptions,
+    ) => number | null;
     showNotification: (options: NotificationOptions) => number;
     dismissNotification: (id: number) => void;
     replaceNotification: (

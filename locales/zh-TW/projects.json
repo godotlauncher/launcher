@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "標記為非新專案",
+        "cleared": "已清除新專案狀態",
+        "restored": "已還原新專案狀態",
+        "clearedRecent": "{{name}} 已移至最近使用。",
+        "clearedPinned": "{{name}} 保持釘選。",
+        "restoredNew": "{{name}} 已回到新專案。",
+        "restoredPinned": "{{name}} 仍保持釘選。",
+        "clearFailed": "無法清除新專案狀態",
+        "unavailable": "無法再變更此專案的新專案狀態。"
+    },
     "viewOptions": {
         "saved": "群組順序已儲存",
         "restored": "已還原先前的順序",

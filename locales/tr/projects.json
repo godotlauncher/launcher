@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Yeni değil olarak işaretle",
+        "cleared": "Yeni durumu kaldırıldı",
+        "restored": "Yeni durumu geri yüklendi",
+        "clearedRecent": "{{name}}, Son kullanılanlar bölümüne taşındı.",
+        "clearedPinned": "{{name}}, Sabitlenenler bölümünde kalır.",
+        "restoredNew": "{{name}} yeniden Yeni bölümünde.",
+        "restoredPinned": "{{name}} hâlâ sabitlenmiş durumda.",
+        "clearFailed": "Yeni durumu kaldırılamadı",
+        "unavailable": "Bu projenin Yeni durumu artık değiştirilemiyor."
+    },
     "viewOptions": {
         "saved": "Grup sırası kaydedildi",
         "restored": "Önceki sıra geri yüklendi",

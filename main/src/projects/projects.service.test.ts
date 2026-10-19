@@ -613,6 +613,133 @@ describe('ProjectsService', () => {
         expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
     });
 
+    describe('New status ownership', () => {
+        let current: ProjectDetails[];
+        let created: ProjectDetails;
+        beforeEach(() => {
+            created = {
+                path: '/projects/game',
+                name: 'Game',
+                added_at: new Date('2026-10-19T10:00:00Z'),
+                last_opened: null,
+                is_new: true,
+                pinned: false,
+            } as ProjectDetails;
+            current = [created];
+            store.update.mockImplementation(async (mutator) => {
+                current = await mutator(current);
+                return current;
+            });
+        });
+
+        it('clears and restores only New while preserving later pin and settings changes', async () => {
+            const result = await service.clearProjectNewStatus(created);
+            expect(result.project).toMatchObject({
+                is_new: false,
+                last_opened: null,
+            });
+            current = [
+                {
+                    ...current[0],
+                    name: 'Renamed',
+                    pinned: true,
+                    pinned_order: 2,
+                    open_windowed: true,
+                },
+            ];
+            const restored = await service.undoClearProjectNewStatus(
+                result.undoToken,
+            );
+            expect(restored).toMatchObject({
+                is_new: true,
+                last_opened: null,
+                name: 'Renamed',
+                pinned: true,
+                pinned_order: 2,
+                open_windowed: true,
+            });
+            await expect(
+                service.undoClearProjectNewStatus(result.undoToken),
+            ).rejects.toThrow('projects:newStatus.unavailable');
+        });
+
+        it.each(['imported', 'legacy', 'opened', 'removed', 'replaced'])(
+            'rejects clearing a %s project from stale renderer data',
+            async (state) => {
+                if (state === 'imported')
+                    current = [{ ...created, is_new: false }];
+                if (state === 'legacy')
+                    current = [{ ...created, is_new: undefined }];
+                if (state === 'opened')
+                    current = [{ ...created, last_opened: new Date() }];
+                if (state === 'removed') current = [];
+                if (state === 'replaced')
+                    current = [
+                        {
+                            ...created,
+                            added_at: new Date('2026-10-19T11:00:00Z'),
+                        },
+                    ];
+                await expect(
+                    service.clearProjectNewStatus(created),
+                ).rejects.toThrow('projects:newStatus.unavailable');
+                expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+            },
+        );
+
+        it.each(['opened', 'removed', 'replaced'])(
+            'does not restore New for a project that was %s',
+            async (state) => {
+                const { undoToken } =
+                    await service.clearProjectNewStatus(created);
+                if (state === 'opened')
+                    current = [{ ...current[0], last_opened: new Date() }];
+                if (state === 'removed') current = [];
+                if (state === 'replaced')
+                    current = [
+                        {
+                            ...current[0],
+                            added_at: new Date('2026-10-19T11:00:00Z'),
+                        },
+                    ];
+                await expect(
+                    service.undoClearProjectNewStatus(undoToken),
+                ).rejects.toThrow('projects:newStatus.unavailable');
+                expect(current.some((project) => project.is_new)).toBe(false);
+            },
+        );
+
+        it('keeps failed writes retryable and rejects an older clear identity', async () => {
+            const first = await service.clearProjectNewStatus(created);
+            store.update.mockRejectedValueOnce(new Error('write failed'));
+            await expect(
+                service.undoClearProjectNewStatus(first.undoToken),
+            ).rejects.toThrow('write failed');
+            expect(current[0].is_new).toBe(false);
+            await service.undoClearProjectNewStatus(first.undoToken);
+            const second = await service.clearProjectNewStatus(current[0]);
+            expect(second.undoToken).not.toBe(first.undoToken);
+            await expect(
+                service.undoClearProjectNewStatus(first.undoToken),
+            ).rejects.toThrow('projects:newStatus.unavailable');
+            expect(current[0].is_new).toBe(false);
+            await service.undoClearProjectNewStatus(second.undoToken);
+            expect(current[0].is_new).toBe(true);
+        });
+
+        it('does not change New or publish a successful result when clearing cannot be saved', async () => {
+            store.update.mockRejectedValueOnce(new Error('write failed'));
+            await expect(
+                service.clearProjectNewStatus(created),
+            ).rejects.toThrow('write failed');
+            expect(current[0].is_new).toBe(true);
+            expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+            await expect(
+                service.undoClearProjectNewStatus('unknown'),
+            ).rejects.toThrow('projects:newStatus.unavailable');
+        });
+    });
+
     it('preserves pinned ordering rules', async () => {
         const first = {
             path: '/projects/first',

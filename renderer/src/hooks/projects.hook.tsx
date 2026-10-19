@@ -3,6 +3,7 @@ import type {
     AddProjectToListResult,
     ChangeProjectEditorResult,
     CheckCreateProjectRepositoryNameAvailabilityResult,
+    ClearProjectNewStatusResult,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     CreateProjectGitOptions,
@@ -97,6 +98,10 @@ interface ProjectsContext {
         project: ProjectDetails,
         pinned: boolean,
     ) => Promise<ProjectDetails[]>;
+    clearProjectNewStatus: (
+        project: ProjectDetails,
+    ) => Promise<ClearProjectNewStatusResult>;
+    undoClearProjectNewStatus: (undoToken: string) => Promise<ProjectDetails>;
     reorderPinnedProjects: (
         orderedProjectPaths: string[],
     ) => Promise<ProjectDetails[]>;
@@ -555,6 +560,25 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         return updatedProjects;
     };
 
+    /** Clears one project's New flag using canonical persisted state.
+     * @param project - Project whose New flag should be cleared.
+     */
+    const clearProjectNewStatus = async (project: ProjectDetails) => {
+        const result = await projectsBridge.clearProjectNewStatus(project);
+        // projects-updated is authoritative; an older IPC reply must not replace it.
+        return result;
+    };
+
+    /** Restores only the New flag owned by the matching clear operation.
+     * @param undoToken - Transient identity returned when New was cleared.
+     */
+    const undoClearProjectNewStatus = async (undoToken: string) => {
+        const updated =
+            await projectsBridge.undoClearProjectNewStatus(undoToken);
+        // The operation publishes canonical state before returning its result.
+        return updated;
+    };
+
     const reorderPinnedProjects = async (orderedProjectPaths: string[]) => {
         const updatedProjects =
             await projectsBridge.reorderPinnedProjects(orderedProjectPaths);
@@ -779,6 +803,8 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
                 setProjectLaunchWithConsole,
                 setProjectPinned,
                 reorderPinnedProjects,
+                clearProjectNewStatus,
+                undoClearProjectNewStatus,
                 setProjectCodeEditor,
                 resetProjectCodeEditorConfig,
                 initializeProjectGit,

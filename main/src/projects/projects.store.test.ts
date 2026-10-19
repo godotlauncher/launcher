@@ -51,9 +51,41 @@ describe('ProjectsStore', () => {
 
         expect(project.codeEditorId).toBe('vscode');
         expect(project.last_opened).toBeNull();
+        expect(project.is_new).not.toBe(true);
         expect(project.pinned).toBe(true);
         expect(project.pinned_order).toBeUndefined();
         expect(project.launch_with_console).toBeUndefined();
+    });
+
+    it('persists explicit New status and clears stale flags on opened records', async () => {
+        await store.put({
+            ...createProject('/projects/created', null),
+            is_new: true,
+        });
+        const reopened = new ProjectsStore(
+            new JsonStoreCoordinatorService(new AtomicJsonFileAdapter()),
+            projectsPath,
+        );
+        expect((await reopened.list())[0]).toMatchObject({
+            is_new: true,
+            last_opened: null,
+        });
+        await reopened.update((projects) =>
+            projects.map((project) => ({ ...project, is_new: false })),
+        );
+        expect((await reopened.list())[0]).toMatchObject({
+            is_new: false,
+            last_opened: null,
+        });
+        expect(
+            fromStoredProject({
+                ...createProject(
+                    '/projects/opened',
+                    new Date('2026-10-19T10:00:00Z'),
+                ),
+                is_new: true,
+            }).is_new,
+        ).toBe(false);
     });
 
     it('keeps launch preferences after a disk round trip', async () => {

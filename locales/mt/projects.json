@@ -1,4 +1,15 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Immarka bħala mhux ġdid",
+        "cleared": "L-istatus Ġdid tneħħa",
+        "restored": "L-istatus Ġdid ġie rrestawrat",
+        "clearedRecent": "{{name}} tmexxa għal Riċenti.",
+        "clearedPinned": "{{name}} jibqa' f'Imwaħħla.",
+        "restoredNew": "{{name}} reġa' jinsab f'Ġodda.",
+        "restoredPinned": "{{name}} għadu mwaħħal.",
+        "clearFailed": "L-istatus Ġdid ma setax jitneħħa",
+        "unavailable": "L-istatus Ġdid ma jistax jinbidel aktar għal dan il-proġett."
+    },
     "viewOptions": {
         "saved": "L-ordni tal-gruppi ġiet issejvjata",
         "restored": "L-ordni preċedenti ġiet irrestawrata",
