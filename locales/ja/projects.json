@@ -377,6 +377,13 @@
             "launchAnyway": "そのまま起動",
             "openSettings": "設定を開く",
             "disableAndLaunch": "無効にして起動"
+        },
+        "codeEditorOpen": {
+            "title": "コードエディターを開けませんでした",
+            "project-unavailable": "プロジェクトフォルダーが利用できません。",
+            "editor-not-configured": "このプロジェクトにはコードエディターが選択されていません。",
+            "editor-unavailable": "{{editor}} が利用できません。コードエディター設定でインストールを確認してください。",
+            "launch-failed": "{{editor}} を起動できませんでした。コードエディター設定で実行ファイルを確認してください。"
         }
     },
     "changeEditor": {

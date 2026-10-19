@@ -377,6 +377,13 @@
             "launchAnyway": "Launch anyway",
             "openSettings": "Open settings",
             "disableAndLaunch": "Disable & Launch"
+        },
+        "codeEditorOpen": {
+            "title": "Could not open code editor",
+            "project-unavailable": "The project folder is unavailable.",
+            "editor-not-configured": "No code editor is selected for this project.",
+            "editor-unavailable": "{{editor}} is unavailable. Check its installation in Code Editor Settings.",
+            "launch-failed": "{{editor}} could not be started. Check its executable in Code Editor Settings."
         }
     },
     "changeEditor": {

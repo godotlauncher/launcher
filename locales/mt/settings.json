@@ -28,7 +28,8 @@
         "projects": {
             "title": "Proġetti",
             "description": "Agħżel l-imġiba ta' Godot Launcher għall-proġetti.",
-            "confirmRemove": "Staqsi għal konferma meta tneħħi proġetti."
+            "confirmRemove": "Staqsi għal konferma meta tneħħi proġetti.",
+            "autoOpenCodeEditor": "Iftaħ l-editur tal-kodiċi meta teditja proġett"
         },
         "autoStart": {
             "title": "Preferenza tal-Bidu",

@@ -55,6 +55,36 @@ describe('VSCodeIntegration', () => {
 
     afterEach(() => {
         vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
+    it.each(['darwin', 'linux'])(
+        'opens folders without navigation flags on %s',
+        (platform) => {
+            vi.stubGlobal('process', { ...process, platform });
+            expect(
+                new VSCodeIntegration().resolveFolderLaunchConfiguration(
+                    { path: '/tools/code', version: null },
+                    '/project with spaces',
+                ),
+            ).toEqual({
+                command: '/tools/code',
+                args: ['/project with spaces'],
+            });
+        },
+    );
+
+    it('preserves custom Windows command wrapper locations', () => {
+        vi.stubGlobal('process', { ...process, platform: 'win32' });
+        expect(
+            new VSCodeIntegration().resolveFolderLaunchConfiguration(
+                { path: 'C:\\Code\\bin\\code.cmd', version: null },
+                'C:\\My Project',
+            ),
+        ).toEqual({
+            command: 'C:\\Code\\bin\\code.cmd',
+            args: ['C:\\My Project'],
+        });
     });
 
     it('detects installations and validates explicit paths independently', async () => {
@@ -184,7 +214,7 @@ describe('VSCodeIntegration', () => {
     });
 
     it('uses the VS Code command script for Godot on Windows when available', () => {
-        vi.spyOn(process, 'platform', 'get').mockReturnValue('win32');
+        vi.stubGlobal('process', { ...process, platform: 'win32' });
         const integration = new VSCodeIntegration();
         const executablePath = path.resolve('tools', 'Code.exe');
         const commandPath = path.resolve('tools', 'bin', 'code.cmd');

@@ -2,6 +2,7 @@ import type { ChildProcess, ChildProcessByStdio } from 'node:child_process';
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
+import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type {
@@ -19,6 +20,7 @@ import type {
     InstalledRelease,
     LaunchProjectOptions,
     LaunchProjectResult,
+    OpenProjectCodeEditorResult,
     ProjectDetails,
     ProjectEditorSelection,
     ProjectEditorSelectionExpectation,
@@ -57,7 +59,7 @@ import { areTemplatesMutating } from '../export-templates/template-files.util.js
 import { connectProjectTemplates } from '../export-templates/template-runtime.util.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
-import { getMainWindow } from '../mainWindow.js';
+import { getMainWindow, revealMainWindow } from '../mainWindow.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectTagService } from '../project-tags/project-tag.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -1251,7 +1253,34 @@ export class ProjectsService {
     }
 
     /**
+     * Opens a stored project's folder without changing its Godot launch state.
+     * @param projectPath - Exact registered project folder.
+     */
+    async openProjectCodeEditor(
+        projectPath: string,
+    ): Promise<OpenProjectCodeEditorResult> {
+        const project = (await this.store.list()).find(
+            (candidate) => candidate.path === projectPath,
+        );
+        if (
+            !project ||
+            !(await stat(project.path)
+                .then((value) => value.isDirectory())
+                .catch(() => false))
+        ) {
+            return { success: false, reason: 'project-unavailable' };
+        }
+        if (!project.codeEditorId)
+            return { success: false, reason: 'editor-not-configured' };
+        return this.codeEditors.openProjectFolder(
+            project.codeEditorId,
+            project.path,
+        );
+    }
+
+    /**
      * Launches a project with its configured post-launch action.
+     * Console launches confirm the terminal hand-off before optional code editor opening.
      *
      * @param project - Project to launch.
      * @param options - Optional launch overrides.
@@ -1346,6 +1375,10 @@ export class ProjectsService {
         );
         if (areTemplatesMutating())
             throw new Error(t('exportTemplates:errors.busy'));
+        const autoOpenCodeEditor =
+            prefs.auto_open_code_editor === true &&
+            Boolean(project.codeEditorId) &&
+            !options.allowMissingCodeEditor;
         const command = project.launch_path;
         let editor:
             | ChildProcess
@@ -1441,6 +1474,27 @@ export class ProjectsService {
         }
 
         if (editor) {
+            if (autoOpenCodeEditor) {
+                const child = editor;
+                await new Promise<void>((resolve, reject) => {
+                    child.once('error', reject);
+                    if (process.platform === 'darwin') {
+                        child.once('exit', (code) =>
+                            code === 0
+                                ? resolve()
+                                : reject(
+                                      new Error(
+                                          t(
+                                              'projects:terminal.errors.launch-failed',
+                                          ),
+                                      ),
+                                  ),
+                        );
+                    } else {
+                        child.once('spawn', resolve);
+                    }
+                });
+            }
             editor.on('error', (error: Error) => {
                 logger.error(`Failed to start process: ${error.message}`);
             });
@@ -1453,6 +1507,19 @@ export class ProjectsService {
                 }
             });
             editor.unref();
+        }
+
+        const codeEditorResult = autoOpenCodeEditor
+            ? await this.openProjectCodeEditor(project.path).catch(() => ({
+                  success: false as const,
+                  reason: 'launch-failed' as const,
+                  editor: project.codeEditorId ?? undefined,
+              }))
+            : undefined;
+        if (codeEditorResult && !codeEditorResult.success) {
+            revealMainWindow();
+            this.publishProjects(projects);
+            return { launched: true, codeEditorWarning: codeEditorResult };
         }
 
         const currentMainWindow = getMainWindow();

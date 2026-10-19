@@ -1,5 +1,8 @@
 import type { AppUpdateMessage } from '../app/index.js';
-import type { CodeEditorIntegrationSettings } from '../codeEditorIntegration/index.js';
+import type {
+    CodeEditorIntegrationSettings,
+    OpenProjectCodeEditorResult,
+} from '../codeEditorIntegration/index.js';
 import type { ProjectTagsSnapshot } from '../project-tags/index.js';
 import type {
     LaunchProjectResult,
@@ -24,6 +27,10 @@ export type AppEventMap = {
             { reason: 'code_editor_unavailable' }
         >;
     };
+    'project-code-editor-open-failed': Extract<
+        OpenProjectCodeEditorResult,
+        { success: false }
+    >;
     'releases-updated': InstalledRelease[];
     'release-install-progress': ReleaseInstallProgress;
 };

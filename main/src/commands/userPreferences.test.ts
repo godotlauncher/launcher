@@ -71,6 +71,26 @@ describe('userPreferences migration', () => {
         mocks.getDefaultPrefs.mockResolvedValue(createPrefs());
     });
 
+    it.each([true, false])(
+        'persists the automatic editor preference %s',
+        async (auto_open_code_editor) => {
+            await setUserPreferences(createPrefs({ auto_open_code_editor }));
+            expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+                '/tmp/prefs.json',
+                expect.objectContaining({ auto_open_code_editor }),
+            );
+        },
+    );
+
+    it('rejects non-boolean automatic editor preferences', async () => {
+        await expect(
+            setUserPreferences(
+                createPrefs({ auto_open_code_editor: 'true' as never }),
+            ),
+        ).rejects.toThrow('Invalid automatic code editor preference');
+        expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
+    });
+
     it('keeps missing skipped update preference as undefined', async () => {
         mockStoredPrefs({
             prefs_version: 4,

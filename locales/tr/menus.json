@@ -27,7 +27,9 @@
         "importEditorSettings": "Editör Ayarlarını Dosyadan İçe Aktar",
         "removeFromList": "Projeyi Listeden Kaldır",
         "initGit": "Git Deposu Başlat",
-        "initGitTooltip": "Bu proje klasöründe yeni bir Git deposu oluşturur."
+        "initGitTooltip": "Bu proje klasöründe yeni bir Git deposu oluşturur.",
+        "openCodeEditor": "{{editor}} ile aç",
+        "openTools": "{{project}} için açma seçenekleri"
     },
     "release": {
         "openInstalledFolder": "Kurulum Klasörünü Aç",

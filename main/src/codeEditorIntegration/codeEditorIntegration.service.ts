@@ -6,6 +6,7 @@ import type {
     CodeEditorInstallationSummary,
     CodeEditorIntegrationSettings,
     CodeEditorPathValidationResult,
+    OpenProjectCodeEditorResult,
     UpdateCodeEditorIntegrationSettings,
 } from '@shared/contracts';
 import { TEMPLATE_DIR_NAME } from '../constants.js';
@@ -14,6 +15,7 @@ import {
     createNewEditorSettings,
     updateEditorSettings,
 } from '../utils/godotProject.utils.js';
+import { launchCodeEditorProcess } from './code-editor-process.util.js';
 import { CodeEditorInstallationCache } from './codeEditorInstallationCache.js';
 
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -45,6 +47,48 @@ export class CodeEditorIntegrationService {
 
     isRegisteredIntegration(id: string): id is CodeEditorId {
         return this.registry.has(id);
+    }
+
+    /**
+     * Opens a project folder without changing its Godot/editor configuration.
+     * @param integrationId - The project's persisted editor association.
+     * @param projectPath - Registered and available project folder.
+     */
+    async openProjectFolder(
+        integrationId: CodeEditorId,
+        projectPath: string,
+    ): Promise<OpenProjectCodeEditorResult> {
+        if (!this.registry.has(integrationId))
+            return {
+                success: false,
+                reason: 'editor-unavailable',
+                editor: integrationId,
+            };
+        const integration = this.registry.get(integrationId);
+        const editor = integration.metadata.displayName;
+        try {
+            const settings = await this.settingsStore.get(integrationId);
+            if (!settings.enabled)
+                return { success: false, reason: 'editor-unavailable', editor };
+            const installation = await this.resolveInstallation(
+                integrationId,
+                settings.customPath ?? undefined,
+                'rescan',
+            );
+            if (!installation)
+                return { success: false, reason: 'editor-unavailable', editor };
+            const configuration = integration.resolveFolderLaunchConfiguration(
+                installation,
+                projectPath,
+            );
+            await launchCodeEditorProcess(
+                configuration.command,
+                configuration.args,
+            );
+            return { success: true };
+        } catch {
+            return { success: false, reason: 'launch-failed', editor };
+        }
     }
 
     async listIntegrationSettings(): Promise<CodeEditorIntegrationSettings[]> {

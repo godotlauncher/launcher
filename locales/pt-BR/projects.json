@@ -377,6 +377,13 @@
             "launchAnyway": "Iniciar mesmo assim",
             "openSettings": "Abrir configurações",
             "disableAndLaunch": "Desativar e iniciar"
+        },
+        "codeEditorOpen": {
+            "title": "Não foi possível abrir o editor de código",
+            "project-unavailable": "A pasta do projeto não está disponível.",
+            "editor-not-configured": "Nenhum editor de código foi selecionado para este projeto.",
+            "editor-unavailable": "{{editor}} não está disponível. Verifique a instalação nas configurações dos editores de código.",
+            "launch-failed": "Não foi possível iniciar {{editor}}. Verifique o executável nas configurações dos editores de código."
         }
     },
     "changeEditor": {

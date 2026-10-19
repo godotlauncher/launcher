@@ -28,7 +28,8 @@
         "projects": {
             "title": "Projects",
             "description": "Choose Godot Launcher behavior for projects.",
-            "confirmRemove": "Ask for confirmation when removing projects."
+            "confirmRemove": "Ask for confirmation when removing projects.",
+            "autoOpenCodeEditor": "Open the code editor when editing a project"
         },
         "autoStart": {
             "title": "Startup Preference",

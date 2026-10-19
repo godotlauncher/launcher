@@ -1,5 +1,17 @@
 export type CodeEditorId = 'vscode' | 'vscodium';
 
+export type OpenProjectCodeEditorResult =
+    | { success: true }
+    | {
+          success: false;
+          reason:
+              | 'project-unavailable'
+              | 'editor-not-configured'
+              | 'editor-unavailable'
+              | 'launch-failed';
+          editor?: string;
+      };
+
 export type CodeEditorIntegrationCapabilities = {
     dotnet: boolean;
 };

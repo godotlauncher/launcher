@@ -151,6 +151,14 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
                 try {
                     const result =
                         await this.projectsService.launchProject(project);
+                    if (result.launched && result.codeEditorWarning) {
+                        this.showMainWindow();
+                        ipcWebContentsSend(
+                            'project-code-editor-open-failed',
+                            mainWindow.webContents,
+                            result.codeEditorWarning,
+                        );
+                    }
                     if (!result.launched) {
                         this.showMainWindow();
                         if (result.reason === 'code_editor_unavailable') {

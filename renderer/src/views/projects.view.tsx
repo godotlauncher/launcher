@@ -377,6 +377,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         addProject,
         queueProjectEditorRepairs,
         launchProject,
+        openProjectCodeEditor,
         openProjectFolder,
         openProjectEditorFolder,
         renameProject,
@@ -883,6 +884,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 }
                                 onLaunchProject={(project) =>
                                     void onLaunchProject(project)
+                                }
+                                onOpenCodeEditor={(project) =>
+                                    runProjectAction(() =>
+                                        openProjectCodeEditor(project),
+                                    )
                                 }
                                 onOpenTerminal={(project) =>
                                     runProjectAction(async () => {

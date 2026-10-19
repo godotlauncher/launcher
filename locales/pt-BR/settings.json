@@ -28,7 +28,8 @@
         "projects": {
             "title": "Projetos",
             "description": "Escolha como o Godot Launcher deve se comportar com os projetos.",
-            "confirmRemove": "Pedir confirmação ao remover projetos."
+            "confirmRemove": "Pedir confirmação ao remover projetos.",
+            "autoOpenCodeEditor": "Abrir o editor de código ao editar um projeto"
         },
         "autoStart": {
             "title": "Preferência de inicialização",

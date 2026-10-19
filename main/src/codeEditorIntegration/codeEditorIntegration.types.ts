@@ -13,6 +13,11 @@ export type CodeEditorLaunchConfiguration = {
     execFlags: string;
 };
 
+export type CodeEditorFolderLaunchConfiguration = {
+    command: string;
+    args: string[];
+};
+
 export type GodotEditorFlavor = 'standard' | 'dotnet';
 
 export type CodeEditorIntegrationDefaults = {
@@ -73,6 +78,11 @@ export interface CodeEditorIntegration {
     ): Promise<CodeEditorInstallation | null>;
 
     isConfiguredForProject(projectPath: string): Promise<boolean>;
+
+    resolveFolderLaunchConfiguration(
+        installation: CodeEditorInstallation,
+        projectPath: string,
+    ): CodeEditorFolderLaunchConfiguration;
 
     resolveGodotConfiguration(input: {
         installation: CodeEditorInstallation;

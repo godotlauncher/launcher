@@ -145,6 +145,7 @@ function renderProjectsList(
             }
             onInstallRequiredProjectEditor={vi.fn()}
             onLaunchProject={vi.fn()}
+            onOpenCodeEditor={vi.fn()}
             onOpenTerminal={vi.fn()}
             onProjectFoldersOptions={vi.fn()}
             onTogglePinned={vi.fn()}

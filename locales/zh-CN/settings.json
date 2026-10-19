@@ -28,7 +28,8 @@
         "projects": {
             "title": "项目",
             "description": "选择 Godot Launcher 对项目的行为。",
-            "confirmRemove": "移除项目时请求确认。"
+            "confirmRemove": "移除项目时请求确认。",
+            "autoOpenCodeEditor": "编辑项目时打开代码编辑器"
         },
         "autoStart": {
             "title": "启动偏好",

@@ -91,6 +91,12 @@ export async function setUserPreferences(
     prefs: UserPreferences,
 ): Promise<UserPreferences> {
     if (
+        prefs.auto_open_code_editor !== undefined &&
+        typeof prefs.auto_open_code_editor !== 'boolean'
+    ) {
+        throw new Error('Invalid automatic code editor preference');
+    }
+    if (
         prefs.projects_group_order !== undefined &&
         !isProjectGroupOrder(prefs.projects_group_order)
     ) {

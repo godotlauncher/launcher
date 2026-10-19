@@ -377,6 +377,13 @@
             "launchAnyway": "Yine de başlat",
             "openSettings": "Ayarları aç",
             "disableAndLaunch": "Devre dışı bırak ve başlat"
+        },
+        "codeEditorOpen": {
+            "title": "Kod düzenleyici açılamadı",
+            "project-unavailable": "Proje klasörü kullanılamıyor.",
+            "editor-not-configured": "Bu proje için bir kod düzenleyici seçilmedi.",
+            "editor-unavailable": "{{editor}} kullanılamıyor. Kod Düzenleyici Ayarlarında kurulumunu kontrol edin.",
+            "launch-failed": "{{editor}} başlatılamadı. Kod Düzenleyici Ayarlarında yürütülebilir dosyasını kontrol edin."
         }
     },
     "changeEditor": {

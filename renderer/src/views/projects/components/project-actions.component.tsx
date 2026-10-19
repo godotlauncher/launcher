@@ -1,5 +1,6 @@
 import type { ReleaseSummary } from '@shared/contracts';
 import {
+    ChevronDown,
     Download,
     EllipsisVertical,
     FolderOpen,
@@ -7,6 +8,13 @@ import {
     Settings,
     Terminal,
 } from 'lucide-react';
+import { useState } from 'react';
+import { CodeEditorIntegrationIcon } from '../../../components/code-editor-integration-icon.component';
+import {
+    ActionMenu,
+    type ActionMenuAnchorRect,
+    getActionMenuAnchorRect,
+} from '../../../components/ui/action-menu.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { ProjectListItemProps } from './project-list.types';
 
@@ -17,10 +25,12 @@ type ProjectActionsProps = Pick<
     | 'onTogglePinned'
     | 'onProjectFoldersOptions'
     | 'onOpenTerminal'
+    | 'onOpenCodeEditor'
     | 'onProjectSettings'
     | 'onProjectMoreOptions'
     | 't'
 > & {
+    codeEditorName?: string | null;
     compact: boolean;
     dense?: boolean;
     downloadableProjectEditor?: ReleaseSummary;
@@ -38,6 +48,8 @@ export function ProjectActions({
     onTogglePinned,
     onProjectFoldersOptions,
     onOpenTerminal,
+    onOpenCodeEditor,
+    codeEditorName,
     onProjectSettings,
     onProjectMoreOptions,
     t,
@@ -47,6 +59,13 @@ export function ProjectActions({
     releaseInstalled,
     editorDownloading,
 }: ProjectActionsProps) {
+    const [toolsAnchor, setToolsAnchor] = useState<ActionMenuAnchorRect | null>(
+        null,
+    );
+    const toolsLabel = t('project.openTools', {
+        ns: 'menus',
+        project: project.name,
+    });
     return (
         <div
             className={`flex shrink-0 items-center ${dense ? 'min-h-8 gap-1' : 'min-h-10 gap-2'} ${compact ? 'self-end' : 'self-start'}`}
@@ -103,21 +122,85 @@ export function ProjectActions({
                     />
                 </button>
             </Tooltip>
-            <Tooltip
-                placement="top"
-                tip={t('project.openTerminal', { ns: 'menus' })}
-            >
-                <button
-                    type="button"
-                    data-testid="btnProjectTerminal"
-                    className="btn btn-sm btn-ghost btn-square"
-                    aria-label={t('project.openTerminal', { ns: 'menus' })}
-                    disabled={project.path.length === 0}
-                    onClick={() => onOpenTerminal(project)}
+            <div className="flex items-center rounded-(--radius-field) transition-colors hover:bg-base-content/3 focus-within:bg-base-content/3">
+                <Tooltip
+                    placement="top"
+                    tip={t('project.openTerminal', { ns: 'menus' })}
                 >
-                    <Terminal size={16} aria-hidden="true" />
-                </button>
-            </Tooltip>
+                    <button
+                        type="button"
+                        data-testid="btnProjectTerminal"
+                        className="btn btn-sm btn-ghost btn-square"
+                        aria-label={t('project.openTerminal', { ns: 'menus' })}
+                        disabled={project.path.length === 0}
+                        onClick={() => onOpenTerminal(project)}
+                    >
+                        <Terminal size={16} aria-hidden="true" />
+                    </button>
+                </Tooltip>
+                {project.codeEditorId && (
+                    <>
+                        <button
+                            type="button"
+                            data-testid="btnProjectOpenTools"
+                            className="btn btn-sm btn-ghost w-5 px-0"
+                            aria-label={toolsLabel}
+                            aria-haspopup="dialog"
+                            aria-expanded={toolsAnchor !== null}
+                            disabled={!project.path}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                setToolsAnchor(
+                                    toolsAnchor
+                                        ? null
+                                        : getActionMenuAnchorRect(
+                                              event.currentTarget,
+                                          ),
+                                );
+                            }}
+                        >
+                            <ChevronDown size={12} aria-hidden="true" />
+                        </button>
+                        <ActionMenu
+                            open={toolsAnchor !== null}
+                            anchorRect={toolsAnchor}
+                            ariaLabel={toolsLabel}
+                            onClose={() => setToolsAnchor(null)}
+                            items={[
+                                {
+                                    key: 'terminal',
+                                    label: t('project.openTerminal', {
+                                        ns: 'menus',
+                                    }),
+                                    icon: (
+                                        <Terminal
+                                            size={16}
+                                            aria-hidden="true"
+                                        />
+                                    ),
+                                    onSelect: () => onOpenTerminal(project),
+                                },
+                                {
+                                    key: 'code-editor',
+                                    label: t('project.openCodeEditor', {
+                                        ns: 'menus',
+                                        editor:
+                                            codeEditorName ??
+                                            project.codeEditorId,
+                                    }),
+                                    icon: (
+                                        <CodeEditorIntegrationIcon
+                                            integrationId={project.codeEditorId}
+                                            className="size-4"
+                                        />
+                                    ),
+                                    onSelect: () => onOpenCodeEditor(project),
+                                },
+                            ]}
+                        />
+                    </>
+                )}
+            </div>
             <Tooltip placement="top" tip={t('card.openFolders')}>
                 <button
                     type="button"

@@ -50,6 +50,27 @@ describe('VSCodiumIntegration', () => {
         );
     });
 
+    it('preserves the Flatpak application prefix when opening a folder', () => {
+        const original = Object.getOwnPropertyDescriptor(process, 'platform');
+        Object.defineProperty(process, 'platform', {
+            configurable: true,
+            value: 'linux',
+        });
+        try {
+            expect(
+                new VSCodiumIntegration().resolveFolderLaunchConfiguration(
+                    { path: '/usr/bin/flatpak', version: null },
+                    '/project with spaces',
+                ),
+            ).toEqual({
+                command: '/usr/bin/flatpak',
+                args: ['run', 'com.vscodium.codium', '/project with spaces'],
+            });
+        } finally {
+            if (original) Object.defineProperty(process, 'platform', original);
+        }
+    });
+
     it('exposes stable integration metadata and defaults', () => {
         const integration = new VSCodiumIntegration();
 

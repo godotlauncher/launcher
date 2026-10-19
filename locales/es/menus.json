@@ -27,7 +27,9 @@
         "initGitTooltip": "Crea un nuevo repositorio Git en esta carpeta del proyecto.",
         "exportEditorSettings": "Exportar configuración del editor a archivo",
         "importEditorSettings": "Importar configuración del editor desde archivo",
-        "removeFromList": "Quitar proyecto de la lista"
+        "removeFromList": "Quitar proyecto de la lista",
+        "openCodeEditor": "Abrir en {{editor}}",
+        "openTools": "Opciones de apertura de {{project}}"
     },
     "release": {
         "openInstalledFolder": "Abrir carpeta de instalación",

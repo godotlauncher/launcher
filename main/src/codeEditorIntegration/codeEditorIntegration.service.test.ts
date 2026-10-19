@@ -19,6 +19,9 @@ import type {
     CodeEditorProjectContext,
 } from './codeEditorIntegration.types.js';
 
+const processMocks = vi.hoisted(() => ({ launchCodeEditorProcess: vi.fn() }));
+vi.mock('./code-editor-process.util.js', () => processMocks);
+
 const CODE_EDITOR_ID = 'vscode' as const;
 const OTHER_CODE_EDITOR_ID = 'other-editor' as CodeEditorId;
 
@@ -89,6 +92,12 @@ function createIntegration(
             },
         }),
         isConfiguredForProject: vi.fn().mockResolvedValue(true),
+        resolveFolderLaunchConfiguration: vi.fn(
+            (installation, projectPath) => ({
+                command: installation.path,
+                args: [projectPath],
+            }),
+        ),
         resolveGodotConfiguration: vi.fn().mockImplementation((input) => ({
             textEditor: {
                 execPath: path.resolve('tools', 'code'),
@@ -137,6 +146,76 @@ describe('CodeEditorIntegrationService', () => {
         godotProjectMocks.createNewEditorSettings.mockResolvedValue(
             path.resolve('godot', 'editor_data', 'created.tres'),
         );
+    });
+
+    it('opens the folder using the latest installation without Godot script flags', async () => {
+        const integration = createIntegration();
+        const store = createSettingsStore({
+            enabled: true,
+            customPath: '/custom/editor',
+            execFlagsOverride: '--goto {file}:{line}',
+        });
+        const service = createService(integration, store);
+        processMocks.launchCodeEditorProcess.mockResolvedValue(undefined);
+        const folder = path.resolve('project with spaces; $data');
+        await expect(
+            service.openProjectFolder(CODE_EDITOR_ID, folder),
+        ).resolves.toEqual({ success: true });
+        expect(integration.detectInstallation).toHaveBeenCalledWith(
+            '/custom/editor',
+        );
+        expect(processMocks.launchCodeEditorProcess).toHaveBeenCalledWith(
+            path.resolve('tools', 'code'),
+            [folder],
+        );
+        expect(integration.configureProject).not.toHaveBeenCalled();
+    });
+
+    it('reports disabled, missing and unknown editors without dispatch', async () => {
+        const integration = createIntegration();
+        const disabled = createService(
+            integration,
+            createSettingsStore({
+                enabled: false,
+                customPath: null,
+                execFlagsOverride: null,
+            }),
+        );
+        await expect(
+            disabled.openProjectFolder(CODE_EDITOR_ID, '/project'),
+        ).resolves.toMatchObject({
+            success: false,
+            reason: 'editor-unavailable',
+        });
+        const service = createService(integration);
+        vi.mocked(integration.detectInstallation).mockResolvedValue(null);
+        await expect(
+            service.openProjectFolder(CODE_EDITOR_ID, '/project'),
+        ).resolves.toMatchObject({
+            success: false,
+            reason: 'editor-unavailable',
+        });
+        await expect(
+            service.openProjectFolder(OTHER_CODE_EDITOR_ID, '/project'),
+        ).resolves.toMatchObject({
+            success: false,
+            reason: 'editor-unavailable',
+        });
+        expect(processMocks.launchCodeEditorProcess).not.toHaveBeenCalled();
+    });
+
+    it('turns executable dispatch errors into a non-fatal editor failure', async () => {
+        const service = createService(createIntegration());
+        processMocks.launchCodeEditorProcess.mockRejectedValueOnce(
+            new Error('EACCES'),
+        );
+        await expect(
+            service.openProjectFolder(CODE_EDITOR_ID, '/project'),
+        ).resolves.toEqual({
+            success: false,
+            reason: 'launch-failed',
+            editor: 'Visual Studio Code',
+        });
     });
 
     it('returns a serializable installation summary when scanning', async () => {

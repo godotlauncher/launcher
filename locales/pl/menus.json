@@ -27,7 +27,9 @@
         "importEditorSettings": "Importuj ustawienia edytora z pliku",
         "removeFromList": "Usuń projekt z listy",
         "initGit": "Zainicjuj repozytorium Git",
-        "initGitTooltip": "Tworzy nowe repozytorium Git w tym folderze projektu."
+        "initGitTooltip": "Tworzy nowe repozytorium Git w tym folderze projektu.",
+        "openCodeEditor": "Otwórz w {{editor}}",
+        "openTools": "Opcje otwierania {{project}}"
     },
     "release": {
         "openInstalledFolder": "Otwórz folder instalacji",

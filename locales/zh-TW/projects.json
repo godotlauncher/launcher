@@ -377,6 +377,13 @@
             "launchAnyway": "仍然啟動",
             "openSettings": "開啟設定",
             "disableAndLaunch": "停用並啟動"
+        },
+        "codeEditorOpen": {
+            "title": "無法開啟程式碼編輯器",
+            "project-unavailable": "專案資料夾無法使用。",
+            "editor-not-configured": "尚未為此專案選擇程式碼編輯器。",
+            "editor-unavailable": "{{editor}} 無法使用。請在程式碼編輯器設定中檢查其安裝狀態。",
+            "launch-failed": "無法啟動 {{editor}}。請在程式碼編輯器設定中檢查其執行檔。"
         }
     },
     "changeEditor": {

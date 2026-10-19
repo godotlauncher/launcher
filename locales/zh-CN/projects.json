@@ -377,6 +377,13 @@
             "launchAnyway": "仍然启动",
             "openSettings": "打开设置",
             "disableAndLaunch": "禁用并启动"
+        },
+        "codeEditorOpen": {
+            "title": "无法打开代码编辑器",
+            "project-unavailable": "项目文件夹不可用。",
+            "editor-not-configured": "尚未为此项目选择代码编辑器。",
+            "editor-unavailable": "{{editor}} 不可用。请在代码编辑器设置中检查其安装情况。",
+            "launch-failed": "无法启动 {{editor}}。请在代码编辑器设置中检查其可执行文件。"
         }
     },
     "changeEditor": {

@@ -35,6 +35,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     onInstallRequiredProjectEditor,
     onLaunchProject,
     onOpenTerminal,
+    onOpenCodeEditor,
     onProjectFoldersOptions,
     onTogglePinned,
     onProjectSettings,
@@ -82,6 +83,8 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
             onTogglePinned={onTogglePinned}
             onProjectFoldersOptions={onProjectFoldersOptions}
             onOpenTerminal={onOpenTerminal}
+            onOpenCodeEditor={onOpenCodeEditor}
+            codeEditorName={codeEditorName}
             onProjectSettings={onProjectSettings}
             onProjectMoreOptions={onProjectMoreOptions}
             t={t}
