@@ -13,7 +13,10 @@ import type { TrayAvailabilityService } from '../services/tray-availability.serv
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import type { ProjectCreationService } from './project-creation.service.js';
+import { ProjectEditorService } from './project-editor.service.js';
+import { ProjectGitService } from './project-git.service.js';
 import type { ProjectImportService } from './project-import.service.js';
+import { ProjectLaunchService } from './project-launch.service.js';
 import { ProjectsService } from './projects.service.js';
 import type { ProjectsStore } from './projects.store.js';
 
@@ -317,7 +320,12 @@ const projectsStore = {
     ),
 } as unknown as ProjectsStore;
 
-/** Creates the public project service with test-owned collaborators. */
+/**
+ * Creates the public project service with test-owned collaborators.
+ * @param codeEditors - Mock code editor integration.
+ * @param git - Mock Git commands.
+ * @param tray - Mock tray availability.
+ */
 function createProjectsService(
     codeEditors: CodeEditorIntegrationService = codeEditorIntegrationService,
     git: GitService = gitService,
@@ -328,8 +336,12 @@ function createProjectsService(
         {} as ProjectImportService,
         git,
         {} as ProjectCreationService,
-        tray,
-        {} as never,
+        new ProjectLaunchService(
+            createProjectEditors(codeEditors),
+            tray,
+            terminals as never,
+        ),
+        createProjectEditors(codeEditors),
         projectsStore,
         {
             inspectPublicGitSource: vi.fn(),
@@ -342,8 +354,18 @@ function createProjectsService(
         {} as import('./project-publication.service.js').ProjectPublicationService,
         {} as import('./project-repository-origin-index.service.js').ProjectRepositoryOriginIndexService,
         { removeProjectAssignments: vi.fn() } as never,
-        terminals as never,
+        new ProjectGitService(git, projectsStore),
     );
+}
+
+/**
+ * Creates the editor configuration boundary with isolated persistence.
+ * @param codeEditors - Mock external code editor integration.
+ */
+function createProjectEditors(
+    codeEditors: CodeEditorIntegrationService = codeEditorIntegrationService,
+) {
+    return new ProjectEditorService(codeEditors, {} as never, projectsStore);
 }
 
 function launchProject(
@@ -362,29 +384,43 @@ function getProjectGodotName(project: ProjectDetails) {
     return createProjectsService().getProjectGodotName(project);
 }
 
+/**
+ * Initialises Git using the extracted project workflow.
+ * @param project - Project being configured.
+ * @param git - Mock Git commands.
+ */
 function initializeProjectGit(project: ProjectDetails, git: GitService) {
-    return createProjectsService(
-        codeEditorIntegrationService,
-        git,
-    ).initializeProjectGit(project);
+    return new ProjectGitService(git, projectsStore).initializeProjectGit(
+        project,
+    );
 }
 
+/**
+ * Reads identity using the extracted project workflow.
+ * @param project - Project being inspected.
+ * @param git - Mock Git commands.
+ */
 function getProjectGitIdentity(project: ProjectDetails, git: GitService) {
-    return createProjectsService(
-        codeEditorIntegrationService,
-        git,
-    ).getProjectGitIdentity(project);
+    return new ProjectGitService(git, projectsStore).getProjectGitIdentity(
+        project,
+    );
 }
 
+/**
+ * Updates identity using the extracted project workflow.
+ * @param project - Project being configured.
+ * @param identity - Requested repository identity.
+ * @param git - Mock Git commands.
+ */
 function setProjectGitIdentity(
     project: ProjectDetails,
     identity: GitIdentity,
     git: GitService,
 ) {
-    return createProjectsService(
-        codeEditorIntegrationService,
-        git,
-    ).setProjectGitIdentity(project, identity);
+    return new ProjectGitService(git, projectsStore).setProjectGitIdentity(
+        project,
+        identity,
+    );
 }
 
 function removeProject(project: ProjectDetails) {
@@ -403,22 +439,33 @@ function reorderPinnedProjects(orderedProjectPaths: string[]) {
     return createProjectsService().reorderPinnedProjects(orderedProjectPaths);
 }
 
+/**
+ * Changes code editor using the extracted configuration workflow.
+ * @param project - Project being configured.
+ * @param codeEditorId - Requested editor selection.
+ * @param codeEditors - Mock editor integration.
+ */
 function setProjectCodeEditor(
     project: ProjectDetails,
     codeEditorId: CodeEditorId | null,
     codeEditors: CodeEditorIntegrationService,
 ) {
-    return createProjectsService(codeEditors).setProjectCodeEditor(
+    return createProjectEditors(codeEditors).setProjectCodeEditor(
         project,
         codeEditorId,
     );
 }
 
+/**
+ * Resets code editor configuration using the extracted workflow.
+ * @param project - Project being configured.
+ * @param codeEditors - Mock editor integration.
+ */
 function resetProjectCodeEditorConfig(
     project: ProjectDetails,
     codeEditors: CodeEditorIntegrationService,
 ) {
-    return createProjectsService(codeEditors).resetProjectCodeEditorConfig(
+    return createProjectEditors(codeEditors).resetProjectCodeEditorConfig(
         project,
     );
 }

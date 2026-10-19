@@ -118,6 +118,8 @@ vi.mock('./project-import.service.js', () => ({
     ProjectImportService: class ProjectImportService {},
 }));
 
+import { ProjectEditorService } from './project-editor.service.js';
+import { ProjectGitService } from './project-git.service.js';
 import { ProjectsService } from './projects.service.js';
 
 describe('ProjectsService', () => {
@@ -139,7 +141,7 @@ describe('ProjectsService', () => {
         inspectCreateProjectDestination: mocks.inspectCreateProjectDestination,
         inspectCreateProjectRepository: mocks.inspectCreateProjectRepository,
     };
-    const trayAvailability = { id: 'tray' };
+    const projectLaunch = { launchProject: vi.fn() };
     const installedEditors = {
         getInstalledEditors: mocks.getInstalledEditors,
     };
@@ -200,15 +202,19 @@ describe('ProjectsService', () => {
             projectImport as never,
             git as never,
             projectCreation as never,
-            trayAvailability as never,
-            installedEditors as never,
+            projectLaunch as never,
+            new ProjectEditorService(
+                codeEditors as never,
+                installedEditors as never,
+                store as never,
+            ),
             store as never,
             remoteSources as never,
             remoteImport as never,
             projectPublication as never,
             projectOrigins as never,
             projectTags as never,
-            {} as never,
+            new ProjectGitService(git as never, store as never),
         );
     });
 
@@ -741,6 +747,47 @@ describe('ProjectsService', () => {
             await expect(
                 service.undoClearProjectNewStatus('unknown'),
             ).rejects.toThrow('projects:newStatus.unavailable');
+        });
+
+        it('records the launch and consumes New Undo before a native launch failure', async () => {
+            const { undoToken } = await service.clearProjectNewStatus(created);
+            current = [{ ...current[0], valid: true, codeEditorId: null }];
+            store.list.mockImplementation(async () => current);
+            projectLaunch.launchProject.mockImplementationOnce(async () => {
+                expect(current[0].last_opened).toBeInstanceOf(Date);
+                expect(current[0].is_new).toBe(false);
+                throw new Error('native launch failed');
+            });
+            mocks.ipcWebContentsSend.mockClear();
+
+            await expect(service.launchProject(created)).rejects.toThrow(
+                'native launch failed',
+            );
+
+            expect(current[0].last_opened).toBeInstanceOf(Date);
+            await expect(
+                service.undoClearProjectNewStatus(undoToken),
+            ).rejects.toThrow('projects:newStatus.unavailable');
+            expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+        });
+
+        it('keeps New Undo usable when recording a launch fails before dispatch', async () => {
+            const { undoToken } = await service.clearProjectNewStatus(created);
+            current = [{ ...current[0], valid: true, codeEditorId: null }];
+            store.list.mockImplementation(async () => current);
+            store.update.mockRejectedValueOnce(new Error('write failed'));
+            mocks.ipcWebContentsSend.mockClear();
+
+            await expect(service.launchProject(created)).rejects.toThrow(
+                'write failed',
+            );
+
+            expect(projectLaunch.launchProject).not.toHaveBeenCalled();
+            expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+            expect(current[0].last_opened).toBeNull();
+            await expect(
+                service.undoClearProjectNewStatus(undoToken),
+            ).resolves.toMatchObject({ is_new: true, last_opened: null });
         });
     });
 

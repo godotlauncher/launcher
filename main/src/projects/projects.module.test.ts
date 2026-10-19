@@ -31,6 +31,9 @@ import { ProjectTagService } from '../project-tags/project-tag.service.js';
 import { ProjectTagsController } from '../project-tags/project-tags.controller.js';
 import { TrayAvailabilityService } from '../services/tray-availability.service.js';
 import { ToolIntegrationModule } from '../tool-integration/tool-integration.module.js';
+import { ProjectEditorService } from './project-editor.service.js';
+import { ProjectGitService } from './project-git.service.js';
+import { ProjectLaunchService } from './project-launch.service.js';
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
 import { ProjectsController } from './projects.controller.js';
 import { ProjectsModule } from './projects.module.js';
@@ -71,6 +74,15 @@ describe('ProjectsModule', () => {
 
         expect(application.get(ProjectsService)).toBeInstanceOf(
             ProjectsService,
+        );
+        expect(application.get(ProjectLaunchService)).toBeInstanceOf(
+            ProjectLaunchService,
+        );
+        expect(application.get(ProjectEditorService)).toBeInstanceOf(
+            ProjectEditorService,
+        );
+        expect(application.get(ProjectGitService)).toBeInstanceOf(
+            ProjectGitService,
         );
         expect(application.get(ProjectsController)).toBeInstanceOf(
             ProjectsController,
