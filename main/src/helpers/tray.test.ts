@@ -6,10 +6,11 @@ import type {
     MenuItemConstructorOptions,
     Tray,
 } from 'electron';
-import { beforeEach, expect, test, vi } from 'vitest';
-import { createTray } from './tray.helper.js';
+import { afterAll, beforeEach, expect, test, vi } from 'vitest';
+import { createTray, updateLinuxTray, updateMenu } from './tray.helper.js';
 
 // Define platform before mocks
+const originalPlatform = process.platform;
 Object.defineProperty(process, 'platform', {
     value: 'darwin',
 });
@@ -25,8 +26,14 @@ vi.mock('../pathResolver.js', () => ({
     getAssetPath: vi.fn().mockReturnValue('/assets'),
 }));
 
+vi.mock('electron-log', () => ({
+    default: { warn: vi.fn() },
+}));
+
 vi.mock('../i18n/index.js', () => {
     const translations = {
+        'menus:tray.pinnedProjects': 'Pinned Projects',
+        'menus:tray.moreProjects': 'More...',
         'menus:tray.recentProjects': 'Recent Projects',
         'menus:tray.invalidProject': '{{project}} (Invalid)',
         'menus:tray.showGodotLauncher': 'Show Godot Launcher',
@@ -72,6 +79,7 @@ const mockMenu = {
 const { mockTrayInstance, trayInstance, MockTray } = vi.hoisted(() => {
     const instance = {
         setContextMenu: vi.fn(),
+        isDestroyed: vi.fn(() => false),
         setToolTip: vi.fn(),
         on: vi.fn(),
         popUpContextMenu: vi.fn(),
@@ -147,6 +155,12 @@ const showMainWindow = vi.fn();
 
 beforeEach(() => {
     vi.clearAllMocks();
+    Object.defineProperty(process, 'platform', { value: 'darwin' });
+    mockTrayInstance.isDestroyed.mockReturnValue(false);
+});
+
+afterAll(() => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
 });
 
 test('Should have tray menu with show and quit', async () => {
@@ -276,4 +290,262 @@ test('Should show recently opened invalid projects as disabled', async () => {
     const handler = (invalidItem as { click?: () => Promise<void> })?.click;
     await handler?.();
     expect(launchProject).not.toHaveBeenCalled();
+});
+
+/**
+ * Creates a project whose tray fields can be overridden for one scenario.
+ * @param name - Display name and unique path suffix.
+ * @param fields - Fields relevant to the scenario.
+ */
+function project(name: string, fields: Partial<ProjectDetails> = {}) {
+    return {
+        name,
+        path: `/projects/${name}`,
+        valid: true,
+        last_opened: null,
+        ...fields,
+    } as ProjectDetails;
+}
+
+/**
+ * Builds the menu through the same callbacks as the application lifecycle.
+ * @param projects - Stored projects offered to the tray.
+ */
+async function buildMenu(projects: ProjectDetails[]) {
+    const launchProject = vi.fn(async () => undefined);
+    await createTray(
+        browserWindow,
+        launchProject,
+        showMainWindow,
+        vi.fn(async () => projects),
+    );
+    await updateMenu(trayInstance, browserWindow);
+    const template = vi
+        .mocked(ElectronMenu.buildFromTemplate)
+        .mock.calls.at(-1)?.[0] as MenuItemConstructorOptions[];
+    return { template, launchProject };
+}
+
+test('shows never-opened pins in saved order before recents', async () => {
+    const { template } = await buildMenu([
+        project('Third', { pinned: true, pinned_order: 2 }),
+        project('Recent', { last_opened: new Date(500) }),
+        project('First', { pinned: true, pinned_order: 0 }),
+        project('Second', { pinned: true, pinned_order: 1 }),
+    ]);
+    expect(template.map((item) => item.label ?? item.type)).toEqual([
+        'Pinned Projects',
+        'First',
+        'Second',
+        'Third',
+        'separator',
+        'Recent Projects',
+        'Recent',
+        'separator',
+        'Show Godot Launcher',
+        'separator',
+        'Quit',
+    ]);
+});
+
+test('excludes only visible pins and fills the recent section from remaining projects', async () => {
+    const pins = [0, 1, 2, 3, 4].map((order) =>
+        project(`Pin ${order}`, {
+            pinned: true,
+            pinned_order: order,
+            last_opened: new Date(1000 - order),
+        }),
+    );
+    const { template } = await buildMenu([
+        ...pins.toReversed(),
+        project('Oldest', { last_opened: new Date(100) }),
+        project('Recent', { last_opened: new Date(200) }),
+    ]);
+    const more = template.find((item) => item.label === 'More...');
+    expect(
+        ((more?.submenu ?? []) as MenuItemConstructorOptions[]).map(
+            (item) => item.label,
+        ),
+    ).toEqual(['Pin 3', 'Pin 4']);
+    const recentIndex = template.findIndex(
+        (item) => item.label === 'Recent Projects',
+    );
+    expect(
+        template
+            .slice(recentIndex + 1, recentIndex + 4)
+            .map((item) => item.label),
+    ).toEqual(['Pin 3', 'Pin 4', 'Recent']);
+});
+
+test.each([0, 1, 3, 4, 7])(
+    'only shows overflow when %i pins exceed the main menu limit',
+    async (count) => {
+        const { template } = await buildMenu(
+            Array.from({ length: count }, (_, order) =>
+                project(`Pin ${order}`, { pinned: true, pinned_order: order }),
+            ),
+        );
+        expect(template.some((item) => item.label === 'Pinned Projects')).toBe(
+            count > 0,
+        );
+        expect(template.some((item) => item.label === 'Recent Projects')).toBe(
+            false,
+        );
+        const more = template.find((item) => item.label === 'More...');
+        if (count > 3) {
+            expect(more?.submenu).toHaveLength(count - 3);
+        } else {
+            expect(more).toBeUndefined();
+        }
+        if (count === 0) {
+            expect(template.map((item) => item.label ?? item.type)).toEqual([
+                'Show Godot Launcher',
+                'separator',
+                'Quit',
+            ]);
+        }
+    },
+);
+
+test('uses the existing date and name fallback for missing or invalid pin order', async () => {
+    const { template } = await buildMenu([
+        project('Zulu', { pinned: true, pinned_order: -1 }),
+        project('Alpha', { pinned: true }),
+        project('Recent Legacy', { pinned: true, last_opened: new Date(10) }),
+        project('Saved', { pinned: true, pinned_order: 0 }),
+    ]);
+    expect(template.slice(1, 4).map((item) => item.label)).toEqual([
+        'Saved',
+        'Recent Legacy',
+        'Alpha',
+    ]);
+    const more = template.find((item) => item.label === 'More...');
+    expect(
+        ((more?.submenu ?? []) as MenuItemConstructorOptions[])[0].label,
+    ).toBe('Zulu');
+});
+
+test('keeps invalid pins, overflow and recents disabled and launches valid overflow projects', async () => {
+    const pins = [0, 1, 2, 3, 4].map((order) =>
+        project(`Pin ${order}`, {
+            pinned: true,
+            pinned_order: order,
+            valid: order !== 0 && order !== 3,
+        }),
+    );
+    const { template, launchProject } = await buildMenu([
+        ...pins,
+        project('Invalid Recent', { valid: false, last_opened: new Date(100) }),
+    ]);
+    const overflow = template.find((item) => item.label === 'More...')
+        ?.submenu as MenuItemConstructorOptions[];
+    const actions = [...template, ...overflow];
+    for (const label of [
+        'Pin 0 (Invalid)',
+        'Pin 3 (Invalid)',
+        'Invalid Recent (Invalid)',
+    ]) {
+        const action = actions.find((item) => item.label === label);
+        expect(action).toMatchObject({ enabled: false });
+        const click = action?.click as unknown as
+            | (() => Promise<void>)
+            | undefined;
+        expect(click).toBeTypeOf('function');
+        await click?.();
+    }
+    expect(launchProject).not.toHaveBeenCalled();
+    await (overflow[1].click as unknown as () => Promise<void>)();
+    expect(launchProject).toHaveBeenCalledExactlyOnceWith(pins[4]);
+});
+
+test('hides recents when all recently opened projects are visible pins', async () => {
+    const { template } = await buildMenu([
+        project('Only', {
+            pinned: true,
+            pinned_order: 0,
+            last_opened: new Date(100),
+        }),
+    ]);
+    expect(template.some((item) => item.label === 'Recent Projects')).toBe(
+        false,
+    );
+});
+
+test.each(['darwin', 'win32'])(
+    'rebuilds from current project data when the menu opens on %s',
+    async (platform) => {
+        Object.defineProperty(process, 'platform', { value: platform });
+        let projects = [project('Before', { pinned: true, pinned_order: 0 })];
+        await createTray(
+            browserWindow,
+            vi.fn(),
+            showMainWindow,
+            async () => projects,
+        );
+        const callback = mockTrayInstance.on.mock.calls.find(
+            ([event]) => event === 'right-click',
+        )?.[1];
+        projects = [project('After', { pinned: true, pinned_order: 0 })];
+        await callback?.();
+        const template = vi
+            .mocked(ElectronMenu.buildFromTemplate)
+            .mock.calls.at(-1)?.[0];
+        expect(template?.map((item) => item.label)).toContain('After');
+        expect(template?.map((item) => item.label)).not.toContain('Before');
+    },
+);
+
+test('ignores Linux refresh before the tray has been created', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    vi.resetModules();
+    const freshModule = await import('./tray.helper.js');
+    await expect(freshModule.updateLinuxTray()).resolves.toBeUndefined();
+    expect(mockTrayInstance.setContextMenu).not.toHaveBeenCalled();
+});
+
+test('ignores a destroyed Linux tray', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const listProjects = vi.fn(async () => []);
+    await createTray(browserWindow, vi.fn(), showMainWindow, listProjects);
+    listProjects.mockClear();
+    mockTrayInstance.isDestroyed.mockReturnValue(true);
+    await updateLinuxTray();
+    expect(listProjects).not.toHaveBeenCalled();
+});
+
+test('does not replace a newer Linux menu with a slower earlier rebuild', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    let finishEarlier!: (projects: ProjectDetails[]) => void;
+    const listProjects = vi
+        .fn<() => Promise<ProjectDetails[]>>()
+        .mockResolvedValue([]);
+    await createTray(browserWindow, vi.fn(), showMainWindow, listProjects);
+    mockTrayInstance.setContextMenu.mockClear();
+    listProjects.mockImplementationOnce(
+        () =>
+            new Promise((resolve) => {
+                finishEarlier = resolve;
+            }),
+    );
+    const earlier = updateLinuxTray();
+    listProjects.mockResolvedValueOnce([project('Latest', { pinned: true })]);
+    await updateLinuxTray();
+    expect(mockTrayInstance.setContextMenu).toHaveBeenCalledOnce();
+    finishEarlier([project('Older', { pinned: true })]);
+    await earlier;
+    expect(mockTrayInstance.setContextMenu).toHaveBeenCalledOnce();
+});
+
+test('contains Linux menu failures so saved project changes can still succeed', async () => {
+    Object.defineProperty(process, 'platform', { value: 'linux' });
+    const listProjects = vi
+        .fn<() => Promise<ProjectDetails[]>>()
+        .mockResolvedValue([]);
+    await createTray(browserWindow, vi.fn(), showMainWindow, listProjects);
+    listProjects.mockRejectedValueOnce(new Error('menu unavailable'));
+    await expect(updateLinuxTray()).resolves.toBeUndefined();
+    mockTrayInstance.setContextMenu.mockImplementationOnce(() => {
+        throw new Error('no tray host');
+    });
+    await expect(updateLinuxTray()).resolves.toBeUndefined();
 });

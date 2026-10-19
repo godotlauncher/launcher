@@ -5,10 +5,14 @@ const mocks = vi.hoisted(() => ({
     checkAndUpdateProjects: vi.fn(),
     getMainWindow: vi.fn(),
     ipcWebContentsSend: vi.fn(),
+    updateLinuxTray: vi.fn(),
 }));
 
 vi.mock('../checks.js', () => ({
     checkAndUpdateProjects: mocks.checkAndUpdateProjects,
+}));
+vi.mock('../helpers/tray.helper.js', () => ({
+    updateLinuxTray: mocks.updateLinuxTray,
 }));
 vi.mock('../mainWindow.js', () => ({
     getMainWindow: mocks.getMainWindow,
@@ -58,6 +62,7 @@ describe('EditorProjectRepairAdapter', () => {
 
         await adapter.revalidateProjects();
 
+        expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
         expect(mocks.checkAndUpdateProjects).toHaveBeenCalledWith(
             {},
             undefined,
@@ -68,6 +73,32 @@ describe('EditorProjectRepairAdapter', () => {
             webContents,
             projects,
         );
+    });
+
+    it('refreshes editor-driven project availability without a renderer window', async () => {
+        mocks.checkAndUpdateProjects.mockResolvedValueOnce([]);
+        mocks.getMainWindow.mockReturnValueOnce(undefined);
+        const adapter = new EditorProjectRepairAdapter(
+            {} as never,
+            {} as never,
+        );
+        await adapter.revalidateProjects();
+        expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
+        expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+    });
+
+    it('does not refresh after project revalidation fails to persist', async () => {
+        mocks.checkAndUpdateProjects.mockRejectedValueOnce(
+            new Error('write failed'),
+        );
+        const adapter = new EditorProjectRepairAdapter(
+            {} as never,
+            {} as never,
+        );
+        await expect(adapter.revalidateProjects()).rejects.toThrow(
+            'write failed',
+        );
+        expect(mocks.updateLinuxTray).not.toHaveBeenCalled();
     });
 
     it('counts unavailable projects by version/flavour or assigned editor path', async () => {

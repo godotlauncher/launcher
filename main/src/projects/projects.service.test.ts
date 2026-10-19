@@ -35,6 +35,7 @@ const mocks = vi.hoisted(() => ({
     removeProjectEditor: vi.fn(),
     updateGodotProjectName: vi.fn(),
     updateLinuxTray: vi.fn(),
+    getMainWindow: vi.fn(),
     writeProjectLauncherConfig: vi.fn(),
     hasProjectHealthChanged: vi.fn(),
     getInstalledEditors: vi.fn(),
@@ -83,7 +84,7 @@ vi.mock('../i18n/index.js', () => ({
         values?.name ? `${key}:${values.name}` : key,
 }));
 vi.mock('../mainWindow.js', () => ({
-    getMainWindow: () => ({ webContents: { id: 'web-contents' } }),
+    getMainWindow: mocks.getMainWindow,
 }));
 vi.mock('../services/tray-availability.service.js', () => ({
     TrayAvailabilityService: class TrayAvailabilityService {},
@@ -175,6 +176,9 @@ describe('ProjectsService', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.getMainWindow.mockReturnValue({
+            webContents: { id: 'web-contents' },
+        });
         mocks.addProject.mockResolvedValue({ success: false });
         mocks.createProject.mockResolvedValue({ success: true });
         mocks.getInstalledEditors.mockResolvedValue([]);
@@ -758,6 +762,7 @@ describe('ProjectsService', () => {
 
         const projects = await service.setProjectPinned(second, true);
 
+        expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
         expect(projects).toEqual([
             expect.objectContaining({ path: first.path, pinned_order: 1 }),
             expect.objectContaining({ path: second.path, pinned_order: 0 }),
@@ -777,6 +782,67 @@ describe('ProjectsService', () => {
             service.reorderPinnedProjects(['/projects/other']),
         ).rejects.toThrow('projects:pinning.errors.orderChanged');
         expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+        expect(mocks.updateLinuxTray).not.toHaveBeenCalled();
+    });
+
+    it('refreshes the tray after saved pin reordering even without a live renderer', async () => {
+        const first = {
+            path: '/projects/first',
+            pinned: true,
+            pinned_order: 0,
+        } as ProjectDetails;
+        const second = {
+            path: '/projects/second',
+            pinned: true,
+            pinned_order: 1,
+        } as ProjectDetails;
+        store.update.mockImplementation(async (mutator) =>
+            mutator([first, second]),
+        );
+        mocks.getMainWindow.mockReturnValue(undefined);
+
+        const projects = await service.reorderPinnedProjects([
+            second.path,
+            first.path,
+        ]);
+
+        expect(projects.map((project) => project.pinned_order)).toEqual([1, 0]);
+        expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
+        expect(mocks.ipcWebContentsSend).not.toHaveBeenCalled();
+    });
+
+    it('does not refresh the tray after a failed pin save', async () => {
+        store.update.mockRejectedValueOnce(new Error('write failed'));
+        await expect(
+            service.setProjectPinned(
+                { path: '/projects/game' } as ProjectDetails,
+                true,
+            ),
+        ).rejects.toThrow('write failed');
+        expect(mocks.updateLinuxTray).not.toHaveBeenCalled();
+    });
+
+    it.each([false, true])(
+        'refreshes after full project validation with publishResult=%s',
+        async (publishResult) => {
+            mocks.checkAllProjectsValid.mockResolvedValueOnce([]);
+            await service.checkAllProjectsValid({ publishResult });
+            expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
+        },
+    );
+
+    it('refreshes the tray after changed project health is persisted', async () => {
+        mocks.checkAndUpdateProjectHealth.mockResolvedValueOnce({
+            projects: [],
+            changed: true,
+        });
+        await service.refreshProjectHealth();
+        expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
+    });
+
+    it('does not refresh when project health is unchanged', async () => {
+        await service.refreshProjectHealth();
+        expect(mocks.updateLinuxTray).not.toHaveBeenCalled();
     });
 
     it('renames a project and optionally updates project.godot', async () => {
@@ -1010,6 +1076,7 @@ describe('ProjectsService', () => {
             invalid_reason: undefined,
             release: installedRelease,
         });
+        expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
     });
 
     it('marks a present project as missing only its selected editor', async () => {
@@ -1056,6 +1123,7 @@ describe('ProjectsService', () => {
             invalid_reason: 'missing_editor',
             release: expect.objectContaining({ valid: false }),
         });
+        expect(mocks.updateLinuxTray).toHaveBeenCalledOnce();
     });
 
     it('does not mutate the selected project when missing-editor metadata fails to write', async () => {
@@ -1101,6 +1169,7 @@ describe('ProjectsService', () => {
             }),
         ).rejects.toThrow('metadata write failed');
 
+        expect(mocks.updateLinuxTray).not.toHaveBeenCalled();
         expect(project).toMatchObject({
             version: '4.4-stable',
             valid: true,

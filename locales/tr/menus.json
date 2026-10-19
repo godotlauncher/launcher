@@ -35,6 +35,8 @@
         "deleteRelease": "Sürümü Bu Cihazdan Sil"
     },
     "tray": {
+        "pinnedProjects": "Sabitlenmiş projeler",
+        "moreProjects": "Diğer...",
         "recentProjects": "Son Projeler",
         "invalidProject": "{{project}} (Geçersiz)",
         "showGodotLauncher": "Godot Launcher'ı Göster",

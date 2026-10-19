@@ -4,6 +4,7 @@ import logger from 'electron-log';
 import { checkAndUpdateProjects } from '../checks.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { getMainWindow } from '../mainWindow.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from '../projects/projects.store.js';
@@ -43,6 +44,7 @@ export class EditorProjectRepairAdapter {
             undefined,
             this.projectsStore,
         );
+        void updateLinuxTray();
         const webContents = getMainWindow()?.webContents;
         if (webContents && !webContents.isDestroyed?.()) {
             ipcWebContentsSend('projects-updated', webContents, projects);

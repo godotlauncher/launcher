@@ -2,6 +2,7 @@ import * as path from 'node:path';
 
 import type { ProjectDetails } from '@shared/contracts';
 import { app, type BrowserWindow, Menu, Tray } from 'electron';
+import logger from 'electron-log';
 import { t } from '../i18n/index.js';
 import { getAssetPath } from '../pathResolver.js';
 
@@ -10,14 +11,15 @@ let mainWindow: BrowserWindow;
 let launchProjectFromTray: (project: ProjectDetails) => Promise<void>;
 let showMainWindowFromTray: () => void;
 let listProjectsForTray: () => Promise<ProjectDetails[]>;
+let linuxMenuRevision = 0;
 
 /**
  * Creates the application tray and binds its project callbacks.
  *
  * @param window - Main application window.
- * @param launchProjectHandler - Callback used to launch a recent project.
+ * @param launchProjectHandler - Callback used to launch a project.
  * @param showMainWindowHandler - Callback used to reveal the main window.
- * @param listProjectsHandler - Callback used to load recent projects.
+ * @param listProjectsHandler - Callback used to load stored projects.
  * @returns The configured Electron tray.
  */
 export async function createTray(
@@ -68,8 +70,26 @@ export async function createTray(
     return tray;
 }
 
+/** Refreshes an existing Linux tray without affecting saved project changes. */
 export async function updateLinuxTray(): Promise<void> {
-    tray.setContextMenu(await updateMenu(tray, mainWindow));
+    if (process.platform !== 'linux' || !tray || tray.isDestroyed()) {
+        return;
+    }
+
+    const currentTray = tray;
+    const revision = ++linuxMenuRevision;
+    try {
+        const menu = await updateMenu(currentTray, mainWindow);
+        if (
+            revision === linuxMenuRevision &&
+            currentTray === tray &&
+            !currentTray.isDestroyed()
+        ) {
+            currentTray.setContextMenu(menu);
+        }
+    } catch (error) {
+        logger.warn('Could not refresh the system tray menu', error);
+    }
 }
 
 /**
@@ -84,44 +104,47 @@ export async function updateMenu(
     _mainWindow: BrowserWindow,
 ): Promise<Electron.Menu> {
     const projects = await listProjectsForTray();
-    const filteredProjects = projects
-        .filter((p) => p.last_opened != null && p.last_opened.getTime() > 0)
+    const pinnedProjects = projects
+        .filter((project) => project.pinned)
+        .sort(comparePinnedProjects);
+    const visiblePins = pinnedProjects.slice(0, 3);
+    const visiblePinPaths = new Set(visiblePins.map((project) => project.path));
+    const recentProjects = projects
+        .filter(
+            (project) =>
+                !visiblePinPaths.has(project.path) &&
+                project.last_opened != null &&
+                project.last_opened.getTime() > 0,
+        )
         .sort(
             (a, b) =>
                 (b.last_opened?.getTime() || 0) -
                 (a.last_opened?.getTime() || 0),
+        )
+        .slice(0, 3);
+
+    const quickLaunchMenu: Electron.MenuItemConstructorOptions[] = [];
+    if (visiblePins.length > 0) {
+        quickLaunchMenu.push(
+            { label: t('menus:tray.pinnedProjects'), enabled: false },
+            ...visiblePins.map(projectMenuItem),
         );
-
-    const last3 = filteredProjects.slice(0, 3);
-
-    let quickLaunchMenu: Array<Electron.MenuItemConstructorOptions> = [];
-
-    if (last3.length > 0) {
-        quickLaunchMenu = [
-            {
-                label: t('menus:tray.recentProjects'),
-                enabled: false,
-            },
-        ];
-
-        last3.forEach((p) => {
+        const remainingPins = pinnedProjects.slice(3);
+        if (remainingPins.length > 0) {
             quickLaunchMenu.push({
-                label: p.valid
-                    ? p.name
-                    : t('menus:tray.invalidProject', { project: p.name }),
-                enabled: p.valid,
-                click: async () => {
-                    if (!p.valid) {
-                        return;
-                    }
-                    await launchProjectFromTray(p);
-                },
+                label: t('menus:tray.moreProjects'),
+                submenu: remainingPins.map(projectMenuItem),
             });
-        });
+        }
+        quickLaunchMenu.push({ type: 'separator' });
+    }
 
-        quickLaunchMenu.push({
-            type: 'separator',
-        });
+    if (recentProjects.length > 0) {
+        quickLaunchMenu.push(
+            { label: t('menus:tray.recentProjects'), enabled: false },
+            ...recentProjects.map(projectMenuItem),
+            { type: 'separator' },
+        );
     }
 
     const menu = Menu.buildFromTemplate([
@@ -143,6 +166,59 @@ export async function updateMenu(
     return menu;
 }
 
+/**
+ * Creates a project action using the existing validity and launch behaviour.
+ * @param project - Stored project to display.
+ */
+function projectMenuItem(
+    project: ProjectDetails,
+): Electron.MenuItemConstructorOptions {
+    return {
+        label: project.valid
+            ? project.name
+            : t('menus:tray.invalidProject', { project: project.name }),
+        enabled: project.valid,
+        click: async () => {
+            if (project.valid) {
+                await launchProjectFromTray(project);
+            }
+        },
+    };
+}
+
+/**
+ * Matches saved pin order, with the existing fallback for legacy projects.
+ * @param first - First pinned project.
+ * @param second - Second pinned project.
+ */
+function comparePinnedProjects(
+    first: ProjectDetails,
+    second: ProjectDetails,
+): number {
+    const firstOrder =
+        Number.isInteger(first.pinned_order) && (first.pinned_order ?? -1) >= 0
+            ? (first.pinned_order as number)
+            : Number.POSITIVE_INFINITY;
+    const secondOrder =
+        Number.isInteger(second.pinned_order) &&
+        (second.pinned_order ?? -1) >= 0
+            ? (second.pinned_order as number)
+            : Number.POSITIVE_INFINITY;
+    if (firstOrder !== secondOrder) {
+        return firstOrder - secondOrder;
+    }
+    return (
+        (second.last_opened?.getTime() ?? 0) -
+            (first.last_opened?.getTime() ?? 0) ||
+        first.name.localeCompare(second.name)
+    );
+}
+
+/**
+ * Opens a freshly built menu for platforms that rebuild on demand.
+ * @param tray - Tray whose menu should open.
+ * @param mainWindow - Main application window.
+ */
 async function popMenu(tray: Tray, mainWindow: BrowserWindow): Promise<void> {
     const menu = await updateMenu(tray, mainWindow);
 
