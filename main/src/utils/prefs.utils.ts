@@ -164,7 +164,7 @@ export async function getConfigDir(): Promise<string> {
     return defaultPaths.configDir;
 }
 
-/** Returns defaults for a new preferences file. */
+/** Returns defaults for a new preferences file and missing saved values. */
 export async function getDefaultPrefs(): Promise<UserPreferences> {
     const defaultPrefs = getDefaultDirs();
     const platform = os.platform();
@@ -179,7 +179,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         config_location: pathModule.resolve(defaultPrefs.configDir),
         projects_location: pathModule.resolve(defaultPrefs.projectDir),
         post_launch_action: 'close_to_tray',
-        auto_open_code_editor: false,
+        auto_open_code_editor: true,
         auto_check_updates: true,
         receive_beta_updates: false,
         skipped_app_update_version: undefined,

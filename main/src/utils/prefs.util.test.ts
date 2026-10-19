@@ -231,7 +231,7 @@ suite('prefs.util', (_test) => {
                 close_window_to_tray: true,
                 confirm_project_remove: true,
                 post_launch_action: 'close_to_tray',
-                auto_open_code_editor: false,
+                auto_open_code_editor: true,
                 first_run: true,
                 windows_enable_symlinks: false,
                 linux_credential_storage: 'automatic',
@@ -281,7 +281,7 @@ suite('prefs.util', (_test) => {
                 close_window_to_tray: true,
                 confirm_project_remove: true,
                 post_launch_action: 'close_to_tray',
-                auto_open_code_editor: false,
+                auto_open_code_editor: true,
                 first_run: true,
                 windows_enable_symlinks: false,
                 linux_credential_storage: 'automatic',
@@ -291,6 +291,25 @@ suite('prefs.util', (_test) => {
             });
         });
     });
+
+    it.each([
+        [undefined, true],
+        [true, true],
+        [false, false],
+    ])(
+        'loads saved automatic code editor opening %s as %s',
+        async (storedAutoOpen, expected) => {
+            fsMock.existsSync.mockReturnValueOnce(true);
+            fsPromisesMock.readFile.mockResolvedValueOnce(
+                JSON.stringify({ auto_open_code_editor: storedAutoOpen }),
+            );
+            const prefs = await readPrefsFromDisk(
+                '/home/user/.godot/prefs.json',
+                await getDefaultPrefs(),
+            );
+            expect(prefs.auto_open_code_editor).toBe(expected);
+        },
+    );
 
     it.each([
         [undefined, 'cards'],

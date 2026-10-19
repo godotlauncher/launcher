@@ -41,7 +41,7 @@ export type UserPreferences = {
     config_location: string;
     projects_location: string;
     post_launch_action: 'none' | 'minimize' | 'close_to_tray';
-    /** Opens the project's associated code editor after a successful edit launch. */
+    /** Opens the associated code editor after an edit launch; defaults to true. */
     auto_open_code_editor?: boolean;
     auto_check_updates: boolean;
     receive_beta_updates: boolean;

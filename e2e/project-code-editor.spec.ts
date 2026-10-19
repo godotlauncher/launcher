@@ -5,9 +5,10 @@ import { getMainWindow } from './splashscreen/getMainWindow';
 import { SAMPLE_PROJECTS } from './support/e2e-fixture-data';
 import { createFixtureHome, setAppLanguage } from './support/e2e-fixture-runtime';
 
-test('opens project tools in every view, persists opt-in and displays tray editor failures', async () => {
+test('opens project tools in every view, persists automatic opening choices and displays tray editor failures', async () => {
     test.setTimeout(90000);
     const fixtureHome = await createFixtureHome();
+    expect(JSON.parse(await fs.readFile(path.join(fixtureHome, '.gd-launcher', 'prefs.json'), 'utf8')).auto_open_code_editor).toBeUndefined();
     const projects = ['vscode', 'vscodium', null].map((codeEditorId, index) => ({
         ...SAMPLE_PROJECTS[0], name: `Editor Project ${index}`, path: path.join(fixtureHome, `project-${index}`), codeEditorId, pinned: true, pinned_order: index,
     }));
@@ -121,15 +122,17 @@ test('opens project tools in every view, persists opt-in and displays tray edito
         await page.getByTestId('btnSettings').click();
         await page.getByTestId('tabBehavior').click();
         const autoOpen = page.getByTestId('chkAutoOpenCodeEditor');
-        await expect(autoOpen).not.toBeChecked();
-        await autoOpen.click();
         await expect(autoOpen).toBeChecked();
+        await autoOpen.click();
+        await expect(autoOpen).not.toBeChecked();
+        await expect.poll(async () => JSON.parse(await fs.readFile(path.join(fixtureHome, '.gd-launcher', 'prefs.json'), 'utf8')).auto_open_code_editor).toBe(false);
+        await page.reload();
+        await expect(page.getByTestId('chkAutoOpenCodeEditor')).not.toBeChecked();
+        await page.getByTestId('chkAutoOpenCodeEditor').click();
+        await expect(page.getByTestId('chkAutoOpenCodeEditor')).toBeChecked();
         await expect.poll(async () => JSON.parse(await fs.readFile(path.join(fixtureHome, '.gd-launcher', 'prefs.json'), 'utf8')).auto_open_code_editor).toBe(true);
         await page.reload();
         await expect(page.getByTestId('chkAutoOpenCodeEditor')).toBeChecked();
-        await page.getByTestId('chkAutoOpenCodeEditor').click();
-        await expect(page.getByTestId('chkAutoOpenCodeEditor')).not.toBeChecked();
-        await expect.poll(async () => JSON.parse(await fs.readFile(path.join(fixtureHome, '.gd-launcher', 'prefs.json'), 'utf8')).auto_open_code_editor).toBe(false);
         await page.getByTestId('btnProjects').click();
         // Exercise the native tray callback and renderer failure event with a deterministic launch result.
         await app.evaluate(async ({ BrowserWindow }, root) => {
