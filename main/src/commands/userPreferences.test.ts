@@ -346,4 +346,34 @@ describe('userPreferences migration', () => {
         );
         expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
     });
+
+    it('persists a complete custom project group order', async () => {
+        const prefs = createPrefs({
+            projects_group_order: ['recents', 'pinned', 'new'],
+        });
+        await expect(setUserPreferences(prefs)).resolves.toEqual(prefs);
+        expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+            '/tmp/prefs.json',
+            prefs,
+        );
+    });
+
+    it.each([
+        [],
+        ['pinned', 'pinned', 'new'],
+        ['new', 'recents'],
+        ['new', 'recents', 'unknown'],
+    ])(
+        'rejects incomplete or invalid project group order %j without writing',
+        async (...order) => {
+            const prefs = createPrefs({
+                projects_group_order:
+                    order as UserPreferences['projects_group_order'],
+            });
+            await expect(setUserPreferences(prefs)).rejects.toThrow(
+                'Invalid project group order',
+            );
+            expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
+        },
+    );
 });

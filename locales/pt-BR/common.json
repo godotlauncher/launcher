@@ -1,4 +1,10 @@
 {
+    "notifications": {
+        "label": "Notificações",
+        "dismiss": "Dispensar notificação",
+        "actionFailed": "Não foi possível concluir a ação. Tente novamente.",
+        "undo": "Desfazer"
+    },
     "buttons": {
         "copy": "Copiar",
         "ok": "OK",

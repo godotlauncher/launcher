@@ -5,9 +5,14 @@ import {
     getProjectsViewState,
 } from './projects-view.model';
 
+/** Creates a project for section behaviour checks.
+ * @param name - Project name.
+ * @param options - Explicit creation status, dates and pin order.
+ */
 function project(
     name: string,
     options: {
+        isNew?: boolean;
         addedAt?: string;
         lastOpened?: string;
         pinned?: boolean;
@@ -16,6 +21,7 @@ function project(
 ): ProjectDetails {
     return {
         name,
+        is_new: options.isNew,
         path: `/projects/${name.toLowerCase()}`,
         added_at: options.addedAt ? new Date(options.addedAt) : undefined,
         last_opened: options.lastOpened ? new Date(options.lastOpened) : null,
@@ -26,7 +32,7 @@ function project(
 
 describe('getProjectSections', () => {
     it('keeps pinned projects out of new and recents', () => {
-        const newPinned = project('New Pinned', { pinned: true });
+        const newPinned = project('New Pinned', { pinned: true, isNew: true });
         const recentPinned = project('Recent Pinned', {
             pinned: true,
             lastOpened: '2026-08-08T12:00:00Z',
@@ -41,9 +47,11 @@ describe('getProjectSections', () => {
 
     it('sorts new projects by last added and recent projects by last opened', () => {
         const alpha = project('Alpha', {
+            isNew: true,
             addedAt: '2026-08-01T12:00:00Z',
         });
         const zulu = project('Zulu', {
+            isNew: true,
             addedAt: '2026-08-08T12:00:00Z',
         });
         const older = project('Older', {
@@ -63,6 +71,24 @@ describe('getProjectSections', () => {
             'Newer',
             'Older',
         ]);
+    });
+
+    it('keeps existing, imported and cleared unopened projects in Recents without inventing dates', () => {
+        const legacy = project('Legacy');
+        const imported = project('Imported', { isNew: false });
+        const created = project('Created', { isNew: true });
+        const opened = project('Opened', {
+            isNew: true,
+            lastOpened: '2026-08-08T12:00:00Z',
+        });
+        const sections = getProjectSections(
+            [legacy, imported, created, opened],
+            '',
+        );
+        expect(sections.newProjects).toEqual([created]);
+        expect(sections.recentProjects).toEqual([opened, imported, legacy]);
+        expect(legacy.last_opened).toBeNull();
+        expect(imported.last_opened).toBeNull();
     });
 
     it('sorts pinned projects by stored order before legacy fallback', () => {
@@ -153,7 +179,7 @@ describe('getProjectsViewState', () => {
 describe('project tag filtering', () => {
     it('matches any selected tag and intersects the project name search', () => {
         const alpha = project('Alpha', { pinned: true });
-        const beta = project('Beta');
+        const beta = project('Beta', { isNew: true });
         const untagged = project('Untagged');
         const assignments = {
             [alpha.path]: ['red'],
@@ -180,7 +206,7 @@ describe('project tag filtering', () => {
             getProjectSections(projects, '', ['unused'], assignments),
         ).toEqual({ newProjects: [], pinnedProjects: [], recentProjects: [] });
         expect(
-            getProjectSections(projects, '', [], assignments).newProjects,
+            getProjectSections(projects, '', [], assignments).recentProjects,
         ).toContain(untagged);
     });
     it('keeps an active filter accessible when there are no projects', () => {

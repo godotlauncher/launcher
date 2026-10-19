@@ -196,6 +196,7 @@ export const SAMPLE_PROJECTS: ProjectDetails[] = [
         editor_settings_file:
             '/Users/docs/Godot/Projects/my-prototype/.godot/editor_settings-4.7.tres',
         last_opened: null,
+        is_new: true,
         open_windowed: false,
         release: SAMPLE_CUSTOM_RELEASE,
         launch_path: SAMPLE_CUSTOM_RELEASE.editor_path,

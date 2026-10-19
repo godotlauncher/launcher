@@ -1,4 +1,10 @@
 {
+    "notifications": {
+        "label": "Notificaciones",
+        "dismiss": "Descartar notificación",
+        "actionFailed": "No se pudo completar la acción. Inténtalo de nuevo.",
+        "undo": "Deshacer"
+    },
     "buttons": {
         "copy": "Copiar",
         "ok": "Ok",

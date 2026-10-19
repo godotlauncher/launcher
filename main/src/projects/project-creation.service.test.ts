@@ -420,6 +420,7 @@ describe('createProject', () => {
         );
         expect(result.projectDetails?.name).toBe('Test Project');
         expect(result.projectDetails?.added_at).toBeInstanceOf(Date);
+        expect(result.projectDetails?.is_new).toBe(true);
         expect(godotUtilsMocks.createProjectFile).toHaveBeenCalledWith(
             expect.any(String),
             5,

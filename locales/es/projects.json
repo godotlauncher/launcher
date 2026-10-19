@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Marcar como no nuevo",
+        "cleared": "Estado Nuevo eliminado",
+        "restored": "Estado Nuevo restaurado",
+        "clearedRecent": "{{name}} se ha movido a Recientes.",
+        "clearedPinned": "{{name}} permanece en Fijados.",
+        "restoredNew": "{{name}} vuelve a estar en Nuevos.",
+        "restoredPinned": "{{name}} sigue fijado.",
+        "clearFailed": "No se pudo eliminar el estado Nuevo",
+        "unavailable": "Ya no se puede cambiar el estado Nuevo de este proyecto."
+    },
+    "viewOptions": {
+        "saved": "Orden de los grupos guardado",
+        "restored": "Orden anterior restaurado",
+        "title": "Opciones de vista",
+        "groupOrder": "Orden de los grupos",
+        "dragHelp": "Arrastra una fila para cambiar el orden de los grupos.",
+        "restoreDefault": "Restaurar orden predeterminado",
+        "saveFailed": "No se pudo guardar el orden de los grupos. Inténtalo de nuevo.",
+        "close": "Cerrar opciones de vista",
+        "instructions": "Para seleccionar un grupo, pulsa Espacio o Intro. Usa las flechas arriba y abajo para moverlo, Espacio o Intro para soltarlo y Escape para cancelar."
+    },
     "view": {
         "cards": "Vista de tarjetas",
         "list": "Vista de lista",

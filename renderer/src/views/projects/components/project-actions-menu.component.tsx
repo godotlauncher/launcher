@@ -1,5 +1,5 @@
 import type { ProjectDetails } from '@shared/contracts';
-import { Download, Trash2, Upload } from 'lucide-react';
+import { CircleCheck, Download, Trash2, Upload } from 'lucide-react';
 import type React from 'react';
 import {
     ActionMenu,
@@ -17,10 +17,14 @@ type ProjectActionsMenuProps = {
     onExportEditorSettings: (project: ProjectDetails) => void;
     onImportEditorSettings: (project: ProjectDetails) => void;
     onRemoveProject: (project: ProjectDetails) => void;
+    onClearNewStatus: (project: ProjectDetails) => void;
 };
 
 const iconClassName = 'size-[16px]';
 
+/** Renders the available management actions for the selected project's current status.
+ * @param props - Selected project, anchor, translated labels and action callbacks.
+ */
 export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     project,
     anchorRect,
@@ -29,9 +33,24 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     onExportEditorSettings,
     onImportEditorSettings,
     onRemoveProject,
+    onClearNewStatus,
 }) => {
     const items: ActionMenuItem[] = project
         ? [
+              ...(project.is_new === true && !project.last_opened
+                  ? [
+                        {
+                            key: 'clear-new-status',
+                            label: t('newStatus.markAsNotNew'),
+                            icon: <CircleCheck className={iconClassName} />,
+                            onSelect: () => onClearNewStatus(project),
+                        },
+                        {
+                            type: 'separator' as const,
+                            key: 'new-status-separator',
+                        },
+                    ]
+                  : []),
               {
                   key: 'export-editor-settings',
                   label: t('project.exportEditorSettings', { ns: 'menus' }),

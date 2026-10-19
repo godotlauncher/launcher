@@ -7,6 +7,7 @@ import {
     type StoredUserPreferences,
     writePrefsToDisk,
 } from '../utils/prefs.utils.js';
+import { isProjectGroupOrder } from '../utils/project-group-order.util.js';
 
 function migrateUserPreferences(
     prefs: UserPreferences,
@@ -89,6 +90,12 @@ export async function getUserPreferences(): Promise<UserPreferences> {
 export async function setUserPreferences(
     prefs: UserPreferences,
 ): Promise<UserPreferences> {
+    if (
+        prefs.projects_group_order !== undefined &&
+        !isProjectGroupOrder(prefs.projects_group_order)
+    ) {
+        throw new Error('Invalid project group order');
+    }
     if (
         prefs.linux_credential_storage !== undefined &&
         !isLinuxCredentialStoragePreference(prefs.linux_credential_storage)

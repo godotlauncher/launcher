@@ -19,6 +19,10 @@ import {
     type TypedJsonStore,
 } from './jsonStoreFactory.js';
 import { getDefaultDirs } from './platform.utils.js';
+import {
+    DEFAULT_PROJECT_GROUP_ORDER,
+    normaliseProjectGroupOrder,
+} from './project-group-order.util.js';
 
 export type StoredUserPreferences = Partial<UserPreferences> & {
     vs_code_path?: string;
@@ -85,6 +89,9 @@ function mergeWithDefaults(
                 : 'cards',
         projects_tag_filter: normaliseProjectTagFilter(
             runtimePrefs.projects_tag_filter,
+        ),
+        projects_group_order: normaliseProjectGroupOrder(
+            runtimePrefs.projects_group_order,
         ),
         linux_credential_storage: isLinuxCredentialStoragePreference(
             runtimePrefs.linux_credential_storage,
@@ -166,6 +173,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     return {
         prefs_version: 4,
         projects_view_mode: 'cards',
+        projects_group_order: [...DEFAULT_PROJECT_GROUP_ORDER],
         projects_tag_filter: [],
         install_location: pathModule.resolve(defaultPrefs.dataDir),
         config_location: pathModule.resolve(defaultPrefs.configDir),

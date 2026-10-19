@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "标记为非新项目",
+        "cleared": "已清除新项目状态",
+        "restored": "已恢复新项目状态",
+        "clearedRecent": "{{name}} 已移至最近使用。",
+        "clearedPinned": "{{name}} 保持固定。",
+        "restoredNew": "{{name}} 已回到新项目。",
+        "restoredPinned": "{{name}} 仍保持固定。",
+        "clearFailed": "无法清除新项目状态",
+        "unavailable": "无法再更改此项目的新项目状态。"
+    },
+    "viewOptions": {
+        "saved": "分组顺序已保存",
+        "restored": "已恢复之前的顺序",
+        "title": "视图选项",
+        "groupOrder": "分组顺序",
+        "dragHelp": "拖动整行以更改分组顺序。",
+        "restoreDefault": "恢复默认顺序",
+        "saveFailed": "无法保存分组顺序。请重试。",
+        "close": "关闭视图选项",
+        "instructions": "按空格键或 Enter 选取分组。使用向上和向下箭头键移动，按空格键或 Enter 放下，按 Escape 取消。"
+    },
     "view": {
         "cards": "卡片视图",
         "list": "列表视图",

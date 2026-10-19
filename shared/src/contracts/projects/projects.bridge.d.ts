@@ -6,6 +6,7 @@ import type {
     CancelRemoteProjectImportResult,
     ChangeProjectEditorResult,
     CheckCreateProjectRepositoryNameAvailabilityResult,
+    ClearProjectNewStatusResult,
     CreateProjectDestinationInspection,
     CreateProjectGitOptions,
     CreateProjectParentRepositoryConsent,
@@ -173,6 +174,18 @@ export type ProjectsBridge = {
         project: ProjectDetails,
         launchWithConsole: boolean,
     ): Promise<ProjectDetails>;
+
+    /** Clears New on the current project and returns its transient Undo identity.
+     * @param project - Project whose New status should be cleared.
+     */
+    clearProjectNewStatus(
+        project: ProjectDetails,
+    ): Promise<ClearProjectNewStatusResult>;
+
+    /** Restores only the New status cleared by the matching operation.
+     * @param undoToken - Main-owned identity returned when New was cleared.
+     */
+    undoClearProjectNewStatus(undoToken: string): Promise<ProjectDetails>;
 
     /** Changes whether a project is pinned. */
     setProjectPinned(

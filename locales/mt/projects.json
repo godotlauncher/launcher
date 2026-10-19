@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Immarka bħala mhux ġdid",
+        "cleared": "L-istatus Ġdid tneħħa",
+        "restored": "L-istatus Ġdid ġie rrestawrat",
+        "clearedRecent": "{{name}} tmexxa għal Riċenti.",
+        "clearedPinned": "{{name}} jibqa' f'Imwaħħla.",
+        "restoredNew": "{{name}} reġa' jinsab f'Ġodda.",
+        "restoredPinned": "{{name}} għadu mwaħħal.",
+        "clearFailed": "L-istatus Ġdid ma setax jitneħħa",
+        "unavailable": "L-istatus Ġdid ma jistax jinbidel aktar għal dan il-proġett."
+    },
+    "viewOptions": {
+        "saved": "L-ordni tal-gruppi ġiet issejvjata",
+        "restored": "L-ordni preċedenti ġiet irrestawrata",
+        "title": "Għażliet tal-vista",
+        "groupOrder": "Ordni tal-gruppi",
+        "dragHelp": "Iddreggja ringiela biex tibdel l-ordni tal-gruppi.",
+        "restoreDefault": "Irrestawra l-ordni predefinita",
+        "saveFailed": "Ma setgħetx tiġi ssejvjata l-ordni tal-gruppi. Erġa’ pprova.",
+        "close": "Agħlaq l-għażliet tal-vista",
+        "instructions": "Biex tagħżel grupp, agħfas Space jew Enter. Uża l-vleġeġ ’il fuq u ’l isfel biex iċċaqilqu, Space jew Enter biex tħallih, u Escape biex tikkanċella."
+    },
     "view": {
         "cards": "Dehra bil-karti",
         "list": "Dehra bil-lista",

@@ -1,4 +1,10 @@
 {
+    "notifications": {
+        "label": "Powiadomienia",
+        "dismiss": "Zamknij powiadomienie",
+        "actionFailed": "Nie udało się wykonać działania. Spróbuj ponownie.",
+        "undo": "Cofnij"
+    },
     "buttons": {
         "copy": "Kopiuj",
         "ok": "Ok",

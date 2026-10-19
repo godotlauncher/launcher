@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "標記為非新專案",
+        "cleared": "已清除新專案狀態",
+        "restored": "已還原新專案狀態",
+        "clearedRecent": "{{name}} 已移至最近使用。",
+        "clearedPinned": "{{name}} 保持釘選。",
+        "restoredNew": "{{name}} 已回到新專案。",
+        "restoredPinned": "{{name}} 仍保持釘選。",
+        "clearFailed": "無法清除新專案狀態",
+        "unavailable": "無法再變更此專案的新專案狀態。"
+    },
+    "viewOptions": {
+        "saved": "群組順序已儲存",
+        "restored": "已還原先前的順序",
+        "title": "檢視選項",
+        "groupOrder": "群組順序",
+        "dragHelp": "拖曳整列以變更群組順序。",
+        "restoreDefault": "還原預設順序",
+        "saveFailed": "無法儲存群組順序。請再試一次。",
+        "close": "關閉檢視選項",
+        "instructions": "按空白鍵或 Enter 選取群組。使用向上和向下方向鍵移動，按空白鍵或 Enter 放下，按 Escape 取消。"
+    },
     "view": {
         "cards": "卡片檢視",
         "list": "清單檢視",

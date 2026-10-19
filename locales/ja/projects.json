@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "新規として扱わない",
+        "cleared": "新規状態を解除しました",
+        "restored": "新規状態を元に戻しました",
+        "clearedRecent": "{{name}} を最近使用したプロジェクトに移動しました。",
+        "clearedPinned": "{{name}} はピン留めされたままです。",
+        "restoredNew": "{{name}} を新規に戻しました。",
+        "restoredPinned": "{{name}} は引き続きピン留めされています。",
+        "clearFailed": "新規状態を解除できませんでした",
+        "unavailable": "このプロジェクトの新規状態は変更できなくなりました。"
+    },
+    "viewOptions": {
+        "saved": "グループの順序を保存しました",
+        "restored": "以前の順序に戻しました",
+        "title": "表示オプション",
+        "groupOrder": "グループの順序",
+        "dragHelp": "行をドラッグしてグループの順序を変更します。",
+        "restoreDefault": "既定の順序に戻す",
+        "saveFailed": "グループの順序を保存できませんでした。もう一度お試しください。",
+        "close": "表示オプションを閉じる",
+        "instructions": "Space または Enter でグループを選択します。上下の矢印キーで移動し、Space または Enter で確定、Escape でキャンセルします。"
+    },
     "view": {
         "cards": "カード表示",
         "list": "リスト表示",

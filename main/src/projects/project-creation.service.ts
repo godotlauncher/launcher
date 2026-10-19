@@ -850,6 +850,7 @@ export class ProjectCreationService {
                     ),
                     added_at: new Date(),
                     last_opened: null,
+                    is_new: true,
                     launch_path: launch_path,
                     editor_settings_path: path.dirname(editorSettingsPath),
                     editor_settings_file: editorSettingsPath,

@@ -49,6 +49,13 @@ export function fromStoredProject(
             storedProject.exportTemplateBuilds,
         ),
         last_opened: toDate(storedProject.last_opened),
+        ...(storedProject.is_new !== undefined
+            ? {
+                  is_new:
+                      storedProject.is_new === true &&
+                      !toDate(storedProject.last_opened),
+              }
+            : {}),
     };
 }
 
@@ -61,6 +68,9 @@ export function fromStoredProject(
 export function toStoredProject(project: ProjectDetails): StoredProjectDetails {
     return {
         ...project,
+        ...(project.is_new !== undefined
+            ? { is_new: project.is_new === true && !project.last_opened }
+            : {}),
         exportTemplateBuilds: normalizeTemplateBuilds(
             project.exportTemplateBuilds,
         ),

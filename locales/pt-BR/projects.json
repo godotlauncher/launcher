@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Marcar como não novo",
+        "cleared": "Status Novo removido",
+        "restored": "Status Novo restaurado",
+        "clearedRecent": "{{name}} foi movido para Recentes.",
+        "clearedPinned": "{{name}} permanece em Fixados.",
+        "restoredNew": "{{name}} está de volta em Novos.",
+        "restoredPinned": "{{name}} continua fixado.",
+        "clearFailed": "Não foi possível remover o status Novo",
+        "unavailable": "Não é mais possível alterar o status Novo deste projeto."
+    },
+    "viewOptions": {
+        "saved": "Ordem dos grupos salva",
+        "restored": "Ordem anterior restaurada",
+        "title": "Opções de visualização",
+        "groupOrder": "Ordem dos grupos",
+        "dragHelp": "Arraste uma linha para alterar a ordem dos grupos.",
+        "restoreDefault": "Restaurar ordem padrão",
+        "saveFailed": "Não foi possível salvar a ordem dos grupos. Tente novamente.",
+        "close": "Fechar opções de visualização",
+        "instructions": "Para selecionar um grupo, pressione Espaço ou Enter. Use as setas para cima e para baixo para movê-lo, Espaço ou Enter para soltá-lo e Escape para cancelar."
+    },
     "view": {
         "cards": "Visualização em cartões",
         "list": "Visualização em lista",

@@ -15,6 +15,8 @@ import githubInvertocatBlack from '../../../assets/icons/github-invertocat-black
 import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
 import { ListGroupHeading } from '../../../components/ui/list-group-heading.component';
 import { useTheme } from '../../../hooks/theme.hook';
+import { DEFAULT_PROJECT_GROUP_ORDER } from '../project-group-order.model';
+import { ProjectGroupIcon } from './project-group-icon.component';
 import type {
     ProjectListItemProps,
     ProjectSectionKey,
@@ -96,6 +98,7 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
  */
 export const ProjectsList: React.FC<ProjectsListProps> = ({
     sections,
+    groupOrder = DEFAULT_PROJECT_GROUP_ORDER,
     loading,
     searchQuery,
     onClearSearch,
@@ -240,27 +243,16 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
         );
     }
 
-    const sectionData: Array<{
-        key: ProjectSectionKey;
-        label: string;
-        projects: ProjectDetails[];
-    }> = [
-        {
-            key: 'new',
-            label: itemProps.t('sections.new'),
-            projects: sections.newProjects,
-        },
-        {
-            key: 'pinned',
-            label: itemProps.t('sections.pinned'),
-            projects: sections.pinnedProjects,
-        },
-        {
-            key: 'recents',
-            label: itemProps.t('sections.recents'),
-            projects: sections.recentProjects,
-        },
-    ];
+    const projectsBySection: Record<ProjectSectionKey, ProjectDetails[]> = {
+        pinned: sections.pinnedProjects,
+        new: sections.newProjects,
+        recents: sections.recentProjects,
+    };
+    const sectionData = groupOrder.map((key) => ({
+        key,
+        label: itemProps.t(`sections.${key}`),
+        projects: projectsBySection[key],
+    }));
     const visibleSections = sectionData.filter(
         (section) => section.projects.length > 0,
     );
@@ -310,6 +302,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                     <ListGroupHeading
                         id={`${section.key}-projects-heading`}
                         title={section.label}
+                        icon={<ProjectGroupIcon group={section.key} />}
                         count={section.projects.length}
                         headingLevel="h2"
                     />

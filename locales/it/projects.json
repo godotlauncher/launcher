@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Segna come non nuovo",
+        "cleared": "Stato Nuovo rimosso",
+        "restored": "Stato Nuovo ripristinato",
+        "clearedRecent": "{{name}} è stato spostato in Recenti.",
+        "clearedPinned": "{{name}} rimane in Fissati.",
+        "restoredNew": "{{name}} è di nuovo in Nuovi.",
+        "restoredPinned": "{{name}} è ancora fissato.",
+        "clearFailed": "Impossibile rimuovere lo stato Nuovo",
+        "unavailable": "Non è più possibile modificare lo stato Nuovo di questo progetto."
+    },
+    "viewOptions": {
+        "saved": "Ordine dei gruppi salvato",
+        "restored": "Ordine precedente ripristinato",
+        "title": "Opzioni di visualizzazione",
+        "groupOrder": "Ordine dei gruppi",
+        "dragHelp": "Trascina una riga per cambiare l'ordine dei gruppi.",
+        "restoreDefault": "Ripristina ordine predefinito",
+        "saveFailed": "Impossibile salvare l'ordine dei gruppi. Riprova.",
+        "close": "Chiudi opzioni di visualizzazione",
+        "instructions": "Per selezionare un gruppo, premi Spazio o Invio. Usa le frecce su e giù per spostarlo, Spazio o Invio per rilasciarlo ed Esc per annullare."
+    },
     "view": {
         "cards": "Vista a schede",
         "list": "Vista a elenco",

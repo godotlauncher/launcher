@@ -134,7 +134,10 @@ export function getProjectSections(
     return {
         newProjects: sortByLastAdded(
             filteredProjects.filter(
-                (project) => !project.pinned && !project.last_opened,
+                (project) =>
+                    !project.pinned &&
+                    project.is_new === true &&
+                    !project.last_opened,
             ),
         ),
         pinnedProjects: sortPinnedProjects(
@@ -142,7 +145,9 @@ export function getProjectSections(
         ),
         recentProjects: sortByLastOpened(
             filteredProjects.filter(
-                (project) => !project.pinned && project.last_opened,
+                (project) =>
+                    !project.pinned &&
+                    !(project.is_new === true && !project.last_opened),
             ),
         ),
     };

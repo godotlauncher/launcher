@@ -2,12 +2,15 @@ import type {
     CodeEditorId,
     ProjectDetails,
     ProjectEditorSelection,
+    ProjectSectionKey,
     ReleaseSummary,
 } from '@shared/contracts';
+import { Settings2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { appRoutePaths } from '../app.routes';
+import type { NotificationOptions } from '../components/notifications/notification.types';
 import {
     ProjectTagFilter,
     type ProjectTagFilterHandle,
@@ -17,18 +20,21 @@ import {
     getActionMenuAnchorRect,
 } from '../components/ui/action-menu.component';
 import { ContentDivider } from '../components/ui/content-divider.component';
+import { Tooltip } from '../components/ui/tooltip.component';
 import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
 import { useAlerts } from '../hooks/alerts.hook';
 import { useAppNavigation } from '../hooks/app-navigation.hook';
+import { useNotifications } from '../hooks/notifications.hook';
 import { usePreferences } from '../hooks/preferences.hook';
 import { useProjectTags } from '../hooks/project-tags.hook';
 import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
 import { useToolIntegrations } from '../hooks/tool-integrations.hook';
-import { terminalBridge } from '../renderer.bridge';
+import { appBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
+import { ProjectViewOptionsModal } from './projects/components/project-view-options.modal';
 import { ProjectsDropOverlay } from './projects/components/projects-drop-overlay.component';
 import { ProjectsHeader } from './projects/components/projects-header.component';
 import { ProjectsList } from './projects/components/projects-list.component';
@@ -40,7 +46,9 @@ import {
 import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hook';
 import { useProjectActions } from './projects/hooks/project-actions.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
+import { useProjectNewStatus } from './projects/hooks/project-new-status.hook';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
+import { DEFAULT_PROJECT_GROUP_ORDER } from './projects/project-group-order.model';
 import type { ProjectViewMode } from './projects/project-view.types';
 import {
     getInvalidProjectMessageKey,
@@ -84,6 +92,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     ]);
     const [savingViewMode, setSavingViewMode] = useState(false);
     const savingViewModeRef = useRef(false);
+    const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
+    const [savingGroupOrder, setSavingGroupOrder] = useState(false);
+    const savingGroupOrderRef = useRef(false);
+    const viewOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -129,9 +141,22 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     );
 
     const { addAlert, addCustomConfirm } = useAlerts();
+    const { showNotification, dismissNotification, replaceNotification } =
+        useNotifications();
+    const groupOrderNotification = useRef<number | null>(null);
+    const viewMounted = useRef(false);
+    useEffect(() => {
+        viewMounted.current = true;
+        return () => {
+            viewMounted.current = false;
+            if (groupOrderNotification.current !== null)
+                dismissNotification(groupOrderNotification.current);
+        };
+    }, [dismissNotification]);
     const navigate = useNavigate();
 
-    const { preferences, updatePreferences, platform } = usePreferences();
+    const { preferences, updatePreferences, savePreferences, platform } =
+        usePreferences();
     const searchInput = useRef<HTMLInputElement>(null);
     const tagFilterControl = useRef<ProjectTagFilterHandle>(null);
     const shortcutModifier = platform === 'darwin' ? '⌘' : 'Ctrl';
@@ -154,6 +179,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         if (
             !preferences ||
             savingTagFilterRef.current ||
+            savingGroupOrderRef.current ||
             savingViewModeRef.current
         )
             return false;
@@ -183,6 +209,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         if (
             !preferences ||
             savingViewModeRef.current ||
+            savingGroupOrderRef.current ||
             savingTagFilterRef.current ||
             mode === projectViewMode
         )
@@ -196,6 +223,127 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         } finally {
             savingViewModeRef.current = false;
             setSavingViewMode(false);
+        }
+    };
+    const projectGroupOrder =
+        preferences?.projects_group_order ?? DEFAULT_PROJECT_GROUP_ORDER;
+    /**
+     * Shows a feature-owned confirmation using the reusable notification API.
+     * @param order - Order described by the confirmation.
+     * @param previousOrder - Optional previous order offered by Undo.
+     * @param expectedId - Existing notification that owns an action result.
+     */
+    const notifyGroupOrder = (
+        order: readonly ProjectSectionKey[],
+        previousOrder?: readonly ProjectSectionKey[],
+        expectedId?: number,
+    ) => {
+        const options: NotificationOptions = {
+            title: t(
+                previousOrder ? 'viewOptions.saved' : 'viewOptions.restored',
+            ),
+            description: order
+                .map((group) => t(`sections.${group}`))
+                .join(' > '),
+            tone: 'success',
+            returnFocusElement: viewOptionsButtonRef.current,
+            actions: [
+                ...(previousOrder
+                    ? [
+                          {
+                              label: t('common:notifications.undo'),
+                              variant: 'primary' as const,
+                              onClick: async () => {
+                                  const sourceNotificationId =
+                                      groupOrderNotification.current;
+                                  if (
+                                      savingGroupOrderRef.current ||
+                                      savingViewModeRef.current ||
+                                      savingTagFilterRef.current
+                                  )
+                                      throw new Error(
+                                          'A project preference save is already running',
+                                      );
+                                  savingGroupOrderRef.current = true;
+                                  setSavingGroupOrder(true);
+                                  try {
+                                      const current =
+                                          await appBridge.getUserPreferences();
+                                      const currentOrder =
+                                          current.projects_group_order ??
+                                          DEFAULT_PROJECT_GROUP_ORDER;
+                                      if (
+                                          !order.every(
+                                              (group, index) =>
+                                                  group === currentOrder[index],
+                                          )
+                                      )
+                                          throw new Error(
+                                              'The project group order has changed',
+                                          );
+                                      await savePreferences({
+                                          ...current,
+                                          projects_group_order: [
+                                              ...previousOrder,
+                                          ],
+                                      });
+                                      if (
+                                          viewMounted.current &&
+                                          sourceNotificationId !== null
+                                      )
+                                          notifyGroupOrder(
+                                              previousOrder,
+                                              undefined,
+                                              sourceNotificationId,
+                                          );
+                                  } finally {
+                                      savingGroupOrderRef.current = false;
+                                      if (viewMounted.current)
+                                          setSavingGroupOrder(false);
+                                  }
+                              },
+                          },
+                      ]
+                    : []),
+                {
+                    label: t('viewOptions.title'),
+                    variant: 'secondary' as const,
+                    onClick: () => setViewOptionsOpen(true),
+                },
+            ],
+        };
+        const id =
+            expectedId === undefined
+                ? showNotification(options)
+                : replaceNotification(expectedId, options);
+        if (id !== null) groupOrderNotification.current = id;
+    };
+    /**
+     * Saves a group order before applying it to the project list.
+     * @param order - All project groups in their requested display order.
+     */
+    const saveProjectGroupOrder = async (
+        order: ProjectSectionKey[],
+    ): Promise<boolean> => {
+        if (
+            !preferences ||
+            savingGroupOrderRef.current ||
+            savingViewModeRef.current ||
+            savingTagFilterRef.current
+        )
+            return false;
+        savingGroupOrderRef.current = true;
+        setSavingGroupOrder(true);
+        try {
+            await updatePreferences({ projects_group_order: order });
+            setViewOptionsOpen(false);
+            notifyGroupOrder(order, projectGroupOrder);
+            return true;
+        } catch {
+            return false;
+        } finally {
+            savingGroupOrderRef.current = false;
+            setSavingGroupOrder(false);
         }
     };
     const { listIntegrations: listToolIntegrations } = useToolIntegrations();
@@ -217,6 +365,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         setProjectLaunchWithConsole,
         setProjectPinned,
         reorderPinnedProjects,
+        clearProjectNewStatus,
+        undoClearProjectNewStatus,
         setProjectCodeEditor,
         resetProjectCodeEditorConfig,
         initializeProjectGit,
@@ -236,6 +386,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         loading,
     } = useProjects();
     const { openExternalLink } = useAppNavigation();
+    const { clearNewStatus } = useProjectNewStatus({
+        projects,
+        clearProjectNewStatus,
+        undoClearProjectNewStatus,
+    });
     const {
         projectActionsMenu,
         setProjectActionsMenu,
@@ -555,7 +710,35 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             void setProjectViewMode(mode)
                         }
                         viewModeDisabled={
-                            savingViewMode || savingTagFilter || !preferences
+                            savingViewMode ||
+                            savingTagFilter ||
+                            savingGroupOrder ||
+                            !preferences
+                        }
+                        viewOptions={
+                            <Tooltip
+                                tip={t('viewOptions.title')}
+                                placement="top"
+                                delay={1000}
+                            >
+                                <button
+                                    ref={viewOptionsButtonRef}
+                                    type="button"
+                                    className="btn btn-ghost btn-sm btn-square"
+                                    data-testid="btnProjectViewOptions"
+                                    aria-label={t('viewOptions.title')}
+                                    aria-haspopup="dialog"
+                                    disabled={
+                                        !preferences ||
+                                        savingViewMode ||
+                                        savingTagFilter ||
+                                        savingGroupOrder
+                                    }
+                                    onClick={() => setViewOptionsOpen(true)}
+                                >
+                                    <Settings2 size={17} aria-hidden="true" />
+                                </button>
+                            </Tooltip>
                         }
                         tagFilter={
                             <ProjectTagFilter
@@ -565,7 +748,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 tags={tagSnapshot?.tags ?? []}
                                 selected={selectedFilterTags}
                                 disabled={!preferences || !tagSnapshot}
-                                saving={savingTagFilter || savingViewMode}
+                                saving={
+                                    savingTagFilter ||
+                                    savingViewMode ||
+                                    savingGroupOrder
+                                }
                                 loadFailed={tagsLoadFailed}
                                 onRetry={reloadTags}
                                 onChange={setTagFilter}
@@ -637,6 +824,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                         : undefined
                                 }
                                 viewMode={projectViewMode}
+                                groupOrder={projectGroupOrder}
                                 sections={projectSections}
                                 projectGitHubUrls={projectGitHubUrls}
                                 loading={
@@ -822,6 +1010,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 }
                 onImportEditorSettings={handleImportEditorSettings}
                 onRemoveProject={handleRemoveProject}
+                onClearNewStatus={(project) => void clearNewStatus(project)}
             />
             <ProjectSettingsDrawer
                 project={
@@ -851,6 +1040,15 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 open={createOpen}
                 onOpenChange={setCreateOpen}
             />
+            {viewOptionsOpen && (
+                <ProjectViewOptionsModal
+                    order={projectGroupOrder}
+                    saving={savingGroupOrder}
+                    returnFocusRef={viewOptionsButtonRef}
+                    onSave={saveProjectGroupOrder}
+                    onClose={() => setViewOptionsOpen(false)}
+                />
+            )}
             {localImportDialog}
             <RemoteProjectImportModal
                 source={remoteProjectSource}

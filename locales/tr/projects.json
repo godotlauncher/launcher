@@ -1,4 +1,26 @@
 {
+    "newStatus": {
+        "markAsNotNew": "Yeni değil olarak işaretle",
+        "cleared": "Yeni durumu kaldırıldı",
+        "restored": "Yeni durumu geri yüklendi",
+        "clearedRecent": "{{name}}, Son kullanılanlar bölümüne taşındı.",
+        "clearedPinned": "{{name}}, Sabitlenenler bölümünde kalır.",
+        "restoredNew": "{{name}} yeniden Yeni bölümünde.",
+        "restoredPinned": "{{name}} hâlâ sabitlenmiş durumda.",
+        "clearFailed": "Yeni durumu kaldırılamadı",
+        "unavailable": "Bu projenin Yeni durumu artık değiştirilemiyor."
+    },
+    "viewOptions": {
+        "saved": "Grup sırası kaydedildi",
+        "restored": "Önceki sıra geri yüklendi",
+        "title": "Görünüm seçenekleri",
+        "groupOrder": "Grup sırası",
+        "dragHelp": "Grup sırasını değiştirmek için bir satırı sürükleyin.",
+        "restoreDefault": "Varsayılan sırayı geri yükle",
+        "saveFailed": "Grup sırası kaydedilemedi. Lütfen tekrar deneyin.",
+        "close": "Görünüm seçeneklerini kapat",
+        "instructions": "Bir grubu seçmek için Boşluk veya Enter tuşuna basın. Taşımak için yukarı ve aşağı ok tuşlarını, bırakmak için Boşluk veya Enter, iptal etmek için Escape tuşunu kullanın."
+    },
     "view": {
         "cards": "Kart görünümü",
         "list": "Liste görünümü",

@@ -1,4 +1,10 @@
 {
+    "notifications": {
+        "label": "通知",
+        "dismiss": "關閉通知",
+        "actionFailed": "無法完成操作。請再試一次。",
+        "undo": "復原"
+    },
     "buttons": {
         "copy": "複製",
         "ok": "確定",

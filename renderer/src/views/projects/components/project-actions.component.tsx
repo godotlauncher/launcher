@@ -147,6 +147,7 @@ export function ProjectActions({
                 <button
                     type="button"
                     data-testid="btnProjectMoreOptions"
+                    data-project-actions={project.path}
                     onClick={(event) => onProjectMoreOptions(event, project)}
                     className="btn btn-sm btn-ghost btn-square"
                     aria-label={t('table.moreOptions', {
