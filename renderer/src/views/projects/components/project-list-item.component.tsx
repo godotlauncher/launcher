@@ -10,7 +10,7 @@ import type { ProjectListItemProps } from './project-list.types';
 
 /**
  * Renders a project using shared status and actions in the selected presentation.
- * @param props - Project state, presentation and existing project handlers.
+ * @param props - Project state, tool availability, presentation and action handlers.
  */
 export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     viewMode = 'cards',
@@ -27,6 +27,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     locale,
     busyProjects,
     codeEditorSettings,
+    terminalAvailable,
     projectGitHubUrls,
     githubIconSrc,
     isInstalledRelease,
@@ -85,6 +86,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
             onOpenTerminal={onOpenTerminal}
             onOpenCodeEditor={onOpenCodeEditor}
             codeEditorName={codeEditorName}
+            terminalAvailable={terminalAvailable}
             onProjectSettings={onProjectSettings}
             onProjectMoreOptions={onProjectMoreOptions}
             t={t}

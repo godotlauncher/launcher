@@ -74,7 +74,7 @@ type ProjectFoldersMenuState = {
 };
 
 /**
- * Renders projects and their project-management drawers.
+ * Renders projects, available opening tools and project-management drawers.
  *
  * @param props - Optional controlled create-project drawer state.
  * @returns The projects view.
@@ -433,25 +433,35 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         showRecoveredCodeEditorConfigWarning,
     });
 
-    const refreshGitAvailability = useCallback(async () => {
+    const [terminalAvailable, setTerminalAvailable] = useState(true);
+
+    /** Refreshes Git and terminal actions from the shared tool summaries. */
+    const refreshToolAvailability = useCallback(async () => {
         setGitAvailability('loading');
         try {
             const integrations = await listToolIntegrations();
             setGitAvailability(getGitAvailability(integrations));
+            setTerminalAvailable(
+                integrations.some(
+                    (integration) =>
+                        integration.id === 'terminal' &&
+                        integration.status === 'available',
+                ),
+            );
         } catch {
             setGitAvailability('unavailable');
         }
     }, [listToolIntegrations]);
 
     useEffect(() => {
-        void refreshGitAvailability();
-    }, [refreshGitAvailability]);
+        void refreshToolAvailability();
+    }, [refreshToolAvailability]);
 
     const openAddProjectSourceMenu: React.MouseEventHandler<
         HTMLButtonElement
     > = (event) => {
         setAddSourceMenuAnchor(getActionMenuAnchorRect(event.currentTarget));
-        void refreshGitAvailability();
+        void refreshToolAvailability();
     };
 
     const openRemoteProjectSource = (source: RemoteProjectSource) => {
@@ -842,6 +852,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 }
                                 busyProjects={busyProjects}
                                 codeEditorSettings={codeEditorSettings}
+                                terminalAvailable={terminalAvailable}
                                 highlightedPinnedProjectPath={
                                     highlightedPinnedProjectPath
                                 }

@@ -31,6 +31,7 @@ export type ProjectsListProps = {
     locale: string;
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];
+    terminalAvailable: boolean;
     highlightedPinnedProjectPath: string | null;
     pinnedReorderingDisabled: boolean;
     onPinnedHighlightComplete: () => void;

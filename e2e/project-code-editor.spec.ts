@@ -27,12 +27,20 @@ test('opens project tools in every view, persists opt-in and displays tray edito
             const requireModule = process.getBuiltinModule('module').createRequire(pathJoin(root, 'main.js'));
             const { CodeEditorIntegrationService } = requireModule(pathJoin(root, 'codeEditorIntegration/codeEditorIntegration.service.js'));
             const { TerminalService } = requireModule(pathJoin(root, 'tool-integration/integrations/terminal/terminal.service.js'));
-            const state = globalThis as unknown as { editorCalls: string[][]; terminalCalls: string[] };
-            state.editorCalls = []; state.terminalCalls = [];
+            const { TerminalAdapterService } = requireModule(pathJoin(root, 'tool-integration/integrations/terminal/terminal-adapter.service.js'));
+            const state = globalThis as unknown as { editorCalls: string[][]; terminalCalls: string[]; terminalAvailable: boolean };
+            state.editorCalls = []; state.terminalCalls = []; state.terminalAvailable = true;
+            TerminalAdapterService.prototype.discover = async () => state.terminalAvailable ? [{ id: process.platform === 'win32' ? 'command-prompt' : process.platform === 'darwin' ? 'macos-terminal' : 'gnome-terminal', displayName: 'Test Terminal', executablePath: process.execPath }] : [];
+            TerminalAdapterService.prototype.isAvailable = async () => state.terminalAvailable;
             CodeEditorIntegrationService.prototype.openProjectFolder = async (id: string, folder: string) => { state.editorCalls.push([id, folder]); return { success: true }; };
             TerminalService.prototype.openProject = async (folder: string) => { state.terminalCalls.push(folder); return { success: true }; };
             function pathJoin(base: string, suffix: string) { return `${base}/${suffix}`; }
         }, path.resolve('dist-electron'));
+        await page.getByTestId('btnSettings').click();
+        await page.getByTestId('tabTools').click();
+        await page.getByRole('button', { name: 'Rescan Terminal', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Rescan Terminal', exact: true })).toBeEnabled();
+        await page.getByTestId('btnProjects').click();
         for (const view of ['tabProjectCards', 'tabProjectList', 'tabProjectDenseList']) {
             await page.getByTestId(view).click();
             const first = page.locator('[data-project-path]').filter({ has: page.getByText('Editor Project 0', { exact: true }) });
@@ -62,6 +70,54 @@ test('opens project tools in every view, persists opt-in and displays tray edito
         expect(calls.terminal).toEqual(Array(3).fill(projects[0].path));
         const storedProjects = JSON.parse(await fs.readFile(path.join(fixtureHome, '.gd-launcher', 'projects.json'), 'utf8'));
         expect(storedProjects[0].last_opened).toEqual(JSON.parse(JSON.stringify(projects[0].last_opened)));
+        await page.getByTestId('btnSettings').click();
+        await page.getByTestId('tabTools').click();
+        await page.getByRole('button', { name: 'Edit Terminal', exact: true }).click();
+        const terminalEnabled = page.getByLabel('Enable terminal for project folders');
+        await expect(terminalEnabled).toBeChecked();
+        await terminalEnabled.click();
+        await expect(terminalEnabled).not.toBeChecked();
+        await expect(terminalEnabled).toBeEnabled();
+        await page.getByRole('dialog', { name: 'Terminal settings' }).getByRole('button', { name: 'Close drawer', exact: true }).click();
+        await page.getByTestId('btnProjects').click();
+        for (const view of ['tabProjectCards', 'tabProjectList', 'tabProjectDenseList']) {
+            await page.getByTestId(view).click();
+            const first = page.locator('[data-project-path]').filter({ has: page.getByText('Editor Project 0', { exact: true }) });
+            const editor = first.getByRole('button', { name: 'Open in Visual Studio Code', exact: true });
+            await expect(editor.locator('img')).toBeVisible();
+            await expect(first.getByTestId('btnProjectOpenTools')).toHaveCount(0);
+            await expect(first.getByTestId('btnProjectTerminal')).toHaveCount(0);
+            await editor.click();
+        }
+        const noEditor = page.locator('[data-project-path]').filter({ has: page.getByText('Editor Project 2', { exact: true }) });
+        await expect(noEditor.getByTestId('btnProjectTerminal')).toBeVisible();
+        await codium.getByRole('button', { name: 'Open in VSCodium', exact: true }).click();
+        await page.screenshot({ path: test.info().outputPath('editor-only-actions.png'), animations: 'disabled' });
+        await page.getByTestId('btnSettings').click();
+        await page.getByTestId('tabTools').click();
+        await page.getByRole('button', { name: 'Edit Terminal', exact: true }).click();
+        await terminalEnabled.click();
+        await expect(terminalEnabled).toBeChecked();
+        await expect(terminalEnabled).toBeEnabled();
+        await page.getByRole('dialog', { name: 'Terminal settings' }).getByRole('button', { name: 'Close drawer', exact: true }).click();
+        await page.getByTestId('btnProjects').click();
+        await expect(page.getByTestId('btnProjectOpenTools')).toHaveCount(2);
+        await expect(page.getByTestId('btnProjectTerminal')).toHaveCount(3);
+        await app.evaluate(() => { (globalThis as unknown as { terminalAvailable: boolean }).terminalAvailable = false; });
+        await page.getByTestId('btnSettings').click();
+        await page.getByTestId('tabTools').click();
+        await page.getByRole('button', { name: 'Rescan Terminal', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Rescan Terminal', exact: true })).toBeEnabled();
+        await page.getByTestId('btnProjects').click();
+        await expect(page.getByTestId('btnProjectCodeEditor')).toHaveCount(2);
+        await expect(page.getByTestId('btnProjectOpenTools')).toHaveCount(0);
+        await page.getByTestId('btnProjectCodeEditor').first().click();
+        const fallbackCalls = await app.evaluate(() => {
+            const state = globalThis as unknown as { editorCalls: string[][]; terminalCalls: string[] };
+            return { editor: state.editorCalls.slice(4), terminal: state.terminalCalls };
+        });
+        expect(fallbackCalls.editor).toEqual([['vscode', projects[0].path], ['vscode', projects[0].path], ['vscode', projects[0].path], ['vscodium', projects[1].path], ['vscode', projects[0].path]]);
+        expect(fallbackCalls.terminal).toEqual(Array(3).fill(projects[0].path));
         await page.getByTestId('btnSettings').click();
         await page.getByTestId('tabBehavior').click();
         const autoOpen = page.getByTestId('chkAutoOpenCodeEditor');

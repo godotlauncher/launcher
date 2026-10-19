@@ -26,6 +26,7 @@ type ProjectActionsProps = Pick<
     | 'onProjectFoldersOptions'
     | 'onOpenTerminal'
     | 'onOpenCodeEditor'
+    | 'terminalAvailable'
     | 'onProjectSettings'
     | 'onProjectMoreOptions'
     | 't'
@@ -40,7 +41,7 @@ type ProjectActionsProps = Pick<
 
 /**
  * Renders the shared project action controls.
- * @param props - Project presentation data and existing action callbacks.
+ * @param props - Project presentation, available tools and opening callbacks.
  */
 export function ProjectActions({
     project,
@@ -50,6 +51,7 @@ export function ProjectActions({
     onOpenTerminal,
     onOpenCodeEditor,
     codeEditorName,
+    terminalAvailable,
     onProjectSettings,
     onProjectMoreOptions,
     t,
@@ -66,6 +68,13 @@ export function ProjectActions({
         ns: 'menus',
         project: project.name,
     });
+    const codeEditorOnly = !terminalAvailable && project.codeEditorId;
+    const primaryToolLabel = codeEditorOnly
+        ? t('project.openCodeEditor', {
+              ns: 'menus',
+              editor: codeEditorName ?? codeEditorOnly,
+          })
+        : t('project.openTerminal', { ns: 'menus' });
     return (
         <div
             className={`flex shrink-0 items-center ${dense ? 'min-h-8 gap-1' : 'min-h-10 gap-2'} ${compact ? 'self-end' : 'self-start'}`}
@@ -123,22 +132,34 @@ export function ProjectActions({
                 </button>
             </Tooltip>
             <div className="flex items-center rounded-(--radius-field) transition-colors hover:bg-base-content/3 focus-within:bg-base-content/3">
-                <Tooltip
-                    placement="top"
-                    tip={t('project.openTerminal', { ns: 'menus' })}
-                >
+                <Tooltip placement="top" tip={primaryToolLabel}>
                     <button
                         type="button"
-                        data-testid="btnProjectTerminal"
+                        data-testid={
+                            codeEditorOnly
+                                ? 'btnProjectCodeEditor'
+                                : 'btnProjectTerminal'
+                        }
                         className="btn btn-sm btn-ghost btn-square"
-                        aria-label={t('project.openTerminal', { ns: 'menus' })}
+                        aria-label={primaryToolLabel}
                         disabled={project.path.length === 0}
-                        onClick={() => onOpenTerminal(project)}
+                        onClick={() =>
+                            codeEditorOnly
+                                ? onOpenCodeEditor(project)
+                                : onOpenTerminal(project)
+                        }
                     >
-                        <Terminal size={16} aria-hidden="true" />
+                        {codeEditorOnly ? (
+                            <CodeEditorIntegrationIcon
+                                integrationId={codeEditorOnly}
+                                className="size-4"
+                            />
+                        ) : (
+                            <Terminal size={16} aria-hidden="true" />
+                        )}
                     </button>
                 </Tooltip>
-                {project.codeEditorId && (
+                {terminalAvailable && project.codeEditorId && (
                     <>
                         <button
                             type="button"
