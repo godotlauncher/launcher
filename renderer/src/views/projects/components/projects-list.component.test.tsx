@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ProjectSectionKey,
     ReleaseSummary,
 } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -75,6 +76,7 @@ const downloadableRelease: ReleaseSummary = {
 };
 
 type RenderOptions = {
+    groupOrder?: ProjectSectionKey[];
     viewMode?: 'cards' | 'list' | 'dense';
     isInstalledRelease?: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading?: (project: ProjectDetails) => boolean;
@@ -118,6 +120,7 @@ function renderProjectsList(
     return renderToStaticMarkup(
         <ProjectsList
             viewMode={options.viewMode}
+            groupOrder={options.groupOrder}
             sections={{
                 newProjects: [],
                 pinnedProjects: [],
@@ -153,6 +156,56 @@ function renderProjectsList(
 }
 
 describe('ProjectsList', () => {
+    it.each(['cards', 'list', 'dense'] as const)(
+        'uses the default and saved group order in %s view',
+        (viewMode) => {
+            const sections = {
+                newProjects: [baseProject],
+                pinnedProjects: [
+                    { ...baseProject, path: '/pinned', pinned: true },
+                ],
+                recentProjects: [
+                    {
+                        ...baseProject,
+                        path: '/recent',
+                        last_opened: new Date(),
+                    },
+                ],
+            };
+            const defaultHtml = renderProjectsList(
+                sections,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                { viewMode },
+            );
+            expect(
+                [
+                    ...defaultHtml.matchAll(
+                        /id="(pinned|new|recents)-projects-heading"/g,
+                    ),
+                ].map((match) => match[1]),
+            ).toEqual(['pinned', 'new', 'recents']);
+            const customHtml = renderProjectsList(
+                sections,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                { viewMode, groupOrder: ['recents', 'pinned', 'new'] },
+            );
+            expect(
+                [
+                    ...customHtml.matchAll(
+                        /id="(pinned|new|recents)-projects-heading"/g,
+                    ),
+                ].map((match) => match[1]),
+            ).toEqual(['recents', 'pinned', 'new']);
+        },
+    );
     it('renders dense identity, version and actions without the compact path line', () => {
         const html = renderProjectsList(
             { newProjects: [baseProject] },

@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "Görünüm seçenekleri",
+        "groupOrder": "Grup sırası",
+        "dragHelp": "Grup sırasını değiştirmek için bir satırı sürükleyin.",
+        "restoreDefault": "Varsayılan sırayı geri yükle",
+        "saveFailed": "Grup sırası kaydedilemedi. Lütfen tekrar deneyin.",
+        "close": "Görünüm seçeneklerini kapat",
+        "instructions": "Bir grubu seçmek için Boşluk veya Enter tuşuna basın. Taşımak için yukarı ve aşağı ok tuşlarını, bırakmak için Boşluk veya Enter, iptal etmek için Escape tuşunu kullanın."
+    },
     "view": {
         "cards": "Kart görünümü",
         "list": "Liste görünümü",

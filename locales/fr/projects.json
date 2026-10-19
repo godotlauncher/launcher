@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "Options d'affichage",
+        "groupOrder": "Ordre des groupes",
+        "dragHelp": "Faites glisser une ligne pour modifier l'ordre des groupes.",
+        "restoreDefault": "Rétablir l'ordre par défaut",
+        "saveFailed": "Impossible d'enregistrer l'ordre des groupes. Réessayez.",
+        "close": "Fermer les options d'affichage",
+        "instructions": "Pour saisir un groupe, appuyez sur Espace ou Entrée. Déplacez-le avec les flèches haut et bas, déposez-le avec Espace ou Entrée et annulez avec Échap."
+    },
     "view": {
         "cards": "Vue en cartes",
         "list": "Vue en liste",

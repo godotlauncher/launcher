@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "Ansichtsoptionen",
+        "groupOrder": "Gruppenreihenfolge",
+        "dragHelp": "Ziehe eine Zeile, um die Gruppenreihenfolge zu ändern.",
+        "restoreDefault": "Standardreihenfolge",
+        "saveFailed": "Die Gruppenreihenfolge konnte nicht gespeichert werden. Bitte versuche es erneut.",
+        "close": "Ansichtsoptionen schließen",
+        "instructions": "Drücke die Leertaste oder Eingabetaste, um eine Gruppe aufzunehmen. Verschiebe sie mit den Pfeiltasten nach oben und unten. Drücke die Leertaste oder Eingabetaste zum Ablegen und Escape zum Abbrechen."
+    },
     "view": {
         "cards": "Kartenansicht",
         "list": "Listenansicht",

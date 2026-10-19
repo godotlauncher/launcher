@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "View options",
+        "groupOrder": "Group order",
+        "dragHelp": "Drag a row to change the group order.",
+        "restoreDefault": "Restore default order",
+        "saveFailed": "Could not save the group order. Please try again.",
+        "close": "Close view options",
+        "instructions": "To pick up a group, press Space or Enter. Use the up and down arrow keys to move it, Space or Enter to drop it, and Escape to cancel."
+    },
     "view": {
         "cards": "Cards view",
         "list": "List view",

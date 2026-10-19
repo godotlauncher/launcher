@@ -8,6 +8,7 @@ import { ProjectViewToggle } from './project-view-toggle.component';
 
 type ProjectsHeaderProps = {
     viewMode: ProjectViewMode;
+    viewOptions?: React.ReactNode;
     tagFilter?: React.ReactNode;
     searchInputRef?: React.RefObject<HTMLInputElement | null>;
     searchShortcut?: string;
@@ -40,6 +41,7 @@ type ProjectsHeaderProps = {
  */
 export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     viewMode,
+    viewOptions,
     tagFilter,
     searchInputRef,
     searchShortcut,
@@ -110,14 +112,17 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
         </div>
         {showControls && (
             <div className="flex items-center justify-between gap-4">
-                <ProjectViewToggle
-                    disabled={viewModeDisabled}
-                    mode={viewMode}
-                    onChange={onViewModeChange}
-                    cardsLabel={cardsViewLabel}
-                    listLabel={listViewLabel}
-                    compactLabel={compactViewLabel}
-                />
+                <div className="flex shrink-0 items-center gap-2">
+                    <ProjectViewToggle
+                        disabled={viewModeDisabled}
+                        mode={viewMode}
+                        onChange={onViewModeChange}
+                        cardsLabel={cardsViewLabel}
+                        listLabel={listViewLabel}
+                        compactLabel={compactViewLabel}
+                    />
+                    {viewOptions}
+                </div>
                 <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
                     {tagFilter}
                     <SearchField

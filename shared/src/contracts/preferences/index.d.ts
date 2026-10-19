@@ -2,6 +2,8 @@ import type { CodeEditorId } from '../codeEditorIntegration/index.js';
 
 export type LinuxCredentialStoragePreference = 'automatic' | 'gnome-libsecret';
 
+export type ProjectSectionKey = 'pinned' | 'new' | 'recents';
+
 export type LinuxCredentialStorageStatus = {
     startupPreference: LinuxCredentialStoragePreference;
     selectionSource: 'automatic' | 'preference' | 'command-line';
@@ -30,6 +32,8 @@ export type CodeEditorIntegrationPreferences = {
 export type UserPreferences = {
     /** Preferred Projects presentation; older preferences default to Cards. */
     projects_view_mode?: 'cards' | 'list' | 'dense';
+    /** Projects group order; older preferences use Pinned, New, Recents. */
+    projects_group_order?: ProjectSectionKey[];
     /** Selected project tag IDs; older preferences default to no filter. */
     projects_tag_filter?: string[];
     prefs_version: number;

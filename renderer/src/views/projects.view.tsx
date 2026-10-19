@@ -2,8 +2,10 @@ import type {
     CodeEditorId,
     ProjectDetails,
     ProjectEditorSelection,
+    ProjectSectionKey,
     ReleaseSummary,
 } from '@shared/contracts';
+import { Settings2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -17,6 +19,7 @@ import {
     getActionMenuAnchorRect,
 } from '../components/ui/action-menu.component';
 import { ContentDivider } from '../components/ui/content-divider.component';
+import { Tooltip } from '../components/ui/tooltip.component';
 import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
 import { useAlerts } from '../hooks/alerts.hook';
 import { useAppNavigation } from '../hooks/app-navigation.hook';
@@ -29,6 +32,7 @@ import { terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
+import { ProjectViewOptionsModal } from './projects/components/project-view-options.modal';
 import { ProjectsDropOverlay } from './projects/components/projects-drop-overlay.component';
 import { ProjectsHeader } from './projects/components/projects-header.component';
 import { ProjectsList } from './projects/components/projects-list.component';
@@ -41,6 +45,7 @@ import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hoo
 import { useProjectActions } from './projects/hooks/project-actions.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
+import { DEFAULT_PROJECT_GROUP_ORDER } from './projects/project-group-order.model';
 import type { ProjectViewMode } from './projects/project-view.types';
 import {
     getInvalidProjectMessageKey,
@@ -84,6 +89,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     ]);
     const [savingViewMode, setSavingViewMode] = useState(false);
     const savingViewModeRef = useRef(false);
+    const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
+    const [savingGroupOrder, setSavingGroupOrder] = useState(false);
+    const savingGroupOrderRef = useRef(false);
+    const viewOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
@@ -154,6 +163,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         if (
             !preferences ||
             savingTagFilterRef.current ||
+            savingGroupOrderRef.current ||
             savingViewModeRef.current
         )
             return false;
@@ -183,6 +193,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         if (
             !preferences ||
             savingViewModeRef.current ||
+            savingGroupOrderRef.current ||
             savingTagFilterRef.current ||
             mode === projectViewMode
         )
@@ -196,6 +207,35 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         } finally {
             savingViewModeRef.current = false;
             setSavingViewMode(false);
+        }
+    };
+    const projectGroupOrder =
+        preferences?.projects_group_order ?? DEFAULT_PROJECT_GROUP_ORDER;
+    /**
+     * Saves a group order before applying it to the project list.
+     * @param order - All project groups in their requested display order.
+     */
+    const saveProjectGroupOrder = async (
+        order: ProjectSectionKey[],
+    ): Promise<boolean> => {
+        if (
+            !preferences ||
+            savingGroupOrderRef.current ||
+            savingViewModeRef.current ||
+            savingTagFilterRef.current
+        )
+            return false;
+        savingGroupOrderRef.current = true;
+        setSavingGroupOrder(true);
+        try {
+            await updatePreferences({ projects_group_order: order });
+            setViewOptionsOpen(false);
+            return true;
+        } catch {
+            return false;
+        } finally {
+            savingGroupOrderRef.current = false;
+            setSavingGroupOrder(false);
         }
     };
     const { listIntegrations: listToolIntegrations } = useToolIntegrations();
@@ -555,7 +595,35 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             void setProjectViewMode(mode)
                         }
                         viewModeDisabled={
-                            savingViewMode || savingTagFilter || !preferences
+                            savingViewMode ||
+                            savingTagFilter ||
+                            savingGroupOrder ||
+                            !preferences
+                        }
+                        viewOptions={
+                            <Tooltip
+                                tip={t('viewOptions.title')}
+                                placement="top"
+                                delay={1000}
+                            >
+                                <button
+                                    ref={viewOptionsButtonRef}
+                                    type="button"
+                                    className="btn btn-ghost btn-sm btn-square"
+                                    data-testid="btnProjectViewOptions"
+                                    aria-label={t('viewOptions.title')}
+                                    aria-haspopup="dialog"
+                                    disabled={
+                                        !preferences ||
+                                        savingViewMode ||
+                                        savingTagFilter ||
+                                        savingGroupOrder
+                                    }
+                                    onClick={() => setViewOptionsOpen(true)}
+                                >
+                                    <Settings2 size={17} aria-hidden="true" />
+                                </button>
+                            </Tooltip>
                         }
                         tagFilter={
                             <ProjectTagFilter
@@ -565,7 +633,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 tags={tagSnapshot?.tags ?? []}
                                 selected={selectedFilterTags}
                                 disabled={!preferences || !tagSnapshot}
-                                saving={savingTagFilter || savingViewMode}
+                                saving={
+                                    savingTagFilter ||
+                                    savingViewMode ||
+                                    savingGroupOrder
+                                }
                                 loadFailed={tagsLoadFailed}
                                 onRetry={reloadTags}
                                 onChange={setTagFilter}
@@ -637,6 +709,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                         : undefined
                                 }
                                 viewMode={projectViewMode}
+                                groupOrder={projectGroupOrder}
                                 sections={projectSections}
                                 projectGitHubUrls={projectGitHubUrls}
                                 loading={
@@ -851,6 +924,15 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 open={createOpen}
                 onOpenChange={setCreateOpen}
             />
+            {viewOptionsOpen && (
+                <ProjectViewOptionsModal
+                    order={projectGroupOrder}
+                    saving={savingGroupOrder}
+                    returnFocusRef={viewOptionsButtonRef}
+                    onSave={saveProjectGroupOrder}
+                    onClose={() => setViewOptionsOpen(false)}
+                />
+            )}
             {localImportDialog}
             <RemoteProjectImportModal
                 source={remoteProjectSource}

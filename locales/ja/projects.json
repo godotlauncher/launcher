@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "表示オプション",
+        "groupOrder": "グループの順序",
+        "dragHelp": "行をドラッグしてグループの順序を変更します。",
+        "restoreDefault": "既定の順序に戻す",
+        "saveFailed": "グループの順序を保存できませんでした。もう一度お試しください。",
+        "close": "表示オプションを閉じる",
+        "instructions": "Space または Enter でグループを選択します。上下の矢印キーで移動し、Space または Enter で確定、Escape でキャンセルします。"
+    },
     "view": {
         "cards": "カード表示",
         "list": "リスト表示",

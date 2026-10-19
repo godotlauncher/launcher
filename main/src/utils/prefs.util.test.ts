@@ -220,6 +220,7 @@ suite('prefs.util', (_test) => {
             expect(prefs).toEqual({
                 prefs_version: 4,
                 projects_view_mode: 'cards',
+                projects_group_order: ['pinned', 'new', 'recents'],
                 projects_tag_filter: [],
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
@@ -268,6 +269,7 @@ suite('prefs.util', (_test) => {
             expect(prefs).toEqual({
                 prefs_version: 4,
                 projects_view_mode: 'cards',
+                projects_group_order: ['pinned', 'new', 'recents'],
                 projects_tag_filter: [],
                 install_location: defaultDirs.dataDir,
                 config_location: defaultDirs.configDir,
@@ -333,6 +335,38 @@ suite('prefs.util', (_test) => {
         },
     );
 
+    it.each([
+        [undefined, ['pinned', 'new', 'recents']],
+        [null, ['pinned', 'new', 'recents']],
+        [[], ['pinned', 'new', 'recents']],
+        [
+            ['new', 'new', 'recents'],
+            ['pinned', 'new', 'recents'],
+        ],
+        [
+            ['new', 'unknown', 'recents'],
+            ['pinned', 'new', 'recents'],
+        ],
+        [
+            ['recents', 'pinned', 'new'],
+            ['recents', 'pinned', 'new'],
+        ],
+    ])('loads a saved group order %j as %j', async (storedOrder, expected) => {
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify({
+                projects_group_order: storedOrder,
+                language: 'it',
+            }),
+        );
+        const prefs = await readPrefsFromDisk(
+            '/home/user/.godot/prefs.json',
+            await getDefaultPrefs(),
+        );
+        expect(prefs.projects_group_order).toEqual(expected);
+        expect(prefs.language).toBe('it');
+    });
+
     it('normalises saved project tag filters without changing valid IDs', async () => {
         fsMock.existsSync.mockReturnValueOnce(true);
         fsPromisesMock.readFile.mockResolvedValueOnce(
@@ -387,6 +421,7 @@ suite('prefs.util', (_test) => {
         expect(prefs).toEqual({
             a: 1,
             projects_view_mode: 'cards',
+            projects_group_order: ['pinned', 'new', 'recents'],
             projects_tag_filter: [],
             linux_credential_storage: 'automatic',
         });
@@ -423,6 +458,7 @@ suite('prefs.util', (_test) => {
         expect(prefs).toEqual({
             a: 1,
             projects_view_mode: 'cards',
+            projects_group_order: ['pinned', 'new', 'recents'],
             projects_tag_filter: [],
             linux_credential_storage: 'automatic',
         });
@@ -439,6 +475,7 @@ suite('prefs.util', (_test) => {
         expect(prefs).toEqual({
             a: 1,
             projects_view_mode: 'cards',
+            projects_group_order: ['pinned', 'new', 'recents'],
             projects_tag_filter: [],
             linux_credential_storage: 'automatic',
         });

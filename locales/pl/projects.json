@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "Opcje widoku",
+        "groupOrder": "Kolejność grup",
+        "dragHelp": "Przeciągnij wiersz, aby zmienić kolejność grup.",
+        "restoreDefault": "Przywróć domyślną kolejność",
+        "saveFailed": "Nie udało się zapisać kolejności grup. Spróbuj ponownie.",
+        "close": "Zamknij opcje widoku",
+        "instructions": "Aby wybrać grupę, naciśnij Spację lub Enter. Przesuwaj ją strzałkami w górę i w dół, naciśnij Spację lub Enter, aby ją upuścić, lub Escape, aby anulować."
+    },
     "view": {
         "cards": "Widok kart",
         "list": "Widok listy",

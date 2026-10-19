@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "Għażliet tal-vista",
+        "groupOrder": "Ordni tal-gruppi",
+        "dragHelp": "Iddreggja ringiela biex tibdel l-ordni tal-gruppi.",
+        "restoreDefault": "Irrestawra l-ordni predefinita",
+        "saveFailed": "Ma setgħetx tiġi ssejvjata l-ordni tal-gruppi. Erġa’ pprova.",
+        "close": "Agħlaq l-għażliet tal-vista",
+        "instructions": "Biex tagħżel grupp, agħfas Space jew Enter. Uża l-vleġeġ ’il fuq u ’l isfel biex iċċaqilqu, Space jew Enter biex tħallih, u Escape biex tikkanċella."
+    },
     "view": {
         "cards": "Dehra bil-karti",
         "list": "Dehra bil-lista",

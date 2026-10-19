@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "Opzioni di visualizzazione",
+        "groupOrder": "Ordine dei gruppi",
+        "dragHelp": "Trascina una riga per cambiare l'ordine dei gruppi.",
+        "restoreDefault": "Ripristina ordine predefinito",
+        "saveFailed": "Impossibile salvare l'ordine dei gruppi. Riprova.",
+        "close": "Chiudi opzioni di visualizzazione",
+        "instructions": "Per selezionare un gruppo, premi Spazio o Invio. Usa le frecce su e giù per spostarlo, Spazio o Invio per rilasciarlo ed Esc per annullare."
+    },
     "view": {
         "cards": "Vista a schede",
         "list": "Vista a elenco",

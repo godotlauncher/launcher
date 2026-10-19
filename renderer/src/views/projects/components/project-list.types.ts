@@ -1,6 +1,7 @@
 import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
+    ProjectSectionKey,
     ProjectTagSelection,
     ProjectTagsSnapshot,
     ReleaseSummary,
@@ -9,10 +10,11 @@ import type React from 'react';
 import type { ProjectViewMode } from '../project-view.types';
 import type { ProjectSections } from '../projects-view.model';
 
-export type ProjectSectionKey = 'new' | 'pinned' | 'recents';
+export type { ProjectSectionKey } from '@shared/contracts';
 
 export type ProjectsListProps = {
     viewMode?: ProjectViewMode;
+    groupOrder?: readonly ProjectSectionKey[];
     tagSnapshot?: ProjectTagsSnapshot | null;
     tagsLoadFailed?: boolean;
     onRetryTags?: () => Promise<void>;
@@ -60,6 +62,7 @@ export type ProjectsListProps = {
 export type ProjectListItemProps = Omit<
     ProjectsListProps,
     | 'sections'
+    | 'groupOrder'
     | 'loading'
     | 'highlightedPinnedProjectPath'
     | 'pinnedReorderingDisabled'

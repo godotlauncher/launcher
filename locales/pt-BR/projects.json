@@ -1,4 +1,13 @@
 {
+    "viewOptions": {
+        "title": "Opções de visualização",
+        "groupOrder": "Ordem dos grupos",
+        "dragHelp": "Arraste uma linha para alterar a ordem dos grupos.",
+        "restoreDefault": "Restaurar ordem padrão",
+        "saveFailed": "Não foi possível salvar a ordem dos grupos. Tente novamente.",
+        "close": "Fechar opções de visualização",
+        "instructions": "Para selecionar um grupo, pressione Espaço ou Enter. Use as setas para cima e para baixo para movê-lo, Espaço ou Enter para soltá-lo e Escape para cancelar."
+    },
     "view": {
         "cards": "Visualização em cartões",
         "list": "Visualização em lista",
