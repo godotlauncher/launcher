@@ -10,6 +10,7 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
     }: {
         open: boolean;
         items: Array<{
+            type?: 'item' | 'separator';
             key: string;
             label?: ReactNode;
             disabled?: boolean;
@@ -17,15 +18,19 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
     }) =>
         open ? (
             <div>
-                {items.map((item) => (
-                    <button
-                        key={item.key}
-                        type="button"
-                        disabled={item.disabled}
-                    >
-                        {item.label}
-                    </button>
-                ))}
+                {items.map((item) =>
+                    item.type === 'separator' ? (
+                        <hr key={item.key} />
+                    ) : (
+                        <button
+                            key={item.key}
+                            type="button"
+                            disabled={item.disabled}
+                        >
+                            {item.label}
+                        </button>
+                    ),
+                )}
             </div>
         ) : null,
 }));
@@ -49,12 +54,19 @@ describe('AddProjectSourceMenu', () => {
                 t={translate}
                 onClose={vi.fn()}
                 onFromComputer={vi.fn()}
+                onScanFolder={vi.fn()}
                 onPublicGit={vi.fn()}
                 onGitHub={vi.fn()}
             />,
         );
 
         expect(html).toContain('addProject.sources.fromComputer');
+        expect(html.indexOf('addProject.folder.title')).toBeLessThan(
+            html.indexOf('<hr'),
+        );
+        expect(html.indexOf('<hr')).toBeLessThan(
+            html.indexOf('addProject.sources.publicGit'),
+        );
         expect(html).toContain('addProject.sources.publicGit');
         expect(html).toContain('addProject.sources.github');
         expect(html).toContain('addProject.sources.gitUnavailable');
@@ -69,6 +81,7 @@ describe('AddProjectSourceMenu', () => {
                 t={translate}
                 onClose={vi.fn()}
                 onFromComputer={vi.fn()}
+                onScanFolder={vi.fn()}
                 onPublicGit={vi.fn()}
                 onGitHub={vi.fn()}
             />,
@@ -86,6 +99,7 @@ describe('AddProjectSourceMenu', () => {
                 t={translate}
                 onClose={vi.fn()}
                 onFromComputer={vi.fn()}
+                onScanFolder={vi.fn()}
                 onPublicGit={vi.fn()}
                 onGitHub={vi.fn()}
             />,

@@ -31,6 +31,7 @@ type ProjectsHeaderProps = {
     copyPathLabel: string;
     copiedLabel: string;
     showControls?: boolean;
+    showAddMenu?: boolean;
 };
 
 /**
@@ -64,6 +65,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     copyPathLabel,
     copiedLabel,
     showControls = true,
+    showAddMenu = false,
 }) => (
     <div className="flex w-full shrink-0 flex-col gap-3">
         <div className="flex items-start justify-between gap-4">
@@ -83,7 +85,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                     />
                 )}
             </div>
-            {showControls && (
+            {(showControls || showAddMenu) && (
                 <div className="flex shrink-0 items-center gap-2">
                     <button
                         type="button"
@@ -98,15 +100,17 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                             aria-hidden="true"
                         />
                     </button>
-                    <button
-                        type="button"
-                        disabled={createDisabled}
-                        data-testid="btnProjectCreate"
-                        className="btn btn-primary text-base"
-                        onClick={onCreateProject}
-                    >
-                        {createLabel}
-                    </button>
+                    {showControls && (
+                        <button
+                            type="button"
+                            disabled={createDisabled}
+                            data-testid="btnProjectCreate"
+                            className="btn btn-primary text-base"
+                            onClick={onCreateProject}
+                        >
+                            {createLabel}
+                        </button>
+                    )}
                 </div>
             )}
         </div>

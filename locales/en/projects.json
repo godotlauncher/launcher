@@ -347,6 +347,40 @@
             "summary": "{{count}} selected · Downloads: {{downloads}}",
             "download": "Download",
             "missing": "Missing editor"
+        },
+        "folder": {
+            "sections": {
+                "available": "Available",
+                "added": "Already added",
+                "unavailable": "Unable to add"
+            },
+            "title": "Scan folder",
+            "picker": "Choose a folder to scan",
+            "pickerFailed": "The folder picker could not be opened. Try again.",
+            "scanning": "Scanning for projects",
+            "progress": "{{folders}} folders checked · {{projects}} projects found",
+            "stopHint": "Stopping the scan keeps the projects found so far.",
+            "stop": "Stop scan",
+            "stopping": "Stopping...",
+            "stopped": "Scan stopped. You can add the projects found so far.",
+            "limited": "The scan reached a limit. You can add the projects found so far.",
+            "failed": "The folder could not be scanned. Choose another folder or try again.",
+            "empty": "No valid Godot projects were found.",
+            "another": "Choose another folder",
+            "preserved": "Projects stay in their current folders.",
+            "problems": "Scan problems: {{count}}",
+            "problemList": "Scan problems",
+            "moreProblems": "Additional problems: {{count}}",
+            "issues": {
+                "invalid-project": "Invalid project file",
+                "unreadable-project": "Project file could not be read",
+                "unreadable-folder": "Folder could not be read",
+                "depth-limit": "Folder depth limit reached"
+            },
+            "problems_one": "Scan problems: {{count}}",
+            "problems_other": "Scan problems: {{count}}",
+            "moreProblems_one": "Additional problems: {{count}}",
+            "moreProblems_other": "Additional problems: {{count}}"
         }
     },
     "messages": {

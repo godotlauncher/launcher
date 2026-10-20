@@ -347,6 +347,40 @@
             "summary": "{{count}} magħżula · {{downloads}} downloads",
             "download": "Niżżel",
             "missing": "Editur nieqes"
+        },
+        "folder": {
+            "sections": {
+                "available": "Disponibbli",
+                "added": "Diġà miżjuda",
+                "unavailable": "Ma jistgħux jiżdiedu"
+            },
+            "title": "Fittex f’folder",
+            "picker": "Agħżel folder biex tfittex fih",
+            "pickerFailed": "Ma setgħetx tinfetaħ l-għażla tal-folder. Erġa’ pprova.",
+            "scanning": "Qed ifittex proġetti",
+            "progress": "{{folders}} folders iċċekkjati · {{projects}} proġetti misjuba",
+            "stopHint": "Jekk twaqqaf it-tfittxija, il-proġetti diġà misjuba jinżammu.",
+            "stop": "Waqqaf it-tfittxija",
+            "stopping": "Qed iwaqqaf...",
+            "stopped": "It-tfittxija waqfet. Tista’ żżid il-proġetti diġà misjuba.",
+            "limited": "Intlaħaq limitu tat-tfittxija. Tista’ żżid il-proġetti diġà misjuba.",
+            "failed": "Il-folder ma setax jiġi mfittex. Agħżel folder ieħor jew erġa’ pprova.",
+            "empty": "Ma nstab ebda proġett Godot validu.",
+            "another": "Agħżel folder ieħor",
+            "preserved": "Il-proġetti jibqgħu fil-folders attwali tagħhom.",
+            "problems": "Problemi fit-tfittxija: {{count}}",
+            "problemList": "Problemi fit-tfittxija",
+            "moreProblems": "Problemi oħra: {{count}}",
+            "issues": {
+                "invalid-project": "Fajl tal-proġett invalidu",
+                "unreadable-project": "Il-fajl tal-proġett ma setax jinqara",
+                "unreadable-folder": "Il-folder ma setax jinqara",
+                "depth-limit": "Intlaħaq il-limitu tal-fond tal-folders"
+            },
+            "problems_one": "Problemi fit-tfittxija: {{count}}",
+            "problems_other": "Problemi fit-tfittxija: {{count}}",
+            "moreProblems_one": "Problemi oħra: {{count}}",
+            "moreProblems_other": "Problemi oħra: {{count}}"
         }
     },
     "messages": {

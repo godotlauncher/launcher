@@ -347,6 +347,40 @@
             "summary": "{{count}} selecionados · {{downloads}} transferências",
             "download": "Transferência",
             "missing": "Editor em falta"
+        },
+        "folder": {
+            "sections": {
+                "available": "Disponíveis",
+                "added": "Já adicionados",
+                "unavailable": "Não é possível adicionar"
+            },
+            "title": "Pesquisar pasta",
+            "picker": "Escolher uma pasta para pesquisar",
+            "pickerFailed": "Não foi possível abrir o seletor de pastas. Tente novamente.",
+            "scanning": "A pesquisar projetos",
+            "progress": "{{folders}} pastas verificadas · {{projects}} projetos encontrados",
+            "stopHint": "Parar a pesquisa mantém os projetos já encontrados.",
+            "stop": "Parar pesquisa",
+            "stopping": "A parar...",
+            "stopped": "Pesquisa parada. Pode adicionar os projetos já encontrados.",
+            "limited": "Foi atingido um limite. Pode adicionar os projetos já encontrados.",
+            "failed": "Não foi possível pesquisar a pasta. Escolha outra pasta ou tente novamente.",
+            "empty": "Não foram encontrados projetos Godot válidos.",
+            "another": "Escolher outra pasta",
+            "preserved": "Os projetos permanecem nas suas pastas atuais.",
+            "problems": "Problemas na pesquisa: {{count}}",
+            "problemList": "Problemas na pesquisa",
+            "moreProblems": "Outros problemas: {{count}}",
+            "issues": {
+                "invalid-project": "Ficheiro de projeto inválido",
+                "unreadable-project": "Não foi possível ler o ficheiro do projeto",
+                "unreadable-folder": "Não foi possível ler a pasta",
+                "depth-limit": "Limite de profundidade atingido"
+            },
+            "problems_one": "Problemas na pesquisa: {{count}}",
+            "problems_other": "Problemas na pesquisa: {{count}}",
+            "moreProblems_one": "Outros problemas: {{count}}",
+            "moreProblems_other": "Outros problemas: {{count}}"
         }
     },
     "messages": {

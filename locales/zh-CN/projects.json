@@ -347,6 +347,40 @@
             "summary": "已选 {{count}} 项 · {{downloads}} 项下载",
             "download": "下载",
             "missing": "缺少编辑器"
+        },
+        "folder": {
+            "sections": {
+                "available": "可添加",
+                "added": "已添加",
+                "unavailable": "无法添加"
+            },
+            "title": "扫描文件夹",
+            "picker": "选择要扫描的文件夹",
+            "pickerFailed": "无法打开文件夹选择器。请重试。",
+            "scanning": "正在查找项目",
+            "progress": "已检查 {{folders}} 个文件夹 · 找到 {{projects}} 个项目",
+            "stopHint": "停止扫描会保留已找到的项目。",
+            "stop": "停止扫描",
+            "stopping": "正在停止...",
+            "stopped": "扫描已停止。您可以添加已找到的项目。",
+            "limited": "扫描已达到限制。您可以添加已找到的项目。",
+            "failed": "无法扫描该文件夹。请选择其他文件夹或重试。",
+            "empty": "未找到有效的 Godot 项目。",
+            "another": "选择其他文件夹",
+            "preserved": "项目将保留在当前文件夹中。",
+            "problems": "扫描问题：{{count}}",
+            "problemList": "扫描问题",
+            "moreProblems": "其他问题：{{count}}",
+            "issues": {
+                "invalid-project": "无效的项目文件",
+                "unreadable-project": "无法读取项目文件",
+                "unreadable-folder": "无法读取文件夹",
+                "depth-limit": "已达到文件夹深度限制"
+            },
+            "problems_one": "扫描问题：{{count}}",
+            "problems_other": "扫描问题：{{count}}",
+            "moreProblems_one": "其他问题：{{count}}",
+            "moreProblems_other": "其他问题：{{count}}"
         }
     },
     "messages": {

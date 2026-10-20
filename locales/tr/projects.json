@@ -347,6 +347,40 @@
             "summary": "{{count}} seçili · {{downloads}} indirme",
             "download": "İndirme",
             "missing": "Editör eksik"
+        },
+        "folder": {
+            "sections": {
+                "available": "Eklenebilir",
+                "added": "Zaten eklenenler",
+                "unavailable": "Eklenemiyor"
+            },
+            "title": "Klasörü tara",
+            "picker": "Taranacak klasörü seçin",
+            "pickerFailed": "Klasör seçici açılamadı. Yeniden deneyin.",
+            "scanning": "Projeler aranıyor",
+            "progress": "{{folders}} klasör kontrol edildi · {{projects}} proje bulundu",
+            "stopHint": "Taramayı durdurmak bulunan projeleri korur.",
+            "stop": "Taramayı durdur",
+            "stopping": "Durduruluyor...",
+            "stopped": "Tarama durduruldu. Bulunan projeleri ekleyebilirsiniz.",
+            "limited": "Tarama sınırına ulaşıldı. Bulunan projeleri ekleyebilirsiniz.",
+            "failed": "Klasör taranamadı. Başka bir klasör seçin veya yeniden deneyin.",
+            "empty": "Geçerli Godot projesi bulunamadı.",
+            "another": "Başka klasör seç",
+            "preserved": "Projeler mevcut klasörlerinde kalır.",
+            "problems": "Tarama sorunları: {{count}}",
+            "problemList": "Tarama sorunları",
+            "moreProblems": "Diğer sorunlar: {{count}}",
+            "issues": {
+                "invalid-project": "Geçersiz proje dosyası",
+                "unreadable-project": "Proje dosyası okunamadı",
+                "unreadable-folder": "Klasör okunamadı",
+                "depth-limit": "Klasör derinliği sınırına ulaşıldı"
+            },
+            "problems_one": "Tarama sorunları: {{count}}",
+            "problems_other": "Tarama sorunları: {{count}}",
+            "moreProblems_one": "Diğer sorunlar: {{count}}",
+            "moreProblems_other": "Diğer sorunlar: {{count}}"
         }
     },
     "messages": {

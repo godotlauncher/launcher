@@ -1,7 +1,10 @@
-import { promises as fs } from 'node:fs';
+import { type Dirent, promises as fs } from 'node:fs';
 import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type {
+    FolderProjectScanIssue,
+    FolderProjectScanProgress,
+    FolderProjectScanResult,
     RemoteDetectedProjectEditor,
     RemoteDiscoveredProject,
 } from '@shared/contracts';
@@ -116,6 +119,122 @@ export class ProjectDiscoveryService {
             left.relativePath.localeCompare(right.relativePath),
         );
         return { ok: true, projects };
+    }
+
+    /**
+     * Scans existing folders while retaining valid findings and individual problems.
+     * @param folder - Canonical selected scan root.
+     * @param signal - Cancellation signal for this scan.
+     * @param onProgress - Observer receiving counts without filesystem errors.
+     * @returns Partial discoveries and a bounded list of scan problems.
+     */
+    async scanFolder(
+        folder: string,
+        signal: AbortSignal,
+        onProgress: (
+            progress: Omit<FolderProjectScanProgress, 'scanId'>,
+        ) => void,
+    ): Promise<Omit<FolderProjectScanResult, 'scanId'>> {
+        const result: Omit<FolderProjectScanResult, 'scanId'> = {
+            folder,
+            status: 'complete',
+            projects: [],
+            issues: [],
+            omittedIssueCount: 0,
+            visitedDirectories: 0,
+            visitedEntries: 0,
+        };
+        const pending = [{ directory: folder, depth: 0 }];
+        /** Records a safe relative-path issue while bounding renderer data.
+         * @param entryPath - Failed directory or candidate path.
+         * @param reason - Safe problem classification.
+         */
+        const recordIssue = (
+            entryPath: string,
+            reason: FolderProjectScanIssue['reason'],
+        ) => {
+            if (result.issues.length < 100)
+                result.issues.push({
+                    relativePath: path.relative(folder, entryPath) || '.',
+                    reason,
+                });
+            else result.omittedIssueCount++;
+        };
+        scan: while (pending.length > 0) {
+            if (signal.aborted) {
+                result.status = 'cancelled';
+                break;
+            }
+            const current = pending.shift();
+            if (!current) break;
+            let entries: Dirent[];
+            try {
+                const stat = await fs.lstat(current.directory);
+                if (!stat.isDirectory() || stat.isSymbolicLink()) {
+                    recordIssue(current.directory, 'unreadable-folder');
+                    if (current.depth === 0) result.status = 'failed';
+                    continue;
+                }
+                entries = await fs.readdir(current.directory, {
+                    withFileTypes: true,
+                });
+            } catch {
+                recordIssue(current.directory, 'unreadable-folder');
+                if (current.depth === 0) result.status = 'failed';
+                continue;
+            }
+            result.visitedDirectories++;
+            for (const entry of entries) {
+                if (signal.aborted) {
+                    result.status = 'cancelled';
+                    break scan;
+                }
+                result.visitedEntries++;
+                if (result.visitedEntries > MAX_DISCOVERY_ENTRIES) {
+                    result.status = 'limited';
+                    break scan;
+                }
+                const entryPath = path.join(current.directory, entry.name);
+                if (entry.isSymbolicLink()) continue;
+                if (entry.isDirectory()) {
+                    if (SKIPPED_DIRECTORIES.has(entry.name)) continue;
+                    if (current.depth >= MAX_DISCOVERY_DEPTH) {
+                        result.status = 'limited';
+                        recordIssue(entryPath, 'depth-limit');
+                    } else
+                        pending.push({
+                            directory: entryPath,
+                            depth: current.depth + 1,
+                        });
+                } else if (entry.isFile() && entry.name === 'project.godot') {
+                    try {
+                        const project = await this.inspectProject(
+                            folder,
+                            entryPath,
+                        );
+                        if (!project) recordIssue(entryPath, 'invalid-project');
+                        else if (
+                            result.projects.length >= MAX_DISCOVERED_PROJECTS
+                        ) {
+                            result.status = 'limited';
+                            break scan;
+                        } else result.projects.push(project);
+                    } catch {
+                        recordIssue(entryPath, 'unreadable-project');
+                    }
+                }
+            }
+            onProgress({
+                visitedDirectories: result.visitedDirectories,
+                visitedEntries: result.visitedEntries,
+                projectCount: result.projects.length,
+            });
+        }
+        if (signal.aborted) result.status = 'cancelled';
+        result.projects.sort((left, right) =>
+            left.relativePath.localeCompare(right.relativePath),
+        );
+        return result;
     }
 
     /**

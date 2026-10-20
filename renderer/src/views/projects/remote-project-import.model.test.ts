@@ -106,6 +106,10 @@ describe('remote project import model', () => {
     });
 
     it('gets project directories from POSIX and Windows project files', () => {
+        expect(getProjectDirectoryFromFilePath('/project.godot')).toBe('/');
+        expect(getProjectDirectoryFromFilePath('C:\\project.godot')).toBe(
+            'C:\\',
+        );
         expect(
             getProjectDirectoryFromFilePath('/projects/game/project.godot'),
         ).toBe('/projects/game');

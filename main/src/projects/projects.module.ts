@@ -12,6 +12,7 @@ import { ProjectCreationService } from './project-creation.service.js';
 import { ProjectDiscoveryService } from './project-discovery.service.js';
 import { ProjectEditorService } from './project-editor.service.js';
 import { ProjectEditorChoiceService } from './project-editor-choice.service.js';
+import { ProjectFolderScanService } from './project-folder-scan.service.js';
 import { ProjectGitService } from './project-git.service.js';
 import { ProjectImportService } from './project-import.service.js';
 import { ProjectLaunchService } from './project-launch.service.js';
@@ -41,6 +42,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
     providers: [
         ProjectCreationService,
         ProjectDiscoveryService,
+        ProjectFolderScanService,
         ProjectImportService,
         ProjectEditorChoiceService,
         ProjectPublicationService,

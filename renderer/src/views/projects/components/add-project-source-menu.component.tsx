@@ -1,4 +1,9 @@
-import { FolderOpen, GitBranch, GitPullRequest } from 'lucide-react';
+import {
+    FolderOpen,
+    FolderSearch,
+    GitBranch,
+    GitPullRequest,
+} from 'lucide-react';
 import type React from 'react';
 import {
     ActionMenu,
@@ -15,19 +20,23 @@ type AddProjectSourceMenuProps = {
     t: Translate;
     onClose: () => void;
     onFromComputer: () => void;
+    onScanFolder: () => void;
     onPublicGit: () => void;
     onGitHub: () => void;
 };
 
 const iconClassName = 'size-[16px]';
 
-/** Renders the three Add Project source choices. */
+/** Renders the local and remote Add Project source choices.
+ * @param props - Source callbacks and current Git availability.
+ */
 export const AddProjectSourceMenu: React.FC<AddProjectSourceMenuProps> = ({
     anchorRect,
     gitAvailability,
     t,
     onClose,
     onFromComputer,
+    onScanFolder,
     onPublicGit,
     onGitHub,
 }) => {
@@ -51,6 +60,17 @@ export const AddProjectSourceMenu: React.FC<AddProjectSourceMenuProps> = ({
             icon: <FolderOpen className={iconClassName} />,
             testId: 'btnAddProjectFromComputer',
             onSelect: onFromComputer,
+        },
+        {
+            key: 'scan-folder',
+            label: t('addProject.folder.title'),
+            icon: <FolderSearch className={iconClassName} />,
+            testId: 'btnAddProjectScanFolder',
+            onSelect: onScanFolder,
+        },
+        {
+            type: 'separator',
+            key: 'local-remote-divider',
         },
         {
             key: 'public-git',

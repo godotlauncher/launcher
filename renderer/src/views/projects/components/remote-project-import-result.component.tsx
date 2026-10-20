@@ -14,6 +14,7 @@ import type { RemoteProjectRegistrationOutcome } from '../remote-project-import.
 
 type RemoteProjectRegistrationResultProps = {
     outcomes: RemoteProjectRegistrationOutcome[];
+    description?: string;
     editorDownloadsQueued: boolean;
     cloneRecoveryError: string | null;
     t: TFunction;
@@ -25,6 +26,7 @@ type RemoteProjectRegistrationResultProps = {
  */
 export function RemoteProjectRegistrationResult({
     outcomes,
+    description,
     editorDownloadsQueued,
     cloneRecoveryError,
     t,
@@ -36,7 +38,8 @@ export function RemoteProjectRegistrationResult({
                     {t('addProject.remote.registration.complete')}
                 </h2>
                 <p className="text-base text-base-content/75">
-                    {t('addProject.remote.registration.preserved')}
+                    {description ??
+                        t('addProject.remote.registration.preserved')}
                 </p>
             </div>
             {editorDownloadsQueued && (
@@ -47,7 +50,10 @@ export function RemoteProjectRegistrationResult({
                     </span>
                 </div>
             )}
-            <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto pr-3 [scrollbar-gutter:stable]">
+            <ul
+                aria-label={t('addProject.remote.registration.complete')}
+                className="project-import-scroll flex min-h-0 flex-1 flex-col gap-2 pr-3"
+            >
                 {outcomes.map((outcome) => {
                     const renamed =
                         outcome.originalName !== outcome.launcherName;

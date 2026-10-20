@@ -347,6 +347,40 @@
             "summary": "{{count}} selezionati · {{downloads}} download",
             "download": "Download",
             "missing": "Editor mancante"
+        },
+        "folder": {
+            "sections": {
+                "available": "Disponibili",
+                "added": "Già aggiunti",
+                "unavailable": "Impossibile aggiungere"
+            },
+            "title": "Cerca nella cartella",
+            "picker": "Scegli una cartella da analizzare",
+            "pickerFailed": "Impossibile aprire la selezione della cartella. Riprova.",
+            "scanning": "Ricerca dei progetti",
+            "progress": "{{folders}} cartelle controllate · {{projects}} progetti trovati",
+            "stopHint": "Interrompendo la ricerca, i progetti già trovati vengono conservati.",
+            "stop": "Interrompi ricerca",
+            "stopping": "Interruzione...",
+            "stopped": "Ricerca interrotta. Puoi aggiungere i progetti già trovati.",
+            "limited": "È stato raggiunto un limite. Puoi aggiungere i progetti già trovati.",
+            "failed": "Impossibile analizzare la cartella. Scegline un’altra o riprova.",
+            "empty": "Nessun progetto Godot valido trovato.",
+            "another": "Scegli un’altra cartella",
+            "preserved": "I progetti rimangono nelle cartelle attuali.",
+            "problems": "Problemi di ricerca: {{count}}",
+            "problemList": "Problemi di ricerca",
+            "moreProblems": "Altri problemi: {{count}}",
+            "issues": {
+                "invalid-project": "File di progetto non valido",
+                "unreadable-project": "Impossibile leggere il file di progetto",
+                "unreadable-folder": "Impossibile leggere la cartella",
+                "depth-limit": "Profondità massima raggiunta"
+            },
+            "problems_one": "Problemi di ricerca: {{count}}",
+            "problems_other": "Problemi di ricerca: {{count}}",
+            "moreProblems_one": "Altri problemi: {{count}}",
+            "moreProblems_other": "Altri problemi: {{count}}"
         }
     },
     "messages": {

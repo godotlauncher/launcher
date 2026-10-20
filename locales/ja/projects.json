@@ -347,6 +347,40 @@
             "summary": "選択: {{count}} · ダウンロード: {{downloads}}",
             "download": "ダウンロード",
             "missing": "エディターなし"
+        },
+        "folder": {
+            "sections": {
+                "available": "追加可能",
+                "added": "追加済み",
+                "unavailable": "追加できません"
+            },
+            "title": "フォルダーをスキャン",
+            "picker": "スキャンするフォルダーを選択",
+            "pickerFailed": "フォルダー選択を開けませんでした。もう一度お試しください。",
+            "scanning": "プロジェクトを検索中",
+            "progress": "{{folders}} 個のフォルダーを確認 · {{projects}} 個のプロジェクトを検出",
+            "stopHint": "スキャンを停止しても、検出済みのプロジェクトは保持されます。",
+            "stop": "スキャンを停止",
+            "stopping": "停止中...",
+            "stopped": "スキャンを停止しました。検出済みのプロジェクトを追加できます。",
+            "limited": "スキャンの上限に達しました。検出済みのプロジェクトを追加できます。",
+            "failed": "フォルダーをスキャンできませんでした。別のフォルダーを選択するか、再試行してください。",
+            "empty": "有効な Godot プロジェクトが見つかりませんでした。",
+            "another": "別のフォルダーを選択",
+            "preserved": "プロジェクトは現在のフォルダーに保持されます。",
+            "problems": "スキャンの問題: {{count}}",
+            "problemList": "スキャンの問題",
+            "moreProblems": "その他の問題: {{count}}",
+            "issues": {
+                "invalid-project": "無効なプロジェクトファイル",
+                "unreadable-project": "プロジェクトファイルを読み取れませんでした",
+                "unreadable-folder": "フォルダーを読み取れませんでした",
+                "depth-limit": "フォルダーの深さの上限に達しました"
+            },
+            "problems_one": "スキャンの問題: {{count}}",
+            "problems_other": "スキャンの問題: {{count}}",
+            "moreProblems_one": "その他の問題: {{count}}",
+            "moreProblems_other": "その他の問題: {{count}}"
         }
     },
     "messages": {
