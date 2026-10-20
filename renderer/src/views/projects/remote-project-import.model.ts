@@ -216,6 +216,9 @@ export function getRemoteProjectDestinationDisplay(
 export function getProjectDirectoryFromFilePath(
     projectFilePath: string,
 ): string {
+    if (/^(?:[A-Za-z]:)?[\\/]project\.godot$/.test(projectFilePath)) {
+        return projectFilePath.slice(0, -'project.godot'.length);
+    }
     return projectFilePath.replace(/[\\/]project\.godot$/, '');
 }
 

@@ -224,7 +224,7 @@ describe('ProjectsView', () => {
         expect(html).toContain('From this computer');
         expect(html).not.toContain('/Users/test/GodotProjects');
         expect(html).not.toContain('placeholder="Search"');
-        expect(html).not.toContain('>Add<');
+        expect(html).toContain('data-testid="btnProjectAdd"');
         expect(html).not.toContain('>New Project<');
         expect(html).not.toContain('No projects found');
     });
@@ -238,7 +238,7 @@ describe('ProjectsView', () => {
         expect(html).toContain('/Users/test/GodotProjects');
     });
 
-    it('keeps the welcome experience unchanged when an editor is available', () => {
+    it('keeps welcome choices and the Add menu available with an editor', () => {
         releaseState.installedReleases = [{} as InstalledRelease];
 
         const html = renderToStaticMarkup(<ProjectsView />);
@@ -246,7 +246,7 @@ describe('ProjectsView', () => {
         expect(html).toContain('Add or create a project');
         expect(html).toContain('Create project');
         expect(html).not.toContain('placeholder="Search"');
-        expect(html).not.toContain('>Add<');
+        expect(html).toContain('data-testid="btnProjectAdd"');
         expect(html).not.toContain('>New Project<');
     });
 

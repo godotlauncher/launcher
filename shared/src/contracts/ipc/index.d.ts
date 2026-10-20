@@ -5,6 +5,7 @@ import type {
 } from '../codeEditorIntegration/index.js';
 import type { ProjectTagsSnapshot } from '../project-tags/index.js';
 import type {
+    FolderProjectScanProgress,
     LaunchProjectResult,
     ProjectDetails,
     RemoteProjectImportProgress,
@@ -17,6 +18,7 @@ import type {
 export type AppEventMap = {
     'app-updates': AppUpdateMessage;
     'projects-updated': ProjectDetails[];
+    'folder-project-scan-progress': FolderProjectScanProgress;
     'project-tags-updated': ProjectTagsSnapshot;
     'remote-project-import-progress': RemoteProjectImportProgress;
     'code-editor-integrations-updated': CodeEditorIntegrationSettings[];

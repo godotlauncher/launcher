@@ -347,6 +347,40 @@
             "summary": "{{count}} ausgewählt · {{downloads}} Downloads",
             "download": "Download",
             "missing": "Editor fehlt"
+        },
+        "folder": {
+            "sections": {
+                "available": "Verfügbar",
+                "added": "Bereits hinzugefügt",
+                "unavailable": "Hinzufügen nicht möglich"
+            },
+            "title": "Ordner durchsuchen",
+            "picker": "Ordner zum Durchsuchen auswählen",
+            "pickerFailed": "Die Ordnerauswahl konnte nicht geöffnet werden. Versuchen Sie es erneut.",
+            "scanning": "Projekte werden gesucht",
+            "progress": "{{folders}} Ordner geprüft · {{projects}} Projekte gefunden",
+            "stopHint": "Beim Anhalten bleiben die bisher gefundenen Projekte erhalten.",
+            "stop": "Suche anhalten",
+            "stopping": "Wird angehalten...",
+            "stopped": "Suche angehalten. Sie können die bisher gefundenen Projekte hinzufügen.",
+            "limited": "Die Suchgrenze wurde erreicht. Sie können die bisher gefundenen Projekte hinzufügen.",
+            "failed": "Der Ordner konnte nicht durchsucht werden. Wählen Sie einen anderen Ordner oder versuchen Sie es erneut.",
+            "empty": "Keine gültigen Godot-Projekte gefunden.",
+            "another": "Anderen Ordner wählen",
+            "preserved": "Projekte bleiben in ihren bisherigen Ordnern.",
+            "problems": "Suchprobleme: {{count}}",
+            "problemList": "Suchprobleme",
+            "moreProblems": "Weitere Probleme: {{count}}",
+            "issues": {
+                "invalid-project": "Ungültige Projektdatei",
+                "unreadable-project": "Projektdatei konnte nicht gelesen werden",
+                "unreadable-folder": "Ordner konnte nicht gelesen werden",
+                "depth-limit": "Maximale Ordnertiefe erreicht"
+            },
+            "problems_one": "Suchprobleme: {{count}}",
+            "problems_other": "Suchprobleme: {{count}}",
+            "moreProblems_one": "Weitere Probleme: {{count}}",
+            "moreProblems_other": "Weitere Probleme: {{count}}"
         }
     },
     "setCodeEditor": {

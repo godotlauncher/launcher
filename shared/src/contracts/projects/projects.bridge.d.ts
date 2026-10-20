@@ -15,6 +15,7 @@ import type {
     CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     CreateProjectResult,
+    FolderProjectScanResult,
     GitIdentity,
     GitRepositoryInspection,
     InitialiseRemoteProjectSubmodulesResult,
@@ -44,6 +45,14 @@ import type {
 
 /** Defines project requests available to the renderer. */
 export type ProjectsBridge = {
+    /** Scans one existing folder without changing its contents. */
+    scanProjectFolder(
+        folder: string,
+        scanId: string,
+    ): Promise<FolderProjectScanResult>;
+    /** Stops the matching scan while retaining discoveries. */
+    cancelProjectFolderScan(scanId: string): Promise<boolean>;
+
     /** Clones a repository and discovers its Godot projects. */
     importRemoteProject(
         request: RemoteProjectImportRequest,

@@ -46,7 +46,7 @@ describe('ProjectsController', () => {
             allowMissingCodeEditor: true,
         } satisfies LaunchProjectOptions;
         const service = createServiceMock();
-        const controller = new ProjectsController(service);
+        const controller = new ProjectsController(service, {} as never);
 
         const remoteRequest = {
             source: 'public-git-url' as const,

@@ -32,6 +32,7 @@ import { useRelease } from '../hooks/release.hook';
 import { useToolIntegrations } from '../hooks/tool-integrations.hook';
 import { appBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
+import { FolderProjectImportModal } from './projects/components/folder-project-import.modal';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
 import { ProjectViewOptionsModal } from './projects/components/project-view-options.modal';
@@ -124,6 +125,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const [addingProject, setAddingProject] = useState<boolean>(false);
     const [addSourceMenuAnchor, setAddSourceMenuAnchor] =
         useState<ActionMenuAnchorRect | null>(null);
+    const [scanFolder, setScanFolder] = useState<string | null>(null);
+    const [choosingScanFolder, setChoosingScanFolder] = useState(false);
+    const scanPickerBusy = useRef(false);
     const [remoteProjectSource, setRemoteProjectSource] =
         useState<RemoteProjectSource | null>(null);
     const [gitAvailability, setGitAvailability] =
@@ -466,6 +470,33 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         void refreshToolAvailability();
     };
 
+    /** Opens the native picker before starting a single-folder scan. */
+    const chooseScanFolder = async () => {
+        if (scanPickerBusy.current) return;
+        scanPickerBusy.current = true;
+        setAddSourceMenuAnchor(null);
+        setChoosingScanFolder(true);
+        try {
+            const selected = await appBridge.openFileDialog(
+                preferences?.projects_location ?? '',
+                t('projects:addProject.folder.title'),
+                [],
+                ['openDirectory'],
+            );
+            if (!selected.canceled && selected.filePaths.length === 1) {
+                setScanFolder(selected.filePaths[0]);
+            }
+        } catch {
+            addAlert(
+                t('common:error'),
+                t('projects:addProject.folder.pickerFailed'),
+            );
+        } finally {
+            setChoosingScanFolder(false);
+            scanPickerBusy.current = false;
+        }
+    };
+
     const openRemoteProjectSource = (source: RemoteProjectSource) => {
         setAddSourceMenuAnchor(null);
         setRemoteProjectSource(source);
@@ -713,82 +744,83 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     />
                 )}
                 {isDraggingOver && <ProjectsDropOverlay t={t} />}
-                {!showEmptyState && (
-                    <ProjectsHeader
-                        searchInputRef={searchInput}
-                        searchShortcut={`${shortcutModifier} K`}
-                        searchAriaKeyShortcuts={`${ariaShortcutModifier}+K`}
-                        viewMode={projectViewMode}
-                        onViewModeChange={(mode) =>
-                            void setProjectViewMode(mode)
-                        }
-                        viewModeDisabled={
-                            savingViewMode ||
-                            savingTagFilter ||
-                            savingGroupOrder ||
-                            !preferences
-                        }
-                        viewOptions={
-                            <Tooltip
-                                tip={t('viewOptions.title')}
-                                placement="top"
-                                delay={1000}
-                            >
-                                <button
-                                    ref={viewOptionsButtonRef}
-                                    type="button"
-                                    className="btn btn-ghost btn-sm btn-square"
-                                    data-testid="btnProjectViewOptions"
-                                    aria-label={t('viewOptions.title')}
-                                    aria-haspopup="dialog"
-                                    disabled={
-                                        !preferences ||
-                                        savingViewMode ||
-                                        savingTagFilter ||
-                                        savingGroupOrder
-                                    }
-                                    onClick={() => setViewOptionsOpen(true)}
-                                >
-                                    <Settings2 size={17} aria-hidden="true" />
-                                </button>
-                            </Tooltip>
-                        }
-                        tagFilter={
-                            <ProjectTagFilter
-                                controlRef={tagFilterControl}
-                                shortcut={`${shortcutModifier} T`}
-                                ariaKeyShortcuts={`${ariaShortcutModifier}+T`}
-                                tags={tagSnapshot?.tags ?? []}
-                                selected={selectedFilterTags}
-                                disabled={!preferences || !tagSnapshot}
-                                saving={
-                                    savingTagFilter ||
+                <ProjectsHeader
+                    searchInputRef={searchInput}
+                    searchShortcut={`${shortcutModifier} K`}
+                    searchAriaKeyShortcuts={`${ariaShortcutModifier}+K`}
+                    viewMode={projectViewMode}
+                    onViewModeChange={(mode) => void setProjectViewMode(mode)}
+                    viewModeDisabled={
+                        savingViewMode ||
+                        savingTagFilter ||
+                        savingGroupOrder ||
+                        !preferences
+                    }
+                    viewOptions={
+                        <Tooltip
+                            tip={t('viewOptions.title')}
+                            placement="top"
+                            delay={1000}
+                        >
+                            <button
+                                ref={viewOptionsButtonRef}
+                                type="button"
+                                className="btn btn-ghost btn-sm btn-square"
+                                data-testid="btnProjectViewOptions"
+                                aria-label={t('viewOptions.title')}
+                                aria-haspopup="dialog"
+                                disabled={
+                                    !preferences ||
                                     savingViewMode ||
+                                    savingTagFilter ||
                                     savingGroupOrder
                                 }
-                                loadFailed={tagsLoadFailed}
-                                onRetry={reloadTags}
-                                onChange={setTagFilter}
-                            />
-                        }
-                        cardsViewLabel={t('view.cards')}
-                        listViewLabel={t('view.list')}
-                        compactViewLabel={t('view.compact')}
-                        title={t('title')}
-                        projectsLocation={preferences?.projects_location}
-                        searchPlaceholder={t('search.placeholder')}
-                        searchValue={textSearch}
-                        onSearchChange={setTextSearch}
-                        onAddProject={openAddProjectSourceMenu}
-                        onCreateProject={() => setCreateOpen(true)}
-                        createDisabled={false}
-                        addLabel={t('buttons.add')}
-                        createLabel={t('buttons.newProject')}
-                        copyPathLabel={t('common:buttons.copyPath')}
-                        copiedLabel={t('common:success')}
-                        showControls={!showEmptyState}
-                    />
-                )}
+                                onClick={() => setViewOptionsOpen(true)}
+                            >
+                                <Settings2 size={17} aria-hidden="true" />
+                            </button>
+                        </Tooltip>
+                    }
+                    tagFilter={
+                        <ProjectTagFilter
+                            controlRef={tagFilterControl}
+                            shortcut={`${shortcutModifier} T`}
+                            ariaKeyShortcuts={`${ariaShortcutModifier}+T`}
+                            tags={tagSnapshot?.tags ?? []}
+                            selected={selectedFilterTags}
+                            disabled={!preferences || !tagSnapshot}
+                            saving={
+                                savingTagFilter ||
+                                savingViewMode ||
+                                savingGroupOrder
+                            }
+                            loadFailed={tagsLoadFailed}
+                            onRetry={reloadTags}
+                            onChange={setTagFilter}
+                        />
+                    }
+                    cardsViewLabel={t('view.cards')}
+                    listViewLabel={t('view.list')}
+                    compactViewLabel={t('view.compact')}
+                    title={t('title')}
+                    projectsLocation={
+                        showEmptyState
+                            ? undefined
+                            : preferences?.projects_location
+                    }
+                    searchPlaceholder={t('search.placeholder')}
+                    searchValue={textSearch}
+                    onSearchChange={setTextSearch}
+                    onAddProject={openAddProjectSourceMenu}
+                    onCreateProject={() => setCreateOpen(true)}
+                    createDisabled={false}
+                    addLabel={t('buttons.add')}
+                    createLabel={t('buttons.newProject')}
+                    copyPathLabel={t('common:buttons.copyPath')}
+                    copiedLabel={t('common:success')}
+                    showControls={!showEmptyState}
+                    showAddMenu
+                />
 
                 {viewState === 'empty' && (
                     <ProjectsWelcome
@@ -1020,6 +1052,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 t={t}
                 onClose={() => setAddSourceMenuAnchor(null)}
                 onFromComputer={() => void onAddProject()}
+                onScanFolder={() => void chooseScanFolder()}
                 onPublicGit={() => openRemoteProjectSource('public-git-url')}
                 onGitHub={() => openRemoteProjectSource('github')}
             />
@@ -1070,6 +1103,24 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     returnFocusRef={viewOptionsButtonRef}
                     onSave={saveProjectGroupOrder}
                     onClose={() => setViewOptionsOpen(false)}
+                />
+            )}
+            {choosingScanFolder && (
+                <WaitingForDialogOverlay
+                    message={t('projects:addProject.folder.picker')}
+                />
+            )}
+            {scanFolder && (
+                <FolderProjectImportModal
+                    key={scanFolder}
+                    folder={scanFolder}
+                    onClose={() => setScanFolder(null)}
+                    onChooseFolder={() => {
+                        setScanFolder(null);
+                        void chooseScanFolder();
+                    }}
+                    handleAddProjectResult={handleAddProjectResult}
+                    queueProjectEditorRepairs={queueProjectEditorRepairs}
                 />
             )}
             {localImportDialog}

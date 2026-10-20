@@ -1,6 +1,7 @@
 import type { RemoteDiscoveredProject } from '@shared/contracts';
 import type { TFunction } from 'i18next';
 import { Code2, FolderSearch } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { type RefObject, useEffect, useState } from 'react';
 import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import {
@@ -9,6 +10,7 @@ import {
 } from '../../../components/ui/select-field.component';
 import type { LocalImportRow } from '../local-import-editor.model';
 import type { RemoteProjectCodeEditorChoice } from '../remote-project-import.model';
+import { getProjectDirectoryFromFilePath } from '../remote-project-import.model';
 import {
     ProjectImportReviewList,
     type ProjectImportReviewListItem,
@@ -22,6 +24,9 @@ type RemoteProjectReviewProps = {
     onEditingChange: (editing: boolean) => void;
     onGodotEditorChange: (file: string, editorActionId: string) => void;
     repositoryPath: string;
+    headerContent?: ReactNode;
+    emptyMessage?: string;
+    lockUnavailable?: boolean;
     projects: RemoteDiscoveredProject[];
     rows: LocalImportRow[];
     selectedPaths: Set<string>;
@@ -43,6 +48,9 @@ type RemoteProjectReviewProps = {
  */
 export function RemoteProjectReview({
     repositoryPath,
+    headerContent,
+    emptyMessage,
+    lockUnavailable = false,
     projects,
     rows,
     selectedPaths,
@@ -74,13 +82,20 @@ export function RemoteProjectReview({
         const row = rowByPath.get(project.projectFilePath);
         if (!row) return [];
         const selected = selectedPaths.has(project.projectFilePath);
+        const unavailable =
+            lockUnavailable && (!!row.registered || !!row.error);
         const codeEditorValue =
             codeEditorChoices[project.projectFilePath] ?? 'auto';
         return [
             {
                 id: project.projectFilePath,
                 row,
-                name: importNames[project.projectFilePath] ?? row.name,
+                disabled: unavailable,
+                name: unavailable
+                    ? importNames[project.projectFilePath] ||
+                      row.name ||
+                      project.name
+                    : (importNames[project.projectFilePath] ?? row.name),
                 selected,
                 editorActionId:
                     editorActionIds[project.projectFilePath] ??
@@ -88,7 +103,10 @@ export function RemoteProjectReview({
                 conflict: selected
                     ? conflicts[project.projectFilePath]
                     : undefined,
-                path: project.relativePath,
+                path: lockUnavailable
+                    ? (row.directory ??
+                      getProjectDirectoryFromFilePath(project.projectFilePath))
+                    : project.relativePath,
                 secondaryControl: (
                     <SelectField
                         id={`selectRemoteProjectCodeEditor-${project.projectFilePath.replace(/[^a-zA-Z0-9_-]/g, '-')}`}
@@ -132,6 +150,7 @@ export function RemoteProjectReview({
                 copiedLabel={t('common:success')}
                 className="self-start"
             />
+            {headerContent}
             {projects.length === 0 ? (
                 <div
                     role="status"
@@ -142,12 +161,16 @@ export function RemoteProjectReview({
                         className="text-base-content/60"
                         aria-hidden="true"
                     />
-                    <p>{t('addProject.remote.review.empty')}</p>
+                    <p>{emptyMessage ?? t('addProject.remote.review.empty')}</p>
                 </div>
             ) : (
-                <div className="min-h-0 flex-1 overflow-auto pr-3 [scrollbar-gutter:stable]">
+                <section
+                    aria-label={t('addProject.remote.review.title')}
+                    className="project-import-scroll min-h-0 flex-1 pr-3"
+                >
                     <ProjectImportReviewList
                         items={items}
+                        groupByAvailability={lockUnavailable}
                         editingId={editingId}
                         draft={draft}
                         t={t}
@@ -182,7 +205,7 @@ export function RemoteProjectReview({
                         }}
                         onEditorChange={onGodotEditorChange}
                     />
-                </div>
+                </section>
             )}
         </div>
     );

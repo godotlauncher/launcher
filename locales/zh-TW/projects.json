@@ -347,6 +347,40 @@
             "summary": "已選 {{count}} 項 · {{downloads}} 項下載",
             "download": "下載",
             "missing": "缺少編輯器"
+        },
+        "folder": {
+            "sections": {
+                "available": "可新增",
+                "added": "已新增",
+                "unavailable": "無法新增"
+            },
+            "title": "掃描資料夾",
+            "picker": "選擇要掃描的資料夾",
+            "pickerFailed": "無法開啟資料夾選擇器。請再試一次。",
+            "scanning": "正在尋找專案",
+            "progress": "已檢查 {{folders}} 個資料夾 · 找到 {{projects}} 個專案",
+            "stopHint": "停止掃描會保留已找到的專案。",
+            "stop": "停止掃描",
+            "stopping": "正在停止...",
+            "stopped": "掃描已停止。您可以新增已找到的專案。",
+            "limited": "掃描已達到限制。您可以新增已找到的專案。",
+            "failed": "無法掃描此資料夾。請選擇其他資料夾或重試。",
+            "empty": "找不到有效的 Godot 專案。",
+            "another": "選擇其他資料夾",
+            "preserved": "專案將保留在目前的資料夾中。",
+            "problems": "掃描問題：{{count}}",
+            "problemList": "掃描問題",
+            "moreProblems": "其他問題：{{count}}",
+            "issues": {
+                "invalid-project": "無效的專案檔案",
+                "unreadable-project": "無法讀取專案檔案",
+                "unreadable-folder": "無法讀取資料夾",
+                "depth-limit": "已達到資料夾深度限制"
+            },
+            "problems_one": "掃描問題：{{count}}",
+            "problems_other": "掃描問題：{{count}}",
+            "moreProblems_one": "其他問題：{{count}}",
+            "moreProblems_other": "其他問題：{{count}}"
         }
     },
     "messages": {

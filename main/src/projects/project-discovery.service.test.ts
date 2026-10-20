@@ -1,7 +1,7 @@
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProjectDiscoveryService } from './project-discovery.service.js';
 
 describe('ProjectDiscoveryService', () => {
@@ -15,6 +15,7 @@ describe('ProjectDiscoveryService', () => {
     });
 
     afterEach(async () => {
+        vi.restoreAllMocks();
         await fs.rm(repositoryPath, { recursive: true, force: true });
     });
 
@@ -182,6 +183,116 @@ describe('ProjectDiscoveryService', () => {
             ok: false,
             reason: 'discovery-limit-exceeded',
         });
+    });
+
+    it('keeps valid local findings and reports malformed project files', async () => {
+        await writeProject(path.join(repositoryPath, 'valid'), 'Valid');
+        await fs.mkdir(path.join(repositoryPath, 'invalid'));
+        await fs.writeFile(
+            path.join(repositoryPath, 'invalid', 'project.godot'),
+            'not a project',
+        );
+        const result = await service.scanFolder(
+            repositoryPath,
+            new AbortController().signal,
+            vi.fn(),
+        );
+        expect(result.status).toBe('complete');
+        expect(result.projects.map((project) => project.name)).toEqual([
+            'Valid',
+        ]);
+        expect(result.issues).toEqual([
+            {
+                relativePath: path.join('invalid', 'project.godot'),
+                reason: 'invalid-project',
+            },
+        ]);
+    });
+    it('continues healthy siblings after an unreadable directory', async () => {
+        await writeProject(path.join(repositoryPath, 'a-valid'), 'Valid');
+        const unavailable = path.join(repositoryPath, 'z-unreadable');
+        await fs.mkdir(unavailable);
+        const original = fs.readdir.bind(fs);
+        vi.spyOn(fs, 'readdir').mockImplementation((async (
+            directory,
+            options,
+        ) => {
+            if (directory === unavailable)
+                throw new Error('private filesystem detail');
+            return original(directory, options as never);
+        }) as typeof fs.readdir);
+        const result = await service.scanFolder(
+            repositoryPath,
+            new AbortController().signal,
+            vi.fn(),
+        );
+        expect(result.projects.map((project) => project.name)).toEqual([
+            'Valid',
+        ]);
+        expect(result.issues).toEqual([
+            { relativePath: 'z-unreadable', reason: 'unreadable-folder' },
+        ]);
+        expect(JSON.stringify(result)).not.toContain(
+            'private filesystem detail',
+        );
+    });
+    it('retains local findings when stopped', async () => {
+        await writeProject(repositoryPath, 'Root');
+        await writeProject(path.join(repositoryPath, 'nested'), 'Nested');
+        const controller = new AbortController();
+        const result = await service.scanFolder(
+            repositoryPath,
+            controller.signal,
+            () => controller.abort(),
+        );
+        expect(result.status).toBe('cancelled');
+        expect(result.projects.map((project) => project.name)).toEqual([
+            'Root',
+        ]);
+    });
+    it('keeps healthy projects after a local depth limit', async () => {
+        await writeProject(repositoryPath, 'Root');
+        let nested = repositoryPath;
+        for (let depth = 0; depth < 14; depth++) {
+            nested = path.join(nested, 'child');
+            await fs.mkdir(nested);
+        }
+        const result = await service.scanFolder(
+            repositoryPath,
+            new AbortController().signal,
+            vi.fn(),
+        );
+        expect(result.status).toBe('limited');
+        expect(result.projects.map((project) => project.name)).toEqual([
+            'Root',
+        ]);
+        expect(result.issues[0].reason).toBe('depth-limit');
+    });
+    it('keeps the first hundred projects at the local project bound', async () => {
+        for (let index = 0; index < 102; index++)
+            await writeProject(
+                path.join(repositoryPath, String(index).padStart(3, '0')),
+                `Game ${index}`,
+            );
+        const result = await service.scanFolder(
+            repositoryPath,
+            new AbortController().signal,
+            vi.fn(),
+        );
+        expect(result.status).toBe('limited');
+        expect(result.projects).toHaveLength(100);
+    });
+    it('reports an unavailable root safely', async () => {
+        const result = await service.scanFolder(
+            path.join(repositoryPath, 'missing'),
+            new AbortController().signal,
+            vi.fn(),
+        );
+        expect(result.status).toBe('failed');
+        expect(result.projects).toEqual([]);
+        expect(result.issues).toEqual([
+            { relativePath: '.', reason: 'unreadable-folder' },
+        ]);
     });
 
     /**

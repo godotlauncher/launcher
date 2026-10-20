@@ -23,6 +23,8 @@ import type {
     ResolveRemoteProjectCloneAction,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectFolderScanService } from './project-folder-scan.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsService } from './projects.service.js';
 
 const ProjectsHandler = createIpcHandleTyped<ProjectsBridge>();
@@ -34,8 +36,29 @@ export class ProjectsController implements ProjectsBridge {
      * Creates the project controller.
      *
      * @param projects - Project workflow facade.
+     * @param folderScan - Read-only local project scanner.
      */
-    constructor(private readonly projects: ProjectsService) {}
+    constructor(
+        private readonly projects: ProjectsService,
+        private readonly folderScan: ProjectFolderScanService,
+    ) {}
+
+    /** Scans the selected folder without changing project files.
+     * @param folder - Absolute root selected in the native picker.
+     * @param scanId - Unique identifier for progress and cancellation.
+     */
+    @ProjectsHandler('scanProjectFolder')
+    scanProjectFolder(folder: string, scanId: string) {
+        return this.folderScan.scan(folder, scanId);
+    }
+
+    /** Stops a scan while retaining discoveries.
+     * @param scanId - Exact identifier of the active scan.
+     */
+    @ProjectsHandler('cancelProjectFolderScan')
+    async cancelProjectFolderScan(scanId: string) {
+        return this.folderScan.cancel(scanId);
+    }
 
     /**
      * Clones a remote repository and discovers its Godot projects.
