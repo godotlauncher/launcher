@@ -39,7 +39,8 @@
         "complete": "Abgeschlossen",
         "cancelled": "Abgebrochen",
         "failed": "Fehlgeschlagen",
-        "cancelLabel": "Installation von {{version}} abbrechen"
+        "cancelLabel": "Editor-Download abbrechen",
+        "cancelDownload": "Download abbrechen"
     },
     "errors": {
         "fetchError": "Beim Abrufen der Releases ist ein Fehler aufgetreten.",

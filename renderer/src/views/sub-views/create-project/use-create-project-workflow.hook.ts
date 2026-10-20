@@ -152,6 +152,13 @@ export function useCreateProjectWorkflow(
             return;
         }
 
+        if (preparedRelease.cancelled) {
+            pendingSubmissionRef.current = null;
+            setError(undefined);
+            finishCreateProjectProgress();
+            return;
+        }
+
         if (!preparedRelease.success || !preparedRelease.release) {
             showCreateProjectError(
                 preparedRelease.error ?? t('editorPicker.installFailed'),

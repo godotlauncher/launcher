@@ -91,6 +91,7 @@
     "recover": "Recover files",
     "closedEditors": "I have closed Godot editors and exports that may use these templates.",
     "cancel": "Cancel",
+    "cancelDownload": "Cancel template download",
     "retry": "Retry",
     "choose": "Choose an option",
     "apply": "Apply changes",

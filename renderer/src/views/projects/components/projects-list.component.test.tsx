@@ -2,6 +2,7 @@ import type {
     CodeEditorIntegrationSettings,
     ProjectDetails,
     ProjectSectionKey,
+    ReleaseInstallProgress,
     ReleaseSummary,
 } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -79,6 +80,11 @@ type RenderOptions = {
     terminalAvailable?: boolean;
     groupOrder?: ProjectSectionKey[];
     viewMode?: 'cards' | 'list' | 'dense';
+    installProgress?: ReleaseInstallProgress;
+    getReleaseInstallProgress?: (
+        version: string,
+        mono: boolean,
+    ) => ReleaseInstallProgress | undefined;
     isInstalledRelease?: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading?: (project: ProjectDetails) => boolean;
     getDownloadableProjectEditor?: (
@@ -145,6 +151,11 @@ function renderProjectsList(
             getDownloadableProjectEditor={
                 options.getDownloadableProjectEditor ?? vi.fn(() => undefined)
             }
+            getReleaseInstallProgress={
+                options.getReleaseInstallProgress ??
+                (() => options.installProgress)
+            }
+            onCancelEditorInstall={vi.fn()}
             onInstallRequiredProjectEditor={vi.fn()}
             onLaunchProject={vi.fn()}
             onOpenCodeEditor={vi.fn()}
@@ -571,6 +582,92 @@ describe('ProjectsList', () => {
                 /data-testid="btnInstallRequiredProjectEditor" disabled=""/g,
             ),
         ).toHaveLength(2);
+    });
+
+    it.each(['cards', 'list', 'dense'] as const)(
+        'offers cancellation only for a current cancellable job in %s',
+        (viewMode) => {
+            const progress: ReleaseInstallProgress = {
+                id: 'shared-job',
+                version: baseProject.release.version,
+                mono: false,
+                prerelease: false,
+                published_at: null,
+                stage: 'downloading',
+                canCancel: true,
+            };
+            const renderProgress = (installProgress?: ReleaseInstallProgress) =>
+                renderProjectsList(
+                    { newProjects: [baseProject] },
+                    [],
+                    'en',
+                    false,
+                    new Map(),
+                    undefined,
+                    {
+                        viewMode,
+                        installProgress,
+                        isInstalledRelease: () => false,
+                        isProjectEditorDownloading: () => true,
+                        getDownloadableProjectEditor: () => downloadableRelease,
+                    },
+                );
+            expect(renderProgress(progress)).toContain(
+                'aria-label="progress.cancelLabel"',
+            );
+            expect(
+                renderProgress({
+                    ...progress,
+                    stage: 'cancelling',
+                    canCancel: false,
+                }),
+            ).not.toContain('aria-label="progress.cancelLabel"');
+            expect(renderProgress()).not.toContain(
+                'aria-label="progress.cancelLabel"',
+            );
+        },
+    );
+
+    it('finds the exact download for a project that stores only an editor branch', () => {
+        const progress: ReleaseInstallProgress = {
+            id: 'exact-job',
+            version: downloadableRelease.version,
+            mono: false,
+            prerelease: false,
+            published_at: null,
+            stage: 'downloading',
+            canCancel: true,
+        };
+        const getProgress = vi.fn((version: string, mono: boolean) =>
+            version === progress.version && mono === progress.mono
+                ? progress
+                : undefined,
+        );
+        const html = renderProjectsList(
+            {
+                newProjects: [
+                    {
+                        ...baseProject,
+                        release: { ...baseProject.release, version: '4.3' },
+                    },
+                ],
+            },
+            [],
+            'en',
+            false,
+            new Map(),
+            undefined,
+            {
+                isInstalledRelease: () => false,
+                getDownloadableProjectEditor: () => downloadableRelease,
+                getReleaseInstallProgress: getProgress,
+            },
+        );
+        expect(getProgress).toHaveBeenCalledWith(
+            downloadableRelease.version,
+            false,
+        );
+        expect(html).toContain('aria-label="progress.cancelLabel"');
     });
 
     it('uses the GitHub label for a cached GitHub origin', () => {

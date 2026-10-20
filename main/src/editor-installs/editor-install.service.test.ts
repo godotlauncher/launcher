@@ -188,7 +188,7 @@ describe('EditorInstallService', () => {
         expect(installedEditors.addInstalledEditor).not.toHaveBeenCalled();
     });
 
-    it('deduplicates matching requests and disables cancellation when a project joins', async () => {
+    it('cancels the shared job for all existing project and Installs callers', async () => {
         const download = abortableDownload();
         releasesMocks.downloadReleaseAsset.mockImplementation(download.run);
         const service = createService();
@@ -199,91 +199,106 @@ describe('EditorInstallService', () => {
         const projectResult = service.installEditor(release, false, 'project');
         const latest = latestProgress('4.3-stable');
 
-        expect(latest.canCancel).toBe(false);
-        await expect(service.cancelInstall(latest.id)).resolves.toEqual({
-            jobId: latest.id,
-            status: 'not-cancellable',
-        });
-        download.resolve();
-        await expect(userResult).resolves.toMatchObject({ success: true });
-        await expect(projectResult).resolves.toMatchObject({ success: true });
-        expect(releasesMocks.downloadReleaseAsset).toHaveBeenCalledOnce();
-    });
-
-    it('cancels a queued user install and republishes remaining positions', async () => {
-        const activeDownload = abortableDownload();
-        releasesMocks.downloadReleaseAsset.mockImplementation(
-            activeDownload.run,
-        );
-        const service = createService();
-
-        const active = service.installEditor(
-            createRelease('4.3-stable'),
+        const secondProjectResult = service.installEditor(
+            release,
             false,
             'project',
         );
-        await waitForStage('downloading');
-        const cancelled = service.installEditor(
-            createRelease('4.4-stable'),
-            false,
-            'installs',
-        );
-        const remaining = service.installEditor(
-            createRelease('4.5-stable'),
-            false,
-            'installs',
-        );
-        const queued = latestProgress('4.4-stable');
-
-        await expect(service.cancelInstall(queued.id)).resolves.toEqual({
-            jobId: queued.id,
-            status: 'cancelled',
-        });
-        await expect(cancelled).resolves.toMatchObject({
-            success: false,
-            cancelled: true,
-        });
-        expect(latestProgress('4.5-stable').queuePosition).toBe(1);
-
-        activeDownload.resolve();
-        await active;
-        await remaining;
-    });
-
-    it('cancels an active user download without touching the existing destination', async () => {
-        const download = abortableDownload();
-        releasesMocks.downloadReleaseAsset.mockImplementation(download.run);
-        const service = createService();
-        const result = service.installEditor(
-            createRelease('4.3-stable'),
-            false,
-            'installs',
-        );
-        await waitForStage('downloading');
-        const progress = latestProgress('4.3-stable');
-
-        await expect(service.cancelInstall(progress.id)).resolves.toEqual({
-            jobId: progress.id,
+        expect(latest.canCancel).toBe(true);
+        await expect(service.cancelInstall(latest.id)).resolves.toEqual({
+            jobId: latest.id,
             status: 'cancelling',
         });
-        await expect(result).resolves.toMatchObject({
-            success: false,
-            cancelled: true,
-        });
-        await expect(result).resolves.not.toHaveProperty('error');
-        expect(latestProgress('4.3-stable')).toMatchObject({
-            stage: 'cancelled',
-            canCancel: false,
-        });
-        expect(fsMocks.promises.rm).not.toHaveBeenCalledWith(
-            '/installs/4.3-stable',
-            expect.anything(),
-        );
-        expect(installedEditors.addInstalledEditor).not.toHaveBeenCalled();
-        expect(projectRepair.revalidateProjects).not.toHaveBeenCalled();
+        for (const result of [userResult, projectResult, secondProjectResult]) {
+            await expect(result).resolves.toMatchObject({
+                success: false,
+                cancelled: true,
+            });
+            await expect(result).resolves.not.toHaveProperty('error');
+        }
+        expect(releasesMocks.downloadReleaseAsset).toHaveBeenCalledOnce();
     });
 
-    it('starts a fresh non-cancellable project job when cancellation wins the join race', async () => {
+    it.each(['installs', 'project'] as const)(
+        'cancels a queued %s install and republishes remaining positions',
+        async (origin) => {
+            const activeDownload = abortableDownload();
+            releasesMocks.downloadReleaseAsset.mockImplementation(
+                activeDownload.run,
+            );
+            const service = createService();
+
+            const active = service.installEditor(
+                createRelease('4.3-stable'),
+                false,
+                'project',
+            );
+            await waitForStage('downloading');
+            const cancelled = service.installEditor(
+                createRelease('4.4-stable'),
+                false,
+                origin,
+            );
+            const remaining = service.installEditor(
+                createRelease('4.5-stable'),
+                false,
+                'installs',
+            );
+            const queued = latestProgress('4.4-stable');
+
+            await expect(service.cancelInstall(queued.id)).resolves.toEqual({
+                jobId: queued.id,
+                status: 'cancelled',
+            });
+            await expect(cancelled).resolves.toMatchObject({
+                success: false,
+                cancelled: true,
+            });
+            expect(latestProgress('4.5-stable').queuePosition).toBe(1);
+
+            activeDownload.resolve();
+            await active;
+            await remaining;
+        },
+    );
+
+    it.each(['installs', 'project'] as const)(
+        'cancels an active %s download without touching the existing destination',
+        async (origin) => {
+            const download = abortableDownload();
+            releasesMocks.downloadReleaseAsset.mockImplementation(download.run);
+            const service = createService();
+            const result = service.installEditor(
+                createRelease('4.3-stable'),
+                false,
+                origin,
+            );
+            await waitForStage('downloading');
+            const progress = latestProgress('4.3-stable');
+
+            await expect(service.cancelInstall(progress.id)).resolves.toEqual({
+                jobId: progress.id,
+                status: 'cancelling',
+            });
+            await expect(result).resolves.toMatchObject({
+                success: false,
+                cancelled: true,
+            });
+            await expect(result).resolves.not.toHaveProperty('error');
+            expect(latestProgress('4.3-stable')).toMatchObject({
+                stage: 'cancelled',
+                canCancel: false,
+            });
+            expect(fsMocks.promises.rm).not.toHaveBeenCalledWith(
+                '/installs/4.3-stable',
+                expect.anything(),
+            );
+            expect(installedEditors.addInstalledEditor).not.toHaveBeenCalled();
+            expect(projectRepair.revalidateProjects).not.toHaveBeenCalled();
+        },
+    );
+
+    it('starts a fresh cancellable project job when cancellation wins the join race', async () => {
         const firstDownload = abortableDownload();
         releasesMocks.downloadReleaseAsset
             .mockImplementationOnce(firstDownload.run)
@@ -304,8 +319,63 @@ describe('EditorInstallService', () => {
             progressService.publish.mock.calls
                 .map(([progress]) => progress as ReleaseInstallProgress)
                 .filter((progress) => progress.version === release.version)
-                .at(-2),
-        ).toMatchObject({ canCancel: false });
+                .find(
+                    (progress) =>
+                        progress.id !== jobId &&
+                        progress.stage === 'downloading',
+                ),
+        ).toMatchObject({ canCancel: true });
+    });
+
+    it('keeps cancelling visible until cleanup ends and then continues the other edition', async () => {
+        const download = abortableDownload();
+        releasesMocks.downloadReleaseAsset.mockImplementationOnce(download.run);
+        const service = createService();
+        const release = createRelease('4.3-stable');
+        release.assets.push({ ...release.assets[0], mono: true });
+        const standard = service.installEditor(release, false, 'project');
+        await waitForStage('downloading');
+        const jobId = latestProgress(release.version).id;
+        const mono = service.installEditor(release, true, 'project');
+        const cleanup = deferred<void>();
+        fsMocks.promises.rm.mockReturnValueOnce(cleanup.promise);
+
+        await service.cancelInstall(jobId);
+        await expect(service.cancelInstall(jobId)).resolves.toEqual({
+            jobId,
+            status: 'cancelling',
+        });
+        expect(
+            progressService.publish.mock.calls
+                .map(([progress]) => progress)
+                .findLast((progress) => progress.id === jobId),
+        ).toMatchObject({ stage: 'cancelling', canCancel: false });
+        expect(releasesMocks.downloadReleaseAsset).toHaveBeenCalledOnce();
+        cleanup.resolve();
+        await expect(standard).resolves.toMatchObject({ cancelled: true });
+        await expect(mono).resolves.toMatchObject({ success: true });
+        expect(releasesMocks.downloadReleaseAsset).toHaveBeenCalledTimes(2);
+    });
+
+    it('cancels project preparation before starting the download', async () => {
+        const preferences = deferred<{ install_location: string }>();
+        preferencesMocks.getUserPreferences.mockReturnValueOnce(
+            preferences.promise,
+        );
+        const service = createService();
+        const result = service.installEditor(
+            createRelease('4.3-stable'),
+            false,
+            'project',
+        );
+        await waitForStage('preparing');
+        const jobId = latestProgress('4.3-stable').id;
+        await service.cancelInstall(jobId);
+        preferences.resolve({ install_location: '/installs' });
+        await expect(result).resolves.toMatchObject({ cancelled: true });
+        expect(releasesMocks.downloadReleaseAsset).not.toHaveBeenCalled();
+        expect(integrityMocks.resolveArchiveIntegrity).not.toHaveBeenCalled();
+        expect(archives.extractZip).not.toHaveBeenCalled();
     });
 
     it('preserves the editor error and cleans up when archive extraction fails', async () => {

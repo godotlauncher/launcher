@@ -22,6 +22,7 @@ const labels = {
     creatingProject: 'Create project',
     launchingEditor: 'Launch editor',
     skipped: 'Skipped',
+    cancelDownload: 'Cancel download',
 };
 
 describe('CreateProjectProgressOverlay', () => {
@@ -60,6 +61,55 @@ describe('CreateProjectProgressOverlay', () => {
 
         expect(html).toContain('Downloading');
         expect(html).not.toContain('Cancel editor install');
+        expect(html).not.toContain('<button');
+    });
+
+    it('offers cancellation for the current cancellable editor job', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectProgressOverlay
+                phase="installing"
+                editorInstalled={false}
+                editNow
+                labels={labels}
+                installProgress={installationProgress()}
+                onCancelInstall={vi.fn()}
+            />,
+        );
+        expect(html).toContain('>Cancel download</button>');
+    });
+
+    it.each(['cancelling', 'extracting', 'registering', 'validating'] as const)(
+        'offers no cancellation during %s',
+        (stage) => {
+            const html = renderToStaticMarkup(
+                <CreateProjectProgressOverlay
+                    phase="installing"
+                    editorInstalled={false}
+                    editNow
+                    labels={labels}
+                    installProgress={{
+                        ...installationProgress(),
+                        stage,
+                        canCancel: false,
+                    }}
+                    onCancelInstall={vi.fn()}
+                />,
+            );
+            expect(html).not.toContain('<button');
+        },
+    );
+
+    it('offers no stale cancellation after project creation starts', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectProgressOverlay
+                phase="creating"
+                editorInstalled={false}
+                editNow
+                labels={labels}
+                installProgress={installationProgress()}
+                onCancelInstall={vi.fn()}
+            />,
+        );
         expect(html).not.toContain('<button');
     });
 

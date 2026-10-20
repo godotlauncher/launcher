@@ -16,6 +16,7 @@
     "recover": "恢复文件",
     "closedEditors": "我已关闭可能使用这些模板的 Godot 编辑器和导出任务。",
     "cancel": "取消",
+    "cancelDownload": "取消模板下载",
     "retry": "重试",
     "choose": "请选择",
     "apply": "应用更改",

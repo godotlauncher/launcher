@@ -16,6 +16,7 @@
     "recover": "Récupérer les fichiers",
     "closedEditors": "J'ai fermé les éditeurs Godot et les exportations utilisant ces modèles.",
     "cancel": "Annuler",
+    "cancelDownload": "Annuler le téléchargement des modèles",
     "retry": "Réessayer",
     "choose": "Choisir une option",
     "apply": "Appliquer",

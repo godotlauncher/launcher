@@ -16,6 +16,7 @@
     "recover": "還原檔案",
     "closedEditors": "我已關閉可能使用這些範本的 Godot 編輯器和匯出作業。",
     "cancel": "取消",
+    "cancelDownload": "取消範本下載",
     "retry": "重試",
     "choose": "請選擇",
     "apply": "套用變更",

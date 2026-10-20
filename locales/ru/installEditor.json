@@ -39,7 +39,8 @@
         "complete": "Завершено",
         "cancelled": "Отменено",
         "failed": "Ошибка",
-        "cancelLabel": "Отменить установку {{version}}"
+        "cancelLabel": "Отменить загрузку редактора",
+        "cancelDownload": "Отменить загрузку"
     },
     "errors": {
         "fetchError": "Произошла ошибка при получении версий.",

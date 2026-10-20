@@ -39,7 +39,8 @@
         "complete": "完了",
         "cancelled": "キャンセル済み",
         "failed": "失敗",
-        "cancelLabel": "{{version}} のインストールをキャンセル"
+        "cancelLabel": "エディターのダウンロードをキャンセル",
+        "cancelDownload": "ダウンロードをキャンセル"
     },
     "errors": {
         "fetchError": "リリースの取得中にエラーが発生しました。",

@@ -34,7 +34,7 @@ export type EditorInstallsBridge = {
     /** Reinstalls one registered editor. */
     reinstallEditor(release: InstalledRelease): Promise<InstallReleaseResult>;
 
-    /** Cancels one queued or downloading user-origin install job. */
+    /** Cancels one shared editor job before extraction begins. */
     cancelInstall(jobId: string): Promise<CancelEditorInstallResult>;
 
     /** Removes one registered editor. */

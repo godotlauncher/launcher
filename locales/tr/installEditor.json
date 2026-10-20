@@ -39,7 +39,8 @@
         "complete": "Tamamlandı",
         "cancelled": "İptal edildi",
         "failed": "Başarısız",
-        "cancelLabel": "{{version}} kurulumunu iptal et"
+        "cancelLabel": "Düzenleyici indirmesini iptal et",
+        "cancelDownload": "İndirmeyi iptal et"
     },
     "errors": {
         "fetchError": "Sürümler alınırken bir hata oluştu.",

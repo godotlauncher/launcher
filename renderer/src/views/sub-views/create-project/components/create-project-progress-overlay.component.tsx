@@ -25,6 +25,7 @@ export type CreateProjectProgressLabels = {
     creatingProject: string;
     launchingEditor: string;
     skipped: string;
+    cancelDownload: string;
 };
 
 type CreateProjectProgressOverlayProps = {
@@ -33,6 +34,7 @@ type CreateProjectProgressOverlayProps = {
     editNow: boolean;
     labels: CreateProjectProgressLabels;
     installProgress?: ReleaseInstallProgress;
+    onCancelInstall?: (jobId: string) => void;
     className?: string;
 };
 
@@ -93,6 +95,7 @@ export const CreateProjectProgressOverlay: React.FC<
     editNow,
     labels,
     installProgress,
+    onCancelInstall,
     className,
 }) => {
     const [reserveInstallProgress] = useState(() => !editorInstalled);
@@ -198,7 +201,7 @@ export const CreateProjectProgressOverlay: React.FC<
                                 {step.id === 'installing' &&
                                     reserveInstallProgress && (
                                         <div
-                                            className="mt-2 min-h-16"
+                                            className="mt-2 min-h-24"
                                             data-testid="createProjectInstallDetails"
                                         >
                                             {displayedProgress && (
@@ -206,6 +209,25 @@ export const CreateProjectProgressOverlay: React.FC<
                                                     progress={displayedProgress}
                                                 />
                                             )}
+                                            {phase === 'installing' &&
+                                                installProgress?.canCancel &&
+                                                onCancelInstall && (
+                                                    <div className="mt-1 flex justify-end">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm btn-ghost"
+                                                            onClick={() =>
+                                                                onCancelInstall(
+                                                                    installProgress.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            {
+                                                                labels.cancelDownload
+                                                            }
+                                                        </button>
+                                                    </div>
+                                                )}
                                         </div>
                                     )}
                             </div>

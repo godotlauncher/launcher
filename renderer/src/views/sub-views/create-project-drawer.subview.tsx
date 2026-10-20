@@ -106,12 +106,18 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                         editorInstalled={form.selectedEditorInstalled}
                         editNow={form.editNow}
                         installProgress={form.selectedEditorInstallProgress}
+                        onCancelInstall={(jobId) =>
+                            void form.releaseApi.cancelInstall(jobId)
+                        }
                         labels={{
                             title: t('workflow.title'),
                             installingEditor: t('workflow.installingEditor'),
                             creatingProject: t('workflow.creatingProject'),
                             launchingEditor: t('workflow.launchingEditor'),
                             skipped: t('workflow.skipped'),
+                            cancelDownload: t(
+                                'installEditor:progress.cancelDownload',
+                            ),
                         }}
                     />
                 )}

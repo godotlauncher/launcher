@@ -352,6 +352,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         availableReleases,
         availablePrereleases,
         downloadingReleases,
+        getReleaseInstallProgress,
+        cancelInstall,
         installRelease,
         isInstalledRelease,
         checkAllReleasesValid,
@@ -873,6 +875,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                         await refreshProjects();
                                     }
                                 }}
+                                getReleaseInstallProgress={
+                                    getReleaseInstallProgress
+                                }
+                                onCancelEditorInstall={cancelInstall}
                                 isInstalledRelease={isInstalledRelease}
                                 isProjectEditorDownloading={
                                     isProjectEditorDownloading

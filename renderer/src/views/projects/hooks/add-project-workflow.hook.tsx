@@ -180,6 +180,8 @@ export function useAddProjectWorkflow({
                     'project',
                 );
 
+                if (installResult.cancelled) return;
+
                 if (!installResult.success || !installResult.release) {
                     addAlert(
                         t('common:error'),
