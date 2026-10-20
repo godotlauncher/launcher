@@ -16,6 +16,7 @@
     "recover": "Dosyaları kurtar",
     "closedEditors": "Bu şablonları kullanabilecek Godot düzenleyicilerini ve dışa aktarma işlemlerini kapattım.",
     "cancel": "İptal",
+    "cancelDownload": "Şablon indirmesini iptal et",
     "retry": "Yeniden dene",
     "choose": "Bir seçenek belirleyin",
     "apply": "Değişiklikleri uygula",

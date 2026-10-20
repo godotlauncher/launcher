@@ -1,4 +1,4 @@
-import type { ReleaseSummary } from '@shared/contracts';
+import type { ReleaseInstallProgress, ReleaseSummary } from '@shared/contracts';
 import {
     ChevronDown,
     Download,
@@ -7,6 +7,7 @@ import {
     Pin,
     Settings,
     Terminal,
+    X,
 } from 'lucide-react';
 import { useState } from 'react';
 import { CodeEditorIntegrationIcon } from '../../../components/code-editor-integration-icon.component';
@@ -22,6 +23,7 @@ type ProjectActionsProps = Pick<
     ProjectListItemProps,
     | 'project'
     | 'onInstallRequiredProjectEditor'
+    | 'onCancelEditorInstall'
     | 'onTogglePinned'
     | 'onProjectFoldersOptions'
     | 'onOpenTerminal'
@@ -37,6 +39,7 @@ type ProjectActionsProps = Pick<
     downloadableProjectEditor?: ReleaseSummary;
     releaseInstalled: boolean;
     editorDownloading: boolean;
+    installProgress?: ReleaseInstallProgress;
 };
 
 /**
@@ -60,6 +63,8 @@ export function ProjectActions({
     downloadableProjectEditor,
     releaseInstalled,
     editorDownloading,
+    installProgress,
+    onCancelEditorInstall,
 }: ProjectActionsProps) {
     const [toolsAnchor, setToolsAnchor] = useState<ActionMenuAnchorRect | null>(
         null,
@@ -68,6 +73,11 @@ export function ProjectActions({
         ns: 'menus',
         project: project.name,
     });
+    const cancelLabel = t('progress.cancelLabel', { ns: 'installEditor' });
+    const installLabel =
+        editorDownloading && installProgress
+            ? t(`progress.${installProgress.stage}`, { ns: 'installEditor' })
+            : t('card.installRequiredEditor');
     const codeEditorOnly = !terminalAvailable && project.codeEditorId;
     const primaryToolLabel = codeEditorOnly
         ? t('project.openCodeEditor', {
@@ -80,27 +90,55 @@ export function ProjectActions({
             className={`flex shrink-0 items-center ${dense ? 'min-h-8 gap-1' : 'min-h-10 gap-2'} ${compact ? 'self-end' : 'self-start'}`}
         >
             {downloadableProjectEditor && !releaseInstalled && (
-                <Tooltip placement="top" tip={t('card.installRequiredEditor')}>
-                    <button
-                        type="button"
-                        data-testid="btnInstallRequiredProjectEditor"
-                        disabled={editorDownloading}
-                        className="btn btn-sm btn-ghost btn-square text-warning/80 hover:text-warning hover:bg-warning/20 hover:border-transparent"
-                        aria-label={t('card.installRequiredEditor')}
-                        onClick={() =>
-                            onInstallRequiredProjectEditor(
-                                project,
-                                downloadableProjectEditor,
-                            )
-                        }
-                    >
-                        {editorDownloading ? (
-                            <span className="loading loading-spinner loading-xs" />
-                        ) : (
-                            <Download size={16} aria-hidden="true" />
-                        )}
-                    </button>
-                </Tooltip>
+                <div
+                    className={
+                        editorDownloading
+                            ? 'flex items-center rounded-(--radius-field) bg-base-content/3'
+                            : undefined
+                    }
+                >
+                    <Tooltip placement="top" tip={installLabel}>
+                        <button
+                            type="button"
+                            data-testid="btnInstallRequiredProjectEditor"
+                            disabled={editorDownloading}
+                            className="btn btn-sm btn-ghost btn-square text-warning/80 hover:text-warning hover:bg-warning/20 hover:border-transparent"
+                            aria-label={installLabel}
+                            onClick={() =>
+                                onInstallRequiredProjectEditor(
+                                    project,
+                                    downloadableProjectEditor,
+                                )
+                            }
+                        >
+                            {editorDownloading ? (
+                                <span
+                                    role="status"
+                                    aria-label={installLabel}
+                                    className="loading loading-spinner loading-xs"
+                                />
+                            ) : (
+                                <Download size={16} aria-hidden="true" />
+                            )}
+                        </button>
+                    </Tooltip>
+                    {editorDownloading && installProgress?.canCancel && (
+                        <Tooltip placement="top" tip={cancelLabel}>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-ghost btn-square"
+                                aria-label={cancelLabel}
+                                onClick={() =>
+                                    void onCancelEditorInstall(
+                                        installProgress.id,
+                                    )
+                                }
+                            >
+                                <X size={16} aria-hidden="true" />
+                            </button>
+                        </Tooltip>
+                    )}
+                </div>
             )}
             <Tooltip
                 placement="top"

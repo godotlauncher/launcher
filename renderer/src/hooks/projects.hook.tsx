@@ -463,6 +463,8 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             request.mono,
             'project',
         );
+        if (installResult.cancelled) return;
+
         if (!installResult.success || !installResult.release) {
             addAlert(
                 t('common:error'),

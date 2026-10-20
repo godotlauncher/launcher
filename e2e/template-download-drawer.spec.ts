@@ -330,6 +330,34 @@ for (const theme of THEMES) {
                 theme.name,
             );
         });
+        test('cancels selected template files from the end of the progress bar at 600px', async () => {
+            await app.evaluate(() => {
+                (globalThis as any).fullJob = { id: 'selected-download', setIds: ['4.6.stable'], kind: 'update',
+                    stage: 'downloading', receivedBytes: 32 * 1024 ** 2, totalBytes: 64 * 1024 ** 2 };
+            });
+            await page.getByTestId('btnExportTemplates').click();
+            const row = page.getByRole('article', { name: '4.6.stable', exact: true });
+            const cancel = row.getByRole('button', { name: 'Cancel template download', exact: true });
+            await visibleWithoutScrolling(cancel);
+            await expect(row.getByRole('button', { name: 'Cancel', exact: true })).toHaveCount(0);
+            await expect(row).toContainText('32 MiB / 64 MiB');
+            const barBox = await row.getByRole('progressbar').boundingBox();
+            const cancelBox = await cancel.boundingBox();
+            expect(barBox).not.toBeNull(); expect(cancelBox).not.toBeNull();
+            expect(cancelBox!.x).toBeGreaterThanOrEqual(barBox!.x + barBox!.width);
+            expect(Math.abs(cancelBox!.y + cancelBox!.height / 2 - barBox!.y - barBox!.height / 2)).toBeLessThanOrEqual(1);
+            await capture(`selected-download-${theme.name}`);
+            await app.evaluate(() => { (globalThis as any).fullJob.stage = 'applying'; });
+            await expect(cancel).toHaveCount(0);
+            await expect(row.getByRole('button', { name: 'Cancel', exact: true })).toHaveCount(0);
+            await app.evaluate(() => { (globalThis as any).fullJob.stage = 'downloading'; });
+            await cancel.click();
+            await expect(cancel).toHaveCount(0);
+            expect(await app.evaluate(() => (globalThis as any).fullJob.stage)).toBe('cancelled');
+            await expect(row).toContainText('1 file');
+            await expect(row.getByRole('progressbar')).toHaveCount(0);
+        });
+
         test('keeps the full-package offer, download, extraction and completion visible at 600px', async () => {
             await configure({ loadError: 'downloadPartial' });
             const drawer = await open();

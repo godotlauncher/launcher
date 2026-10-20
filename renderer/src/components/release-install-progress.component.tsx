@@ -91,9 +91,7 @@ export const ReleaseInstallProgressIndicator: React.FC<
     const { t } = useTranslation('installEditor');
     const percent = getDisplayPercent(progress);
     const byteLabel = getByteLabel(progress);
-    const cancelLabel = t('progress.cancelLabel', {
-        version: progress.version,
-    });
+    const cancelLabel = t('progress.cancelLabel');
 
     return (
         <div

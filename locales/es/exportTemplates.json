@@ -16,6 +16,7 @@
     "recover": "Recuperar archivos",
     "closedEditors": "He cerrado los editores de Godot y las exportaciones que puedan usar estas plantillas.",
     "cancel": "Cancelar",
+    "cancelDownload": "Cancelar descarga de plantillas",
     "retry": "Reintentar",
     "choose": "Elige una opción",
     "apply": "Aplicar cambios",

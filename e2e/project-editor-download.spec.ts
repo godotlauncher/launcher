@@ -88,9 +88,7 @@ test('installs one exact missing editor for shared projects without launching th
         '4.5.1-stable',
     );
     await mainPage.screenshot({
-        path: path.resolve(
-            '.internal-docs/project-editor-download/missing-editor-installing.png',
-        ),
+        path: test.info().outputPath('missing-editor-installing.png'),
     });
 
     await completeProjectEditorDownload();
@@ -106,6 +104,37 @@ test('installs one exact missing editor for shared projects without launching th
     }
     await expect(readLaunchCalls()).resolves.toBe(0);
 });
+
+for (const view of ['tabProjectCards', 'tabProjectList', 'tabProjectDenseList']) {
+    test(`cancels a shared branch editor download and permits retry in ${view}`, async () => {
+        const projects = [createMissingProject('Cancel One', '/projects/cancel-one'), createMissingProject('Cancel Two', '/projects/cancel-two')]
+            .map((project) => ({ ...project, version: '4.5', release: { ...project.release, version: '4.5' } }));
+        await prepareAppWithStubbedData(mainPage, electronApp, {
+            projects, installedReleases: [], availableReleases: [release], availablePrereleases: [],
+        });
+        await stubProjectEditorDownload(projects);
+        await mainPage.getByTestId('btnProjects').click();
+        await mainPage.getByTestId(view).click();
+        await mainPage.getByTestId('btnInstallRequiredProjectEditor').first().click();
+        const cancel = mainPage.getByRole('button', { name: 'Cancel editor download', exact: true });
+        await expect(cancel).toHaveCount(2);
+        await cancel.last().click();
+        await expect(cancel).toHaveCount(0);
+        await expect(mainPage.getByRole('status', { name: 'Cancelling', exact: true })).toHaveCount(2);
+        await electronApp.evaluate(() => {
+            (globalThis as typeof globalThis & { __finishProjectEditorCancellation?: () => void }).__finishProjectEditorCancellation?.();
+        });
+        for (const button of await mainPage.getByTestId('btnInstallRequiredProjectEditor').all()) await expect(button).toBeEnabled();
+        await expect(mainPage.locator('[data-project-path]')).toHaveCount(2);
+        await expect(mainPage.getByRole('dialog', { name: 'Error', exact: true })).toHaveCount(0);
+        expect(await readAssignedProjects()).toEqual([]);
+        expect(await readLaunchCalls()).toBe(0);
+        await mainPage.getByTestId('btnInstallRequiredProjectEditor').first().click();
+        await expect.poll(readInstallCalls).toHaveLength(2);
+        await completeProjectEditorDownload();
+        await expect.poll(readAssignedProjects).toEqual(projects.map((project) => project.path));
+    });
+}
 
 /**
  * Creates one project that requires the test release before it can launch.
@@ -169,6 +198,8 @@ async function stubProjectEditorDownload(
                 __projectEditorDownloadLaunches?: number;
                 __projectEditorDownloadProjects?: ProjectDetails[];
                 __projectEditorDownloadInstalledReleases?: InstalledRelease[];
+                __cancelProjectEditorDownload?: (jobId: string) => void;
+                __finishProjectEditorCancellation?: () => void;
             };
             state.__projectEditorDownloadInstalls = [];
             state.__projectEditorDownloadAssignments = [];
@@ -200,6 +231,23 @@ async function stubProjectEditorDownload(
                             version: requestedRelease.version,
                             mono,
                         });
+                        const progress = {
+                            id: `project-download-${state.__projectEditorDownloadInstalls?.length}`,
+                            version: requestedRelease.version, mono, prerelease: false,
+                            published_at: requestedRelease.published_at, stage: 'downloading', canCancel: true, percent: 42,
+                        };
+                        const publish = () => {
+                            for (const window of BrowserWindow.getAllWindows()) window.webContents.send('release-install-progress', progress);
+                        };
+                        publish();
+                        state.__cancelProjectEditorDownload = (jobId) => {
+                            if (jobId !== progress.id) throw new Error('Unexpected editor job');
+                            progress.stage = 'cancelling'; progress.canCancel = false; publish();
+                            state.__finishProjectEditorCancellation = () => {
+                                progress.stage = 'cancelled'; publish();
+                                resolve({ success: true, data: { success: false, cancelled: true, version: requestedRelease.version } });
+                            };
+                        };
                         state.__projectEditorDownloadComplete = () => {
                             const installed = installedRelease(
                                 requestedRelease,
@@ -208,6 +256,7 @@ async function stubProjectEditorDownload(
                             state.__projectEditorDownloadInstalledReleases = [
                                 installed,
                             ];
+                            progress.stage = 'complete'; progress.canCancel = false; publish();
                             for (const window of BrowserWindow.getAllWindows()) {
                                 const webContents = window.webContents as typeof window.webContents & {
                                     __e2eFixtureInstalledReleases?: InstalledRelease[];
@@ -228,6 +277,12 @@ async function stubProjectEditorDownload(
                         };
                     }),
             );
+
+            ipcMain.removeHandler('editorInstalls.cancelInstall');
+            ipcMain.handle('editorInstalls.cancelInstall', async (_event, jobId: string) => {
+                state.__cancelProjectEditorDownload?.(jobId);
+                return { success: true, data: { jobId, status: 'cancelling' } };
+            });
 
             ipcMain.removeHandler('editorInstalls.getInstalledEditors');
             ipcMain.handle('editorInstalls.getInstalledEditors', async () => ({

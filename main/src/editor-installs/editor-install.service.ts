@@ -133,11 +133,7 @@ export class EditorInstallService {
                 return this.installEditor(release, mono, origin);
             }
 
-            const hadProjectOrigin = existing.origins.has('project');
             existing.origins.add(origin);
-            if (!hadProjectOrigin && origin === 'project') {
-                this.republish(existing);
-            }
             return existing.promise;
         }
 
@@ -156,14 +152,9 @@ export class EditorInstallService {
             controller: new AbortController(),
             promise,
             resolve: resolveJob,
-            progress: this.createProgress(
-                id,
-                release,
-                mono,
-                'queued',
-                origin === 'installs',
-                { percent: 0 },
-            ),
+            progress: this.createProgress(id, release, mono, 'queued', true, {
+                percent: 0,
+            }),
         };
 
         this.jobsByIdentity.set(identity, job);
@@ -175,7 +166,7 @@ export class EditorInstallService {
     }
 
     /**
-     * Cancels one queued or active user-origin install.
+     * Cancels one shared editor job before extraction begins.
      *
      * @param jobId - Exact process-local install job ID.
      * @returns The cancellation state.
@@ -345,7 +336,10 @@ export class EditorInstallService {
         return result;
     }
 
-    /** Performs one official install while preserving current path behavior. */
+    /**
+     * Installs one official editor and cleans up incomplete download work.
+     * @param job - Shared editor job and its cancellation signal.
+     */
     private async installEditorInternal(
         job: InstallJob,
     ): Promise<InstallReleaseResult> {
@@ -363,6 +357,7 @@ export class EditorInstallService {
         try {
             const registeredEditors =
                 await this.installedEditors.getInstalledEditors();
+            this.throwIfCancelled(job);
             const customCollision = registeredEditors.find(
                 (candidate) =>
                     candidate.source === 'custom' &&
@@ -385,6 +380,7 @@ export class EditorInstallService {
 
             const { install_location: installLocation } =
                 await getUserPreferences();
+            this.throwIfCancelled(job);
             rootReleasePath = path.resolve(
                 installLocation,
                 `${release.version}${mono ? '-mono' : ''}`,
@@ -722,15 +718,6 @@ export class EditorInstallService {
         this.progressService.publish(job.progress);
     }
 
-    /** Republishes a job when its origin changes cancellability. */
-    private republish(job: InstallJob): void {
-        job.progress = {
-            ...job.progress,
-            canCancel: this.canCancel(job, job.progress.stage),
-        };
-        this.progressService.publish(job.progress);
-    }
-
     /** Creates one complete progress event. */
     private createProgress(
         id: string,
@@ -752,13 +739,16 @@ export class EditorInstallService {
         };
     }
 
-    /** Checks whether one job can still be cancelled. */
+    /**
+     * Checks whether one job can still be cancelled.
+     * @param job - Shared editor job.
+     * @param stage - Current installation stage.
+     */
     private canCancel(
         job: InstallJob,
         stage: ReleaseInstallProgressStage,
     ): boolean {
         return (
-            !job.origins.has('project') &&
             !job.controller.signal.aborted &&
             (stage === 'queued' ||
                 stage === 'preparing' ||

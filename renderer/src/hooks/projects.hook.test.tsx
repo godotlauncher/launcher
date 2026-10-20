@@ -162,20 +162,22 @@ describe('useProjects', () => {
         expect(mocks.addAlert).not.toHaveBeenCalled();
     });
 
-    it.each(['Download failed', 'Cancelled'])(
-        'retains the selection after %s and allows retry',
-        async (error) => {
+    it.each([false, true])(
+        'retains the selection after a failed or cancelled install (cancelled: %s) and allows retry',
+        async (cancelled) => {
             const hook = renderHook();
             const project = { path: '/project' } as ProjectDetails;
             const release = { version: '4.6' } as ReleaseSummary;
             const request = { release, mono: false, projects: [project] };
             mocks.installRelease.mockResolvedValueOnce({
                 success: false,
-                error,
+                ...(cancelled
+                    ? { cancelled: true }
+                    : { error: 'Download failed' }),
             });
             await hook.queueProjectEditorRepairs([request]);
             expect(mocks.setProjectEditor).not.toHaveBeenCalled();
-            expect(mocks.addAlert).toHaveBeenCalled();
+            expect(mocks.addAlert).toHaveBeenCalledTimes(cancelled ? 0 : 1);
             const installed = {
                 version: '4.6',
                 mono: false,

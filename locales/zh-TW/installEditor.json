@@ -39,7 +39,8 @@
         "complete": "已完成",
         "cancelled": "已取消",
         "failed": "失敗",
-        "cancelLabel": "取消安裝 {{version}}"
+        "cancelLabel": "取消編輯器下載",
+        "cancelDownload": "取消下載"
     },
     "errors": {
         "fetchError": "擷取發行版本時發生錯誤。",

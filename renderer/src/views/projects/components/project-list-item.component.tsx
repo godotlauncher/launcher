@@ -32,6 +32,8 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     githubIconSrc,
     isInstalledRelease,
     isProjectEditorDownloading,
+    getReleaseInstallProgress,
+    onCancelEditorInstall,
     getDownloadableProjectEditor,
     onInstallRequiredProjectEditor,
     onLaunchProject,
@@ -43,12 +45,17 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     onProjectMoreOptions,
     t,
 }) => {
-    const editorDownloading = isProjectEditorDownloading(project);
+    const downloadableProjectEditor = getDownloadableProjectEditor(project);
+    const installProgress = getReleaseInstallProgress(
+        downloadableProjectEditor?.version ?? project.release.version,
+        project.release.mono,
+    );
+    const editorDownloading =
+        isProjectEditorDownloading(project) || Boolean(installProgress);
     const releaseInstalled = isInstalledRelease(
         project.release.version,
         project.release.mono,
     );
-    const downloadableProjectEditor = getDownloadableProjectEditor(project);
     const selectedCodeEditor = project.codeEditorId
         ? codeEditorSettings.find(
               (settings) => settings.integration.id === project.codeEditorId,
@@ -95,6 +102,8 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
             downloadableProjectEditor={downloadableProjectEditor}
             releaseInstalled={releaseInstalled}
             editorDownloading={editorDownloading}
+            installProgress={installProgress}
+            onCancelEditorInstall={onCancelEditorInstall}
         />
     );
     const badges = (

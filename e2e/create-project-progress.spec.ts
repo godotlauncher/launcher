@@ -196,6 +196,43 @@ test('locks the drawer while installing, creating, and launching', async () => {
     await expect(mainPage.getByRole('dialog', { name: 'New Project' })).not.toBeVisible();
 });
 
+test('cancels an editor download, retains the form, and permits retry without creating or launching', async () => {
+    await stubPendingCreateProjectWorkflow();
+    await openCreateProject();
+    await selectCatalogueEditor('4.7.1-stable');
+    const projectName = mainPage.getByTestId('inputProjectName');
+    const location = mainPage.getByTestId('inputProjectPath');
+    await location.fill('/Users/docs/Godot/Cancelled');
+    await projectName.fill('Retained Project');
+    await mainPage.getByTestId('btnCreateProject').click();
+    const overlay = mainPage.getByTestId('createProjectProgressOverlay');
+    await publishInstallProgress({ id: 'create-project-editor-install', version: '4.7.1-stable', mono: false,
+        prerelease: false, published_at: null, stage: 'downloading', canCancel: true, percent: 42 });
+    await overlay.getByRole('button', { name: 'Cancel download', exact: true }).click();
+    await expect(overlay).toContainText('Cancelling');
+    await expect(overlay.getByRole('button', { name: 'Cancel download', exact: true })).toHaveCount(0);
+    await electronApp.evaluate(() => {
+        (globalThis as typeof globalThis & { __completeCreateProjectCancellation?: () => void }).__completeCreateProjectCancellation?.();
+    });
+    await expect(overlay).toHaveCount(0);
+    await expect(projectName).toHaveValue('Retained Project');
+    await expect(location).toHaveValue('/Users/docs/Godot/Cancelled');
+    await expect(mainPage.getByTestId('selectCreateProjectGodotEditor')).toContainText('4.7.1-stable');
+    await expect(mainPage.getByRole('dialog', { name: 'Error', exact: true })).toHaveCount(0);
+    expect(await readSubmittedProjectPath()).toBeUndefined();
+    expect(await electronApp.evaluate(() => (globalThis as typeof globalThis & { __createProjectLaunchCalls?: number }).__createProjectLaunchCalls)).toBe(0);
+    await expect(mainPage.getByTestId('btnCreateProject')).toBeEnabled();
+    await mainPage.getByTestId('btnCreateProject').click();
+    await expect(overlay).toBeVisible();
+    await completePendingEditorInstall();
+    await expect.poll(async () => (await readSubmittedProjectPath())?.replaceAll('\\', '/'))
+        .toBe('/Users/docs/Godot/Cancelled/Retained-Project');
+    await completePendingProjectCreation();
+    await expect(overlay.locator('[data-step="launching"]')).toHaveAttribute('data-step-state', 'active');
+    await completePendingProjectLaunch();
+    await expect(mainPage.getByRole('dialog', { name: 'New Project' })).not.toBeVisible();
+});
+
 test('shows an alert after failure and returns to the preserved form', async () => {
     await stubFailedEditorInstall();
     await openCreateProject();
@@ -226,19 +263,20 @@ test('returns to the preserved form when project creation fails', async () => {
     );
 });
 
-test('returns to the preserved form when editor launch fails', async () => {
+test('shows a launch error and closes the form after the project is created', async () => {
     await stubFailedProjectLaunch();
     await openCreateProject();
     await selectCatalogueEditor('4.7.1-stable');
     const projectName = mainPage.getByTestId('inputProjectName');
-    await projectName.fill('Launch Retry Project');
+    await projectName.fill('Created Project');
     await mainPage.getByTestId('btnCreateProject').click();
 
-    await expectWorkflowFailure(
-        projectName,
-        'Launch Retry Project',
-        'Simulated project launch failure',
-    );
+    const alert = mainPage.getByRole('dialog', { name: 'Error' });
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText('Simulated project launch failure');
+    await expect(mainPage.getByTestId('createProjectProgressOverlay')).toHaveCount(0);
+    await alert.getByTestId('btnAlertOk').click();
+    await expect(mainPage.getByRole('dialog', { name: 'New Project' })).not.toBeVisible();
 });
 
 /** Opens Create Project from the deterministic empty Projects welcome. */
@@ -293,18 +331,33 @@ async function expectWorkflowFailure(
 /** Holds each workflow operation until its active progress step is asserted. */
 async function stubPendingCreateProjectWorkflow(): Promise<void> {
     await electronApp.evaluate(
-        ({ ipcMain }, project: ProjectDetails) => {
+        ({ ipcMain, BrowserWindow }, project: ProjectDetails) => {
             const state = globalThis as typeof globalThis & {
                 __completeCreateProjectEditorInstall?: () => void;
                 __completeCreateProjectCreation?: () => void;
                 __completeCreateProjectLaunch?: () => void;
                 __submittedCreateProjectPath?: string;
+                __cancelCreateProjectEditorInstall?: () => void;
+                __completeCreateProjectCancellation?: () => void;
+                __createProjectLaunchCalls?: number;
             };
+            state.__submittedCreateProjectPath = undefined;
+            state.__createProjectLaunchCalls = 0;
             ipcMain.removeHandler('editorInstalls.installEditor');
             ipcMain.handle(
                 'editorInstalls.installEditor',
                 async (_event, release: ReleaseSummary, mono: boolean) =>
                     await new Promise((resolve) => {
+                        state.__cancelCreateProjectEditorInstall = () => {
+                            const progress = { id: 'create-project-editor-install', version: release.version, mono,
+                                prerelease: false, published_at: null, stage: 'cancelling', canCancel: false };
+                            for (const window of BrowserWindow.getAllWindows()) window.webContents.send('release-install-progress', progress);
+                            state.__completeCreateProjectCancellation = () => {
+                                progress.stage = 'cancelled';
+                                for (const window of BrowserWindow.getAllWindows()) window.webContents.send('release-install-progress', progress);
+                                resolve({ success: true, data: { success: false, cancelled: true, version: release.version } });
+                            };
+                        };
                         state.__completeCreateProjectEditorInstall = () =>
                             resolve({
                                 success: true,
@@ -330,6 +383,12 @@ async function stubPendingCreateProjectWorkflow(): Promise<void> {
                             });
                     }),
             );
+            ipcMain.removeHandler('editorInstalls.cancelInstall');
+            ipcMain.handle('editorInstalls.cancelInstall', async (_event, jobId: string) => {
+                if (jobId !== 'create-project-editor-install') throw new Error('Unexpected editor job');
+                state.__cancelCreateProjectEditorInstall?.();
+                return { success: true, data: { jobId, status: 'cancelling' } };
+            });
             ipcMain.removeHandler('projects.createProject');
             ipcMain.handle(
                 'projects.createProject',
@@ -348,6 +407,7 @@ async function stubPendingCreateProjectWorkflow(): Promise<void> {
                 'projects.launchProject',
                 async () =>
                     await new Promise((resolve) => {
+                        state.__createProjectLaunchCalls = (state.__createProjectLaunchCalls ?? 0) + 1;
                         state.__completeCreateProjectLaunch = () =>
                             resolve({
                                 success: true,

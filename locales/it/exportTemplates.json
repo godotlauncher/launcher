@@ -16,6 +16,7 @@
     "recover": "Ripristina file",
     "closedEditors": "Ho chiuso gli editor Godot e le esportazioni che potrebbero usare questi modelli.",
     "cancel": "Annulla",
+    "cancelDownload": "Annulla download template",
     "retry": "Riprova",
     "choose": "Scegli un'opzione",
     "apply": "Applica modifiche",

@@ -16,6 +16,7 @@
     "recover": "Dateien wiederherstellen",
     "closedEditors": "Ich habe Godot-Editoren und Exporte geschlossen, die diese Vorlagen verwenden könnten.",
     "cancel": "Abbrechen",
+    "cancelDownload": "Vorlagen-Download abbrechen",
     "retry": "Erneut versuchen",
     "choose": "Option auswählen",
     "apply": "Änderungen anwenden",

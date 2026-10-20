@@ -39,7 +39,8 @@
         "complete": "Lest",
         "cancelled": "Ikkanċellat",
         "failed": "Falla",
-        "cancelLabel": "Ikkanċella l-installazzjoni ta' {{version}}"
+        "cancelLabel": "Ikkanċella t-tniżżil tal-editur",
+        "cancelDownload": "Ikkanċella t-tniżżil"
     },
     "errors": {
         "fetchError": "Kien hemm żball waqt li qed jinġibu r-releases.",

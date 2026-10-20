@@ -4,6 +4,7 @@ import type {
     ProjectSectionKey,
     ProjectTagSelection,
     ProjectTagsSnapshot,
+    ReleaseInstallProgress,
     ReleaseSummary,
 } from '@shared/contracts';
 import type React from 'react';
@@ -38,6 +39,11 @@ export type ProjectsListProps = {
     onReorderPinnedProjects: (orderedProjectPaths: string[]) => Promise<void>;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading: (project: ProjectDetails) => boolean;
+    getReleaseInstallProgress: (
+        version: string,
+        mono: boolean,
+    ) => ReleaseInstallProgress | undefined;
+    onCancelEditorInstall: (jobId: string) => Promise<void>;
     getDownloadableProjectEditor: (
         project: ProjectDetails,
     ) => ReleaseSummary | undefined;

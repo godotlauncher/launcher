@@ -1,5 +1,5 @@
 import type { ExportTemplateSet, TemplateJob } from '@shared/contracts';
-import { FileOutput, Settings, Trash2 } from 'lucide-react';
+import { FileOutput, Settings, Trash2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import type { TemplateAction } from '../hooks/export-templates.hook';
@@ -80,7 +80,10 @@ export function TemplateSetRow({
                                 </p>
                             )}
                             {showJob &&
-                                ((active && job.stage !== 'applying') ||
+                                ((active &&
+                                    !['applying', 'downloading'].includes(
+                                        job.stage,
+                                    )) ||
                                     job.stage === 'error') && (
                                     <button
                                         type="button"
@@ -141,16 +144,34 @@ export function TemplateSetRow({
                     <div className="space-y-2">
                         {job.stage === 'downloading' && (
                             <>
-                                <progress
-                                    className="progress progress-primary"
-                                    aria-label={t('download')}
-                                    max={job.totalBytes || 1}
-                                    value={
-                                        job.totalBytes
-                                            ? (job.receivedBytes ?? 0)
-                                            : undefined
-                                    }
-                                />
+                                <div className="flex items-center gap-2">
+                                    <progress
+                                        className="progress progress-primary min-w-0 flex-1"
+                                        aria-label={t('download')}
+                                        max={job.totalBytes || 1}
+                                        value={
+                                            job.totalBytes
+                                                ? (job.receivedBytes ?? 0)
+                                                : undefined
+                                        }
+                                    />
+                                    <Tooltip tip={t('cancelDownload')}>
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-ghost btn-square"
+                                            aria-label={t('cancelDownload')}
+                                            disabled={pending}
+                                            onClick={() =>
+                                                void run({
+                                                    type: 'cancel',
+                                                    jobId: job.id,
+                                                })
+                                            }
+                                        >
+                                            <X size={16} aria-hidden="true" />
+                                        </button>
+                                    </Tooltip>
+                                </div>
                                 <p className="text-sm text-base-content/70">
                                     {formatTemplateBytes(
                                         job.receivedBytes ?? 0,

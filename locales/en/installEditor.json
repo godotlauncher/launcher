@@ -39,7 +39,8 @@
         "complete": "Complete",
         "cancelled": "Cancelled",
         "failed": "Failed",
-        "cancelLabel": "Cancel installation of {{version}}"
+        "cancelLabel": "Cancel editor download",
+        "cancelDownload": "Cancel download"
     },
     "errors": {
         "fetchError": "There was an error fetching releases.",
