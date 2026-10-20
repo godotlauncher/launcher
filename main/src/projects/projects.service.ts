@@ -1,9 +1,4 @@
-import type { ChildProcess, ChildProcessByStdio } from 'node:child_process';
-import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { stat } from 'node:fs/promises';
-import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type {
     AddProjectOptions,
@@ -16,7 +11,6 @@ import type {
     CreateProjectPublicationOptions,
     CreateProjectResult,
     GitIdentity,
-    InitializeProjectGitResult,
     InstalledRelease,
     LaunchProjectOptions,
     LaunchProjectResult,
@@ -25,7 +19,6 @@ import type {
     ProjectEditorSelection,
     ProjectEditorSelectionExpectation,
     ProjectGitIdentityResult,
-    ProjectGitIdentityValue,
     ProjectPublicationRecoveryAction,
     RemoteProjectImportRequest,
     RenameProjectOptions,
@@ -33,7 +26,6 @@ import type {
     RendererType,
     ResolveRemoteProjectCloneAction,
     ResolveRemoteProjectCloneResult,
-    SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import { app } from 'electron';
 import logger from 'electron-log';
@@ -52,39 +44,29 @@ import {
     importProjectEditorSettings,
 } from '../commands/projectEditorSettings.js';
 import { getUserPreferences } from '../commands/userPreferences.js';
-import { EDITOR_CONFIG_DIRNAME } from '../constants.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
-import { areTemplatesMutating } from '../export-templates/template-files.util.js';
-import { connectProjectTemplates } from '../export-templates/template-runtime.util.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { t } from '../i18n/index.js';
-import { getMainWindow, revealMainWindow } from '../mainWindow.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectTagService } from '../project-tags/project-tag.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { TrayAvailabilityService } from '../services/tray-availability.service.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { GitService } from '../tool-integration/integrations/git/git.service.js';
-// biome-ignore lint/style/useImportType: Required for DI constructor metadata
-import { TerminalService } from '../tool-integration/integrations/terminal/terminal.service.js';
-import {
-    DEFAULT_PROJECT_DEFINITION,
-    getProjectDefinition,
-    removeProjectEditor,
-    SetProjectEditorRelease,
-} from '../utils/godot.utils.js';
+import { removeProjectEditor } from '../utils/godot.utils.js';
 import {
     readGodotProjectName,
     updateGodotProjectName,
 } from '../utils/godotProject.utils.js';
-import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
-import { ipcWebContentsSend } from '../utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectCreationService } from './project-creation.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectEditorService } from './project-editor.service.js';
+import { publishProjectUpdates } from './project-events.util.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectGitService } from './project-git.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectImportService } from './project-import.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectLaunchService } from './project-launch.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectPublicationService } from './project-publication.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -93,76 +75,8 @@ import { ProjectRemoteImportService } from './project-remote-import.service.js';
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
-import {
-    createMacOSTerminalLaunchScript,
-    openMacOSTerminalLaunchScript,
-} from './project-terminal-launch.macos.util.js';
-import {
-    createPosixTerminalLaunchScript,
-    removePosixTerminalLaunchScript,
-} from './project-terminal-launch.posix.util.js';
-import { launchWindowsTerminal } from './project-terminal-launch.windows.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
-
-/**
- * Identifies a catalogue selection that main must resolve before assignment.
- * @param selection - Installed editor or official catalogue selection.
- */
-function isOfficialEditorSelection(
-    selection: ProjectEditorSelection,
-): selection is Extract<ProjectEditorSelection, { release: unknown }> {
-    return 'release' in selection;
-}
-
-/**
- * Builds the persisted missing-editor representation for an official selection.
- *
- * @param selection - Official release selected before its installation.
- * @param project - Current project whose configuration format is retained.
- * @returns Invalid editor data that preserves the requested download identity.
- */
-function createMissingOfficialRelease(
-    selection: ProjectEditorSelection,
-    project: ProjectDetails,
-): InstalledRelease {
-    if (!isOfficialEditorSelection(selection)) {
-        throw new Error('An installed editor cannot be persisted as missing');
-    }
-
-    const { release, mono } = selection;
-    const baseVersion =
-        release.version.match(/^v?(\d+\.\d+)/)?.[1] ??
-        release.version_number.toFixed(1);
-
-    return {
-        version: release.version,
-        name: release.name,
-        base_version: baseVersion,
-        flavor: mono ? 'dotnet' : 'gdscript',
-        version_number: release.version_number,
-        install_path: '',
-        editor_path: '',
-        platform: process.platform,
-        arch: process.arch,
-        mono,
-        prerelease: release.prerelease,
-        config_version: project.config_version,
-        published_at: release.published_at,
-        valid: false,
-        source: 'official',
-    };
-}
-
-/**
- * Checks whether the project's Godot configuration file currently exists.
- *
- * @param projectPath - Root directory of the project.
- * @returns Whether project.godot is present at the project root.
- */
-function hasProjectFile(projectPath: string): boolean {
-    return existsSync(path.resolve(projectPath, 'project.godot'));
-}
 
 /** Provides the application-facing boundary for existing project workflows. */
 @Injectable()
@@ -178,30 +92,30 @@ export class ProjectsService {
      * @param projectImport - Transactional Add Project workflow.
      * @param git - Guarded Git command service.
      * @param projectCreation - Transactional Create Project workflow.
-     * @param trayAvailability - System tray availability service.
-     * @param installedEditors - Registered Godot editor facade.
+     * @param projectLaunch - Native Godot dispatch and post-launch actions.
+     * @param projectEditors - Project-specific Godot and code editor configuration.
      * @param store - Canonical project persistence store.
      * @param remoteSources - Remote project source discovery boundary.
      * @param remoteImport - Cancellable remote clone transaction boundary.
      * @param projectPublication - Follow-on remote publication and retry workflow.
      * @param projectOrigins - Process-local stored-project origin index.
      * @param projectTags - Launcher-owned project tag assignments.
-     * @param terminals - Native terminal launch boundary.
+     * @param projectGit - Guarded project Git setup and identity workflows.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
         private readonly projectImport: ProjectImportService,
         private readonly git: GitService,
         private readonly projectCreation: ProjectCreationService,
-        private readonly trayAvailability: TrayAvailabilityService,
-        private readonly installedEditors: InstalledEditorService,
+        private readonly projectLaunch: ProjectLaunchService,
+        private readonly projectEditors: ProjectEditorService,
         private readonly store: ProjectsStore,
         private readonly remoteSources: ProjectRemoteSourceService,
         private readonly remoteImport: ProjectRemoteImportService,
         private readonly projectPublication: ProjectPublicationService,
         private readonly projectOrigins: ProjectRepositoryOriginIndexService,
         private readonly projectTags: ProjectTagService,
-        private readonly terminals: TerminalService,
+        private readonly projectGit: ProjectGitService,
     ) {}
 
     /**
@@ -480,7 +394,7 @@ export class ProjectsService {
                 error,
             );
         }
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
 
         return projects;
     }
@@ -586,7 +500,7 @@ export class ProjectsService {
                 error,
             );
         }
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
 
         return {
             success: true,
@@ -625,7 +539,7 @@ export class ProjectsService {
             options,
         );
         if (result.success && result.projects) {
-            this.publishProjects(result.projects);
+            publishProjectUpdates(result.projects);
         }
         return result;
     }
@@ -642,212 +556,11 @@ export class ProjectsService {
         selection: ProjectEditorSelection,
         expectedEditor?: ProjectEditorSelectionExpectation,
     ): Promise<ChangeProjectEditorResult> {
-        const installedRelease = isOfficialEditorSelection(selection)
-            ? (await this.installedEditors.getInstalledEditors()).find(
-                  (candidate) =>
-                      candidate.source !== 'custom' &&
-                      candidate.valid !== false &&
-                      Boolean(candidate.editor_path) &&
-                      candidate.version === selection.release.version &&
-                      candidate.mono === selection.mono,
-              )
-            : selection;
-        const recoveredFiles = new Set<string>();
-        let failure: ChangeProjectEditorResult | undefined;
-        let updatedProject: ProjectDetails | undefined;
-
-        const projects = await this.store.update(async (currentProjects) => {
-            const projectIndex = currentProjects.findIndex(
-                (candidate) => candidate.path === project.path,
-            );
-            if (projectIndex === -1) {
-                if (expectedEditor) {
-                    return currentProjects;
-                }
-                failure = {
-                    success: false,
-                    error: t('projects:changeEditor.errors.projectNotFound'),
-                };
-                return currentProjects;
-            }
-
-            const currentProject = currentProjects[projectIndex];
-            if (
-                expectedEditor &&
-                (currentProject.release.version !== expectedEditor.version ||
-                    currentProject.release.mono !== expectedEditor.mono ||
-                    currentProject.release.source === 'custom')
-            ) {
-                return currentProjects;
-            }
-
-            const release =
-                installedRelease ??
-                createMissingOfficialRelease(selection, currentProject);
-            if (
-                currentProject.release.version === release.version &&
-                currentProject.release.mono === release.mono &&
-                currentProject.release.editor_path === release.editor_path &&
-                currentProject.release.valid === release.valid &&
-                installedRelease !== undefined
-            ) {
-                logger.warn(
-                    `Project already using the selected release, ${release.version} - ${release.mono ? 'mono' : ''}`,
-                );
-                return currentProjects;
-            }
-
-            const config = getProjectDefinition(
-                release.version_number,
-                DEFAULT_PROJECT_DEFINITION,
-            );
-            if (!config) {
-                failure = {
-                    success: false,
-                    error: t(
-                        'projects:changeEditor.errors.invalidEditorVersion',
-                    ),
-                };
-                return currentProjects;
-            }
-            if (
-                parseInt(currentProject.version_number.toString(), 10) !==
-                parseInt(release.version_number.toString(), 10)
-            ) {
-                failure = {
-                    success: false,
-                    error: t(
-                        'projects:changeEditor.errors.differentMajorVersion',
-                    ),
-                };
-                return currentProjects;
-            }
-
-            if (!installedRelease) {
-                updatedProject = {
-                    ...currentProject,
-                    release,
-                    version: release.version,
-                    version_number: release.version_number,
-                    launch_path: '',
-                    valid: false,
-                    invalid_reason:
-                        !hasProjectFile(currentProject.path) ||
-                        currentProject.invalid_reason === 'missing_project_file'
-                            ? 'missing_project_file'
-                            : 'missing_editor',
-                };
-                await writeProjectLauncherConfig(updatedProject.path, {
-                    release: updatedProject.release,
-                    projectName: updatedProject.name,
-                    launcherVersion: app.getVersion(),
-                });
-
-                const updatedProjects = [...currentProjects];
-                updatedProjects[projectIndex] = updatedProject;
-                return updatedProjects;
-            }
-
-            const { install_location: installLocation } =
-                await getUserPreferences();
-            const projectEditorPath = resolveProjectEditorPath(
-                currentProject,
-                installLocation,
-            );
-            const newLaunchPath = await SetProjectEditorRelease(
-                projectEditorPath,
-                release,
-                currentProject.release,
-                currentProject.exportTemplateMode,
-                currentProject.exportTemplateBuilds,
-            );
-            const editorSettingsFilename = config.editorConfigFilename(
-                release.version_number,
-            );
-            let newEditorSettingsFile = path.resolve(
-                projectEditorPath,
-                'editor_data',
-                editorSettingsFilename,
-            );
-
-            if (currentProject.codeEditorId) {
-                const installation = await this.codeEditors.scanIntegration(
-                    currentProject.codeEditorId,
-                );
-                if (installation) {
-                    const applied = await this.codeEditors.applyToProject(
-                        currentProject.codeEditorId,
-                        {
-                            projectPath: currentProject.path,
-                            godotLaunchPath: newLaunchPath,
-                            godotVersion: release.version_number,
-                            mono: release.mono,
-                            editorSettingsFile: newEditorSettingsFile,
-                            editorSettingsFilename,
-                            editorSettingsFormat: config.editorConfigFormat,
-                        },
-                    );
-                    newEditorSettingsFile = applied.editorSettingsFile;
-                    for (const recoveredFile of applied.recoveredConfigFiles) {
-                        recoveredFiles.add(recoveredFile);
-                    }
-                }
-            } else {
-                await this.codeEditors.disableForProject(
-                    newEditorSettingsFile,
-                    release.mono ? 'dotnet' : 'standard',
-                );
-            }
-
-            const projectFileExists = hasProjectFile(currentProject.path);
-            updatedProject = {
-                ...currentProject,
-                release: { ...release, valid: true },
-                version: release.version,
-                version_number: release.version_number,
-                launch_path: newLaunchPath,
-                editor_settings_path: path.resolve(
-                    path.dirname(newEditorSettingsFile),
-                ),
-                editor_settings_file: newEditorSettingsFile,
-                valid: projectFileExists,
-                invalid_reason: projectFileExists
-                    ? undefined
-                    : 'missing_project_file',
-            };
-            await writeProjectLauncherConfig(updatedProject.path, {
-                release: updatedProject.release,
-                projectName: updatedProject.name,
-                launcherVersion: app.getVersion(),
-            });
-
-            const updatedProjects = [...currentProjects];
-            updatedProjects[projectIndex] = updatedProject;
-            return updatedProjects;
-        });
-
-        if (failure) {
-            return failure;
-        }
-
-        if (updatedProject) {
-            project.release = updatedProject.release;
-            project.version = updatedProject.version;
-            project.version_number = updatedProject.version_number;
-            project.launch_path = updatedProject.launch_path;
-            project.editor_settings_file = updatedProject.editor_settings_file;
-            project.editor_settings_path = updatedProject.editor_settings_path;
-            project.valid = updatedProject.valid;
-            project.codeEditorId = updatedProject.codeEditorId;
-            void updateLinuxTray();
-        }
-
-        return {
-            success: true,
-            projects,
-            recoveredCodeEditorConfigFiles:
-                recoveredFiles.size > 0 ? [...recoveredFiles] : undefined,
-        };
+        return this.projectEditors.setProjectEditor(
+            project,
+            selection,
+            expectedEditor,
+        );
     }
 
     /**
@@ -868,7 +581,7 @@ export class ProjectsService {
         const updatedProject =
             projects.find((candidate) => candidate.path === project.path) ??
             project;
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
         return updatedProject;
     }
 
@@ -895,7 +608,7 @@ export class ProjectsService {
         if (!updatedProject) {
             throw new Error('Project not found');
         }
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
         return updatedProject;
     }
 
@@ -931,7 +644,7 @@ export class ProjectsService {
             token,
             addedAt: updated.added_at?.getTime(),
         });
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
         return { project: updated, undoToken: token };
     }
 
@@ -967,7 +680,7 @@ export class ProjectsService {
         });
         if (this.newStatusUndo.get(projectPath) === undo)
             this.newStatusUndo.delete(projectPath);
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
         const restored = projects.find(
             (candidate) => candidate.path === projectPath,
         );
@@ -1011,7 +724,7 @@ export class ProjectsService {
             );
             return updatedProjects;
         });
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
         return projects;
     }
 
@@ -1028,7 +741,7 @@ export class ProjectsService {
             }
             return applyPinnedOrder(currentProjects, orderedProjectPaths);
         });
-        this.publishProjects(projects);
+        publishProjectUpdates(projects);
         return projects;
     }
 
@@ -1042,7 +755,7 @@ export class ProjectsService {
         project: ProjectDetails,
         codeEditorId: CodeEditorId | null,
     ) {
-        return this.updateProjectCodeEditor(project, codeEditorId, false);
+        return this.projectEditors.setProjectCodeEditor(project, codeEditorId);
     }
 
     /**
@@ -1051,97 +764,16 @@ export class ProjectsService {
      * @param project - Project whose configuration should be reset.
      */
     resetProjectCodeEditorConfig(project: ProjectDetails) {
-        return this.updateProjectCodeEditor(project, null, true);
+        return this.projectEditors.resetProjectCodeEditorConfig(project);
     }
 
     /**
-     * Initializes or detects the Git repository for a project.
+     * Initialises or detects the Git repository for a project.
      *
-     * @param project - Project to inspect or initialize.
+     * @param project - Project to inspect or initialise.
      */
     async initializeProjectGit(project: ProjectDetails) {
-        let gitSetup: InitializeProjectGitResult['gitSetup'] | undefined;
-        let updatedProject: ProjectDetails | undefined;
-
-        const projects = await this.store.update(async (currentProjects) => {
-            const projectIndex = currentProjects.findIndex(
-                (candidate) => candidate.path === project.path,
-            );
-            if (projectIndex === -1) {
-                throw new Error(t('projects:initGit.errors.projectNotFound'));
-            }
-
-            const targetProject: ProjectDetails = {
-                ...currentProjects[projectIndex],
-                release: { ...currentProjects[projectIndex].release },
-            };
-            let inspection = await this.git.inspectRepository(
-                targetProject.path,
-            );
-
-            if (inspection.status === 'inside-work-tree') {
-                gitSetup = {
-                    status: 'existing-repository',
-                    root: inspection.root,
-                    isProjectRoot: inspection.isProjectRoot,
-                    kind: inspection.kind,
-                };
-            } else if (inspection.status === 'not-a-repository') {
-                if (!(await this.git.init(targetProject.path))) {
-                    inspection = await this.git.inspectRepository(
-                        targetProject.path,
-                    );
-                    if (inspection.status !== 'inside-work-tree') {
-                        throw new Error(
-                            t('projects:initGit.errors.initFailed'),
-                        );
-                    }
-                    gitSetup = {
-                        status: 'existing-repository',
-                        root: inspection.root,
-                        isProjectRoot: inspection.isProjectRoot,
-                        kind: inspection.kind,
-                    };
-                } else {
-                    inspection = await this.git.inspectRepository(
-                        targetProject.path,
-                    );
-                    if (
-                        inspection.status !== 'inside-work-tree' ||
-                        !inspection.isProjectRoot
-                    ) {
-                        throw new Error(
-                            t('projects:initGit.errors.initFailed'),
-                        );
-                    }
-                    gitSetup = {
-                        status: 'initialized',
-                        root: inspection.root,
-                        isProjectRoot: inspection.isProjectRoot,
-                        kind: inspection.kind,
-                    };
-                }
-            } else {
-                throw new Error(t('projects:initGit.errors.initFailed'));
-            }
-
-            targetProject.withGit = true;
-            updatedProject = targetProject;
-            const updatedProjects = [...currentProjects];
-            updatedProjects[projectIndex] = targetProject;
-            return updatedProjects;
-        });
-
-        const latestProject =
-            projects.find((candidate) => candidate.path === project.path) ??
-            updatedProject;
-        if (!latestProject || !gitSetup) {
-            throw new Error('Failed to initialise git for project');
-        }
-
-        project.withGit = latestProject.withGit;
-        this.publishProjects(projects);
-        return { project: latestProject, gitSetup };
+        return this.projectGit.initializeProjectGit(project);
     }
 
     /**
@@ -1152,43 +784,7 @@ export class ProjectsService {
     async getProjectGitIdentity(
         project: ProjectDetails,
     ): Promise<ProjectGitIdentityResult> {
-        const storedProject = (await this.store.list()).find(
-            (candidate) => candidate.path === project.path,
-        );
-        if (!storedProject) {
-            throw new Error(t('projects:initGit.errors.projectNotFound'));
-        }
-
-        const inspection = await this.git.inspectRepository(storedProject.path);
-        if (inspection.status !== 'inside-work-tree') {
-            return inspection;
-        }
-
-        const [effectiveIdentity, localIdentity] = await Promise.all([
-            this.git.getIdentity(storedProject.path),
-            this.git.getLocalIdentity(storedProject.path),
-        ]);
-        const identityValue = (
-            effectiveValue: string,
-            localValue: string,
-        ): ProjectGitIdentityValue => ({
-            value: effectiveValue,
-            source: localValue
-                ? 'repository'
-                : effectiveValue
-                  ? 'inherited'
-                  : 'missing',
-        });
-
-        return {
-            status: 'available',
-            repository: inspection,
-            name: identityValue(effectiveIdentity.name, localIdentity.name),
-            email: identityValue(effectiveIdentity.email, localIdentity.email),
-            canUpdate:
-                inspection.isProjectRoot &&
-                inspection.kind !== 'linked-worktree',
-        };
+        return this.projectGit.getProjectGitIdentity(project);
     }
 
     /**
@@ -1201,37 +797,7 @@ export class ProjectsService {
         project: ProjectDetails,
         identity: GitIdentity,
     ): Promise<ProjectGitIdentityResult> {
-        const storedProject = (await this.store.list()).find(
-            (candidate) => candidate.path === project.path,
-        );
-        if (!storedProject) {
-            throw new Error(t('projects:initGit.errors.projectNotFound'));
-        }
-
-        const inspection = await this.git.inspectRepository(storedProject.path);
-        if (
-            inspection.status !== 'inside-work-tree' ||
-            !inspection.isProjectRoot ||
-            inspection.kind === 'linked-worktree'
-        ) {
-            throw new Error(
-                t('projects:editProject.sourceControl.updateNotAllowed'),
-            );
-        }
-
-        const saved = await this.git.setIdentity(
-            identity.name,
-            identity.email,
-            'repository',
-            storedProject.path,
-        );
-        if (!saved) {
-            throw new Error(
-                t('projects:editProject.sourceControl.updateFailed'),
-            );
-        }
-
-        return this.getProjectGitIdentity(storedProject);
+        return this.projectGit.setProjectGitIdentity(project, identity);
     }
 
     /**
@@ -1259,23 +825,7 @@ export class ProjectsService {
     async openProjectCodeEditor(
         projectPath: string,
     ): Promise<OpenProjectCodeEditorResult> {
-        const project = (await this.store.list()).find(
-            (candidate) => candidate.path === projectPath,
-        );
-        if (
-            !project ||
-            !(await stat(project.path)
-                .then((value) => value.isDirectory())
-                .catch(() => false))
-        ) {
-            return { success: false, reason: 'project-unavailable' };
-        }
-        if (!project.codeEditorId)
-            return { success: false, reason: 'editor-not-configured' };
-        return this.codeEditors.openProjectFolder(
-            project.codeEditorId,
-            project.path,
-        );
+        return this.projectEditors.openProjectCodeEditor(projectPath);
     }
 
     /**
@@ -1305,7 +855,7 @@ export class ProjectsService {
                         : candidate,
                 ),
             );
-            this.publishProjects(updatedProjects);
+            publishProjectUpdates(updatedProjects);
         }
         project = checkedProject;
 
@@ -1364,186 +914,13 @@ export class ProjectsService {
             }
         }
 
-        if (areTemplatesMutating())
-            throw new Error(t('exportTemplates:errors.busy'));
-        await connectProjectTemplates(
-            path.dirname(project.launch_path),
-            project.release,
-            project.exportTemplateMode,
-            project.exportTemplateBuilds,
-            `${project.release.version.replace('-', '.')}${project.release.mono ? '.mono' : ''}`,
+        const result = await this.projectLaunch.launchProject(
+            project,
+            prefs,
+            options,
         );
-        if (areTemplatesMutating())
-            throw new Error(t('exportTemplates:errors.busy'));
-        const autoOpenCodeEditor =
-            prefs.auto_open_code_editor === true &&
-            Boolean(project.codeEditorId) &&
-            !options.allowMissingCodeEditor;
-        const command = project.launch_path;
-        let editor:
-            | ChildProcess
-            | ChildProcessByStdio<null, null, null>
-            | undefined;
-        if (process.platform === 'darwin' && project.launch_with_console) {
-            const terminalScriptPath = await createMacOSTerminalLaunchScript(
-                command,
-                project.path,
-                Boolean(project.open_windowed),
-            );
-            try {
-                await openMacOSTerminalLaunchScript(terminalScriptPath);
-            } catch (error) {
-                logger.warn('macOS terminal launch failed', error);
-                await removePosixTerminalLaunchScript(terminalScriptPath).catch(
-                    (cleanupError: unknown) =>
-                        logger.warn(
-                            'Failed to remove unused terminal launch script',
-                            cleanupError,
-                        ),
-                );
-                throw new Error(t('projects:terminal.errors.launch-failed'));
-            }
-        } else if (
-            process.platform === 'win32' &&
-            project.launch_with_console
-        ) {
-            try {
-                await launchWindowsTerminal(
-                    command,
-                    project.path,
-                    Boolean(project.open_windowed),
-                    project.release.console_path,
-                );
-            } catch (error) {
-                logger.warn('Windows terminal launch failed', error);
-                throw new Error(t('projects:terminal.errors.launch-failed'));
-            }
-        } else if (
-            process.platform === 'linux' &&
-            project.launch_with_console
-        ) {
-            const terminalScriptPath = await createPosixTerminalLaunchScript(
-                command,
-                project.path,
-                Boolean(project.open_windowed),
-                'sh',
-            );
-            try {
-                const result = await this.terminals.launchEditorScript(
-                    project.path,
-                    terminalScriptPath,
-                );
-                if (!result.success)
-                    throw new Error(
-                        t(`projects:terminal.errors.${result.reason}`),
-                    );
-            } catch (error) {
-                await removePosixTerminalLaunchScript(terminalScriptPath).catch(
-                    (cleanupError: unknown) =>
-                        logger.warn(
-                            'Failed to remove unused terminal launch script',
-                            cleanupError,
-                        ),
-                );
-                throw error;
-            }
-        } else if (process.platform === 'darwin') {
-            const launchArguments = [
-                command,
-                '--args',
-                '--path',
-                project.path,
-                '-e',
-            ];
-            if (project.open_windowed) {
-                launchArguments.push('-w');
-            }
-            editor = spawn('open', launchArguments, {
-                detached: true,
-                stdio: 'ignore',
-            });
-        } else {
-            const launchArguments = ['--path', project.path, '-e'];
-            if (project.open_windowed) {
-                launchArguments.push('-w');
-            }
-            editor = spawn(command, launchArguments, {
-                detached: true,
-                stdio: 'ignore',
-            });
-        }
-
-        if (editor) {
-            if (autoOpenCodeEditor) {
-                const child = editor;
-                await new Promise<void>((resolve, reject) => {
-                    child.once('error', reject);
-                    if (process.platform === 'darwin') {
-                        child.once('exit', (code) =>
-                            code === 0
-                                ? resolve()
-                                : reject(
-                                      new Error(
-                                          t(
-                                              'projects:terminal.errors.launch-failed',
-                                          ),
-                                      ),
-                                  ),
-                        );
-                    } else {
-                        child.once('spawn', resolve);
-                    }
-                });
-            }
-            editor.on('error', (error: Error) => {
-                logger.error(`Failed to start process: ${error.message}`);
-            });
-            editor.on('exit', (code: number, signal: NodeJS.Signals | null) => {
-                if (code !== 0 && code !== null) {
-                    logger.error(`Editor exited with error code ${code}`);
-                    logger.error(editor?.stderr);
-                } else if (signal) {
-                    logger.error(`Editor was killed by signal: ${signal}`);
-                }
-            });
-            editor.unref();
-        }
-
-        const codeEditorResult = autoOpenCodeEditor
-            ? await this.openProjectCodeEditor(project.path).catch(() => ({
-                  success: false as const,
-                  reason: 'launch-failed' as const,
-                  editor: project.codeEditorId ?? undefined,
-              }))
-            : undefined;
-        if (codeEditorResult && !codeEditorResult.success) {
-            revealMainWindow();
-            this.publishProjects(projects);
-            return { launched: true, codeEditorWarning: codeEditorResult };
-        }
-
-        const currentMainWindow = getMainWindow();
-        switch (prefs.post_launch_action) {
-            case 'minimize':
-                currentMainWindow?.minimize();
-                break;
-            case 'close_to_tray':
-                if (!(await this.trayAvailability.isAvailable())) {
-                    logger.info(
-                        'System tray is unavailable; leaving the window visible after project launch',
-                    );
-                    break;
-                }
-                currentMainWindow?.hide();
-                if (process.platform === 'darwin') {
-                    app.dock?.hide();
-                    app.setActivationPolicy('accessory');
-                }
-                break;
-        }
-
-        this.publishProjects(projects);
-        return { launched: true };
+        publishProjectUpdates(projects);
+        return result;
     }
 
     /**
@@ -1567,7 +944,7 @@ export class ProjectsService {
             this.store,
         );
         if (options.publishResult) {
-            this.publishProjects(projects);
+            publishProjectUpdates(projects);
         } else {
             void updateLinuxTray();
         }
@@ -1578,172 +955,8 @@ export class ProjectsService {
     async refreshProjectHealth(): Promise<void> {
         const result = await checkAndUpdateProjectHealth(this.store);
         if (result.changed) {
-            this.publishProjects(result.projects);
+            publishProjectUpdates(result.projects);
         }
-    }
-
-    /**
-     * Applies or reapplies a code editor selection and persists the project.
-     *
-     * @param project - Project to update.
-     * @param requestedCodeEditorId - Requested editor, or null to disable it.
-     * @param reapply - Whether to reapply the existing selection.
-     */
-    private async updateProjectCodeEditor(
-        project: ProjectDetails,
-        requestedCodeEditorId: CodeEditorId | null,
-        reapply: boolean,
-    ): Promise<SetProjectCodeEditorResult> {
-        const recoveredFiles = new Set<string>();
-        let updatedProject: ProjectDetails | undefined;
-        let unchanged = false;
-
-        const projects = await this.store.update(async (currentProjects) => {
-            const projectIndex = currentProjects.findIndex(
-                (candidate) => candidate.path === project.path,
-            );
-            if (projectIndex === -1) {
-                throw new Error(
-                    t('projects:setCodeEditor.errors.projectNotFound'),
-                );
-            }
-
-            const targetProject: ProjectDetails = {
-                ...currentProjects[projectIndex],
-                release: { ...currentProjects[projectIndex].release },
-            };
-            const currentCodeEditorId = targetProject.codeEditorId;
-            const codeEditorId = reapply
-                ? currentCodeEditorId
-                : requestedCodeEditorId;
-
-            if (reapply && !codeEditorId) {
-                throw new Error(
-                    t('projects:setCodeEditor.errors.noEditorSelected'),
-                );
-            }
-            if (
-                !reapply &&
-                codeEditorId &&
-                currentCodeEditorId === codeEditorId
-            ) {
-                unchanged = true;
-                updatedProject = targetProject;
-                return currentProjects;
-            }
-
-            if (codeEditorId) {
-                const recovered = await this.applyCodeEditorConfiguration(
-                    targetProject,
-                    codeEditorId,
-                    reapply ? null : currentCodeEditorId,
-                );
-                for (const recoveredFile of recovered) {
-                    recoveredFiles.add(recoveredFile);
-                }
-            } else {
-                await this.codeEditors.disableForProject(
-                    targetProject.editor_settings_file,
-                    targetProject.release.mono ? 'dotnet' : 'standard',
-                );
-            }
-
-            targetProject.codeEditorId = codeEditorId;
-            updatedProject = targetProject;
-            const updatedProjects = [...currentProjects];
-            updatedProjects[projectIndex] = targetProject;
-            return updatedProjects;
-        });
-
-        const latestProject =
-            projects.find((candidate) => candidate.path === project.path) ??
-            updatedProject;
-        if (!latestProject) {
-            throw new Error(t('projects:setCodeEditor.errors.projectNotFound'));
-        }
-
-        if (!unchanged) {
-            this.publishProjects(projects);
-        }
-        project.codeEditorId = latestProject.codeEditorId;
-        project.editor_settings_file = latestProject.editor_settings_file;
-        project.editor_settings_path = latestProject.editor_settings_path;
-
-        return {
-            ...latestProject,
-            recoveredCodeEditorConfigFiles:
-                recoveredFiles.size > 0 ? [...recoveredFiles] : undefined,
-        };
-    }
-
-    /**
-     * Applies one code editor integration to a project configuration.
-     *
-     * @param project - Project configuration to update.
-     * @param codeEditorId - Code editor integration to apply.
-     * @param previousCodeEditorId - Previously configured integration.
-     */
-    private async applyCodeEditorConfiguration(
-        project: ProjectDetails,
-        codeEditorId: CodeEditorId,
-        previousCodeEditorId: CodeEditorId | null,
-    ): Promise<string[]> {
-        await this.codeEditors.assertIntegrationSelectable(codeEditorId);
-
-        if (!project.launch_path) {
-            throw new Error(
-                t('projects:setCodeEditor.errors.missingLaunchPath'),
-            );
-        }
-
-        const definition = getProjectDefinition(
-            project.release.version_number,
-            DEFAULT_PROJECT_DEFINITION,
-        );
-        if (!definition) {
-            throw new Error(
-                t('projects:setCodeEditor.errors.invalidProjectDefinition'),
-            );
-        }
-
-        const settingsFilename = definition.editorConfigFilename(
-            project.release.version_number,
-        );
-        const settingsFile =
-            project.editor_settings_file ||
-            path.resolve(
-                path.dirname(project.launch_path),
-                'editor_data',
-                settingsFilename,
-            );
-        const applied = await this.codeEditors.applyToProject(codeEditorId, {
-            projectPath: project.path,
-            godotLaunchPath: project.launch_path,
-            godotVersion: project.release.version_number,
-            mono: project.release.mono,
-            editorSettingsFile: settingsFile,
-            editorSettingsFilename: settingsFilename,
-            editorSettingsFormat: definition.editorConfigFormat,
-            previousCodeEditorId,
-        });
-
-        project.editor_settings_file = applied.editorSettingsFile;
-        project.editor_settings_path = path.dirname(applied.editorSettingsFile);
-        return applied.recoveredConfigFiles;
-    }
-
-    /**
-     * Refreshes the tray and publishes successfully persisted projects.
-     *
-     * @param projects - Final persisted project list.
-     */
-    private publishProjects(projects: ProjectDetails[]): void {
-        void updateLinuxTray();
-        const webContents = getMainWindow()?.webContents;
-        if (!webContents || webContents.isDestroyed?.()) {
-            return;
-        }
-        ipcWebContentsSend('projects-updated', webContents, projects);
     }
 }
 
@@ -1784,34 +997,6 @@ function hasControlCharacters(value: string): boolean {
         const codePoint = character.codePointAt(0) ?? 0;
         return codePoint <= 31 || codePoint === 127;
     });
-}
-
-/**
- * Resolves the isolated editor configuration directory for a project.
- *
- * @param project - Project whose editor directory is required.
- * @param installLocation - Configured editor installation location.
- * @returns The project editor directory.
- */
-function resolveProjectEditorPath(
-    project: ProjectDetails,
-    installLocation: string,
-): string {
-    if (project.launch_path) {
-        return path.dirname(project.launch_path);
-    }
-    if (project.editor_settings_file) {
-        return path.dirname(path.dirname(project.editor_settings_file));
-    }
-    if (project.editor_settings_path) {
-        return path.dirname(project.editor_settings_path);
-    }
-
-    return path.resolve(
-        installLocation,
-        EDITOR_CONFIG_DIRNAME,
-        sanitiseProjectDirectoryName(project.name),
-    );
 }
 
 /**
