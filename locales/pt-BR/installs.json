@@ -194,5 +194,17 @@
             "used": "Este editor está em uso ou é gerenciado externamente. Ele foi mantido.",
             "failed": "Não foi possível remover os editores selecionados. Tente novamente."
         }
+    },
+    "commandLine": {
+        "title": "Godot padrão da linha de comando",
+        "actions": "Ações do editor",
+        "use": "Usar como Godot padrão da linha de comando",
+        "remove": "Remover como Godot padrão da linha de comando",
+        "tooltip": "Usado ao digitar godot em um terminal. Usa as preferências normais deste editor, independentemente das preferências por projeto do Godot Launcher.",
+        "explanation": "Ao digitar godot são usadas as preferências normais deste editor. Não são usadas as preferências separadas que o Godot Launcher mantém para cada projeto, como os temas do editor e os atalhos de teclado.\n\nAbra o projeto pelo Godot Launcher para usar suas preferências do editor por projeto.",
+        "enabled": "godot agora usa {{name}}. Reinicie o terminal para usar o comando.",
+        "cleared": "O comando godot criado pelo Godot Launcher foi removido. A configuração do PATH foi mantida para uso futuro.",
+        "conflict": "Outro comando godot tem prioridade: {{command}}. O comando existente e a ordem do PATH foram mantidos. Resolva esse conflito na configuração do shell para usar o editor selecionado.",
+        "removalWarning": "Este editor é seu Godot padrão da linha de comando. Removê-lo também removerá o comando godot criado pelo Godot Launcher."
     }
 }

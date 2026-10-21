@@ -5,6 +5,7 @@ import { StatusBadge } from '../../../components/ui/status-badge.component';
 
 type RemoveEditorConfirmProps = {
     message: string;
+    commandLineWarning?: string;
     detail: string;
     usage: string;
     usageCount: number;
@@ -22,6 +23,7 @@ type RemoveEditorConfirmProps = {
  */
 export function RemoveEditorConfirm({
     message,
+    commandLineWarning,
     detail,
     usage,
     usageCount,
@@ -62,6 +64,9 @@ export function RemoveEditorConfirm({
         <div className="flex flex-col gap-[12px]">
             <p className="font-semibold break-words">{message}</p>
             <p className="text-base-content/75">{detail}</p>
+            {commandLineWarning && (
+                <p className="text-warning">{commandLineWarning}</p>
+            )}
             <div>
                 <StatusBadge
                     tone={usageCount > 0 ? 'warning' : 'neutral'}

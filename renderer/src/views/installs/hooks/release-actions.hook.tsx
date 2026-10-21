@@ -34,6 +34,7 @@ type UseReleaseActionsArgs = {
     ) => Promise<InstallReleaseResult>;
     removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
     getProjectUsageCount: (release: InstalledRelease) => number;
+    commandLineDefaultKey?: string | null;
 };
 
 export const createReleaseActions = (
@@ -56,6 +57,7 @@ export function useReleaseActions({
     reinstallRelease,
     removeRelease,
     getProjectUsageCount,
+    commandLineDefaultKey,
 }: UseReleaseActionsArgs) {
     const [busyAction, setBusyAction] = useState<{
         releaseKey: string;
@@ -147,6 +149,11 @@ export function useReleaseActions({
                             : t('dialogs:removeRelease.message', {
                                   version: release.version,
                               })
+                    }
+                    commandLineWarning={
+                        commandLineDefaultKey === getReleaseActionKey(release)
+                            ? t('installs:commandLine.removalWarning')
+                            : undefined
                     }
                     detail={t(
                         custom

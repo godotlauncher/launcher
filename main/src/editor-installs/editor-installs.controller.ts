@@ -30,6 +30,23 @@ export class EditorInstallsController implements EditorInstallsBridge {
         private readonly installer: EditorInstallService,
     ) {}
 
+    /** Gets the registered default command-line editor. */
+    @EditorInstallsHandler('getCommandLineGodot')
+    getCommandLineGodot() {
+        return this.installedEditors.getCommandLineGodot();
+    }
+
+    /**
+     * Selects an installed editor for terminal use or clears the wrapper.
+     * @param release - Registered version/flavour, or null to clear.
+     */
+    @EditorInstallsHandler('setCommandLineGodot')
+    setCommandLineGodot(
+        release: Pick<InstalledRelease, 'version' | 'mono'> | null,
+    ) {
+        return this.installedEditors.setCommandLineGodot(release);
+    }
+
     /** Gets every registered editor. */
     @EditorInstallsHandler('getInstalledEditors')
     getInstalledEditors() {

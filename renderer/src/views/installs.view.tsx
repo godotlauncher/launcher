@@ -29,6 +29,7 @@ import { InstalledReleaseList } from './installs/components/installed-release-li
 import { InstallsHeader } from './installs/components/installs-header.component';
 import { InstallsSearchEmptyState } from './installs/components/installs-search-empty-state.component';
 import { RemoveEditorsConfirm } from './installs/components/remove-editors-confirm.component';
+import { useCommandLineGodot } from './installs/hooks/command-line-godot.hook';
 import { useCustomEditorManifestDrop } from './installs/hooks/custom-editor-manifest-drop.hook';
 import { useCustomEditorManifestWorkflow } from './installs/hooks/custom-editor-manifest-workflow.hook';
 import { useEditorSelection } from './installs/hooks/editor-selection.hook';
@@ -116,6 +117,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         loading,
         hasError,
     } = useRelease();
+    const commandLine = useCommandLineGodot(installedReleases);
     const {
         isReleaseActionBusy,
         runReleaseAction,
@@ -129,6 +131,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         checkAllReleasesValid,
         reinstallRelease,
         removeRelease,
+        commandLineDefaultKey: commandLine.defaultKey,
         getProjectUsageCount: (release) =>
             getEditorProjectUsageCount(release, projects),
     });
@@ -169,6 +172,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
             (renderLayout, close) => (
                 <RemoveEditorsConfirm
                     selections={selections}
+                    commandLineDefaultKey={commandLine.defaultKey}
                     projects={projects}
                     t={t}
                     onRemove={handleRemoveSelected}
@@ -332,6 +336,10 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         ) : (
                             <InstalledReleaseList
                                 rows={filteredRows}
+                                commandLineDefaultKey={commandLine.defaultKey}
+                                commandLinePendingKey={commandLine.pendingKey}
+                                commandLineBusy={commandLine.busy}
+                                onCommandLineSelect={commandLine.select}
                                 t={t}
                                 isReleaseActionBusy={(release, action) =>
                                     removingKeys.has(

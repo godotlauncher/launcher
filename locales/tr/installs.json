@@ -194,5 +194,17 @@
             "used": "Bu düzenleyici kullanılıyor veya haricen yönetiliyor. Korundu.",
             "failed": "Seçilen düzenleyiciler kaldırılamadı. Yeniden deneyin."
         }
+    },
+    "commandLine": {
+        "title": "Varsayılan komut satırı Godot’u",
+        "actions": "Düzenleyici işlemleri",
+        "use": "Varsayılan komut satırı Godot’u olarak kullan",
+        "remove": "Varsayılan komut satırı Godot’u olmaktan çıkar",
+        "tooltip": "Terminalde godot yazdığınızda kullanılır. Godot Launcher’ın proje başına tercihlerinden bağımsız olarak bu düzenleyicinin normal tercihlerini kullanır.",
+        "explanation": "godot yazdığınızda bu düzenleyicinin normal düzenleyici tercihleri kullanılır. Godot Launcher’ın her proje için ayrı tuttuğu düzenleyici temaları ve klavye kısayolları gibi tercihler kullanılmaz.\n\nProje başına düzenleyici tercihlerini kullanmak için projeyi Godot Launcher’dan açın.",
+        "enabled": "godot artık {{name}} kullanıyor. Komutu kullanmak için terminalinizi yeniden başlatın.",
+        "cleared": "Godot Launcher tarafından oluşturulan godot komutu kaldırıldı. PATH yapılandırması gelecekte kullanım için korundu.",
+        "conflict": "Başka bir godot komutu öncelikli: {{command}}. Mevcut komutunuz ve PATH sırası korundu. Seçilen düzenleyiciyi kullanmak için kabuk yapılandırmanızdaki bu çakışmayı çözün.",
+        "removalWarning": "Bu düzenleyici varsayılan komut satırı Godot’unuzdur. Kaldırılması, Godot Launcher tarafından oluşturulan godot komutunu da kaldıracaktır."
     }
 }

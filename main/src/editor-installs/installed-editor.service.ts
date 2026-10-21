@@ -18,6 +18,8 @@ import type { AppConfig } from '../config/index.js';
 import { t } from '../i18n/index.js';
 import { parseCustomEngineManifest } from '../utils/customEngineManifest.utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { CommandLineGodotService } from './command-line-godot.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { EditorProjectRepairAdapter } from './editor-project-repair.adapter.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import {
@@ -34,6 +36,7 @@ export class InstalledEditorService {
     private readonly activeOfficialInstalls = new Set<string>();
     private readonly activeRemovals = new Set<string>();
     private readonly activeCustomRegistrations = new Set<string>();
+    private readonly activeCommandLineSelections = new Set<string>();
 
     /**
      * Reserves an editor identity until an official install has finished.
@@ -47,6 +50,7 @@ export class InstalledEditorService {
         const identity = getInstalledEditorIdentity(release);
         if (
             this.activeRemovals.has(identity) ||
+            this.activeCommandLineSelections.has(identity) ||
             this.activeCustomRegistrations.has(identity)
         ) {
             throw new Error(t('installs:selection.errors.busy'));
@@ -61,12 +65,49 @@ export class InstalledEditorService {
      * @param store - Atomic installed-editor persistence.
      * @param configService - Runtime application configuration.
      * @param projectRepair - Temporary project repair boundary.
+     * @param commandLine - Per-user command-line registration service.
      */
     constructor(
         private readonly store: InstalledEditorStore,
         private readonly configService: ConfigService<AppConfig>,
         private readonly projectRepair: EditorProjectRepairAdapter,
+        private readonly commandLine: CommandLineGodotService,
     ) {}
+
+    /** Gets the selected default independently of editor health. */
+    getCommandLineGodot() {
+        return this.commandLine.getState();
+    }
+
+    /**
+     * Selects only registered editors, reserving their identity during setup.
+     * @param identity - Version/flavour to select, or null to clear the command.
+     */
+    async setCommandLineGodot(
+        identity: Pick<InstalledRelease, 'version' | 'mono'> | null,
+    ) {
+        if (identity === null) return this.commandLine.setDefault(null);
+        const key = getInstalledEditorIdentity(identity);
+        if (
+            this.activeRemovals.has(key) ||
+            this.activeOfficialInstalls.has(key) ||
+            this.activeCustomRegistrations.has(key) ||
+            this.activeCommandLineSelections.has(key)
+        ) {
+            throw new Error(t('installs:selection.errors.busy'));
+        }
+        this.activeCommandLineSelections.add(key);
+        try {
+            const release = (await this.store.list()).find((candidate) =>
+                hasSameInstalledEditorIdentity(candidate, identity),
+            );
+            if (!release)
+                throw new Error('The selected editor is no longer registered.');
+            return await this.commandLine.setDefault(release);
+        } finally {
+            this.activeCommandLineSelections.delete(key);
+        }
+    }
 
     /** Gets every registered installed editor. */
     getInstalledEditors(): Promise<InstalledRelease[]> {
@@ -79,7 +120,9 @@ export class InstalledEditorService {
      * @param release - Installed editor to persist.
      */
     addInstalledEditor(release: InstalledRelease): Promise<InstalledRelease[]> {
-        return this.store.put(release);
+        return this.commandLine.updateRegisteredEditor(release, () =>
+            this.store.put(release),
+        );
     }
 
     /** Revalidates registered editor executable paths and persists the result. */
@@ -124,6 +167,7 @@ export class InstalledEditorService {
             const identity = getInstalledEditorIdentity(release);
             if (
                 this.activeOfficialInstalls.has(identity) ||
+                this.activeCommandLineSelections.has(identity) ||
                 this.activeRemovals.has(identity) ||
                 this.activeCustomRegistrations.has(identity)
             ) {
@@ -147,7 +191,10 @@ export class InstalledEditorService {
                 };
             }
 
-            const releases = await this.store.put(release);
+            const releases = await this.commandLine.updateRegisteredEditor(
+                release,
+                () => this.store.put(release),
+            );
             await this.projectRepair.revalidateProjects();
             return { success: true, release, releases };
         } catch (error) {
@@ -173,6 +220,7 @@ export class InstalledEditorService {
         const identity = getInstalledEditorIdentity(release);
         if (
             this.activeOfficialInstalls.has(identity) ||
+            this.activeCommandLineSelections.has(identity) ||
             this.activeRemovals.has(identity) ||
             this.activeCustomRegistrations.has(identity)
         ) {
@@ -204,17 +252,18 @@ export class InstalledEditorService {
         try {
             logger.info(`Removing release '${release.version}'`);
 
-            if (
-                release.source !== 'custom' &&
-                release.managed_by_launcher !== false &&
-                fs.existsSync(release.install_path)
-            ) {
-                await fs.promises.rm(release.install_path, {
-                    recursive: true,
-                    force: true,
-                });
-            }
-
+            await this.commandLine.withEditorRemoval(release, async () => {
+                if (
+                    release.source !== 'custom' &&
+                    release.managed_by_launcher !== false &&
+                    fs.existsSync(release.install_path)
+                ) {
+                    await fs.promises.rm(release.install_path, {
+                        recursive: true,
+                        force: true,
+                    });
+                }
+            });
             const releases = await this.store.remove(release);
             try {
                 await this.projectRepair.removeEditorFromProjects(release);
@@ -268,6 +317,7 @@ export class InstalledEditorService {
             seen.add(identity);
             if (
                 this.activeOfficialInstalls.has(identity) ||
+                this.activeCommandLineSelections.has(identity) ||
                 this.activeRemovals.has(identity) ||
                 this.activeCustomRegistrations.has(identity) ||
                 isInstallPending?.(selection.release)

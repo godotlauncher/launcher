@@ -7,6 +7,7 @@ import { EditorCatalogModule } from '../editor-catalog/editor-catalog.module.js'
 import { JsonStoreModule } from '../json-store/json-store.module.js';
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
 import { ProjectsStoreModule } from '../projects/projects-store.module.js';
+import { CommandLineGodotService } from './command-line-godot.service.js';
 import { EditorInstallService } from './editor-install.service.js';
 import { EditorInstallProgressService } from './editor-install-progress.service.js';
 import { EditorInstallsController } from './editor-installs.controller.js';
@@ -38,6 +39,7 @@ import { InstalledEditorStore } from './installed-editor.store.js';
                 ),
         },
         EditorProjectRepairAdapter,
+        CommandLineGodotService,
         InstalledEditorService,
         EditorInstallProgressService,
         EditorInstallService,
