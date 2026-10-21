@@ -337,6 +337,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                             <InstalledReleaseList
                                 rows={filteredRows}
                                 commandLineDefaultKey={commandLine.defaultKey}
+                                commandLinePendingKey={commandLine.pendingKey}
                                 commandLineBusy={commandLine.busy}
                                 onCommandLineSelect={commandLine.select}
                                 t={t}

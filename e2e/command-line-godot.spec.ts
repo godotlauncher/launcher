@@ -52,14 +52,32 @@ test.afterAll(async () => {
 });
 
 test('selects through Electron, explains preferences and forwards terminal IO, directory, arguments and status', async () => {
-    await firstRow.getByRole('button', { name: 'Editor actions', exact: true }).click();
-    await page.getByRole('button', { name: 'Use as default command-line Godot', exact: true }).click();
+    await holdCommandLineSetup();
+    await firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
     const confirmation = page.getByRole('dialog', { name: 'Use as default command-line Godot', exact: true });
     await expect(confirmation.getByText(/Typing godot uses this editor/)).toBeVisible();
-    await confirmation.getByRole('button', { name: 'Ok', exact: true }).click();
+    const ok = confirmation.getByRole('button', { name: 'Ok', exact: true });
+    try {
+        await ok.click();
+        await expect(ok).toBeDisabled();
+        await expect(ok).toHaveAttribute('aria-busy', 'true');
+        await expect(ok.locator('span[aria-hidden="true"]')).toBeVisible();
+        await expect(confirmation.getByRole('button', { name: 'Cancel', exact: true })).toBeDisabled();
+        await ok.evaluate(button => { for (let i = 0; i < 100; i++) (button as HTMLButtonElement).click(); });
+        await page.keyboard.press('Escape');
+        await expect(confirmation).toBeVisible();
+        expect(await app.evaluate(() => (globalThis as typeof globalThis & { commandLineCalls: number }).commandLineCalls)).toBe(1);
+        if (process.env.GODOT_LAUNCHER_PREVIEW_DIR) {
+            await fs.mkdir(process.env.GODOT_LAUNCHER_PREVIEW_DIR, { recursive: true });
+            await page.screenshot({ path: path.join(process.env.GODOT_LAUNCHER_PREVIEW_DIR, 'command-line-godot-busy.png') });
+        }
+    } finally {
+        await releaseCommandLineSetup();
+    }
+    await expect(confirmation).toBeHidden();
     await expect(page.getByText(/Restart your terminal to use the command/)).toBeVisible();
     await page.getByRole('button', { name: 'Ok', exact: true }).click();
-    await expect(firstRow.getByLabel('Default command-line Godot', { exact: true })).toBeVisible();
+    await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
     const result = await run(wrapper, ['--headless', 'value with spaces', '$(echo literal)', "a'b", ''], home);
     expect(result.code).toBe(23);
     expect(result.stdout.split('\n')).toEqual([home, '--headless', 'value with spaces', '$(echo literal)', "a'b", '', '']);
@@ -78,31 +96,101 @@ test('retains the default on external disappearance and reports a missing target
     const result = await run(wrapper, ['--version'], home);
     expect(result.code).toBe(127);
     expect(result.stderr).toContain('selected Godot editor is unavailable');
-    await expect(firstRow.getByLabel('Default command-line Godot', { exact: true })).toBeVisible();
+    await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await fs.rename(`${executable}.away`, executable);
+});
+
+test('shows the target button as busy during a failed switch and keeps the previous default', async () => {
+    await holdCommandLineSetup(true);
+    try {
+        await secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
+        const pending = secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true });
+        await expect(pending).toBeVisible();
+        await expect(pending).toHaveAttribute('aria-busy', 'true');
+        await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'false');
+        await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toBeDisabled();
+    } finally {
+        await releaseCommandLineSetup();
+    }
+    const error = page.getByRole('dialog', { name: 'Error', exact: true });
+    await expect(error).toContainText('Simulated command-line setup failure');
+    await error.getByRole('button', { name: 'Ok', exact: true }).click();
+    await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-busy', 'false');
+    await expect(secondRow).toHaveAttribute('aria-busy', 'false');
+    await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toBeEnabled();
+});
+
+test('warns about an existing command without repeating the restart reminder', async () => {
+    const profile = path.join(home, '.bashrc');
+    const original = await fs.readFile(profile, 'utf8');
+    try {
+        await fs.writeFile(profile, `${original}\nfunction godot() { echo another-editor; }\n`);
+        await secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
+        const warning = page.getByRole('dialog', { name: 'Default command-line Godot', exact: true });
+        await expect(warning).toContainText('Another godot command takes precedence');
+        await expect(warning).not.toContainText('Restart your terminal');
+        await warning.getByRole('button', { name: 'Ok', exact: true }).click();
+    } finally {
+        await fs.writeFile(profile, original);
+    }
+    await firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
+    await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('shows the restart reminder again when a switch repairs PATH setup', async () => {
+    await fs.writeFile(path.join(home, '.profile'), '# PATH configuration removed\n');
+    await secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
+    const reminder = page.getByRole('dialog', { name: 'Default command-line Godot', exact: true });
+    await expect(reminder).toContainText('Restart your terminal');
+    await reminder.getByRole('button', { name: 'Ok', exact: true }).click();
+    await firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
+    await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('switches and clears the default while keeping PATH setup for reuse', async () => {
     const originalProfile = await fs.readFile(path.join(home, '.bashrc'), 'utf8');
-    await secondRow.getByRole('button', { name: 'Editor actions', exact: true }).click();
-    await page.getByRole('button', { name: 'Use as default command-line Godot', exact: true }).click();
+    await holdCommandLineSetup();
+    try {
+        await secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
+        const pending = secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true });
+        await expect(pending).toBeVisible();
+        await expect(pending).toHaveAttribute('aria-busy', 'true');
+        await expect(pending.locator('span[aria-hidden="true"]')).toBeVisible();
+        await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        if (process.env.GODOT_LAUNCHER_PREVIEW_DIR) {
+            await fs.mkdir(process.env.GODOT_LAUNCHER_PREVIEW_DIR, { recursive: true });
+            await page.screenshot({ path: path.join(process.env.GODOT_LAUNCHER_PREVIEW_DIR, 'command-line-godot-switch-busy.png') });
+        }
+    } finally {
+        await releaseCommandLineSetup();
+    }
+    await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-busy', 'false');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    await holdCommandLineSetup();
+    try {
+        await secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
+        await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-busy', 'true');
+        await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    } finally {
+        await releaseCommandLineSetup();
+    }
     await page.getByRole('button', { name: 'Ok', exact: true }).click();
-    await expect(secondRow.getByLabel('Default command-line Godot', { exact: true })).toBeVisible();
-    await expect(firstRow.getByLabel('Default command-line Godot', { exact: true })).toHaveCount(0);
-    await secondRow.getByRole('button', { name: 'Editor actions', exact: true }).click();
-    await page.getByRole('button', { name: 'Remove as default command-line Godot', exact: true }).click();
-    await page.getByRole('button', { name: 'Ok', exact: true }).click();
-    await expect(secondRow.getByLabel('Default command-line Godot', { exact: true })).toHaveCount(0);
+    await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'false');
     await expect(fs.stat(wrapper)).rejects.toMatchObject({ code: 'ENOENT' });
     expect(await fs.readFile(path.join(home, '.bashrc'), 'utf8')).toBe(originalProfile);
     expect((await fs.stat(path.dirname(wrapper))).isDirectory()).toBe(true);
 });
 
 test('warns on single and bulk removal and clears only the wrapper on confirmed removal', async () => {
-    await secondRow.getByRole('button', { name: 'Editor actions', exact: true }).click();
-    await page.getByRole('button', { name: 'Use as default command-line Godot', exact: true }).click();
+    await secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
     await page.getByRole('dialog', { name: 'Use as default command-line Godot', exact: true }).getByRole('button', { name: 'Ok', exact: true }).click();
-    await page.getByRole('button', { name: 'Ok', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await secondRow.getByRole('button', { name: /Remove|Delete/ }).click();
     const warning = 'This editor is your default command-line Godot. Removing it will also remove the godot command created by Godot Launcher.';
     await expect(page.getByText(warning, { exact: true })).toBeVisible();
@@ -129,7 +217,7 @@ test('respects ZDOTDIR from .zshenv and detects login-profile conflicts', async 
     const adapter = new CommandLinePathAdapter({ platform: os.platform(), home: shellHome, env, shell: '/bin/zsh' });
     await fs.mkdir(adapter.binDirectory, { recursive: true });
     await fs.writeFile(adapter.wrapperPath, createGodotWrapper(executable, os.platform()), { mode: 0o755 });
-    expect(await adapter.register()).toBeNull();
+    expect(await adapter.register()).toEqual({ conflict: null, pathChanged: true });
     expect(await fs.readFile(path.join(config, '.zshrc'), 'utf8')).toContain(adapter.binDirectory);
     await expect(fs.stat(path.join(shellHome, '.zshrc'))).rejects.toMatchObject({ code: 'ENOENT' });
     const resolved = await new Promise<string>((resolve, reject) => execFile('/bin/zsh', ['-ic', 'command -v godot'], { env }, (error, stdout) => error ? reject(error) : resolve(stdout.trim())));
@@ -138,21 +226,52 @@ test('respects ZDOTDIR from .zshenv and detects login-profile conflicts', async 
     await fs.mkdir(existing);
     await fs.writeFile(path.join(existing, 'godot'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
     await fs.writeFile(path.join(config, '.zprofile'), 'export PATH="$HOME/existing-bin:$PATH"\n');
-    expect(await adapter.register()).toBe(path.join(existing, 'godot'));
+    expect(await adapter.register()).toEqual({ conflict: path.join(existing, 'godot'), pathChanged: false });
 });
 
 test('runs the selected editor with Godot Launcher closed', async () => {
     await page.getByRole('button', { name: 'Disable multi-select' }).click();
-    await firstRow.getByRole('button', { name: 'Editor actions', exact: true }).click();
-    await page.getByRole('button', { name: 'Use as default command-line Godot', exact: true }).click();
+    await firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
     await page.getByRole('dialog', { name: 'Use as default command-line Godot', exact: true }).getByRole('button', { name: 'Ok', exact: true }).click();
-    await page.getByRole('button', { name: 'Ok', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await app.close();
     appClosed = true;
     const result = await run(wrapper, ['--version'], home);
     expect(result.code).toBe(23);
     expect(result.stdout).toContain('--version');
 });
+
+/**
+ * Holds the real preload request so busy UI can be inspected without timing guesses.
+ * @param fail - Whether the held request should fail before calling the real handler.
+ */
+async function holdCommandLineSetup(fail = false) {
+    await app.evaluate(({ ipcMain }, shouldFail) => {
+        const channel = 'editorInstalls.setCommandLineGodot';
+        const ipc = ipcMain as typeof ipcMain & { _invokeHandlers: Map<string, (...args: unknown[]) => unknown> };
+        const handler = ipc._invokeHandlers.get(channel)!;
+        const gate = globalThis as typeof globalThis & { commandLineCalls: number; releaseCommandLineSetup: () => void; restoreCommandLineSetup: () => void };
+        gate.commandLineCalls = 0;
+        const pending = new Promise<void>(resolve => { gate.releaseCommandLineSetup = resolve; });
+        gate.restoreCommandLineSetup = () => { ipcMain.removeHandler(channel); ipcMain.handle(channel, handler); };
+        ipcMain.removeHandler(channel);
+        ipcMain.handle(channel, async (...args) => {
+            gate.commandLineCalls++;
+            await pending;
+            if (shouldFail) throw new Error('Simulated command-line setup failure');
+            return handler(...args);
+        });
+    }, fail);
+}
+
+/** Releases the held request and restores the production handler. */
+async function releaseCommandLineSetup() {
+    await app.evaluate(() => {
+        const gate = globalThis as typeof globalThis & { releaseCommandLineSetup: () => void; restoreCommandLineSetup: () => void };
+        gate.releaseCommandLineSetup();
+        gate.restoreCommandLineSetup();
+    });
+}
 
 /**
  * Runs a real generated wrapper or fresh interactive shell with an isolated home.

@@ -1,12 +1,19 @@
 import { execFile } from 'node:child_process';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import type { CommandLineGodotResult } from '@shared/contracts';
 import {
     createGodotPathBlock,
     quoteShellArgument,
 } from './command-line-godot.util.js';
 
 const PATH_BLOCK_START = '# >>> Godot Launcher PATH >>>';
+const PATH_CHANGED_MARKER = 'GODOT_LAUNCHER_PATH_CHANGED';
+
+type PathRegistrationResult = Pick<
+    CommandLineGodotResult,
+    'conflict' | 'pathChanged'
+>;
 
 /** Paths and environment used by one user's command registration. */
 export type CommandLinePathOptions = {
@@ -50,17 +57,22 @@ export class CommandLinePathAdapter {
         );
     }
 
-    /** Adds the managed directory for future terminals and reports an existing command. */
-    async register(): Promise<string | null> {
+    /** Reports actual PATH setup changes and any existing command taking precedence. */
+    async register(): Promise<PathRegistrationResult> {
         if (this.options.platform === 'win32') return this.registerWindows();
         const shell = path.basename(this.options.shell);
         const conflict = await this.findShellConflict(shell);
+        let pathChanged = false;
         if (shell === 'zsh') {
             const directory = await this.resolveZshDirectory();
-            await this.appendBlock(path.join(directory, '.zshrc'));
+            pathChanged = await this.appendBlock(
+                path.join(directory, '.zshrc'),
+            );
         } else if (shell === 'bash' || shell === 'sh') {
             if (shell === 'bash')
-                await this.appendBlock(path.join(this.options.home, '.bashrc'));
+                pathChanged = await this.appendBlock(
+                    path.join(this.options.home, '.bashrc'),
+                );
             const profiles =
                 shell === 'bash'
                     ? ['.bash_profile', '.bash_login', '.profile']
@@ -76,7 +88,10 @@ export class CommandLinePathAdapter {
                         throw error;
                 }
             }
-            await this.appendBlock(path.join(this.options.home, profile));
+            pathChanged =
+                (await this.appendBlock(
+                    path.join(this.options.home, profile),
+                )) || pathChanged;
         } else if (shell === 'fish') {
             const config =
                 this.options.env.XDG_CONFIG_HOME ||
@@ -94,8 +109,10 @@ export class CommandLinePathAdapter {
                 throw new Error(
                     'The Godot Launcher fish PATH file has been changed. Restore it before selecting a command-line default.',
                 );
-            if (!current)
+            if (!current) {
                 await fs.writeFile(file, block, { flag: 'wx', mode: 0o600 });
+                pathChanged = true;
+            }
         } else {
             const entries = (this.options.env.PATH || '').split(':');
             if (!entries.includes(this.binDirectory)) {
@@ -104,7 +121,7 @@ export class CommandLinePathAdapter {
                 );
             }
         }
-        return conflict;
+        return { conflict, pathChanged };
     }
 
     /** Resolves Zsh's startup directory after it reads the user's .zshenv. */
@@ -131,10 +148,10 @@ export class CommandLinePathAdapter {
     }
 
     /**
-     * Adds an identifiable block without modifying unrelated shell configuration.
+     * Reports whether a managed block was added, preserving unrelated configuration.
      * @param file - User-owned startup file selected for this shell.
      */
-    private async appendBlock(file: string): Promise<void> {
+    private async appendBlock(file: string): Promise<boolean> {
         const current = await this.readOptional(file);
         if (current.includes(PATH_BLOCK_START)) {
             if (
@@ -146,7 +163,7 @@ export class CommandLinePathAdapter {
                     'The Godot Launcher PATH block has been changed. Restore it before selecting a command-line default.',
                 );
             }
-            return;
+            return false;
         }
         await fs.mkdir(path.dirname(file), { recursive: true });
         await fs.appendFile(
@@ -154,6 +171,7 @@ export class CommandLinePathAdapter {
             `${current.endsWith('\n') || !current ? '' : '\n'}\n${createGodotPathBlock(this.binDirectory)}`,
             { mode: 0o600 },
         );
+        return true;
     }
 
     /**
@@ -255,13 +273,13 @@ export class CommandLinePathAdapter {
     }
 
     /** Preserves the raw user registry PATH and broadcasts changes without elevation. */
-    private async registerWindows(): Promise<string | null> {
+    private async registerWindows(): Promise<PathRegistrationResult> {
         if (this.options.fixture) {
-            await fs.writeFile(
-                path.join(this.binDirectory, '.fixture-user-path'),
-                this.binDirectory,
-            );
-            return null;
+            const file = path.join(this.binDirectory, '.fixture-user-path');
+            const pathChanged =
+                (await this.readOptional(file)) !== this.binDirectory;
+            if (pathChanged) await fs.writeFile(file, this.binDirectory);
+            return { conflict: null, pathChanged };
         }
         const directory = Buffer.from(this.binDirectory, 'utf8').toString(
             'base64',
@@ -278,6 +296,7 @@ try {
   if ($entries -notcontains $bin.TrimEnd('\\')) {
     $updated = if ([string]::IsNullOrEmpty($raw)) { $bin } else { $raw + $(if ($raw.EndsWith(';')) { '' } else { ';' }) + $bin }
     $key.SetValue('Path', $updated, $kind)
+    Write-Output '${PATH_CHANGED_MARKER}'
     Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class GodotPathChange { [DllImport("user32.dll", CharSet=CharSet.Unicode, SetLastError=true)] public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint msg, UIntPtr wParam, string lParam, uint flags, uint timeout, out UIntPtr result); }'
     $result = [UIntPtr]::Zero
     [void][GodotPathChange]::SendMessageTimeout([IntPtr]0xffff, 0x1a, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result)
@@ -320,6 +339,13 @@ try {
                 maxBuffer: 64 * 1024,
             },
         );
-        return stdout.trim() || null;
+        const lines = stdout.trim().split(/\r?\n/);
+        const pathChanged = lines[0] === PATH_CHANGED_MARKER;
+        return {
+            pathChanged,
+            conflict:
+                (pathChanged ? lines.slice(1) : lines).join('\n').trim() ||
+                null,
+        };
     }
 }

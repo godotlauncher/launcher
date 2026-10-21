@@ -48,7 +48,10 @@ describe('per-user command PATH registration', () => {
             env: { ZDOTDIR: dotdir },
             shell: '/bin/zsh',
         });
-        await adapter.register();
+        expect(await adapter.register()).toEqual({
+            conflict: null,
+            pathChanged: true,
+        });
         expect(fs.appendFile).toHaveBeenCalledWith(
             path.join(dotdir, '.zshrc'),
             expect.stringContaining('Godot Launcher PATH'),
@@ -57,7 +60,10 @@ describe('per-user command PATH registration', () => {
         const appended = fs.appendFile.mock.calls[0][1];
         fs.readFile.mockResolvedValue(`export EDITOR=vim\n${appended}`);
         fs.appendFile.mockClear();
-        await adapter.register();
+        expect(await adapter.register()).toEqual({
+            conflict: null,
+            pathChanged: false,
+        });
         expect(fs.appendFile).not.toHaveBeenCalled();
     });
 
@@ -96,7 +102,10 @@ describe('per-user command PATH registration', () => {
             env: {},
             shell: '/bin/bash',
         });
-        expect(await adapter.register()).toBe('/usr/bin/godot');
+        expect(await adapter.register()).toEqual({
+            conflict: '/usr/bin/godot',
+            pathChanged: true,
+        });
         expect(execution.execFile.mock.calls[0][1]).toEqual([
             '-ic',
             'command -v godot',
@@ -128,7 +137,10 @@ describe('per-user command PATH registration', () => {
             env: {},
             shell: '/bin/zsh',
         });
-        expect(await adapter.register()).toBe('/login/bin/godot');
+        expect(await adapter.register()).toEqual({
+            conflict: '/login/bin/godot',
+            pathChanged: true,
+        });
     });
 
     it('allows manual PATH setup for an unsupported shell without editing its files', async () => {
@@ -144,7 +156,10 @@ describe('per-user command PATH registration', () => {
             env: { PATH: adapter.binDirectory },
             shell: '/bin/other-shell',
         });
-        expect(await configured.register()).toBeNull();
+        expect(await configured.register()).toEqual({
+            conflict: null,
+            pathChanged: false,
+        });
         expect(fs.appendFile).not.toHaveBeenCalled();
         expect(execution.execFile).not.toHaveBeenCalled();
     });
@@ -181,6 +196,51 @@ describe('per-user command PATH registration', () => {
         );
     });
 
+    it('does not report Fish PATH changes when its managed file already exists', async () => {
+        fs.readFile.mockRejectedValueOnce(
+            Object.assign(new Error('Missing'), { code: 'ENOENT' }),
+        );
+        const adapter = new CommandLinePathAdapter({
+            platform: 'linux',
+            home,
+            env: {},
+            shell: '/usr/bin/fish',
+        });
+        expect(await adapter.register()).toEqual({
+            conflict: null,
+            pathChanged: true,
+        });
+        fs.readFile.mockResolvedValue(fs.writeFile.mock.calls[0][1]);
+        fs.writeFile.mockClear();
+        expect(await adapter.register()).toEqual({
+            conflict: null,
+            pathChanged: false,
+        });
+        expect(fs.writeFile).not.toHaveBeenCalled();
+    });
+
+    it('reports a Bash login-profile repair even when its interactive block already exists', async () => {
+        const adapter = new CommandLinePathAdapter({
+            platform: 'linux',
+            home,
+            env: {},
+            shell: '/bin/bash',
+        });
+        await adapter.register();
+        const block = fs.appendFile.mock.calls[0][1];
+        fs.appendFile.mockClear();
+        fs.readFile.mockImplementation(async (file) =>
+            file === path.join(home, '.bashrc') ? block : 'export EDITOR=vim\n',
+        );
+        expect(await adapter.register()).toEqual({
+            conflict: null,
+            pathChanged: true,
+        });
+        expect(fs.appendFile.mock.calls.map((call) => call[0])).toEqual([
+            path.join(home, '.profile'),
+        ]);
+    });
+
     it('sets up Fish when command lookup returns its missing-command status', async () => {
         execution.execFile.mockImplementation(
             (_file, _args, _options, callback) =>
@@ -199,7 +259,10 @@ describe('per-user command PATH registration', () => {
             env: {},
             shell: '/usr/bin/fish',
         });
-        await expect(adapter.register()).resolves.toBeNull();
+        await expect(adapter.register()).resolves.toEqual({
+            conflict: null,
+            pathChanged: true,
+        });
         expect(fs.writeFile).toHaveBeenCalledWith(
             path.join(home, '.config', 'fish', 'conf.d', 'godot-launcher.fish'),
             expect.stringContaining('fish_add_path'),
@@ -229,7 +292,10 @@ describe('per-user command PATH registration', () => {
         fs.readFile.mockRejectedValue(
             Object.assign(new Error('Missing'), { code: 'ENOENT' }),
         );
-        expect(await adapter.register()).toBe('godot (Fish function or alias)');
+        expect(await adapter.register()).toEqual({
+            conflict: 'godot (Fish function or alias)',
+            pathChanged: true,
+        });
     });
 
     it('updates only raw Windows user PATH and broadcasts without elevation', async () => {
@@ -243,7 +309,10 @@ describe('per-user command PATH registration', () => {
             env: {},
             shell: 'cmd.exe',
         });
-        expect(await adapter.register()).toBe('C:\\Existing\\godot.exe');
+        expect(await adapter.register()).toEqual({
+            conflict: 'C:\\Existing\\godot.exe',
+            pathChanged: false,
+        });
         const [file, args] = execution.execFile.mock.calls[0];
         expect(file).toBe(
             'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
@@ -253,5 +322,17 @@ describe('per-user command PATH registration', () => {
         expect(script).toContain("$key.SetValue('Path', $updated, $kind)");
         expect(script).toContain('SendMessageTimeout');
         expect(script).not.toContain('RunAs');
+        execution.execFile.mockImplementation(
+            (_file, _args, _options, callback) =>
+                callback(
+                    null,
+                    'GODOT_LAUNCHER_PATH_CHANGED\r\nC:\\Existing\\godot.exe\r\n',
+                    '',
+                ),
+        );
+        expect(await adapter.register()).toEqual({
+            conflict: 'C:\\Existing\\godot.exe',
+            pathChanged: true,
+        });
     });
 });

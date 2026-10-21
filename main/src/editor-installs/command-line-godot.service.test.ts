@@ -72,7 +72,10 @@ describe('command-line Godot ownership and selection', () => {
         io.rm.mockImplementation(async (file) => {
             files.delete(file);
         });
-        platform.register.mockResolvedValue(null);
+        platform.register.mockResolvedValue({
+            conflict: null,
+            pathChanged: false,
+        });
         service = new CommandLineGodotService(
             coordinator as never,
             {
@@ -83,7 +86,10 @@ describe('command-line Godot ownership and selection', () => {
     });
 
     it('persists the registered version and reports existing command precedence', async () => {
-        platform.register.mockResolvedValue('/usr/bin/godot');
+        platform.register.mockResolvedValue({
+            conflict: '/usr/bin/godot',
+            pathChanged: true,
+        });
         const state = await service.setDefault(editor('first'));
         expect(state.selection).toEqual({
             version: 'first',
@@ -91,7 +97,16 @@ describe('command-line Godot ownership and selection', () => {
             editorPath: '/Editors/first',
         });
         expect(state.conflict).toBe('/usr/bin/godot');
+        expect(state.pathChanged).toBe(true);
         expect((await service.getState()).selection).toEqual(state.selection);
+    });
+
+    it('reports unchanged PATH setup while switching or clearing the default', async () => {
+        await service.setDefault(editor('first'));
+        expect((await service.setDefault(editor('second'))).pathChanged).toBe(
+            false,
+        );
+        expect((await service.setDefault(null)).pathChanged).toBe(false);
     });
 
     it('removes only the owned wrapper and selection, keeping PATH setup', async () => {

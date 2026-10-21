@@ -11,7 +11,8 @@ export type CommandLineGodotState = {
     binDirectory: string;
 };
 
-/** Reports a completed selection and any existing command taking precedence. */
+/** Reports selection, PATH setup changes and any command taking precedence. */
 export type CommandLineGodotResult = CommandLineGodotState & {
     conflict: string | null;
+    pathChanged: boolean;
 };

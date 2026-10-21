@@ -21,13 +21,13 @@ test('Fish registers a missing command and reports an overriding function', asyn
         };
         const adapter = new CommandLinePathAdapter({ platform: process.platform, home, env, shell: fish });
         await fs.mkdir(adapter.binDirectory, { recursive: true });
-        expect(await adapter.register()).toBeNull();
+        expect(await adapter.register()).toEqual({ conflict: null, pathChanged: true });
         await fs.writeFile(adapter.wrapperPath, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
         const resolved = await run(fish, ['-ic', 'command -s godot'], env);
         expect(resolved.code).toBe(0);
         expect(resolved.stdout.trim()).toBe(adapter.wrapperPath);
         await fs.writeFile(path.join(config, 'fish', 'config.fish'), 'function godot\n  echo another-editor\nend\n');
-        expect(await adapter.register()).toBe('godot (Fish function or alias)');
+        expect(await adapter.register()).toEqual({ conflict: 'godot (Fish function or alias)', pathChanged: false });
     } finally {
         await fs.rm(home, { recursive: true, force: true });
     }

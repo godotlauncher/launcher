@@ -177,6 +177,7 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
         let content: string | null = null;
         let selection: CommandLineGodotSelection | null = null;
         let conflict: string | null = null;
+        let pathChanged = false;
         if (release) {
             const executable = getCommandLineExecutable(release, this.platform);
             if (
@@ -193,7 +194,7 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
             );
             content = createGodotWrapper(executable, this.platform);
             await fs.mkdir(this.adapter.binDirectory, { recursive: true });
-            conflict = await this.adapter.register();
+            ({ conflict, pathChanged } = await this.adapter.register());
             selection = {
                 version: release.version,
                 mono: release.mono,
@@ -207,7 +208,12 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
             await this.writeWrapper(previous);
             throw error;
         }
-        return { selection, binDirectory: this.adapter.binDirectory, conflict };
+        return {
+            selection,
+            binDirectory: this.adapter.binDirectory,
+            conflict,
+            pathChanged,
+        };
     }
 
     /** Reads only regular wrapper files bearing the managed ownership marker. */

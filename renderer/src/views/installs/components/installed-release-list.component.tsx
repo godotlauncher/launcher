@@ -7,7 +7,6 @@ import {
     FlaskConical,
     FolderOpen,
     RefreshCw,
-    Terminal,
     Trash2,
     TriangleAlert,
     UserRound,
@@ -24,7 +23,7 @@ import {
     getReleaseActionKey,
     type ReleaseAction,
 } from '../installs-view.model';
-import { CommandLineGodotMenu } from './command-line-godot-menu.component';
+import { CommandLineGodotButton } from './command-line-godot-button.component';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -45,6 +44,7 @@ type InstalledReleaseListProps = {
     selectableKeys?: Set<string>;
     onToggleEditor?: (release: InstalledRelease) => void;
     commandLineDefaultKey?: string | null;
+    commandLinePendingKey?: string | null;
     commandLineBusy?: boolean;
     onCommandLineSelect?: (release: InstalledRelease) => void;
 };
@@ -69,6 +69,7 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     selectableKeys,
     onToggleEditor,
     commandLineDefaultKey,
+    commandLinePendingKey,
     commandLineBusy,
     onCommandLineSelect,
 }) => {
@@ -117,6 +118,7 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
                             }
                             onToggleEditor={onToggleEditor}
                             commandLineDefaultKey={commandLineDefaultKey}
+                            commandLinePendingKey={commandLinePendingKey}
                             commandLineBusy={commandLineBusy}
                             onCommandLineSelect={onCommandLineSelect}
                         />
@@ -147,6 +149,7 @@ type InstalledReleaseRowProps = {
     selectable: boolean;
     onToggleEditor?: (release: InstalledRelease) => void;
     commandLineDefaultKey?: string | null;
+    commandLinePendingKey?: string | null;
     commandLineBusy?: boolean;
     onCommandLineSelect?: (release: InstalledRelease) => void;
 };
@@ -174,13 +177,16 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
     selectable,
     onToggleEditor,
     commandLineDefaultKey,
+    commandLinePendingKey,
     commandLineBusy,
     onCommandLineSelect,
 }) => (
     <article
         className={`flex min-h-14 items-start gap-3 rounded-md ${selected ? 'bg-primary/10' : 'bg-base-content/2 hover:bg-base-content/5'} px-3 py-3 text-base motion-reduce:transition-none ${removing ? 'pointer-events-none opacity-60' : ''}`}
         data-testid={`installedReleaseRow_${release.version}_${release.mono ? 'mono' : 'standard'}`}
-        aria-busy={removing}
+        aria-busy={
+            removing || commandLinePendingKey === getReleaseActionKey(release)
+        }
     >
         {selectionEnabled && (
             <input
@@ -239,18 +245,6 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                                 className="text-purple-500"
                                 aria-hidden="true"
                             />
-                        </span>
-                    </Tooltip>
-                )}
-                {commandLineDefaultKey === getReleaseActionKey(release) && (
-                    <Tooltip placement="top" tip={t('commandLine.tooltip')}>
-                        <span
-                            className="badge badge-sm badge-outline gap-1"
-                            role="img"
-                            aria-label={t('commandLine.title')}
-                        >
-                            <Terminal size={14} aria-hidden="true" />
-                            godot
                         </span>
                     </Tooltip>
                 )}
@@ -483,9 +477,12 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
             !selectionEnabled &&
             !removing &&
             onCommandLineSelect && (
-                <CommandLineGodotMenu
+                <CommandLineGodotButton
                     selected={
                         commandLineDefaultKey === getReleaseActionKey(release)
+                    }
+                    pending={
+                        commandLinePendingKey === getReleaseActionKey(release)
                     }
                     disabled={
                         Boolean(commandLineBusy) ||

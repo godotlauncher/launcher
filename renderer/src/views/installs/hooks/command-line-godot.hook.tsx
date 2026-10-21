@@ -6,6 +6,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../../hooks/alerts.hook';
 import { editorInstallsBridge } from '../../../renderer.bridge';
+import { CommandLineGodotConfirm } from '../components/command-line-godot-confirm.component';
 import { getReleaseActionKey } from '../installs-view.model';
 
 /**
@@ -14,10 +15,11 @@ import { getReleaseActionKey } from '../installs-view.model';
  */
 export function useCommandLineGodot(installed: InstalledRelease[]) {
     const { t } = useTranslation(['installs', 'common']);
-    const { addAlert, addConfirm } = useAlerts();
+    const { addAlert, addCustomConfirm } = useAlerts();
     const [selection, setSelection] =
         useState<CommandLineGodotSelection | null>(null);
     const [busy, setBusy] = useState(true);
+    const [pendingKey, setPendingKey] = useState<string | null>(null);
     const pending = useRef(false);
     const reportLoadError = useEffectEvent((error: unknown) =>
         addAlert(t('common:error'), String(error)),
@@ -52,6 +54,13 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
         if (pending.current) return false;
         pending.current = true;
         setBusy(true);
+        setPendingKey(
+            release
+                ? getReleaseActionKey(release)
+                : selection
+                  ? getReleaseActionKey(selection)
+                  : null,
+        );
         try {
             const result = await editorInstallsBridge.setCommandLineGodot(
                 release
@@ -60,25 +69,28 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
             );
             setSelection(result.selection);
             const message = release
-                ? t('commandLine.enabled', {
-                      name: release.name ?? release.version,
-                  })
+                ? result.pathChanged
+                    ? t('commandLine.enabled', {
+                          name: release.name ?? release.version,
+                      })
+                    : null
                 : t('commandLine.cleared');
-            addAlert(
-                t('commandLine.title'),
-                <div className="flex flex-col gap-3">
-                    <p>{message}</p>
-                    {result.conflict && (
-                        <p>
-                            {t('commandLine.conflict', {
-                                command: result.conflict,
-                            })}
-                        </p>
-                    )}
-                </div>,
-                undefined,
-                result.conflict ? 'warning' : undefined,
-            );
+            if (message || result.conflict)
+                addAlert(
+                    t('commandLine.title'),
+                    <div className="flex flex-col gap-3">
+                        {message && <p>{message}</p>}
+                        {result.conflict && (
+                            <p>
+                                {t('commandLine.conflict', {
+                                    command: result.conflict,
+                                })}
+                            </p>
+                        )}
+                    </div>,
+                    undefined,
+                    result.conflict ? 'warning' : undefined,
+                );
         } catch (error) {
             addAlert(
                 t('common:error'),
@@ -88,6 +100,7 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
             );
         } finally {
             pending.current = false;
+            setPendingKey(null);
             setBusy(false);
         }
         return true;
@@ -95,7 +108,7 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
 
     /**
      * Shows the editor-preferences explanation for initial setup.
-     * @param release - Editor whose menu action was selected.
+     * @param release - Editor whose terminal button was selected.
      */
     const select = (release: InstalledRelease) => {
         if (busy) return;
@@ -107,18 +120,26 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
         } else if (selection) {
             void change(release);
         } else {
-            addConfirm(
+            addCustomConfirm(
                 t('commandLine.use'),
-                <p className="whitespace-pre-line">
-                    {t('commandLine.explanation')}
-                </p>,
-                () => change(release),
+                (renderLayout, close) => (
+                    <CommandLineGodotConfirm
+                        message={t('commandLine.explanation')}
+                        okLabel={t('common:buttons.ok')}
+                        cancelLabel={t('common:buttons.cancel')}
+                        onConfirm={() => change(release)}
+                        renderLayout={renderLayout}
+                        close={close}
+                    />
+                ),
+                [],
             );
         }
     };
     return {
         defaultKey: selection ? getReleaseActionKey(selection) : null,
-        busy,
+        pendingKey,
+        busy: busy || pendingKey !== null,
         select,
     };
 }
