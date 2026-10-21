@@ -7,6 +7,7 @@ import {
     FlaskConical,
     FolderOpen,
     RefreshCw,
+    Terminal,
     Trash2,
     TriangleAlert,
     UserRound,
@@ -245,6 +246,18 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                                 className="text-purple-500"
                                 aria-hidden="true"
                             />
+                        </span>
+                    </Tooltip>
+                )}
+                {commandLineDefaultKey === getReleaseActionKey(release) && (
+                    <Tooltip placement="top" tip={t('commandLine.tooltip')}>
+                        <span
+                            className="badge badge-sm badge-outline gap-1"
+                            role="img"
+                            aria-label={t('commandLine.title')}
+                        >
+                            <Terminal size={14} aria-hidden="true" />
+                            godot
                         </span>
                     </Tooltip>
                 )}

@@ -78,6 +78,7 @@ test('selects through Electron, explains preferences and forwards terminal IO, d
     await expect(page.getByText(/Restart your terminal to use the command/)).toBeVisible();
     await page.getByRole('button', { name: 'Ok', exact: true }).click();
     await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(firstRow.getByRole('img', { name: 'Default command-line Godot', exact: true })).toBeVisible();
     const result = await run(wrapper, ['--headless', 'value with spaces', '$(echo literal)', "a'b", ''], home);
     expect(result.code).toBe(23);
     expect(result.stdout.split('\n')).toEqual([home, '--headless', 'value with spaces', '$(echo literal)', "a'b", '', '']);
@@ -109,6 +110,8 @@ test('shows the target button as busy during a failed switch and keeps the previ
         await expect(pending).toHaveAttribute('aria-busy', 'true');
         await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
         await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'false');
+        await expect(firstRow.getByRole('img', { name: 'Default command-line Godot', exact: true })).toBeVisible();
+        await expect(secondRow.getByRole('img', { name: 'Default command-line Godot', exact: true })).toHaveCount(0);
         await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toBeDisabled();
     } finally {
         await releaseCommandLineSetup();
@@ -172,6 +175,8 @@ test('switches and clears the default while keeping PATH setup for reuse', async
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(firstRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    await expect(secondRow.getByRole('img', { name: 'Default command-line Godot', exact: true })).toBeVisible();
+    await expect(firstRow.getByRole('img', { name: 'Default command-line Godot', exact: true })).toHaveCount(0);
     await holdCommandLineSetup();
     try {
         await secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true }).click();
@@ -183,6 +188,7 @@ test('switches and clears the default while keeping PATH setup for reuse', async
     await page.getByRole('button', { name: 'Ok', exact: true }).click();
     await expect(secondRow.getByRole('button', { name: 'Default command-line Godot', exact: true })).toHaveAttribute('aria-pressed', 'false');
     await expect(fs.stat(wrapper)).rejects.toMatchObject({ code: 'ENOENT' });
+    await expect(secondRow.getByRole('img', { name: 'Default command-line Godot', exact: true })).toHaveCount(0);
     expect(await fs.readFile(path.join(home, '.bashrc'), 'utf8')).toBe(originalProfile);
     expect((await fs.stat(path.dirname(wrapper))).isDirectory()).toBe(true);
 });
