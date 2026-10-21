@@ -7,6 +7,7 @@ import type {
     EditorCatalogRelease,
 } from '@shared/contracts';
 import { normalizeGithubAssetDigest } from '../utils/archive-integrity.util.js';
+import { getMacosAssetArchitectures } from '../utils/macos-asset.util.js';
 import { EDITOR_CATALOG_MIN_VERSION } from './editor-catalog.constants.js';
 import type {
     GithubEditorAsset,
@@ -174,6 +175,7 @@ function mapGithubAsset(
  */
 function getAssetTarget(name: string): AssetTarget | null {
     const normalized = name.toLowerCase();
+    const macosArchitectures = getMacosAssetArchitectures(name);
     if (normalized.includes('windows_arm64')) {
         return { platform: 'win32', architectures: ['arm64'] };
     }
@@ -183,12 +185,8 @@ function getAssetTarget(name: string): AssetTarget | null {
     if (normalized.includes('win32')) {
         return { platform: 'win32', architectures: ['ia32'] };
     }
-    if (
-        normalized.includes('osx') ||
-        normalized.includes('macos') ||
-        normalized.includes('universal')
-    ) {
-        return { platform: 'darwin', architectures: ['x64', 'arm64'] };
+    if (macosArchitectures) {
+        return { platform: 'darwin', architectures: macosArchitectures };
     }
     if (normalized.includes('linux') || normalized.includes('x11')) {
         if (normalized.includes('arm32')) {
