@@ -36,6 +36,18 @@ describe('projectFile utilities', () => {
         vi.clearAllMocks();
     });
 
+    test('preserves equals signs in quoted values and accepts section comments', () => {
+        const parsed = parseGodotProjectFile(
+            '[application] ; settings\nconfig/name="Game=One"\nconfig/icon="res://asset=one.svg"\n',
+        );
+        expect(parsed.get('application')?.get('config/name')).toBe(
+            '"Game=One"',
+        );
+        expect(parsed.get('application')?.get('config/icon')).toBe(
+            '"res://asset=one.svg"',
+        );
+    });
+
     test('parses and serializes a project file', () => {
         const parsedProject = parseGodotProjectFile(projectFile);
 

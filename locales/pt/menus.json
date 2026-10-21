@@ -29,7 +29,8 @@
         "initGit": "Inicializar repositório Git",
         "initGitTooltip": "Cria um novo repositório Git nesta pasta do projeto.",
         "openCodeEditor": "Abrir no {{editor}}",
-        "openTools": "Opções de abertura de {{project}}"
+        "openTools": "Opções de abertura de {{project}}",
+        "duplicate": "Duplicar"
     },
     "release": {
         "openInstalledFolder": "Abrir pasta instalada",

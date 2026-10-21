@@ -29,7 +29,8 @@
         "initGit": "Git リポジトリを初期化",
         "initGitTooltip": "このプロジェクトフォルダーに新しい Git リポジトリを作成します。",
         "openCodeEditor": "{{editor}} で開く",
-        "openTools": "{{project}} の起動オプション"
+        "openTools": "{{project}} の起動オプション",
+        "duplicate": "複製"
     },
     "release": {
         "openInstalledFolder": "インストールフォルダを開く",

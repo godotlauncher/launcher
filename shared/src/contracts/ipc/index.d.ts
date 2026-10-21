@@ -7,6 +7,7 @@ import type { ProjectTagsSnapshot } from '../project-tags/index.js';
 import type {
     FolderProjectScanProgress,
     LaunchProjectResult,
+    ProjectCopyProgress,
     ProjectDetails,
     RemoteProjectImportProgress,
 } from '../projects/index.js';
@@ -18,6 +19,7 @@ import type {
 export type AppEventMap = {
     'app-updates': AppUpdateMessage;
     'projects-updated': ProjectDetails[];
+    'project-copy-progress': ProjectCopyProgress;
     'folder-project-scan-progress': FolderProjectScanProgress;
     'project-tags-updated': ProjectTagsSnapshot;
     'remote-project-import-progress': RemoteProjectImportProgress;

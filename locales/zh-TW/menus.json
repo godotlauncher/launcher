@@ -29,7 +29,8 @@
         "initGit": "初始化 Git 儲存庫",
         "initGitTooltip": "在此專案資料夾中建立新的 Git 儲存庫。",
         "openCodeEditor": "在 {{editor}} 中開啟",
-        "openTools": "{{project}} 的開啟選項"
+        "openTools": "{{project}} 的開啟選項",
+        "duplicate": "建立副本"
     },
     "release": {
         "openInstalledFolder": "開啟已安裝資料夾",

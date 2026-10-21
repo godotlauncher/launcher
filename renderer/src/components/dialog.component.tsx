@@ -163,10 +163,10 @@ export const Dialog: React.FC<DialogProps> = ({
             ref={dialogRef}
             data-testid={testId}
             aria-labelledby={titleId}
-            className={`modal z-60 select-none open:bg-black/65 ${fillWindow ? 'p-[10px]' : 'p-4'}`}
+            className={`modal z-60 select-none open:bg-black/70 ${fillWindow ? 'p-[10px]' : 'p-4'}`}
         >
             <section
-                className={`modal-box relative w-full flex flex-col overflow-hidden p-0 ${panelSizeClassName} ${panelClassName}`}
+                className={`modal-box relative w-full flex flex-col overflow-hidden border border-base-content/20 p-0 ${panelSizeClassName} ${panelClassName}`}
             >
                 <div
                     className="flex min-h-0 flex-1 flex-col"

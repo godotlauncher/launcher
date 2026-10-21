@@ -9,6 +9,7 @@ import type {
     CreateProjectGitOptions,
     CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
+    CreateProjectSource,
     GitIdentity,
     InstalledRelease,
     LaunchProjectOptions,
@@ -207,6 +208,14 @@ export class ProjectsController implements ProjectsBridge {
         );
     }
 
+    /** Cancels a source copy before final registration.
+     * @param jobId - Exact active creation job.
+     */
+    @ProjectsHandler('cancelCreateProjectCopy')
+    async cancelCreateProjectCopy(jobId: string) {
+        return this.projects.cancelCreateProjectCopy(jobId);
+    }
+
     /**
      * Creates and registers a project.
      *
@@ -218,6 +227,7 @@ export class ProjectsController implements ProjectsBridge {
      * @param overwriteProjectPath - Optional existing target to replace.
      * @param gitOptions - Optional initial commit, identity, and Git LFS choices.
      * @param publication - Optional private repository publication request.
+     * @param source - Optional existing project and captured copy choices.
      * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      */
     @ProjectsHandler('createProject')
@@ -231,6 +241,7 @@ export class ProjectsController implements ProjectsBridge {
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
         parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
+        source?: CreateProjectSource,
     ) {
         return this.projects.createProject(
             name,
@@ -242,6 +253,7 @@ export class ProjectsController implements ProjectsBridge {
             gitOptions,
             publication,
             parentRepositoryConsent,
+            ...(source ? [source] : []),
         );
     }
 

@@ -10,6 +10,7 @@ import type {
     CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     CreateProjectResult,
+    CreateProjectSource,
     GitIdentity,
     InstalledRelease,
     LaunchProjectOptions,
@@ -56,6 +57,7 @@ import {
     updateGodotProjectName,
 } from '../utils/godotProject.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
+import { ipcSendToMainWindowSync } from '../utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectCreationService } from './project-creation.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -252,18 +254,24 @@ export class ProjectsService {
         );
     }
 
-    /**
-     * Creates and registers a project.
-     *
-     * @param name - Display name for the new project.
-     * @param release - Godot editor assigned to the project.
-     * @param renderer - Godot renderer selected for the project.
-     * @param codeEditorId - Optional code editor integration.
-     * @param withGit - Whether Git setup is requested.
-     * @param overwriteProjectPath - Optional existing target to replace.
-     * @param gitOptions - Optional initial commit, identity, and Git LFS choices.
-     * @param publication - Optional private repository publication request.
-     * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
+    /** Cancels the exact active source-copy operation.
+     * @param jobId - Active creation job identifier.
+     */
+    async cancelCreateProjectCopy(jobId: string) {
+        return this.projectCreation.cancelCreateProjectCopy(jobId);
+    }
+
+    /** Creates a project using the existing creation and publication pipeline.
+     * @param name - New name.
+     * @param release - Selected editor.
+     * @param renderer - Selected renderer.
+     * @param codeEditorId - Selected integration.
+     * @param withGit - Git choice.
+     * @param overwriteProjectPath - Destination.
+     * @param gitOptions - Git options.
+     * @param publication - Publication options.
+     * @param parentRepositoryConsent - Accepted parent repository.
+     * @param source - Optional project source.
      */
     async createProject(
         name: string,
@@ -275,6 +283,7 @@ export class ProjectsService {
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
         parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
+        source?: CreateProjectSource,
     ): Promise<CreateProjectResult> {
         if (
             publication &&
@@ -296,6 +305,7 @@ export class ProjectsService {
             overwriteProjectPath,
             gitOptions,
             parentRepositoryConsent,
+            ...(source ? [source] : []),
         );
         const usesParentRepository =
             result.gitSetup?.status === 'existing-repository' &&
@@ -310,6 +320,17 @@ export class ProjectsService {
                 ...result,
                 publication: { status: 'not-requested' as const },
             };
+        }
+        if (source) {
+            try {
+                ipcSendToMainWindowSync('project-copy-progress', {
+                    jobId: source.jobId,
+                    stage: 'publishing',
+                    canCancel: false,
+                });
+            } catch {
+                // Progress delivery does not determine publication success.
+            }
         }
         const publicationOutcome = await this.projectPublication.publish(
             result.projectDetails,

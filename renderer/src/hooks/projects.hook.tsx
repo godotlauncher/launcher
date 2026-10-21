@@ -10,6 +10,7 @@ import type {
     CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     CreateProjectResult,
+    CreateProjectSource,
     GitIdentity,
     GitRepositoryInspection,
     InitializeProjectGitResult,
@@ -149,6 +150,7 @@ interface ProjectsContext {
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
         parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
+        source?: CreateProjectSource,
     ) => Promise<CreateProjectResult>;
     listCreateProjectPublicationTargets: () => Promise<ListCreateProjectPublicationTargetsResult>;
     checkCreateProjectRepositoryNameAvailability: (
@@ -321,6 +323,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
      * @param overwriteProjectPath - Optional target project path.
      * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
      * @param publication - Optional private GitHub repository publication request.
+     * @param source - Optional existing project and captured copy choices.
      * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
      * @returns The project creation result.
      */
@@ -334,6 +337,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
         parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
+        source?: CreateProjectSource,
     ) => {
         const result = await projectsBridge.createProject(
             projectName,
@@ -345,6 +349,7 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             gitOptions,
             publication,
             parentRepositoryConsent,
+            ...(source ? [source] : []),
         );
 
         if (result.projectDetails) {

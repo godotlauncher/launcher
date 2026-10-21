@@ -29,7 +29,8 @@
         "initGit": "Инициализировать репозиторий Git",
         "initGitTooltip": "Создает новый репозиторий Git в этой папке проекта.",
         "openCodeEditor": "Открыть в {{editor}}",
-        "openTools": "Варианты открытия {{project}}"
+        "openTools": "Варианты открытия {{project}}",
+        "duplicate": "Дублировать"
     },
     "release": {
         "openInstalledFolder": "Открыть папку установки",

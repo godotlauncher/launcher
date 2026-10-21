@@ -13,6 +13,7 @@ type Translate = (key: string, values?: Record<string, string>) => string;
 type CreateProjectGitHubPublishingSectionProps = {
     t: Translate;
     enabled: boolean;
+    quietSuccess?: boolean;
     loading: boolean;
     targets: CreateProjectPublicationTarget[];
     targetFailure: CreateProjectPublicationTargetFailureReason | null;
@@ -38,6 +39,7 @@ export const CreateProjectGitHubPublishingSection: React.FC<
 > = ({
     t,
     enabled,
+    quietSuccess = false,
     loading,
     targets,
     targetFailure,
@@ -56,7 +58,13 @@ export const CreateProjectGitHubPublishingSection: React.FC<
     if (!enabled) return null;
 
     return (
-        <section className="rounded-md bg-base-200/40 px-4 py-2 text-base">
+        <section
+            className={
+                quietSuccess
+                    ? 'pl-7 py-1 text-base'
+                    : 'rounded-md bg-base-200/40 px-4 py-2 text-base'
+            }
+        >
             <div>
                 {loading ? (
                     <div
@@ -90,6 +98,7 @@ export const CreateProjectGitHubPublishingSection: React.FC<
                     </div>
                 ) : (
                     <RepositoryCreationFields
+                        quietSuccess={quietSuccess}
                         availabilityBelow
                         t={t}
                         ownerId="selectCreateProjectGitHubOwner"

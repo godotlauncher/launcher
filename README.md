@@ -29,6 +29,7 @@ Godot Launcher is a free, open-source desktop app for managing Godot versions an
 - **GitHub projects.** Connect GitHub to browse and import repositories you can access, including private repositories. Publish a new project to a private GitHub repository during creation, or clone a public HTTPS Git repository without connecting an account.
 - **Git setup.** Initialise a repository with an optional initial commit and Git LFS configuration. Manage your Git identity and save a separate identity preset for new projects.
 - **Code editors.** Configure Visual Studio Code or VSCodium as your default or choose one per project, while preserving unrelated settings. See [Code Editor Settings](https://docs.godotlauncher.org/settings/code-editors/).
+- **Duplicate projects.** Start an independent copy with the source Godot version and renderer, choose whether to copy editor preferences or game save data, and optionally publish it to a new private GitHub repository.
 - **Per-project settings.** Keep separate Godot editor preferences for each project. Import and export settings to reuse them or share them with teammates.
 - **Project access.** Switch between Cards and a compact List view, pin and reorder projects, and open a project's folder in a supported terminal. Open pinned and recent projects from the system tray where available.
 - **Launcher updates.** Check for new releases and receive update notifications. Download an update, then restart to install it.

@@ -29,7 +29,8 @@
         "initGit": "Inizjalizza Repositorju Git",
         "initGitTooltip": "Oħloq repositorju Git ġdid f'din il-folder tal-proġett.",
         "openCodeEditor": "Iftaħ b’{{editor}}",
-        "openTools": "Għażliet tal-ftuħ għal {{project}}"
+        "openTools": "Għażliet tal-ftuħ għal {{project}}",
+        "duplicate": "Idduplika"
     },
     "release": {
         "openInstalledFolder": "Iftaħ Folder tal-Installazzjoni",

@@ -11,13 +11,14 @@ export function CreateProjectDestinationStatus(props: {
     error?: string;
     checkingLabel: string;
     availableLabel: string;
+    quietSuccess?: boolean;
 }) {
     return (
         <div
             role="status"
             aria-live="polite"
             data-testid="createProjectDestinationStatus"
-            className={`flex min-h-5 items-start gap-1.5 text-sm ${props.status === 'blocked' ? 'text-error' : props.status === 'available' ? 'text-success-content dark:text-success' : 'text-base-content/60'}`}
+            className={`flex min-h-5 items-start gap-1.5 text-sm ${props.status === 'blocked' ? 'text-error' : props.status === 'available' && !props.quietSuccess ? 'text-success-content dark:text-success' : 'text-base-content/60'}`}
         >
             {props.status !== 'idle' && (
                 <>
@@ -28,7 +29,13 @@ export function CreateProjectDestinationStatus(props: {
                     ) : (
                         <CircleAlert size={14} className="shrink-0" />
                     )}
-                    <span>
+                    <span
+                        className={
+                            props.quietSuccess && props.status === 'available'
+                                ? 'sr-only'
+                                : undefined
+                        }
+                    >
                         {props.status === 'checking'
                             ? props.checkingLabel
                             : props.status === 'available'

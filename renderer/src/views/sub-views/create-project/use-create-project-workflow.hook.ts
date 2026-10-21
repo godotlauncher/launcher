@@ -1,5 +1,6 @@
 import type {
     CreateProjectGitOptions,
+    ProjectCopyProgress,
     ProjectDetails,
     PublishedGitHubRepository,
 } from '@shared/contracts';
@@ -8,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../../hooks/alerts.hook';
 import { useAppNavigation } from '../../../hooks/app-navigation.hook';
 import { useProjects } from '../../../hooks/projects.hook';
+import { projectsBridge, subscribeAppEvent } from '../../../renderer.bridge';
 import {
     addCreateProjectGitLfsOptions,
     getPublicationTargetValue,
@@ -48,6 +50,31 @@ export function useCreateProjectWorkflow(
     const { t } = useTranslation(['createProject', 'common']);
     const { addAlert } = useAlerts();
     const { openExternalLink } = useAppNavigation();
+    const [copyProgress, setCopyProgress] =
+        useState<ProjectCopyProgress | null>(null);
+    const copyJobRef = useRef<string | null>(null);
+    useEffect(
+        () =>
+            subscribeAppEvent('project-copy-progress', (progress) => {
+                if (progress.jobId !== copyJobRef.current) return;
+                setCopyProgress((current) => ({
+                    ...progress,
+                    files: progress.files ?? current?.files ?? 0,
+                }));
+                if (progress.stage)
+                    setProgressPhase(
+                        progress.stage === 'copying'
+                            ? 'creating'
+                            : progress.stage,
+                    );
+            }),
+        [],
+    );
+    /** Cancels the exact active source-copy job. */
+    const cancelCopy = (): void => {
+        if (copyJobRef.current)
+            void projectsBridge.cancelCreateProjectCopy(copyJobRef.current);
+    };
     const [connectionOpen, setConnectionOpen] = useState(false);
     const {
         projects,
@@ -73,6 +100,10 @@ export function useCreateProjectWorkflow(
     const [creating, setCreating] = useState<boolean>(false);
     const [progressPhase, setProgressPhase] =
         useState<CreateProjectProgressPhase | null>(null);
+    const [progressOptions, setProgressOptions] = useState({
+        withGit: false,
+        publishes: false,
+    });
     const [checkingProjectRepository, setCheckingProjectRepository] =
         useState<boolean>(false);
     const [existingRepositoryDialog, setExistingRepositoryDialog] =
@@ -133,6 +164,16 @@ export function useCreateProjectWorkflow(
             submission.editorSelection.source === 'catalogue' &&
             !submission.editorSelection.installedRelease;
         setCreating(true);
+        setProgressOptions({
+            withGit: Boolean(
+                submission.source && submission.withGit && !existingRepository,
+            ),
+            publishes: Boolean(
+                submission.source &&
+                    submission.publication &&
+                    !existingRepository,
+            ),
+        });
         setProgressPhase(requiresEditorInstall ? 'installing' : 'creating');
 
         let preparedRelease: Awaited<
@@ -191,6 +232,12 @@ export function useCreateProjectWorkflow(
             gitLfs: submission.withGitLfs,
             github: Boolean(submission.publication),
         };
+        copyJobRef.current = submission.source?.jobId ?? null;
+        setCopyProgress(
+            submission.source
+                ? { jobId: submission.source.jobId, files: 0, canCancel: true }
+                : null,
+        );
         let result: Awaited<ReturnType<typeof createProject>>;
         try {
             result = await createProject(
@@ -210,6 +257,7 @@ export function useCreateProjectWorkflow(
                 existingRepository
                     ? { root: existingRepository.root }
                     : undefined,
+                ...(submission.source ? [submission.source] : []),
             );
         } catch (creationError) {
             showCreateProjectError(
@@ -218,8 +266,17 @@ export function useCreateProjectWorkflow(
                     : t('workflow.failed'),
             );
             return;
+        } finally {
+            copyJobRef.current = null;
         }
 
+        if (result.recoveryPaths?.length)
+            addAlert(
+                t('duplicate.title'),
+                t('duplicate.errors.recovery', {
+                    paths: result.recoveryPaths.join(', '),
+                }),
+            );
         if (result.parentRepositoryConfirmation) {
             finishCreateProjectProgress();
             setError(undefined);
@@ -428,26 +485,25 @@ export function useCreateProjectWorkflow(
     /** Dismisses GitHub setup while retaining the current form values. */
     const handleCancelConnection = () => setConnectionOpen(false);
 
-    /**
-     * Validates and inspects the final project path before identity or creation.
-     *
+    /** Validates identity and destination without starting creation.
+     * @returns Whether the current project name and destination can proceed.
+     */
+    const validateProjectDestination = async (): Promise<boolean> => {
+        setError(undefined);
+        if (projectName.trim() === '') {
+            setError(t('project.nameRequired'));
+            return false;
+        }
+        if (!isCreateProjectNameAvailable(projects, projectName)) return false;
+        return destinationCheck.checkNow();
+    };
+
+    /** Validates the final submission before identity, installation or creation.
      * @returns A promise that resolves after preflight or creation handling.
      */
     const onCreateProject = async () => {
-        setError(undefined);
-
         if (publishToGitHub && !publication.publicationOptionsValid) return;
-
-        if (projectName.trim() === '') {
-            setError(t('project.nameRequired'));
-            return;
-        }
-
-        if (!isCreateProjectNameAvailable(projects, projectName)) {
-            return;
-        }
-
-        if (!(await destinationCheck.checkNow())) return;
+        if (!(await validateProjectDestination())) return;
 
         const publicationTarget = publicationTargets.find(
             (target) =>
@@ -457,9 +513,19 @@ export function useCreateProjectWorkflow(
             return;
         }
         const submission: CreateProjectSubmission = {
+            source: form.sourceProject
+                ? {
+                      projectPath: form.sourceProject.path,
+                      copyEditorSettings: form.copyEditorSettings,
+                      copySaveData: form.copySaveData,
+                      jobId: crypto.randomUUID(),
+                  }
+                : undefined,
             projectName,
             editorSelection,
-            renderer,
+            renderer: form.sourceProject
+                ? (form.sourceProject.renderer as typeof renderer)
+                : renderer,
             codeEditorId,
             withGit,
             withGitLfs,
@@ -544,6 +610,9 @@ export function useCreateProjectWorkflow(
     // Keep all domain resets together and read the current actions only on opening.
     const resetSessionRef = useRef(() => {});
     resetSessionRef.current = () => {
+        copyJobRef.current = null;
+        setCopyProgress(null);
+        setProgressOptions({ withGit: false, publishes: false });
         setConnectionOpen(false);
         form.reset();
         integrations.reset();
@@ -592,9 +661,13 @@ export function useCreateProjectWorkflow(
     return {
         publication,
         identity,
+        copyProgress,
+        cancelCopy,
         error,
         creating,
         progressPhase,
+        progressWithGit: progressOptions.withGit,
+        progressPublishes: progressOptions.publishes,
         publicationFailure,
         existingRepositoryDialog,
         closeDisabled,
@@ -621,5 +694,6 @@ export function useCreateProjectWorkflow(
         handleContinueExistingRepository,
         handleExistingRepositoryDone,
         onCreateProject,
+        validateProjectDestination,
     };
 }

@@ -17,9 +17,13 @@ import {
  * Loads the local integrations used by the Create Project form.
  *
  * @param open - Whether the Create Project form is open.
+ * @param sourceCodeEditorId - Optional source integration to seed.
  * @returns Integration state, field setters, and a reset action.
  */
-export function useCreateProjectIntegrations(open: boolean) {
+export function useCreateProjectIntegrations(
+    open: boolean,
+    sourceCodeEditorId?: CodeEditorId | null,
+) {
     const [tools, setTools] = useState<ToolIntegrationSummary[]>([]);
     const [withGit, setWithGit] = useState(true);
     const [withGitLfs, setWithGitLfs] = useState(false);
@@ -108,8 +112,18 @@ export function useCreateProjectIntegrations(open: boolean) {
         if (loadingTools || loadingCodeEditors) return;
 
         setWithGit(gitAvailable);
-        setCodeEditorId(resolveCreateProjectCodeEditorId(codeEditorSettings));
-    }, [codeEditorSettings, gitAvailable, loadingCodeEditors, loadingTools]);
+        setCodeEditorId(
+            sourceCodeEditorId === undefined
+                ? resolveCreateProjectCodeEditorId(codeEditorSettings)
+                : sourceCodeEditorId,
+        );
+    }, [
+        codeEditorSettings,
+        gitAvailable,
+        loadingCodeEditors,
+        loadingTools,
+        sourceCodeEditorId,
+    ]);
 
     useEffect(() => {
         if (!withGit || !gitLfsAvailable) setWithGitLfs(false);

@@ -78,6 +78,27 @@ const project: ProjectDetails = {
 describe('ProjectActionsMenu', () => {
     afterEach(() => vi.unstubAllGlobals());
 
+    it('starts duplication with the selected source project', async () => {
+        const duplicate = vi.fn();
+        renderToStaticMarkup(
+            <ProjectActionsMenu
+                project={project}
+                anchorRect={null}
+                t={(key) => key}
+                onClose={vi.fn()}
+                onDuplicateProject={duplicate}
+                onExportEditorSettings={vi.fn()}
+                onImportEditorSettings={vi.fn()}
+                onRemoveProject={vi.fn()}
+                onClearNewStatus={vi.fn()}
+            />,
+        );
+        await menuCapture.items
+            .find((item) => item.key === 'duplicate-project')
+            ?.onSelect?.();
+        expect(duplicate).toHaveBeenCalledExactlyOnceWith(project);
+    });
+
     it('renders the remaining project management actions', () => {
         const html = renderToStaticMarkup(
             <ProjectActionsMenu

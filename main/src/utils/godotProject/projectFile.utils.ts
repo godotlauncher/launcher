@@ -3,6 +3,9 @@ import type { RendererType } from '@shared/contracts';
 
 export type GodotProjectFile = Map<string, Map<string, string>>;
 
+/** Parses Godot configuration without truncating equals signs in values.
+ * @param fileContent - Complete project.godot source.
+ */
 export function parseGodotProjectFile(fileContent: string): GodotProjectFile {
     const sections: GodotProjectFile = new Map<string, Map<string, string>>();
 
@@ -22,11 +25,11 @@ export function parseGodotProjectFile(fileContent: string): GodotProjectFile {
                 return;
             }
 
-            if (trimmedLine.startsWith('[')) {
-                const section = trimmedLine
-                    .replaceAll('[', '')
-                    .replaceAll(']', '')
-                    .trim();
+            const sectionMatch = trimmedLine.match(
+                /^\[([^\]]+)\](?:\s*[;#].*)?$/,
+            );
+            if (sectionMatch) {
+                const section = sectionMatch[1].trim();
                 currentSection = section;
                 if (!sections.has(section)) {
                     sections.set(section, new Map<string, string>());
@@ -34,7 +37,9 @@ export function parseGodotProjectFile(fileContent: string): GodotProjectFile {
                 return;
             }
 
-            const [key, value] = line.split('=');
+            const separator = line.indexOf('=');
+            const key = separator < 0 ? '' : line.slice(0, separator);
+            const value = separator < 0 ? '' : line.slice(separator + 1);
             if (key && value) {
                 sections.get(currentSection)?.set(key.trim(), value.trim());
             }
