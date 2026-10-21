@@ -261,6 +261,7 @@ export type ClearProjectNewStatusResult = {
 };
 
 export type CreateProjectResult = BackendResult & {
+    recoveryPaths?: string[];
     projectPath?: string;
     projectDetails?: ProjectDetails;
     parentRepositoryConfirmation?: GitRepositoryInfo;
@@ -419,3 +420,19 @@ export type * from './folder-project-import.types.js';
 export type * from './projects.bridge.js';
 export type * from './remote-project-import.types.js';
 export type * from './remote-project-source.types.js';
+
+/** Existing project used instead of the built-in template. */
+export type CreateProjectSource = {
+    projectPath: string;
+    copyEditorSettings: boolean;
+    copySaveData: boolean;
+    jobId: string;
+};
+
+export type ProjectCopyProgress = {
+    jobId: string;
+    /** Omitted when a later stage retains the previous copied count. */
+    files?: number;
+    stage?: 'copying' | 'git' | 'configuring' | 'publishing';
+    canCancel: boolean;
+};

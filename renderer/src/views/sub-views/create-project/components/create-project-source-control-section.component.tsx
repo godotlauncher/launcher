@@ -10,6 +10,7 @@ type Translate = (key: string) => string;
 
 type CreateProjectSourceControlSectionProps = {
     t: Translate;
+    duplicate?: boolean;
     loading: boolean;
     gitAvailable: boolean;
     gitLfsAvailable: boolean;
@@ -33,6 +34,7 @@ export const CreateProjectSourceControlSection: React.FC<
     CreateProjectSourceControlSectionProps
 > = ({
     t,
+    duplicate = false,
     loading,
     gitAvailable,
     gitLfsAvailable,
@@ -47,7 +49,11 @@ export const CreateProjectSourceControlSection: React.FC<
 }) => (
     <div className="flex flex-col gap-2 text-base" aria-busy={loading}>
         <h2 className="flex items-center gap-4 text-base font-semibold">
-            {t('projects:editProject.sourceControl.title')}
+            {t(
+                duplicate
+                    ? 'duplicate.gitAndGitHub'
+                    : 'projects:editProject.sourceControl.title',
+            )}
             {loading && (
                 <span
                     role="status"
@@ -62,9 +68,14 @@ export const CreateProjectSourceControlSection: React.FC<
             )}
         </h2>
         <div
-            className={clsx('grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2', {
-                invisible: loading,
-            })}
+            className={clsx(
+                duplicate
+                    ? 'flex flex-col gap-3'
+                    : 'grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2',
+                {
+                    invisible: loading,
+                },
+            )}
         >
             <div className="flex items-center gap-2">
                 <label className="flex items-center gap-2">
@@ -82,9 +93,14 @@ export const CreateProjectSourceControlSection: React.FC<
                             !gitAvailable ? 'text-base-content/50' : undefined
                         }
                     >
-                        {t('otherSettings.initGit')}
+                        {t(
+                            duplicate
+                                ? 'duplicate.newGit'
+                                : 'otherSettings.initGit',
+                        )}
                     </span>
                 </label>
+                {duplicate && <HelpTooltip help={t('duplicate.newGitHelp')} />}
                 {!gitAvailable && (
                     <CreateProjectUnavailableStatus
                         label={t('otherSettings.unavailableLabel')}
@@ -94,13 +110,15 @@ export const CreateProjectSourceControlSection: React.FC<
             </div>
             {withGit && (
                 <>
-                    <CreateProjectGitLfsOption
-                        t={t}
-                        available={gitLfsAvailable}
-                        policy={gitLfsPolicy}
-                        selected={withGitLfs}
-                        onSelectedChange={onWithGitLfsChange}
-                    />
+                    <div className={duplicate ? 'pl-7' : undefined}>
+                        <CreateProjectGitLfsOption
+                            t={t}
+                            available={gitLfsAvailable}
+                            policy={gitLfsPolicy}
+                            selected={withGitLfs}
+                            onSelectedChange={onWithGitLfsChange}
+                        />
+                    </div>
                     <div className="flex items-center gap-2 sm:col-span-2">
                         <label className="flex items-center gap-2">
                             <input
@@ -114,9 +132,15 @@ export const CreateProjectSourceControlSection: React.FC<
                                     )
                                 }
                             />
-                            <span>{t('publishToGitHub.label')}</span>
+                            <span>
+                                {t(
+                                    duplicate
+                                        ? 'duplicate.publishPrivate'
+                                        : 'publishToGitHub.label',
+                                )}
+                            </span>
                         </label>
-                        {publishToGitHub && (
+                        {publishToGitHub && !duplicate && (
                             <HelpTooltip
                                 help={t('publishToGitHub.repositoryTitle')}
                                 icon={LockKeyhole}

@@ -213,6 +213,48 @@ export function getCreateProjectCatalogueVariants(
 }
 
 /**
+ * Resolves only the source project's exact editor, without falling back to another version.
+ * @param source - Editor recorded by the source project.
+ * @param installed - Current installed editor records.
+ * @param catalogue - Official releases available for installation.
+ * @returns The matching installed or installable editor, or null when unavailable.
+ */
+export function resolveDuplicateProjectEditor(
+    source: InstalledRelease,
+    installed: InstalledRelease[],
+    catalogue: ReleaseSummary[],
+): CreateProjectEditorSelection | null {
+    const matching = installed.find(
+        (release) =>
+            release.version === source.version &&
+            release.mono === source.mono &&
+            (release.source ?? 'official') === (source.source ?? 'official') &&
+            release.valid !== false &&
+            Boolean(release.editor_path),
+    );
+    if (matching)
+        return {
+            source: 'installed',
+            key: getCreateProjectReleaseKey(matching),
+            release: matching,
+        };
+    if (source.source === 'custom') return null;
+    const variant = getCreateProjectCatalogueVariants(catalogue, '').find(
+        (entry) =>
+            entry.release.version === source.version &&
+            entry.mono === source.mono,
+    );
+    return variant
+        ? {
+              source: 'catalogue',
+              key: variant.key,
+              release: variant.release,
+              mono: variant.mono,
+          }
+        : null;
+}
+
+/**
  * Returns an installed release for project creation, installing a catalogue
  * selection first when required.
  *

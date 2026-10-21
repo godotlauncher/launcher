@@ -1,4 +1,4 @@
-import type { RendererType } from '@shared/contracts';
+import type { ProjectDetails, RendererType } from '@shared/contracts';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFileSystem } from '../../../hooks/file-system.hook.tsx';
@@ -19,6 +19,7 @@ import {
     normalizeBasePathForJoin,
     OVERWRITE_PATH_CHECK_DEBOUNCE_MS,
     PROJECT_NAME_CHECK_DEBOUNCE_MS,
+    resolveDuplicateProjectEditor,
 } from './create-project.model.ts';
 import { useCreateProjectDestination } from './use-create-project-destination.hook.ts';
 
@@ -26,9 +27,13 @@ import { useCreateProjectDestination } from './use-create-project-destination.ho
  * Owns the Create Project form values, local validation, and folder selection.
  *
  * @param open - Whether the containing Create Project drawer is open.
+ * @param sourceProject - Optional project used instead of the built-in template.
  * @returns Form state, derived values, and actions for the Create Project drawer.
  */
-export function useCreateProjectForm(open: boolean) {
+export function useCreateProjectForm(
+    open: boolean,
+    sourceProject?: ProjectDetails | null,
+) {
     const { t } = useTranslation('createProject');
     const releaseApi = useRelease();
     const { projects } = useProjects();
@@ -38,6 +43,8 @@ export function useCreateProjectForm(open: boolean) {
     const overwritePathCheckRequestRef = useRef(0);
     const overwriteBasePathInitializedRef = useRef(false);
     const defaultOverwriteBasePathRef = useRef('');
+    const [copyEditorSettings, setCopyEditorSettings] = useState(true);
+    const [copySaveData, setCopySaveData] = useState(false);
     const [renderer, setRenderer] = useState<RendererType[5]>('FORWARD_PLUS');
     const [editorSelection, setEditorSelection] =
         useState<CreateProjectEditorSelection | null>(null);
@@ -96,51 +103,61 @@ export function useCreateProjectForm(open: boolean) {
         return () => window.clearTimeout(timeoutId);
     }, [open, projectName, projects]);
 
-    useEffect(() => {
-        if (!open || editorSelection) {
-            return;
-        }
+    const initialEditorSelection =
+        useMemo<CreateProjectEditorSelection | null>(() => {
+            if (sourceProject)
+                return resolveDuplicateProjectEditor(
+                    sourceProject.release,
+                    releaseApi.installedReleases,
+                    [
+                        ...releaseApi.availableReleases,
+                        ...releaseApi.availablePrereleases,
+                    ],
+                );
+            const installedRelease = buildCreateProjectReleaseRows(
+                releaseApi.installedReleases,
+                [],
+            ).find(
+                (release) =>
+                    release.valid !== false && Boolean(release.editor_path),
+            );
+            if (installedRelease) {
+                return {
+                    source: 'installed',
+                    key: getCreateProjectReleaseKey(installedRelease),
+                    release: installedRelease,
+                };
+            }
 
-        const installedRelease = buildCreateProjectReleaseRows(
+            const catalogueVariant =
+                getCreateProjectCatalogueVariants(
+                    releaseApi.availableReleases,
+                    '',
+                )[0] ??
+                getCreateProjectCatalogueVariants(
+                    releaseApi.availablePrereleases,
+                    '',
+                )[0];
+            if (catalogueVariant) {
+                return {
+                    source: 'catalogue',
+                    key: catalogueVariant.key,
+                    release: catalogueVariant.release,
+                    mono: catalogueVariant.mono,
+                };
+            }
+            return null;
+        }, [
+            sourceProject,
             releaseApi.installedReleases,
-            [],
-        ).find(
-            (release) =>
-                release.valid !== false && Boolean(release.editor_path),
-        );
-        if (installedRelease) {
-            setEditorSelection({
-                source: 'installed',
-                key: getCreateProjectReleaseKey(installedRelease),
-                release: installedRelease,
-            });
-            return;
-        }
+            releaseApi.availableReleases,
+            releaseApi.availablePrereleases,
+        ]);
 
-        const catalogueVariant =
-            getCreateProjectCatalogueVariants(
-                releaseApi.availableReleases,
-                '',
-            )[0] ??
-            getCreateProjectCatalogueVariants(
-                releaseApi.availablePrereleases,
-                '',
-            )[0];
-        if (catalogueVariant) {
-            setEditorSelection({
-                source: 'catalogue',
-                key: catalogueVariant.key,
-                release: catalogueVariant.release,
-                mono: catalogueVariant.mono,
-            });
-        }
-    }, [
-        editorSelection,
-        open,
-        releaseApi.availablePrereleases,
-        releaseApi.availableReleases,
-        releaseApi.installedReleases,
-    ]);
+    useEffect(() => {
+        if (!open || (!sourceProject && editorSelection)) return;
+        setEditorSelection(initialEditorSelection);
+    }, [open, sourceProject, editorSelection, initialEditorSelection]);
 
     const projectSegmentDisplay = useMemo(
         () => (projectName ? projectDirectorySegment : '<project-name>'),
@@ -259,6 +276,7 @@ export function useCreateProjectForm(open: boolean) {
      * @param selection - Stable editor selection from the inline picker.
      */
     const changeEditorSelection = (selection: CreateProjectEditorSelection) => {
+        if (sourceProject) return;
         setEditorSelection(selection);
         const defaultRenderer = getDefaultRendererForReleaseVersion(
             selection.release.version,
@@ -293,8 +311,27 @@ export function useCreateProjectForm(open: boolean) {
 
     /** Restores the form values that were reset when the drawer opened. */
     const reset = (): void => {
-        setRenderer('FORWARD_PLUS');
-        setProjectName('');
+        setCopyEditorSettings(true);
+        setCopySaveData(false);
+        setEditorSelection(initialEditorSelection);
+        setRenderer(
+            sourceProject &&
+                ['FORWARD_PLUS', 'MOBILE', 'COMPATIBLE'].includes(
+                    sourceProject.renderer,
+                )
+                ? (sourceProject.renderer as RendererType[5])
+                : 'FORWARD_PLUS',
+        );
+        let suggestedName = sourceProject
+            ? t('duplicate.suggestedName', { name: sourceProject.name })
+            : '';
+        let suffix = 2;
+        while (
+            sourceProject &&
+            !isCreateProjectNameAvailable(projects, suggestedName)
+        )
+            suggestedName = `${t('duplicate.suggestedName', { name: sourceProject.name })} ${suffix++}`;
+        setProjectName(suggestedName);
         setProjectNameAvailability('idle');
         setOverwriteBasePath(defaultOverwriteBasePathRef.current);
         setOverwriteBasePathMissing(false);
@@ -308,6 +345,11 @@ export function useCreateProjectForm(open: boolean) {
     };
 
     return {
+        sourceProject,
+        copyEditorSettings,
+        setCopyEditorSettings,
+        copySaveData,
+        setCopySaveData,
         releaseApi,
         renderer,
         setRenderer,

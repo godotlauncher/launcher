@@ -29,6 +29,7 @@ type RepositoryCreationFieldsProps = {
     repositoryNameError?: string;
     layout?: 'columns' | 'stacked';
     availabilityBelow?: boolean;
+    quietSuccess?: boolean;
     disabled?: boolean;
     locked?: boolean;
     repositoryNameInputRef?: React.Ref<HTMLInputElement>;
@@ -70,11 +71,14 @@ export function getRepositoryCreationTargetOptions(
     ];
 }
 
-/** Renders the repository-name availability result. */
+/** Renders the repository-name availability result.
+ * @param props - Translated availability state and success emphasis.
+ */
 const RepositoryAvailability: React.FC<{
     t: Translate;
     availability: RepositoryNameAvailabilityState;
-}> = ({ t, availability }) => {
+    quietSuccess?: boolean;
+}> = ({ t, availability, quietSuccess = false }) => {
     if (availability === 'idle') {
         return null;
     }
@@ -119,7 +123,7 @@ const RepositoryAvailability: React.FC<{
         <span
             className={clsx(
                 'flex min-h-5 items-start gap-1.5 text-sm',
-                availability === 'available'
+                availability === 'available' && !quietSuccess
                     ? 'text-success-content dark:text-success'
                     : availability === 'unavailable'
                       ? 'text-error'
@@ -155,6 +159,7 @@ export const RepositoryCreationFields: React.FC<
     repositoryNameError,
     layout = 'columns',
     availabilityBelow = false,
+    quietSuccess = false,
     disabled = false,
     locked = false,
     repositoryNameInputRef,
@@ -198,6 +203,7 @@ export const RepositoryCreationFields: React.FC<
                             <RepositoryAvailability
                                 t={t}
                                 availability={availability}
+                                quietSuccess={quietSuccess}
                             />
                         )
                     }
@@ -213,6 +219,7 @@ export const RepositoryCreationFields: React.FC<
                         <RepositoryAvailability
                             t={t}
                             availability={availability}
+                            quietSuccess={quietSuccess}
                         />
                     )}
             </div>

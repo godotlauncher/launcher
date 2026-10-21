@@ -32,6 +32,7 @@ const mocks = vi.hoisted(() => ({
     setProjectPinned: vi.fn(),
     setProjectWindowed: vi.fn(),
     ipcWebContentsSend: vi.fn(),
+    ipcSendToMainWindowSync: vi.fn(),
     removeProjectEditor: vi.fn(),
     updateGodotProjectName: vi.fn(),
     updateLinuxTray: vi.fn(),
@@ -107,6 +108,7 @@ vi.mock('../utils/projectLauncherConfig.utils.js', () => ({
 }));
 vi.mock('../utils.js', () => ({
     ipcWebContentsSend: mocks.ipcWebContentsSend,
+    ipcSendToMainWindowSync: mocks.ipcSendToMainWindowSync,
 }));
 vi.mock('./projects.store.js', () => ({
     ProjectsStore: class ProjectsStore {},
@@ -418,6 +420,55 @@ describe('ProjectsService', () => {
             );
         },
     );
+
+    it('reports publication only after successful local duplication without resetting its count', async () => {
+        const project = { path: '/projects/copy' } as ProjectDetails;
+        mocks.createProject.mockResolvedValueOnce({
+            success: true,
+            projectDetails: project,
+            gitSetup: { status: 'initialized' },
+        });
+        projectPublication.publish.mockImplementationOnce(async () => {
+            expect(
+                mocks.ipcSendToMainWindowSync,
+            ).toHaveBeenCalledExactlyOnceWith('project-copy-progress', {
+                jobId: 'copy-job',
+                stage: 'publishing',
+                canCancel: false,
+            });
+            return {
+                status: 'published',
+                repository: {
+                    owner: 'owner',
+                    name: 'copy',
+                    webUrl: 'https://github.com/owner/copy',
+                },
+            };
+        });
+        const result = await service.createProject(
+            'Copy',
+            { version: '4.5-stable' } as InstalledRelease,
+            'FORWARD_PLUS',
+            null,
+            true,
+            undefined,
+            { initialCommit: 'create' },
+            {
+                providerId: 'github',
+                connectionId: 'connection',
+                accessTargetId: 'target',
+                repositoryName: 'copy',
+            },
+            undefined,
+            {
+                projectPath: '/projects/source',
+                jobId: 'copy-job',
+                copyEditorSettings: true,
+                copySaveData: false,
+            },
+        );
+        expect(result.success).toBe(true);
+    });
 
     it('never publishes a project created inside an enclosing repository', async () => {
         const release = { version: '4.5-stable' } as InstalledRelease;

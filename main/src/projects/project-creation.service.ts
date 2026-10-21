@@ -7,10 +7,12 @@ import type {
     CreateProjectGitOptions,
     CreateProjectParentRepositoryConsent,
     CreateProjectResult,
+    CreateProjectSource,
     GitLfsTrackingPolicy,
     GitRepositoryInfo,
     GitRepositoryInspection,
     InstalledRelease,
+    ProjectDetails,
     ProjectGitLfsRecovery,
     ProjectGitLfsSetupOutcome,
     ProjectGitSetupOutcome,
@@ -27,6 +29,8 @@ import {
     PROJECT_RESOURCES_DIRNAME,
     TEMPLATE_DIR_NAME,
 } from '../constants.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
 import { t } from '../i18n/index.js';
 import { getAssetPath } from '../pathResolver.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -40,12 +44,15 @@ import {
     getProjectDefinition,
     SetProjectEditorRelease,
 } from '../utils/godot.utils.js';
+import { updateEditorSettings } from '../utils/godotProject/editorSettings.utils.js';
 import {
     getProjectIconUrlFromParsed,
     parseGodotProjectFile,
 } from '../utils/godotProject.utils.js';
 import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
+import { ipcSendToMainWindowSync } from '../utils.js';
+import { ProjectCopyAttempt } from './project-copy.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
 
@@ -264,6 +271,118 @@ function getGitLfsFailureMessage(
 /** Owns the transactional Create Project workflow. */
 @Injectable()
 export class ProjectCreationService {
+    private copyJob?: {
+        id: string;
+        controller: AbortController;
+        canCancel: boolean;
+        files: number;
+    };
+
+    /** Cancels one active creation while its copy phase is cancellable.
+     * @param jobId - Captured renderer job identifier.
+     */
+    cancelCreateProjectCopy(jobId: string): boolean {
+        if (this.copyJob?.id !== jobId || !this.copyJob.canCancel) return false;
+        this.copyJob.controller.abort(new Error('cancelled'));
+        return true;
+    }
+
+    /** Publishes progress without making transport delivery a creation requirement.
+     * @param files - Updated copied count, or undefined to retain it.
+     * @param canCancel - Whether cancellation is still safe.
+     * @param stage - Operation currently running.
+     */
+    private reportCopy(
+        files?: number,
+        canCancel = true,
+        stage: 'copying' | 'git' | 'configuring' = 'copying',
+    ): void {
+        if (!this.copyJob) return;
+        this.copyJob.canCancel = canCancel;
+        if (files !== undefined) this.copyJob.files = files;
+        try {
+            ipcSendToMainWindowSync('project-copy-progress', {
+                jobId: this.copyJob.id,
+                files: this.copyJob.files,
+                stage,
+                canCancel,
+            });
+        } catch {
+            /* A closed renderer does not invalidate filesystem recovery. */
+        }
+    }
+
+    /** Creates from a template or captured existing-project source.
+     * @param projectName - New display name.
+     * @param release - Selected editor.
+     * @param renderer - Selected renderer.
+     * @param codeEditorId - Selected integration.
+     * @param withGit - Git choice.
+     * @param overwriteProjectPath - Destination choice.
+     * @param gitOptions - Git options.
+     * @param parentRepositoryConsent - Accepted enclosing repository.
+     * @param source - Optional copy request.
+     */
+    async createProject(
+        projectName: string,
+        release: InstalledRelease,
+        renderer: RendererType[5],
+        codeEditorId: CodeEditorId | null,
+        withGit: boolean,
+        overwriteProjectPath?: string,
+        gitOptions?: CreateProjectGitOptions,
+        parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
+        source?: CreateProjectSource,
+    ): Promise<CreateProjectResult> {
+        if (!source)
+            return this.createProjectAttempt(
+                projectName,
+                release,
+                renderer,
+                codeEditorId,
+                withGit,
+                overwriteProjectPath,
+                gitOptions,
+                parentRepositoryConsent,
+            );
+        if (
+            this.copyJob ||
+            !source.jobId ||
+            typeof source.projectPath !== 'string'
+        )
+            return {
+                success: false,
+                error: t('createProject:duplicate.errors.busy'),
+            };
+        this.copyJob = {
+            id: source.jobId,
+            controller: new AbortController(),
+            canCancel: true,
+            files: 0,
+        };
+        this.reportCopy(0);
+        try {
+            return await this.createProjectAttempt(
+                projectName,
+                release,
+                renderer,
+                codeEditorId,
+                withGit,
+                overwriteProjectPath,
+                gitOptions,
+                parentRepositoryConsent,
+                source,
+            );
+        } catch {
+            return {
+                success: false,
+                error: t('createProject:duplicate.errors.unsupportedSource'),
+            };
+        } finally {
+            this.copyJob = undefined;
+        }
+    }
+
     /**
      * Creates the project creation service.
      *
@@ -271,12 +390,14 @@ export class ProjectCreationService {
      * @param git - Guarded Git command service.
      * @param gitLfs - Guarded Git LFS service.
      * @param store - Canonical project persistence store.
+     * @param installedEditors - Registered editor versions and executable paths.
      */
     constructor(
         private readonly codeEditors: CodeEditorIntegrationService,
         private readonly git: GitService,
         private readonly gitLfs: GitLfsService,
         private readonly store: ProjectsStore,
+        private readonly installedEditors: InstalledEditorService,
     ) {}
 
     /**
@@ -342,9 +463,10 @@ export class ProjectCreationService {
      * @param overwriteProjectPath - Optional path used to choose the project parent directory.
      * @param gitOptions - Optional initial commit, identity, and Git LFS setup choice.
      * @param parentRepositoryConsent - Exact parent repository accepted for this submission.
+     * @param source - Optional source copy request.
      * @returns The project creation result.
      */
-    async createProject(
+    private async createProjectAttempt(
         projectName: string,
         release: InstalledRelease,
         renderer: RendererType[5],
@@ -353,7 +475,42 @@ export class ProjectCreationService {
         overwriteProjectPath?: string,
         gitOptions?: CreateProjectGitOptions,
         parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
+        source?: CreateProjectSource,
     ): Promise<CreateProjectResult> {
+        let original: ProjectDetails | undefined;
+        if (source) {
+            original = (await this.store.list()).find(
+                (project) => project.path === source.projectPath,
+            );
+            if (!original)
+                return {
+                    success: false,
+                    error: t(
+                        'createProject:duplicate.errors.unsupportedSource',
+                    ),
+                };
+            const sourceRelease = original.release;
+            const matchingEditor = (
+                await this.installedEditors.getInstalledEditors()
+            ).find(
+                (candidate) =>
+                    candidate.version === sourceRelease.version &&
+                    candidate.mono === sourceRelease.mono &&
+                    (candidate.source ?? 'official') ===
+                        (sourceRelease.source ?? 'official') &&
+                    candidate.valid !== false &&
+                    Boolean(candidate.editor_path),
+            );
+            if (!matchingEditor)
+                return {
+                    success: false,
+                    error: t(
+                        'createProject:duplicate.matchingEditorUnavailable',
+                    ),
+                };
+            release = matchingEditor;
+            renderer = original.renderer as RendererType[5];
+        }
         let gitSetup: ProjectGitSetupOutcome = { status: 'not-requested' };
         let gitLfsSetup: ProjectGitLfsSetupOutcome = {
             status: 'not-requested',
@@ -552,20 +709,77 @@ export class ProjectCreationService {
         }
 
         const createdEntries = new Set<string>();
+        let copyAttempt: ProjectCopyAttempt | undefined;
+        const projectEditorPath = path.resolve(
+            installDir,
+            EDITOR_CONFIG_DIRNAME,
+            projectDirectoryName,
+        );
+        if (source) {
+            const projects = await this.store.list();
+            if (
+                !original ||
+                projects.some(
+                    (project) =>
+                        project.name.trim().toLowerCase() ===
+                        projectName.toLowerCase(),
+                ) ||
+                projectRootExisted
+            )
+                return {
+                    success: false,
+                    error: t(
+                        'createProject:duplicate.errors.destinationConflict',
+                    ),
+                };
+            const job = this.copyJob;
+            if (!job)
+                return {
+                    success: false,
+                    error: t('createProject:duplicate.errors.busy'),
+                };
+            copyAttempt = new ProjectCopyAttempt(
+                original,
+                source,
+                job.controller.signal,
+                (files) => this.reportCopy(files),
+            );
+        }
+        let retainedCopyPaths: string[] = [];
+        /** Restores only unchanged paths owned by this creation attempt. */
+        const recover = async (): Promise<boolean> => {
+            if (!copyAttempt)
+                return recoverProjectAttempt(
+                    projectPath,
+                    projectRootExisted,
+                    createdEntries,
+                );
+            retainedCopyPaths = await copyAttempt.cleanup();
+            return retainedCopyPaths.length === 0;
+        };
 
         try {
             // create project file
             let projectFile: string;
 
             try {
-                projectFile = await createProjectFile(
-                    templatesDir,
-                    config.configVersion,
-                    release.version_number,
-                    projectName,
-                    renderer,
-                );
+                if (copyAttempt) {
+                    await copyAttempt.prepare(
+                        projectPath,
+                        projectEditorPath,
+                        projectName,
+                    );
+                    projectFile = copyAttempt.projectFile;
+                } else
+                    projectFile = await createProjectFile(
+                        templatesDir,
+                        config.configVersion,
+                        release.version_number,
+                        projectName,
+                        renderer,
+                    );
             } catch (e) {
+                if (copyAttempt) throw e;
                 return {
                     success: false,
                     error: t('createProject:errors.failedCreateFile', {
@@ -575,20 +789,22 @@ export class ProjectCreationService {
             }
             const parsedProjectFile = parseGodotProjectFile(projectFile);
 
-            await fs.promises.mkdir(projectPath, { recursive: true });
+            if (copyAttempt) await copyAttempt.install(projectPath);
+            else await fs.promises.mkdir(projectPath, { recursive: true });
             // write project file
             recordCreatedEntry(
                 createdEntries,
                 projectPath,
                 path.resolve(projectPath, config.projectFilename),
             );
-            await fs.promises.writeFile(
-                path.resolve(projectPath, config.projectFilename),
-                projectFile,
-            );
+            if (!copyAttempt)
+                await fs.promises.writeFile(
+                    path.resolve(projectPath, config.projectFilename),
+                    projectFile,
+                );
 
             // move resources
-            for (const resource of config.resources) {
+            for (const resource of copyAttempt ? [] : config.resources) {
                 const src = path.resolve(projectResDir, resource.src);
                 const dst = path.resolve(projectPath, resource.dst);
                 const dstDir = path.dirname(
@@ -623,19 +839,42 @@ export class ProjectCreationService {
                 projectPath,
                 path.resolve(projectPath, '.gitignore'),
             );
-            await fs.promises.copyFile(
-                path.resolve(projectResDir, 'default_gitignore'),
-                path.resolve(projectPath, '.gitignore'),
-            );
+            if (
+                !copyAttempt ||
+                !fs.existsSync(path.resolve(projectPath, '.gitignore'))
+            )
+                await fs.promises.copyFile(
+                    path.resolve(projectResDir, 'default_gitignore'),
+                    path.resolve(projectPath, '.gitignore'),
+                );
             recordCreatedEntry(
                 createdEntries,
                 projectPath,
                 path.resolve(projectPath, '.gitattributes'),
             );
-            await fs.promises.copyFile(
-                path.resolve(projectResDir, 'default-gitattributes'),
-                path.resolve(projectPath, '.gitattributes'),
-            );
+            if (
+                !copyAttempt ||
+                !fs.existsSync(path.resolve(projectPath, '.gitattributes'))
+            )
+                await fs.promises.copyFile(
+                    path.resolve(projectResDir, 'default-gitattributes'),
+                    path.resolve(projectPath, '.gitattributes'),
+                );
+
+            if (copyAttempt) {
+                for (const filename of [
+                    '.godotlauncher',
+                    '.gitignore',
+                    '.gitattributes',
+                ])
+                    await copyAttempt.record(path.join(projectPath, filename));
+                copyAttempt.signal.throwIfAborted();
+                this.reportCopy(
+                    undefined,
+                    false,
+                    withGit && !parentRepositoryConsent ? 'git' : 'configuring',
+                );
+            }
 
             // Initialize only when the project is not already covered by a work tree.
             if (withGit) {
@@ -689,11 +928,7 @@ export class ProjectCreationService {
                 }
 
                 if (gitLfsRequested && gitSetup.status !== 'initialized') {
-                    const recovered = await recoverProjectAttempt(
-                        projectPath,
-                        projectRootExisted,
-                        createdEntries,
-                    );
+                    const recovered = await recover();
                     return {
                         success: false,
                         projectPath: recovered ? undefined : projectPath,
@@ -719,11 +954,7 @@ export class ProjectCreationService {
                                 validatedGitLfsPolicy,
                             );
                         if (lfsResult.status !== 'configured') {
-                            const recovered = await recoverProjectAttempt(
-                                projectPath,
-                                projectRootExisted,
-                                createdEntries,
-                            );
+                            const recovered = await recover();
                             const recovery = recovered ? 'completed' : 'failed';
                             return {
                                 success: false,
@@ -799,12 +1030,22 @@ export class ProjectCreationService {
                 }
             }
 
+            if (copyAttempt) this.reportCopy(undefined, false, 'configuring');
+
             // Configure the editor only after all requested repository setup succeeds.
-            const projectEditorPath = path.resolve(
-                installDir,
-                EDITOR_CONFIG_DIRNAME,
-                projectDirectoryName,
-            );
+            if (copyAttempt) {
+                if (gitSetup.status === 'initialized') {
+                    await copyAttempt.record(path.join(projectPath, '.git'));
+                    await copyAttempt.record(
+                        path.join(projectPath, '.gitattributes'),
+                    );
+                }
+                await fs.promises.mkdir(path.dirname(projectEditorPath), {
+                    recursive: true,
+                });
+                await fs.promises.mkdir(projectEditorPath);
+                await copyAttempt.record(projectEditorPath);
+            }
             const launch_path = await SetProjectEditorRelease(
                 projectEditorPath,
                 release,
@@ -816,6 +1057,21 @@ export class ProjectCreationService {
                 config.editorConfigFilename(release.version_number),
             );
 
+            if (copyAttempt?.sourceSettings !== undefined) {
+                await fs.promises.mkdir(path.dirname(editorSettingsPath), {
+                    recursive: true,
+                });
+                await fs.promises.writeFile(
+                    editorSettingsPath,
+                    copyAttempt.sourceSettings,
+                    { flag: 'wx' },
+                );
+                await updateEditorSettings(editorSettingsPath, {
+                    textEditor: { enabled: false, execPath: '', execFlags: '' },
+                    dotnet: null,
+                });
+            }
+            if (copyAttempt) await copyAttempt.record(projectEditorPath);
             if (codeEditorId) {
                 const applied = await this.codeEditors.applyToProject(
                     codeEditorId,
@@ -834,6 +1090,10 @@ export class ProjectCreationService {
                 editorSettingsPath = applied.editorSettingsFile;
             }
 
+            if (copyAttempt) {
+                // Keep the copied workspace snapshot: integration may merge files that another process also edits.
+                await copyAttempt.record(projectEditorPath);
+            }
             // setup the editor location for settings
             const result: CreateProjectResult = {
                 success: true,
@@ -870,13 +1130,42 @@ export class ProjectCreationService {
                 throw new Error('Missing project details after creation');
             }
             await this.store.put(projectDetails);
+            if (copyAttempt)
+                result.recoveryPaths = await copyAttempt.cleanup(true);
             return result;
         } catch (error) {
-            const recovered = await recoverProjectAttempt(
-                projectPath,
-                projectRootExisted,
-                createdEntries,
-            );
+            const recovered = await recover();
+            if (copyAttempt) {
+                const reason =
+                    error instanceof Error
+                        ? error.message
+                        : 'unsupportedSource';
+                const keys = [
+                    'cancelled',
+                    'destinationConflict',
+                    'overlappingPaths',
+                    'unsupportedSource',
+                    'unresolvedLfs',
+                    'sourceChanged',
+                    'settingsUnreadable',
+                    'savePathUnsupported',
+                ];
+                return {
+                    success: false,
+                    projectPath: recovered ? undefined : projectPath,
+                    error: recovered
+                        ? t(
+                              `createProject:duplicate.errors.${keys.includes(reason) ? reason : 'failed'}`,
+                          ) +
+                          (error instanceof Error &&
+                          typeof error.cause === 'string'
+                              ? ` (${error.cause})`
+                              : '')
+                        : t('createProject:duplicate.errors.recovery', {
+                              paths: retainedCopyPaths.join(', '),
+                          }),
+                };
+            }
             if (gitLfsRequested && gitLfsSetup.status === 'not-requested') {
                 return {
                     success: false,

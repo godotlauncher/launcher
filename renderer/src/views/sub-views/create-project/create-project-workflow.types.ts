@@ -2,6 +2,7 @@ import type {
     CodeEditorId,
     CreateProjectPublicationOptions,
     CreateProjectPublicationOutcome,
+    CreateProjectSource,
     GitLfsTrackingPolicy,
     ProjectDetails,
     RendererType,
@@ -14,11 +15,13 @@ export type FailedPublication = Extract<
 >;
 
 export type CreateProjectDrawerProps = {
+    sourceProject?: ProjectDetails | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
 
 export type CreateProjectSubmission = {
+    source?: CreateProjectSource;
     projectName: string;
     editorSelection: CreateProjectEditorSelection;
     renderer: RendererType[5];
@@ -57,5 +60,8 @@ export type GitIdentityDialogPage = 'warning' | 'preset' | 'identity';
 export type CreateProjectProgressPhase =
     | 'installing'
     | 'creating'
+    | 'git'
+    | 'configuring'
+    | 'publishing'
     | 'launching'
     | 'complete';

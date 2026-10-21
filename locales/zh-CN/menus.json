@@ -29,7 +29,8 @@
         "initGit": "初始化 Git 仓库",
         "initGitTooltip": "在此项目文件夹中创建新的 Git 仓库。",
         "openCodeEditor": "在 {{editor}} 中打开",
-        "openTools": "{{project}} 的打开选项"
+        "openTools": "{{project}} 的打开选项",
+        "duplicate": "创建副本"
     },
     "release": {
         "openInstalledFolder": "打开已安装文件夹",

@@ -11,8 +11,10 @@ type Translate = (
 type CreateProjectProjectSectionProps = {
     t: Translate;
     inputNameRef: React.RefObject<HTMLInputElement | null>;
-    editorPicker: React.ReactNode;
+    editorPicker?: React.ReactNode;
+    duplicate?: boolean;
     destinationStatus?: React.ReactNode;
+    destinationAvailable?: boolean;
     projectName: string;
     projectNameError?: string;
     overwriteBasePath: string;
@@ -39,7 +41,9 @@ export const CreateProjectProjectSection: React.FC<
     t,
     inputNameRef,
     editorPicker,
+    duplicate = false,
     destinationStatus,
+    destinationAvailable = false,
     projectName,
     projectNameError,
     overwriteBasePath,
@@ -55,8 +59,18 @@ export const CreateProjectProjectSection: React.FC<
 }) => {
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex flex-col gap-2">
-                <div className="grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2">
+            <div
+                className={
+                    duplicate ? 'flex flex-col gap-4' : 'flex flex-col gap-2'
+                }
+            >
+                <div
+                    className={
+                        duplicate
+                            ? 'grid min-w-0 grid-cols-1 gap-4'
+                            : 'grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2'
+                    }
+                >
                     <div className="min-w-0 flex-1">
                         <TextField
                             inputRef={inputNameRef}
@@ -70,17 +84,25 @@ export const CreateProjectProjectSection: React.FC<
                             error={projectNameError}
                         />
                     </div>
-                    <FormField
-                        id="createProjectEditorField"
-                        label={t('editorPicker.title')}
-                    >
-                        {editorPicker}
-                    </FormField>
+                    {editorPicker && (
+                        <FormField
+                            id="createProjectEditorField"
+                            label={t('editorPicker.title')}
+                        >
+                            {editorPicker}
+                        </FormField>
+                    )}
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div className="z-10 min-w-0 flex-1">
                         <CreateProjectPathField
                             t={t}
+                            separatePreview={duplicate}
+                            availabilityAdornment={
+                                duplicate && destinationAvailable
+                                    ? destinationStatus
+                                    : undefined
+                            }
                             overwriteBasePath={overwriteBasePath}
                             overwriteDisplayPath={overwriteDisplayPath}
                             overwritePathSuffixDisplay={
@@ -103,7 +125,7 @@ export const CreateProjectProjectSection: React.FC<
                     >
                         {t('project.overwritePathRequired')}
                     </p>
-                ) : (
+                ) : duplicate && destinationAvailable ? null : (
                     destinationStatus
                 )}
             </div>

@@ -29,7 +29,8 @@
         "initGit": "Git Deposu Başlat",
         "initGitTooltip": "Bu proje klasöründe yeni bir Git deposu oluşturur.",
         "openCodeEditor": "{{editor}} ile aç",
-        "openTools": "{{project}} için açma seçenekleri"
+        "openTools": "{{project}} için açma seçenekleri",
+        "duplicate": "Çoğalt"
     },
     "release": {
         "openInstalledFolder": "Kurulum Klasörünü Aç",

@@ -27,6 +27,7 @@ import {
     resolveCreateProjectGitIdentityDecision,
     resolveCreateProjectGitIdentitySave,
     resolveCreateProjectReleaseIndex,
+    resolveDuplicateProjectEditor,
     shouldShowCreateProjectPublishedAlert,
     toCreateProjectPublicationOptions,
 } from './create-project.model';
@@ -647,6 +648,60 @@ describe('create project model helpers', () => {
                 { name: '', email: identity.email },
                 'ask',
                 null,
+            ),
+        ).toBeNull();
+    });
+});
+
+describe('resolveDuplicateProjectEditor', () => {
+    it('uses the valid registered source version and flavour rather than a newer editor', () => {
+        const source = installedRelease('4.5.1', { mono: true });
+        const registered = { ...source, editor_path: '/new/location' };
+        expect(
+            resolveDuplicateProjectEditor(
+                source,
+                [installedRelease('4.6'), registered],
+                [],
+            ),
+        ).toMatchObject({ source: 'installed', release: registered });
+    });
+    it('offers installation only for the exact missing source version and flavour', async () => {
+        const source = installedRelease('4.5.1', { mono: true, valid: false });
+        const catalogue = catalogueRelease('4.5.1');
+        const selected = resolveDuplicateProjectEditor(
+            source,
+            [installedRelease('4.6')],
+            [catalogueRelease('4.6'), catalogue],
+        );
+        expect(selected).toMatchObject({
+            source: 'catalogue',
+            release: catalogue,
+            mono: true,
+        });
+        const install = vi
+            .fn()
+            .mockResolvedValue({ success: true, release: source });
+        if (!selected) throw new Error('Expected an exact source selection');
+        await prepareCreateProjectRelease(selected, install);
+        expect(install).toHaveBeenCalledWith(catalogue, true, 'project');
+    });
+    it('does not substitute an official build for a missing custom editor', () => {
+        const source = installedRelease('4.5.1', { source: 'custom' });
+        expect(
+            resolveDuplicateProjectEditor(
+                source,
+                [installedRelease('4.5.1')],
+                [catalogueRelease('4.5.1')],
+            ),
+        ).toBeNull();
+    });
+    it('does not substitute a different version or flavour when the matching editor is unavailable', () => {
+        const source = installedRelease('4.5.1', { mono: true });
+        expect(
+            resolveDuplicateProjectEditor(
+                source,
+                [installedRelease('4.5.1')],
+                [catalogueRelease('4.6')],
             ),
         ).toBeNull();
     });

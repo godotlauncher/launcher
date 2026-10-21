@@ -20,6 +20,9 @@ const labels = {
     title: 'Setting up project',
     installingEditor: 'Install editor',
     creatingProject: 'Create project',
+    settingUpGit: 'Set up Git',
+    configuringProject: 'Finish project setup',
+    publishingProject: 'Publish to GitHub',
     launchingEditor: 'Launch editor',
     skipped: 'Skipped',
     cancelDownload: 'Cancel download',
@@ -46,6 +49,53 @@ describe('CreateProjectProgressOverlay', () => {
         expect(html).toContain(
             'data-step="launching" data-step-state="pending"',
         );
+    });
+
+    it.each(['git', 'configuring', 'publishing', 'launching'] as const)(
+        'retains the copied count during %s without stale cancellation',
+        (phase) => {
+            const html = renderToStaticMarkup(
+                <CreateProjectProgressOverlay
+                    phase={phase}
+                    editorInstalled
+                    editNow
+                    withGit
+                    publishes
+                    labels={labels}
+                    copyProgress={{
+                        jobId: 'copy',
+                        files: 7,
+                        stage: 'copying',
+                        canCancel: true,
+                    }}
+                    copyProgressLabel="7 files copied"
+                    cancelCopyLabel="Cancel copy"
+                    onCancelCopy={vi.fn()}
+                />,
+            );
+            expect(html).toContain('7 files copied');
+            expect(html).toContain(
+                `data-step="${phase}" data-step-state="active"`,
+            );
+            expect(html).not.toContain('Cancel copy');
+        },
+    );
+
+    it('omits unselected Git and publication steps', () => {
+        const html = renderToStaticMarkup(
+            <CreateProjectProgressOverlay
+                phase="configuring"
+                editorInstalled
+                editNow={false}
+                labels={labels}
+                copyProgress={{ jobId: 'copy', files: 7, canCancel: false }}
+                copyProgressLabel="7 files copied"
+            />,
+        );
+        expect(html).not.toContain('Set up Git');
+        expect(html).not.toContain('Publish to GitHub');
+        expect(html).toContain('Finish project setup');
+        expect(html).toContain('7 files copied');
     });
 
     it('shows only the editor installation progress while installing', () => {

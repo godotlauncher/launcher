@@ -15,6 +15,7 @@ import type {
     CreateProjectParentRepositoryConsent,
     CreateProjectPublicationOptions,
     CreateProjectResult,
+    CreateProjectSource,
     FolderProjectScanResult,
     GitIdentity,
     GitRepositoryInspection,
@@ -119,6 +120,9 @@ export type ProjectsBridge = {
         overwriteProjectPath?: string,
     ): Promise<GitRepositoryInspection>;
 
+    /** Cancels the active source copy before final registration. */
+    cancelCreateProjectCopy(jobId: string): Promise<boolean>;
+
     /** Creates and registers a project. */
     createProject(
         name: string,
@@ -130,6 +134,7 @@ export type ProjectsBridge = {
         gitOptions?: CreateProjectGitOptions,
         publication?: CreateProjectPublicationOptions,
         parentRepositoryConsent?: CreateProjectParentRepositoryConsent,
+        source?: CreateProjectSource,
     ): Promise<CreateProjectResult>;
 
     /** Retries one process-local publication attempt for its exact project. */

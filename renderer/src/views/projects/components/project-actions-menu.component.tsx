@@ -1,5 +1,5 @@
 import type { ProjectDetails } from '@shared/contracts';
-import { CircleCheck, Download, Trash2, Upload } from 'lucide-react';
+import { CircleCheck, Copy, Download, Trash2, Upload } from 'lucide-react';
 import type React from 'react';
 import {
     ActionMenu,
@@ -14,6 +14,7 @@ type ProjectActionsMenuProps = {
     anchorRect: ActionMenuAnchorRect | null;
     t: Translate;
     onClose: () => void;
+    onDuplicateProject?: (project: ProjectDetails) => void;
     onExportEditorSettings: (project: ProjectDetails) => void;
     onImportEditorSettings: (project: ProjectDetails) => void;
     onRemoveProject: (project: ProjectDetails) => void;
@@ -30,6 +31,7 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     anchorRect,
     t,
     onClose,
+    onDuplicateProject,
     onExportEditorSettings,
     onImportEditorSettings,
     onRemoveProject,
@@ -51,6 +53,16 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
                         },
                     ]
                   : []),
+              {
+                  key: 'duplicate-project',
+                  label: t('project.duplicate', { ns: 'menus' }),
+                  icon: <Copy className={iconClassName} />,
+                  onSelect: () => onDuplicateProject?.(project),
+              },
+              {
+                  type: 'separator',
+                  key: 'duplicate-separator',
+              },
               {
                   key: 'export-editor-settings',
                   label: t('project.exportEditorSettings', { ns: 'menus' }),

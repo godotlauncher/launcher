@@ -3,15 +3,57 @@ import type {
     CodeEditorId,
     CreateProjectGitOptions,
     CreateProjectParentRepositoryConsent,
+    CreateProjectSource,
     InstalledRelease,
+    ProjectDetails,
     RendererType,
 } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import type { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
 import type { GitLfsService } from '../tool-integration/integrations/git-lfs/git-lfs.service.js';
+import { ipcSendToMainWindowSync } from '../utils.js';
 import { ProjectCreationService } from './project-creation.service.js';
 import type { ProjectsStore } from './projects.store.js';
+
+const copyMocks = vi.hoisted(() => ({
+    prepare: vi.fn(),
+    install: vi.fn(),
+    record: vi.fn(),
+    cleanup: vi.fn(),
+    construct: vi.fn(),
+}));
+vi.mock('./project-copy.util.js', () => ({
+    ProjectCopyAttempt: class {
+        projectFile = 'copied project';
+        sourceSettings = undefined;
+        signal: AbortSignal;
+        prepare = copyMocks.prepare;
+        install = copyMocks.install;
+        record = copyMocks.record;
+        cleanup = copyMocks.cleanup;
+        /** Captures the copy boundary for progress tests.
+         * @param source - Stored source project.
+         * @param options - Captured copy choices.
+         * @param signal - Copy cancellation signal.
+         * @param report - Reports completed source files.
+         */
+        constructor(
+            source: unknown,
+            options: unknown,
+            signal: AbortSignal,
+            report: (files: number) => void,
+        ) {
+            this.signal = signal;
+            copyMocks.construct(source, options, signal, report);
+        }
+    },
+}));
+vi.mock('../editor-installs/installed-editor.service.js', () => ({
+    InstalledEditorService: class {},
+}));
+vi.mock('../utils.js', () => ({ ipcSendToMainWindowSync: vi.fn() }));
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -116,7 +158,12 @@ const gitLfsServiceMocks = {
     supportsTrackingPolicy: vi.fn(),
 };
 const gitLfsService = gitLfsServiceMocks as unknown as GitLfsService;
+const installedEditors = {
+    getInstalledEditors: vi.fn(),
+} as unknown as InstalledEditorService;
+const storeList = vi.fn();
 const projectsStore = {
+    list: storeList,
     put: projectUtilsMocks.addProjectToList,
 } as unknown as ProjectsStore;
 
@@ -150,6 +197,7 @@ function createProject(
         gitService,
         gitLfsService,
         projectsStore,
+        installedEditors,
     ).createProject(
         projectName,
         release,
@@ -179,6 +227,14 @@ describe('createProject', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        copyMocks.prepare.mockReset().mockResolvedValue(undefined);
+        copyMocks.install.mockReset().mockResolvedValue(undefined);
+        copyMocks.record.mockReset().mockResolvedValue(undefined);
+        copyMocks.cleanup.mockReset().mockResolvedValue([]);
+        storeList.mockResolvedValue([]);
+        vi.mocked(installedEditors.getInstalledEditors).mockResolvedValue([
+            release,
+        ]);
         fsMocks.existsSync.mockReturnValue(false);
         fsMocks.promises.lstat.mockRejectedValue(
             Object.assign(new Error('missing'), { code: 'ENOENT' }),
@@ -251,6 +307,302 @@ describe('createProject', () => {
         });
     });
 
+    it('uses the stored source editor and renderer despite alternate requested settings and registers once', async () => {
+        const original = {
+            name: 'Original',
+            renderer: 'COMPATIBLE',
+            path: '/projects/original',
+            release,
+        } as ProjectDetails;
+        storeList.mockResolvedValue([original]);
+        const source: CreateProjectSource = {
+            projectPath: original.path,
+            jobId: 'copy',
+            copyEditorSettings: false,
+            copySaveData: false,
+        };
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+            installedEditors,
+        );
+        const result = await service.createProject(
+            'New Copy',
+            { ...release, version: '4.9', editor_path: '/untrusted/editor' },
+            'MOBILE',
+            null,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            source,
+        );
+        expect(result.success).toBe(true);
+        expect(godotUtilsMocks.createProjectFile).not.toHaveBeenCalled();
+        expect(copyMocks.construct).toHaveBeenCalledWith(
+            original,
+            source,
+            expect.any(AbortSignal),
+            expect.any(Function),
+        );
+        expect(copyMocks.install).toHaveBeenCalledWith(
+            path.resolve('/projects/New-Copy'),
+        );
+        expect(
+            projectUtilsMocks.addProjectToList,
+        ).toHaveBeenCalledExactlyOnceWith(
+            expect.objectContaining({
+                name: 'New Copy',
+                renderer: 'COMPATIBLE',
+                release,
+                is_new: true,
+                last_opened: null,
+            }),
+        );
+        expect(copyMocks.cleanup).toHaveBeenCalledWith(true);
+    });
+
+    it.each([
+        [true, false],
+        [false, false],
+        [true, true],
+    ] as const)(
+        'retains copied files through setup with Git %s and parent consent %s',
+        async (withGit, parentConsent) => {
+            storeList.mockResolvedValue([
+                {
+                    name: 'Original',
+                    path: '/projects/original',
+                    renderer: 'COMPATIBLE',
+                    release,
+                },
+            ]);
+            const parentRoot = path.resolve('/projects/parent');
+            if (parentConsent)
+                gitServiceMocks.inspectRepository.mockResolvedValue({
+                    status: 'inside-work-tree',
+                    root: parentRoot,
+                    isProjectRoot: false,
+                    kind: 'standard',
+                });
+            copyMocks.prepare.mockImplementationOnce(async () => {
+                const report = copyMocks.construct.mock.calls.at(-1)?.[3] as (
+                    files: number,
+                ) => void;
+                report(7);
+            });
+            const service = new ProjectCreationService(
+                codeEditorIntegrationService,
+                gitService,
+                gitLfsService,
+                projectsStore,
+                installedEditors,
+            );
+            const result = await service.createProject(
+                'New Copy',
+                release,
+                'COMPATIBLE',
+                null,
+                withGit,
+                undefined,
+                undefined,
+                parentConsent ? { root: parentRoot } : undefined,
+                {
+                    projectPath: '/projects/original',
+                    jobId: 'copy-progress',
+                    copyEditorSettings: false,
+                    copySaveData: false,
+                },
+            );
+            expect(result.success).toBe(true);
+            const progress = vi
+                .mocked(ipcSendToMainWindowSync)
+                .mock.calls.map(([, payload]) => payload);
+            expect(progress).toEqual([
+                {
+                    jobId: 'copy-progress',
+                    files: 0,
+                    canCancel: true,
+                    stage: 'copying',
+                },
+                {
+                    jobId: 'copy-progress',
+                    files: 7,
+                    canCancel: true,
+                    stage: 'copying',
+                },
+                {
+                    jobId: 'copy-progress',
+                    files: 7,
+                    canCancel: false,
+                    stage: withGit && !parentConsent ? 'git' : 'configuring',
+                },
+                {
+                    jobId: 'copy-progress',
+                    files: 7,
+                    canCancel: false,
+                    stage: 'configuring',
+                },
+            ]);
+            expect(service.cancelCreateProjectCopy('copy-progress')).toBe(
+                false,
+            );
+        },
+    );
+
+    it('rejects a missing matching source editor before copying or registering', async () => {
+        storeList.mockResolvedValue([
+            {
+                name: 'Original',
+                path: '/projects/original',
+                release,
+                renderer: 'COMPATIBLE',
+            },
+        ]);
+        vi.mocked(installedEditors.getInstalledEditors).mockResolvedValue([
+            { ...release, version: '4.9' },
+        ]);
+        const result = await new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+            installedEditors,
+        ).createProject(
+            'Copy',
+            release,
+            'MOBILE',
+            null,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            {
+                projectPath: '/projects/original',
+                jobId: 'copy',
+                copyEditorSettings: false,
+                copySaveData: false,
+            },
+        );
+        expect(result).toMatchObject({
+            success: false,
+            error: 'createProject:duplicate.matchingEditorUnavailable',
+        });
+        expect(copyMocks.prepare).not.toHaveBeenCalled();
+        expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
+    });
+
+    it('rejects concurrent source requests and cancels the exact running copy without registration', async () => {
+        const original = {
+            name: 'Original',
+            renderer: 'COMPATIBLE',
+            path: '/projects/original',
+            release,
+        } as ProjectDetails;
+        storeList.mockResolvedValue([original]);
+        let began: () => void = () => {};
+        const entered = new Promise<void>((resolve) => {
+            began = resolve;
+        });
+        copyMocks.prepare.mockImplementation(async () => {
+            began();
+            const signal = copyMocks.construct.mock.calls[0][2] as AbortSignal;
+            await new Promise((_resolve, reject) =>
+                signal.addEventListener('abort', () => reject(signal.reason), {
+                    once: true,
+                }),
+            );
+        });
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+            installedEditors,
+        );
+        const source: CreateProjectSource = {
+            projectPath: original.path,
+            jobId: 'first',
+            copyEditorSettings: false,
+            copySaveData: false,
+        };
+        const pending = service.createProject(
+            'New Copy',
+            release,
+            'MOBILE',
+            null,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            source,
+        );
+        await entered;
+        const concurrent = await service.createProject(
+            'Another Copy',
+            release,
+            'MOBILE',
+            null,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            { ...source, jobId: 'second' },
+        );
+        expect(concurrent).toMatchObject({
+            success: false,
+            error: 'createProject:duplicate.errors.busy',
+        });
+        expect(service.cancelCreateProjectCopy('second')).toBe(false);
+        expect(service.cancelCreateProjectCopy('first')).toBe(true);
+        expect(await pending).toMatchObject({
+            success: false,
+            error: 'createProject:duplicate.errors.cancelled',
+        });
+        expect(copyMocks.cleanup).toHaveBeenCalledWith();
+        expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
+        expect(service.cancelCreateProjectCopy('first')).toBe(false);
+    });
+
+    it('reports retained recovery paths after a copy setup failure', async () => {
+        storeList.mockResolvedValue([
+            { name: 'Original', path: '/projects/original', release },
+        ]);
+        copyMocks.prepare.mockRejectedValue(new Error('sourceChanged'));
+        copyMocks.cleanup.mockResolvedValue(['/projects/retained']);
+        const service = new ProjectCreationService(
+            codeEditorIntegrationService,
+            gitService,
+            gitLfsService,
+            projectsStore,
+            installedEditors,
+        );
+        const result = await service.createProject(
+            'New Copy',
+            release,
+            'MOBILE',
+            null,
+            false,
+            undefined,
+            undefined,
+            undefined,
+            {
+                projectPath: '/projects/original',
+                jobId: 'copy',
+                copyEditorSettings: false,
+                copySaveData: false,
+            },
+        );
+        expect(result).toMatchObject({
+            success: false,
+            projectPath: path.resolve('/projects/New-Copy'),
+            error: 'createProject:duplicate.errors.recovery',
+        });
+        expect(projectUtilsMocks.addProjectToList).not.toHaveBeenCalled();
+    });
+
     it.each([
         ['default path', undefined, path.resolve('/projects/My-Game')],
         [
@@ -273,6 +625,7 @@ describe('createProject', () => {
                 gitService,
                 gitLfsService,
                 projectsStore,
+                installedEditors,
             );
 
             await expect(
@@ -296,6 +649,7 @@ describe('createProject', () => {
             gitService,
             gitLfsService,
             projectsStore,
+            installedEditors,
         );
 
         await expect(
@@ -314,6 +668,7 @@ describe('createProject', () => {
             gitService,
             gitLfsService,
             projectsStore,
+            installedEditors,
         );
 
         await expect(
@@ -329,6 +684,7 @@ describe('createProject', () => {
             gitService,
             gitLfsService,
             projectsStore,
+            installedEditors,
         );
 
         await expect(
@@ -346,6 +702,7 @@ describe('createProject', () => {
             gitService,
             gitLfsService,
             projectsStore,
+            installedEditors,
         );
 
         await expect(
@@ -365,6 +722,7 @@ describe('createProject', () => {
             gitService,
             gitLfsService,
             projectsStore,
+            installedEditors,
         );
 
         await expect(
@@ -385,6 +743,7 @@ describe('createProject', () => {
             gitService,
             gitLfsService,
             projectsStore,
+            installedEditors,
         );
 
         await expect(

@@ -98,9 +98,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const savingGroupOrderRef = useRef(false);
     const viewOptionsButtonRef = useRef<HTMLButtonElement>(null);
     const [textSearch, setTextSearch] = useState<string>('');
+    const [duplicateSource, setDuplicateSource] =
+        useState<ProjectDetails | null>(null);
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
     const setCreateOpen = (open: boolean) => {
+        if (!open) setDuplicateSource(null);
         if (onCreateOpenChange) {
             onCreateOpenChange(open);
             return;
@@ -812,7 +815,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     searchValue={textSearch}
                     onSearchChange={setTextSearch}
                     onAddProject={openAddProjectSourceMenu}
-                    onCreateProject={() => setCreateOpen(true)}
+                    onCreateProject={() => {
+                        setDuplicateSource(null);
+                        setCreateOpen(true);
+                    }}
                     createDisabled={false}
                     addLabel={t('buttons.add')}
                     createLabel={t('buttons.newProject')}
@@ -826,7 +832,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     <ProjectsWelcome
                         gitAvailable={gitAvailability === 'available'}
                         t={t}
-                        onCreateProject={() => setCreateOpen(true)}
+                        onCreateProject={() => {
+                            setDuplicateSource(null);
+                            setCreateOpen(true);
+                        }}
                         onAddFromComputer={() => void onAddProject()}
                         onAddFromGitHub={() =>
                             openRemoteProjectSource('github')
@@ -1061,6 +1070,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 anchorRect={projectActionsMenu?.anchorRect ?? null}
                 t={t}
                 onClose={() => setProjectActionsMenu(null)}
+                onDuplicateProject={(project) => {
+                    setProjectActionsMenu(null);
+                    setDuplicateSource(project);
+                    setCreateOpen(true);
+                }}
                 onExportEditorSettings={(project) =>
                     runProjectAction(() => exportProjectEditorSettings(project))
                 }
@@ -1093,6 +1107,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 getProjectGodotName={getProjectGodotName}
             />
             <CreateProjectDrawer
+                sourceProject={duplicateSource}
                 open={createOpen}
                 onOpenChange={setCreateOpen}
             />

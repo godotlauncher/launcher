@@ -199,6 +199,41 @@ describe('useProjects', () => {
         },
     );
 
+    it('forwards a captured source copy through the existing creation boundary', async () => {
+        const hook = renderHook();
+        const release = { version: '4.6.0' } as InstalledRelease;
+        const source = {
+            projectPath: '/projects/source',
+            jobId: 'copy-job',
+            copyEditorSettings: true,
+            copySaveData: false,
+        };
+        await hook.createProject(
+            'Copy',
+            release,
+            'MOBILE',
+            null,
+            false,
+            '/projects/copy',
+            undefined,
+            undefined,
+            undefined,
+            source,
+        );
+        expect(mocks.createProject).toHaveBeenCalledWith(
+            'Copy',
+            release,
+            'MOBILE',
+            null,
+            false,
+            '/projects/copy',
+            undefined,
+            undefined,
+            undefined,
+            source,
+        );
+    });
+
     it('forwards parent repository consent to the Create Project bridge', async () => {
         const hook = renderHook();
         const release = { version: '4.6.0' } as InstalledRelease;

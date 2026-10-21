@@ -29,7 +29,8 @@
         "importEditorSettings": "Editor-Einstellungen aus Datei importieren",
         "removeFromList": "Projekt aus Liste entfernen",
         "openCodeEditor": "In {{editor}} öffnen",
-        "openTools": "Öffnungsoptionen für {{project}}"
+        "openTools": "Öffnungsoptionen für {{project}}",
+        "duplicate": "Duplizieren"
     },
     "release": {
         "openInstalledFolder": "Installationsordner öffnen",

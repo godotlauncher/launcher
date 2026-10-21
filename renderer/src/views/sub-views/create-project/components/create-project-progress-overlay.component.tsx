@@ -1,4 +1,7 @@
-import type { ReleaseInstallProgress } from '@shared/contracts';
+import type {
+    ProjectCopyProgress,
+    ReleaseInstallProgress,
+} from '@shared/contracts';
 import clsx from 'clsx';
 import { Check, Circle, LoaderCircle, Minus } from 'lucide-react';
 import type React from 'react';
@@ -11,6 +14,9 @@ export type { CreateProjectProgressPhase } from '../create-project-workflow.type
 export type CreateProjectProgressStepId =
     | 'installing'
     | 'creating'
+    | 'git'
+    | 'configuring'
+    | 'publishing'
     | 'launching';
 
 type CreateProjectProgressStepState =
@@ -23,12 +29,21 @@ export type CreateProjectProgressLabels = {
     title: string;
     installingEditor: string;
     creatingProject: string;
+    settingUpGit: string;
+    configuringProject: string;
+    publishingProject: string;
     launchingEditor: string;
     skipped: string;
     cancelDownload: string;
 };
 
 type CreateProjectProgressOverlayProps = {
+    copyProgress?: ProjectCopyProgress | null;
+    withGit?: boolean;
+    publishes?: boolean;
+    onCancelCopy?: () => void;
+    copyProgressLabel?: string;
+    cancelCopyLabel?: string;
     phase: CreateProjectProgressPhase;
     editorInstalled: boolean;
     editNow: boolean;
@@ -41,6 +56,9 @@ type CreateProjectProgressOverlayProps = {
 const progressStepIds: CreateProjectProgressStepId[] = [
     'installing',
     'creating',
+    'git',
+    'configuring',
+    'publishing',
     'launching',
 ];
 
@@ -91,6 +109,12 @@ export const CreateProjectProgressOverlay: React.FC<
     CreateProjectProgressOverlayProps
 > = ({
     phase,
+    withGit = false,
+    publishes = false,
+    copyProgress,
+    onCancelCopy,
+    copyProgressLabel,
+    cancelCopyLabel,
     editorInstalled,
     editNow,
     labels,
@@ -138,6 +162,48 @@ export const CreateProjectProgressOverlay: React.FC<
                 editNow,
             ),
         },
+        ...(withGit
+            ? [
+                  {
+                      id: 'git' as const,
+                      label: labels.settingUpGit,
+                      state: getCreateProjectProgressStepState(
+                          'git',
+                          phase,
+                          editorInstalled,
+                          editNow,
+                      ),
+                  },
+              ]
+            : []),
+        ...(copyProgress
+            ? [
+                  {
+                      id: 'configuring' as const,
+                      label: labels.configuringProject,
+                      state: getCreateProjectProgressStepState(
+                          'configuring',
+                          phase,
+                          editorInstalled,
+                          editNow,
+                      ),
+                  },
+              ]
+            : []),
+        ...(publishes
+            ? [
+                  {
+                      id: 'publishing' as const,
+                      label: labels.publishingProject,
+                      state: getCreateProjectProgressStepState(
+                          'publishing',
+                          phase,
+                          editorInstalled,
+                          editNow,
+                      ),
+                  },
+              ]
+            : []),
         {
             id: 'launching',
             label: labels.launchingEditor,
@@ -198,6 +264,23 @@ export const CreateProjectProgressOverlay: React.FC<
                                         </span>
                                     )}
                                 </div>
+                                {step.id === 'creating' &&
+                                    phase !== 'installing' &&
+                                    copyProgress && (
+                                        <div>
+                                            <p>{copyProgressLabel}</p>
+                                            {phase === 'creating' &&
+                                                copyProgress.canCancel && (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-ghost"
+                                                        onClick={onCancelCopy}
+                                                    >
+                                                        {cancelCopyLabel}
+                                                    </button>
+                                                )}
+                                        </div>
+                                    )}
                                 {step.id === 'installing' &&
                                     reserveInstallProgress && (
                                         <div
