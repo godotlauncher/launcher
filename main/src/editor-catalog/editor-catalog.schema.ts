@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getMacosAssetArchitectures } from '../utils/macos-asset.util.js';
 import {
     EDITOR_CATALOG_PROVIDER_IDS,
     EDITOR_CATALOG_SCHEMA_VERSION,
@@ -163,7 +164,7 @@ function normalizeProviderState(
 }
 
 /**
- * Sorts the variants and assets inside one release.
+ * Repairs cached macOS CPU labels and sorts the assets inside one release.
  *
  * @param release - The release to normalize.
  * @returns A copy of the release in a stable order.
@@ -176,9 +177,16 @@ function normalizeRelease(
         variants: [...release.variants]
             .map((variant) => ({
                 ...variant,
-                assets: [...variant.assets].sort((a, b) =>
-                    a.id.localeCompare(b.id),
-                ),
+                assets: variant.assets
+                    .filter(
+                        (asset) =>
+                            asset.platform !== 'darwin' ||
+                            getMacosAssetArchitectures(asset.name)?.some(
+                                (architecture) =>
+                                    architecture === asset.architecture,
+                            ) !== false,
+                    )
+                    .sort((a, b) => a.id.localeCompare(b.id)),
             }))
             .sort((a, b) => a.flavor.localeCompare(b.flavor)),
     };
