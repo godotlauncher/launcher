@@ -194,5 +194,17 @@
             "used": "Dan l-editur qed jintuża jew huwa ġestit esternament. Inżamm.",
             "failed": "Ma setgħux jitneħħew l-edituri magħżula. Erġa' pprova."
         }
+    },
+    "commandLine": {
+        "title": "Godot predefinit tal-linja tal-kmand",
+        "actions": "Azzjonijiet tal-editur",
+        "use": "Uża bħala Godot predefinit tal-linja tal-kmand",
+        "remove": "Neħħi bħala Godot predefinit tal-linja tal-kmand",
+        "tooltip": "Jintuża meta tikteb godot f’terminal. Juża l-preferenzi normali ta’ dan l-editur, indipendentement mill-preferenzi għal kull proġett ta’ Godot Launcher.",
+        "explanation": "Meta tikteb godot jintużaw il-preferenzi normali ta’ dan l-editur. Ma jintużawx il-preferenzi separati li Godot Launcher iżomm għal kull proġett, bħat-temi tal-editur u s-shortcuts tat-tastiera.\n\nIftaħ il-proġett minn Godot Launcher biex tuża l-preferenzi tal-editur għal dak il-proġett.",
+        "enabled": "godot issa juża {{name}}. Erġa’ ibda t-terminal biex tuża l-kmand.",
+        "cleared": "Il-kmand godot maħluq minn Godot Launcher tneħħa. Il-konfigurazzjoni ta’ PATH inżammet għall-użu fil-futur.",
+        "conflict": "Kmand godot ieħor għandu prijorità: {{command}}. Il-kmand eżistenti u l-ordni ta’ PATH inżammu. Irranġa dan il-kunflitt fil-konfigurazzjoni tax-shell biex tuża l-editur magħżul.",
+        "removalWarning": "Dan l-editur huwa l-Godot predefinit tiegħek tal-linja tal-kmand. Jekk tneħħih, jitneħħa wkoll il-kmand godot maħluq minn Godot Launcher."
     }
 }

@@ -61,6 +61,10 @@ describe('InstalledEditorService', () => {
         revalidateProjects: vi.fn(),
         getProjectsUsingEditor: vi.fn(),
     };
+    const commandLine = {
+        withEditorRemoval: vi.fn(),
+        updateRegisteredEditor: vi.fn(),
+    };
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -76,6 +80,12 @@ describe('InstalledEditorService', () => {
         fsMocks.promises.access.mockResolvedValue(undefined);
         fsMocks.promises.rm.mockResolvedValue(undefined);
         osMocks.platform.mockReturnValue('linux');
+        commandLine.withEditorRemoval.mockImplementation((_release, remove) =>
+            remove(),
+        );
+        commandLine.updateRegisteredEditor.mockImplementation(
+            (_release, persist) => persist(),
+        );
     });
 
     it('revalidates and persists every registered editor', async () => {
@@ -463,12 +473,27 @@ describe('InstalledEditorService', () => {
         expect(projectRepair.revalidateProjects).toHaveBeenCalledOnce();
     });
 
+    it('keeps editor files and registration when command cleanup refuses removal', async () => {
+        const release = createRelease('4.3-stable');
+        commandLine.withEditorRemoval.mockRejectedValueOnce(
+            new Error('Wrapper changed'),
+        );
+        const result = await createService().removeEditor(release);
+        expect(result).toMatchObject({
+            success: false,
+            error: 'Wrapper changed',
+        });
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(store.remove).not.toHaveBeenCalled();
+    });
+
     /** Creates a service with isolated dependency mocks. */
     function createService(): InstalledEditorService {
         return new InstalledEditorService(
             store as never,
             configService as never,
             projectRepair as never,
+            commandLine as never,
         );
     }
 });

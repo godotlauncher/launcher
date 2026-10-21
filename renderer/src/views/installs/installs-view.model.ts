@@ -38,7 +38,13 @@ export function getInstallsViewState({
         : 'list';
 }
 
-export function getReleaseActionKey(release: InstalledRelease): string {
+/**
+ * Returns the row identity shared by editor actions and the command-line selection.
+ * @param release - Version and flavour identifying an installed editor.
+ */
+export function getReleaseActionKey(
+    release: Pick<InstalledRelease, 'version' | 'mono'>,
+): string {
     return `${release.version}_${release.mono ? 'mono' : 'standard'}`;
 }
 

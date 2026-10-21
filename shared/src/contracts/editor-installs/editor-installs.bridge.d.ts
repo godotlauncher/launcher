@@ -6,6 +6,10 @@ import type {
     RemovedReleaseResult,
 } from '../releases/index.js';
 import type {
+    CommandLineGodotResult,
+    CommandLineGodotState,
+} from './command-line-godot.types.js';
+import type {
     EditorRemovalSelection,
     RemoveEditorsResult,
 } from './editor-removal.types.js';
@@ -21,6 +25,13 @@ export type CancelEditorInstallResult = {
 
 /** Defines installed-editor requests available to the renderer. */
 export type EditorInstallsBridge = {
+    /** Gets the current command-line editor selection. */
+    getCommandLineGodot(): Promise<CommandLineGodotState>;
+
+    /** Selects a registered editor, or clears the managed command. */
+    setCommandLineGodot(
+        release: Pick<InstalledRelease, 'version' | 'mono'> | null,
+    ): Promise<CommandLineGodotResult>;
     /** Gets all registered editor installations. */
     getInstalledEditors(): Promise<InstalledRelease[]>;
 

@@ -194,5 +194,17 @@
             "used": "Cet éditeur est utilisé ou géré en externe. Il a été conservé.",
             "failed": "Impossible de supprimer les éditeurs sélectionnés. Réessayez."
         }
+    },
+    "commandLine": {
+        "title": "Godot par défaut en ligne de commande",
+        "actions": "Actions de l’éditeur",
+        "use": "Utiliser comme Godot par défaut en ligne de commande",
+        "remove": "Retirer comme Godot par défaut en ligne de commande",
+        "tooltip": "Utilisé lorsque vous saisissez godot dans un terminal. Utilise les préférences habituelles de cet éditeur, indépendamment des préférences par projet de Godot Launcher.",
+        "explanation": "La commande godot utilise les préférences habituelles de cet éditeur. Elle n’utilise pas les préférences distinctes que Godot Launcher conserve pour chaque projet, comme les thèmes de l’éditeur et les raccourcis clavier.\n\nOuvrez le projet depuis Godot Launcher pour utiliser ses préférences d’éditeur par projet.",
+        "enabled": "godot utilise maintenant {{name}}. Redémarrez votre terminal pour utiliser la commande.",
+        "cleared": "La commande godot créée par Godot Launcher a été supprimée. La configuration du PATH a été conservée pour une utilisation ultérieure.",
+        "conflict": "Une autre commande godot est prioritaire : {{command}}. Votre commande existante et l’ordre du PATH ont été conservés. Résolvez ce conflit dans la configuration de votre shell pour utiliser l’éditeur sélectionné.",
+        "removalWarning": "Cet éditeur est votre Godot par défaut en ligne de commande. Le retirer supprimera également la commande godot créée par Godot Launcher."
     }
 }

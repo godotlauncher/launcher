@@ -194,5 +194,17 @@
             "used": "此编辑器正在使用或由外部管理。已保留。",
             "failed": "无法移除所选编辑器。请重试。"
         }
+    },
+    "commandLine": {
+        "title": "默认命令行 Godot",
+        "actions": "编辑器操作",
+        "use": "用作默认命令行 Godot",
+        "remove": "取消默认命令行 Godot",
+        "tooltip": "在终端中输入 godot 时使用此编辑器。使用此编辑器的常规偏好设置，独立于 Godot Launcher 为各项目保存的偏好设置。",
+        "explanation": "输入 godot 时会使用此编辑器的常规偏好设置，不会使用 Godot Launcher 为每个项目单独保存的编辑器主题、快捷键等偏好设置。\n\n请从 Godot Launcher 打开项目，以使用该项目的独立编辑器偏好设置。",
+        "enabled": "godot 现在使用 {{name}}。请重新启动终端以使用此命令。",
+        "cleared": "已移除由 Godot Launcher 创建的 godot 命令。PATH 配置已保留，供以后使用。",
+        "conflict": "另一个 godot 命令具有更高优先级：{{command}}。现有命令和 PATH 顺序已保留。请在 shell 配置中解决此冲突，以使用所选编辑器。",
+        "removalWarning": "此编辑器是默认命令行 Godot。移除它也会移除由 Godot Launcher 创建的 godot 命令。"
     }
 }

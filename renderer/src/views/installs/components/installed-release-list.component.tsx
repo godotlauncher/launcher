@@ -7,6 +7,7 @@ import {
     FlaskConical,
     FolderOpen,
     RefreshCw,
+    Terminal,
     Trash2,
     TriangleAlert,
     UserRound,
@@ -23,6 +24,7 @@ import {
     getReleaseActionKey,
     type ReleaseAction,
 } from '../installs-view.model';
+import { CommandLineGodotMenu } from './command-line-godot-menu.component';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -42,6 +44,9 @@ type InstalledReleaseListProps = {
     selectedKeys?: Set<string>;
     selectableKeys?: Set<string>;
     onToggleEditor?: (release: InstalledRelease) => void;
+    commandLineDefaultKey?: string | null;
+    commandLineBusy?: boolean;
+    onCommandLineSelect?: (release: InstalledRelease) => void;
 };
 
 /**
@@ -63,6 +68,9 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     selectedKeys,
     selectableKeys,
     onToggleEditor,
+    commandLineDefaultKey,
+    commandLineBusy,
+    onCommandLineSelect,
 }) => {
     const { cancelInstall, getReleaseInstallProgress } = useRelease();
     const groups = groupEditorsByBaseVersion(rows);
@@ -108,6 +116,9 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
                                 ) ?? false
                             }
                             onToggleEditor={onToggleEditor}
+                            commandLineDefaultKey={commandLineDefaultKey}
+                            commandLineBusy={commandLineBusy}
+                            onCommandLineSelect={onCommandLineSelect}
                         />
                     ))}
                 </EditorVersionGroup>
@@ -135,6 +146,9 @@ type InstalledReleaseRowProps = {
     selected: boolean;
     selectable: boolean;
     onToggleEditor?: (release: InstalledRelease) => void;
+    commandLineDefaultKey?: string | null;
+    commandLineBusy?: boolean;
+    onCommandLineSelect?: (release: InstalledRelease) => void;
 };
 
 /**
@@ -159,6 +173,9 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
     selected,
     selectable,
     onToggleEditor,
+    commandLineDefaultKey,
+    commandLineBusy,
+    onCommandLineSelect,
 }) => (
     <article
         className={`flex min-h-14 items-start gap-3 rounded-md ${selected ? 'bg-primary/10' : 'bg-base-content/2 hover:bg-base-content/5'} px-3 py-3 text-base motion-reduce:transition-none ${removing ? 'pointer-events-none opacity-60' : ''}`}
@@ -222,6 +239,18 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                                 className="text-purple-500"
                                 aria-hidden="true"
                             />
+                        </span>
+                    </Tooltip>
+                )}
+                {commandLineDefaultKey === getReleaseActionKey(release) && (
+                    <Tooltip placement="top" tip={t('commandLine.tooltip')}>
+                        <span
+                            className="badge badge-sm badge-outline gap-1"
+                            role="img"
+                            aria-label={t('commandLine.title')}
+                        >
+                            <Terminal size={14} aria-hidden="true" />
+                            godot
                         </span>
                     </Tooltip>
                 )}
@@ -449,6 +478,25 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                         </button>
                     </Tooltip>
                 </div>
+            )}
+        {release.install_path &&
+            !selectionEnabled &&
+            !removing &&
+            onCommandLineSelect && (
+                <CommandLineGodotMenu
+                    selected={
+                        commandLineDefaultKey === getReleaseActionKey(release)
+                    }
+                    disabled={
+                        Boolean(commandLineBusy) ||
+                        isReleaseActionBusy(release) ||
+                        (release.valid === false &&
+                            commandLineDefaultKey !==
+                                getReleaseActionKey(release))
+                    }
+                    onSelect={() => onCommandLineSelect(release)}
+                    t={t}
+                />
             )}
     </article>
 );

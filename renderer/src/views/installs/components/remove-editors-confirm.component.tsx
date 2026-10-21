@@ -13,6 +13,7 @@ import {
 
 type RemoveEditorsConfirmProps = {
     selections: EditorRemovalSelection[];
+    commandLineDefaultKey?: string | null;
     projects: ProjectDetails[];
     t: (key: string, options?: Record<string, unknown>) => string;
     onRemove: (
@@ -30,6 +31,7 @@ type RemoveEditorsConfirmProps = {
  */
 export function RemoveEditorsConfirm({
     selections,
+    commandLineDefaultKey,
     projects,
     t,
     onRemove,
@@ -152,6 +154,11 @@ export function RemoveEditorsConfirm({
                                     </span>
                                 )}
                             </div>
+                            {commandLineDefaultKey === key && !outcome && (
+                                <p className="mt-1 text-warning">
+                                    {t('commandLine.removalWarning')}
+                                </p>
+                            )}
                             {usageCount > 0 && !outcome && (
                                 <p className="mt-1 text-warning">
                                     {t('selection.confirm.used', {

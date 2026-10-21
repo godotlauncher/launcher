@@ -194,5 +194,17 @@
             "used": "Ten edytor jest używany lub zarządzany zewnętrznie. Został zachowany.",
             "failed": "Nie udało się usunąć wybranych edytorów. Spróbuj ponownie."
         }
+    },
+    "commandLine": {
+        "title": "Domyślny Godot w wierszu poleceń",
+        "actions": "Działania edytora",
+        "use": "Użyj jako domyślnego Godota w wierszu poleceń",
+        "remove": "Usuń jako domyślnego Godota w wierszu poleceń",
+        "tooltip": "Używany po wpisaniu godot w terminalu. Korzysta ze zwykłych preferencji tego edytora, niezależnie od preferencji poszczególnych projektów w Godot Launcher.",
+        "explanation": "Polecenie godot korzysta ze zwykłych preferencji tego edytora. Nie używa osobnych preferencji przechowywanych przez Godot Launcher dla każdego projektu, takich jak motywy edytora i skróty klawiaturowe.\n\nOtwórz projekt z Godot Launcher, aby użyć preferencji edytora dla danego projektu.",
+        "enabled": "godot używa teraz {{name}}. Uruchom ponownie terminal, aby użyć polecenia.",
+        "cleared": "Polecenie godot utworzone przez Godot Launcher zostało usunięte. Konfiguracja PATH została zachowana do przyszłego użytku.",
+        "conflict": "Inne polecenie godot ma pierwszeństwo: {{command}}. Istniejące polecenie i kolejność PATH zostały zachowane. Rozwiąż ten konflikt w konfiguracji powłoki, aby użyć wybranego edytora.",
+        "removalWarning": "Ten edytor jest domyślnym Godotem w wierszu poleceń. Jego usunięcie spowoduje również usunięcie polecenia godot utworzonego przez Godot Launcher."
     }
 }
