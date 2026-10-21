@@ -18,6 +18,7 @@ import {
     createTypedJsonStore,
     type TypedJsonStore,
 } from './jsonStoreFactory.js';
+import { getMacosAssetArchitectures } from './macos-asset.util.js';
 
 export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
 
@@ -55,6 +56,7 @@ export function createAssetSummary(
     const name = asset.name.toLowerCase();
     const mono = name.includes('mono');
     const digest = normalizeGithubAssetDigest(asset.digest);
+    const macosArchitectures = getMacosAssetArchitectures(name);
 
     // Default to empty tags
     let platform_tags: string[] = [];
@@ -70,12 +72,8 @@ export function createAssetSummary(
         platform_tags = ['win32', 'ia32'];
     }
     // macOS (darwin)
-    else if (
-        name.includes('osx') ||
-        name.includes('macos') ||
-        name.includes('universal')
-    ) {
-        platform_tags = ['darwin', 'x64', 'arm64'];
+    else if (macosArchitectures) {
+        platform_tags = ['darwin', ...macosArchitectures];
     }
     // Linux
     else if (name.includes('linux')) {
@@ -137,7 +135,11 @@ export function getPlatformAsset(
     const platformAsset = assets.filter(
         (asset) =>
             asset.platform_tags.includes(platform) &&
-            asset.platform_tags.includes(arch),
+            asset.platform_tags.includes(arch) &&
+            (platform !== 'darwin' ||
+                getMacosAssetArchitectures(asset.name)?.some(
+                    (architecture) => architecture === arch,
+                ) !== false),
     );
 
     return platformAsset;

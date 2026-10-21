@@ -228,6 +228,49 @@ suite('Releases Utils', () => {
             updated_at: '',
         };
 
+        test.each([
+            ['Godot_v4.8-beta1_macos.arm64.zip', ['arm64']],
+            ['Godot_v4.8-beta1_mono_macos.x86_64.zip', ['x64']],
+            ['Godot_v4.7-stable_macos.universal.zip', ['x64', 'arm64']],
+            ['Godot_v4.0-stable_mono_osx.universal.zip', ['x64', 'arm64']],
+            ['Godot_v3.6-stable_osx.zip', ['x64', 'arm64']],
+        ] as const)(
+            'matches the macOS CPU targets for %s',
+            (name, architectures) => {
+                const asset: ReleaseAsset = {
+                    ...baseAssetProps,
+                    name,
+                    browser_download_url: `https://example.com/${name}`,
+                };
+                expect(createAssetSummary(asset).platform_tags).toEqual([
+                    'darwin',
+                    ...architectures,
+                ]);
+            },
+        );
+
+        test.each([
+            ['x64', 'x86_64'],
+            ['arm64', 'arm64'],
+        ])(
+            'selects %s downloads despite stale macOS CPU tags',
+            (arch, suffix) => {
+                const assets: AssetSummary[] = ['arm64', 'x86_64'].map(
+                    (architecture) => ({
+                        name: `Godot_v4.8-beta1_macos.${architecture}.zip`,
+                        download_url: `https://example.com/${architecture}.zip`,
+                        platform_tags: ['darwin', 'x64', 'arm64'],
+                        mono: false,
+                    }),
+                );
+                expect(getPlatformAsset('darwin', arch, assets)).toEqual([
+                    expect.objectContaining({
+                        name: `Godot_v4.8-beta1_macos.${suffix}.zip`,
+                    }),
+                ]);
+            },
+        );
+
         test('should correctly summarize a Windows 64-bit asset', () => {
             const asset: ReleaseAsset = {
                 name: 'Godot_v3.6-stable_win64.exe.zip',

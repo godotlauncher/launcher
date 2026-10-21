@@ -6,6 +6,46 @@ import {
 } from './github-editor-release.mapper.js';
 
 describe('github editor release mapper', () => {
+    it.each(['', '_mono'])(
+        'keeps separate macOS CPU downloads distinct for edition %s',
+        (edition) => {
+            const names = ['arm64', 'x86_64'].map(
+                (architecture) =>
+                    `Godot_v4.8-beta1${edition}_macos.${architecture}.zip`,
+            );
+            const release = mapGithubEditorRelease(
+                'official-prerelease',
+                true,
+                {
+                    ...createGithubRelease(),
+                    tagName: '4.8-beta1',
+                    assets: names.map((name, id) => ({
+                        id,
+                        name,
+                        browserDownloadUrl: `https://example.com/${name}`,
+                        digest: null,
+                    })),
+                },
+            );
+
+            expect(release?.variants).toEqual([
+                expect.objectContaining({
+                    flavor: edition ? 'dotnet' : 'gdscript',
+                    assets: [
+                        expect.objectContaining({
+                            name: names[0],
+                            architecture: 'arm64',
+                        }),
+                        expect.objectContaining({
+                            name: names[1],
+                            architecture: 'x64',
+                        }),
+                    ],
+                }),
+            ]);
+        },
+    );
+
     it('groups supported assets by flavor and target', () => {
         const release = mapGithubEditorRelease(
             'official-stable',
