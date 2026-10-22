@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} / {{total}}",
         "tagsSaved": "已保存 {{count}} 个项目的标签。",
         "tagProjectUnavailable": "此项目已不可用。",
-        "tagUnavailable": "此标签已不可用。"
+        "tagUnavailable": "此标签已不可用。",
+        "pin": "置顶 ({{count}})",
+        "unpin": "取消置顶 ({{count}})",
+        "pinned": "已置顶项目: {{count}}。",
+        "unpinned": "已取消置顶项目: {{count}}。",
+        "pinOrderFailed": "无法保存置顶顺序: {{error}}",
+        "pinProjectUnavailable": "此项目已不可用。"
     }
 }

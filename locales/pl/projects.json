@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} z {{total}}",
         "tagsSaved": "Zapisano tagi dla {{count}} projektów.",
         "tagProjectUnavailable": "Ten projekt nie jest już dostępny.",
-        "tagUnavailable": "Ten tag nie jest już dostępny."
+        "tagUnavailable": "Ten tag nie jest już dostępny.",
+        "pin": "Przypnij ({{count}})",
+        "unpin": "Odepnij ({{count}})",
+        "pinned": "Przypięte projekty: {{count}}.",
+        "unpinned": "Odpięte projekty: {{count}}.",
+        "pinOrderFailed": "Nie udało się zapisać kolejności przypiętych projektów: {{error}}",
+        "pinProjectUnavailable": "Ten projekt nie jest już dostępny."
     }
 }

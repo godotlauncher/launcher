@@ -8,6 +8,8 @@ import type {
 import {
     CheckSquare,
     CircleCheck,
+    Pin,
+    PinOff,
     Settings2,
     SquareMinus,
     Tag,
@@ -38,7 +40,7 @@ import { useProjectTags } from '../hooks/project-tags.hook';
 import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
 import { useToolIntegrations } from '../hooks/tool-integrations.hook';
-import { appBridge, terminalBridge } from '../renderer.bridge';
+import { appBridge, projectsBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { FolderProjectImportModal } from './projects/components/folder-project-import.modal';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
@@ -56,12 +58,15 @@ import {
 import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hook';
 import { useProjectActions } from './projects/hooks/project-actions.hook';
 import { useProjectBatchNewStatus } from './projects/hooks/project-batch-new-status.hook';
+import { useProjectBatchPins } from './projects/hooks/project-batch-pins.hook';
 import { useProjectBatchTags } from './projects/hooks/project-batch-tags.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
 import { useProjectNewStatus } from './projects/hooks/project-new-status.hook';
 import { useProjectSelection } from './projects/hooks/project-selection.hook';
+import { getEligibleProjectPins } from './projects/project-bulk-pins.model';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
 import { DEFAULT_PROJECT_GROUP_ORDER } from './projects/project-group-order.model';
+import { getUniqueProjects } from './projects/project-selection.model';
 import type { ProjectViewMode } from './projects/project-view.types';
 import {
     getInvalidProjectMessageKey,
@@ -112,6 +117,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     } | null>(null);
     const [reconcileTagSelection, setReconcileTagSelection] = useState(false);
     const tagBatchPending = useRef(false);
+    const pinBatchPending = useRef(false);
     const tagCloseReturnsFocus = useRef(false);
     const [savingViewMode, setSavingViewMode] = useState(false);
     const savingViewModeRef = useRef(false);
@@ -696,12 +702,28 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         isBlocked: () =>
             tagSession !== null ||
             reconcileTagSelection ||
-            tagBatchPending.current,
+            tagBatchPending.current ||
+            pinBatchPending.current,
         clearProjectNewStatus,
         undoClearProjectNewStatus,
     });
-    const batchTags = useProjectBatchTags(projects, batchNewStatus.busy);
+    const batchTags = useProjectBatchTags(
+        projects,
+        () => batchNewStatus.busy || pinBatchPending.current,
+    );
     tagBatchPending.current = batchTags.busy;
+    const batchPins = useProjectBatchPins({
+        isBlocked: () =>
+            batchNewStatus.busy ||
+            tagBatchPending.current ||
+            tagSession !== null ||
+            reconcileTagSelection,
+        setProjectPinned: (project, pinned) =>
+            projectsBridge.setProjectPinned(project, pinned),
+        reorderPinnedProjects: (paths) =>
+            projectsBridge.reorderPinnedProjects(paths),
+    });
+    pinBatchPending.current = batchPins.busy;
     const projectFilterKey = JSON.stringify([
         textSearch,
         [...(preferences?.projects_tag_filter ?? [])].sort(),
@@ -709,18 +731,30 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const activeTagSession =
         tagSession?.filterKey === projectFilterKey ? tagSession : null;
     const selectionBusy =
-        batchNewStatus.busy || batchTags.busy || activeTagSession !== null;
+        batchNewStatus.busy ||
+        batchTags.busy ||
+        batchPins.busy ||
+        activeTagSession !== null;
     const sectionProjects = {
         pinned: projectSections.pinnedProjects,
         new: projectSections.newProjects,
         recents: projectSections.recentProjects,
     };
+    const shownProjects = projectGroupOrder.flatMap(
+        (key) => sectionProjects[key],
+    );
     const selection = useProjectSelection({
         projects,
-        shownProjects: projectGroupOrder.flatMap((key) => sectionProjects[key]),
+        shownProjects,
         filterKey: projectFilterKey,
         busy: selectionBusy,
     });
+    const orderedSelection = getUniqueProjects(
+        [...shownProjects, ...selection.selectedProjects],
+        selection.selectedPaths,
+    );
+    const eligiblePins = getEligibleProjectPins(orderedSelection, true);
+    const eligibleUnpins = getEligibleProjectPins(orderedSelection, false);
     useEffect(() => {
         if (tagSession && tagSession.filterKey !== projectFilterKey)
             setTagSession(null);
@@ -986,6 +1020,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 selectedProjectPaths={selection.selectedPaths}
                                 selectionBusy={selectionBusy}
                                 onToggleSelection={selection.toggleProject}
+                                onToggleSectionSelection={
+                                    selection.toggleSection
+                                }
                                 searchQuery={textSearch}
                                 onClearSearch={() => {
                                     if (selectedFilterIds.length) {
@@ -1193,6 +1230,24 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         onSelect: selection.clear,
                     },
                     { type: 'separator', key: 'selection-actions-divider' },
+                    {
+                        key: 'pin',
+                        icon: <Pin size={16} />,
+                        label: t('selection.pin', {
+                            count: eligiblePins.length,
+                        }),
+                        disabled: eligiblePins.length === 0,
+                        onSelect: () => batchPins.change(eligiblePins, true),
+                    },
+                    {
+                        key: 'unpin',
+                        icon: <PinOff size={16} />,
+                        label: t('selection.unpin', {
+                            count: eligibleUnpins.length,
+                        }),
+                        disabled: eligibleUnpins.length === 0,
+                        onSelect: () => batchPins.change(eligibleUnpins, false),
+                    },
                     {
                         key: 'tags',
                         icon: <Tag size={16} />,

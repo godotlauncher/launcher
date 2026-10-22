@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} из {{total}}",
         "tagsSaved": "Теги сохранены для {{count}} проектов.",
         "tagProjectUnavailable": "Этот проект больше недоступен.",
-        "tagUnavailable": "Этот тег больше недоступен."
+        "tagUnavailable": "Этот тег больше недоступен.",
+        "pin": "Закрепить ({{count}})",
+        "unpin": "Открепить ({{count}})",
+        "pinned": "Закреплено проектов: {{count}}.",
+        "unpinned": "Откреплено проектов: {{count}}.",
+        "pinOrderFailed": "Не удалось сохранить порядок закреплённых проектов: {{error}}",
+        "pinProjectUnavailable": "Этот проект больше недоступен."
     }
 }

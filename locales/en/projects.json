@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} of {{total}}",
         "tagsSaved": "Project tags updated: {{count}}.",
         "tagProjectUnavailable": "This project is no longer available.",
-        "tagUnavailable": "This tag is no longer available."
+        "tagUnavailable": "This tag is no longer available.",
+        "pin": "Pin ({{count}})",
+        "unpin": "Unpin ({{count}})",
+        "pinned": "Projects pinned: {{count}}.",
+        "unpinned": "Projects unpinned: {{count}}.",
+        "pinOrderFailed": "Could not save pinned order: {{error}}",
+        "pinProjectUnavailable": "This project is no longer available."
     }
 }

@@ -646,6 +646,12 @@
         "tagMembership": "{{total}} 件中 {{members}} 件",
         "tagsSaved": "{{count}} 件のプロジェクトのタグを保存しました。",
         "tagProjectUnavailable": "このプロジェクトは利用できなくなりました。",
-        "tagUnavailable": "このタグは利用できなくなりました。"
+        "tagUnavailable": "このタグは利用できなくなりました。",
+        "pin": "ピン留め ({{count}})",
+        "unpin": "ピン留めを解除 ({{count}})",
+        "pinned": "ピン留めしたプロジェクト: {{count}}。",
+        "unpinned": "ピン留めを解除したプロジェクト: {{count}}。",
+        "pinOrderFailed": "ピン留めの順序を保存できませんでした: {{error}}",
+        "pinProjectUnavailable": "このプロジェクトは利用できなくなりました。"
     }
 }

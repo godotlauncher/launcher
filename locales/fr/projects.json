@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} sur {{total}}",
         "tagsSaved": "Étiquettes enregistrées pour {{count}} projets.",
         "tagProjectUnavailable": "Ce projet n'est plus disponible.",
-        "tagUnavailable": "Cette étiquette n'est plus disponible."
+        "tagUnavailable": "Cette étiquette n'est plus disponible.",
+        "pin": "Épingler ({{count}})",
+        "unpin": "Désépingler ({{count}})",
+        "pinned": "Projets épinglés : {{count}}.",
+        "unpinned": "Projets désépinglés : {{count}}.",
+        "pinOrderFailed": "Impossible d'enregistrer l'ordre des projets épinglés : {{error}}",
+        "pinProjectUnavailable": "Ce projet n'est plus disponible."
     }
 }

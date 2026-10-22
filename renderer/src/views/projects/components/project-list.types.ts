@@ -19,6 +19,7 @@ export type ProjectsListProps = {
     selectedProjectPaths?: ReadonlySet<string>;
     selectionBusy?: boolean;
     onToggleSelection?: (project: ProjectDetails) => void;
+    onToggleSectionSelection?: (projects: ProjectDetails[]) => void;
     groupOrder?: readonly ProjectSectionKey[];
     tagSnapshot?: ProjectTagsSnapshot | null;
     tagsLoadFailed?: boolean;
@@ -80,6 +81,7 @@ export type ProjectListItemProps = Omit<
     | 'pinnedReorderingDisabled'
     | 'onPinnedHighlightComplete'
     | 'onReorderPinnedProjects'
+    | 'onToggleSectionSelection'
 > & {
     project: ProjectDetails;
     githubIconSrc: string;

@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} de {{total}}",
         "tagsSaved": "Etiquetas guardadas para {{count}} proyectos.",
         "tagProjectUnavailable": "Este proyecto ya no está disponible.",
-        "tagUnavailable": "Esta etiqueta ya no está disponible."
+        "tagUnavailable": "Esta etiqueta ya no está disponible.",
+        "pin": "Fijar ({{count}})",
+        "unpin": "Desfijar ({{count}})",
+        "pinned": "Proyectos fijados: {{count}}.",
+        "unpinned": "Proyectos desfijados: {{count}}.",
+        "pinOrderFailed": "No se pudo guardar el orden de fijados: {{error}}",
+        "pinProjectUnavailable": "Este proyecto ya no está disponible."
     }
 }

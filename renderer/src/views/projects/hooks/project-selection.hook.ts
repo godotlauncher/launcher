@@ -80,6 +80,25 @@ export function useProjectSelection({
         setSelection({ filterKey, paths: next });
     };
 
+    /** Selects a visible section, or clears it when all its projects are selected.
+     * @param projects - Current visible projects belonging to the section.
+     */
+    const toggleSection = (projects: ProjectDetails[]) => {
+        if (busy || !enabled) return;
+        const shownPaths = new Set(shown.map((project) => project.path));
+        const targets = getUniqueProjects(projects).filter((project) =>
+            shownPaths.has(project.path),
+        );
+        if (!targets.length) return;
+        const clear = targets.every((project) => paths.has(project.path));
+        const next = new Set(paths);
+        for (const project of targets) {
+            if (clear) next.delete(project.path);
+            else next.add(project.path);
+        }
+        setSelection({ filterKey, paths: next });
+    };
+
     /** Drops targets hidden by completed tag edits when their popover closes. */
     const retainShown = () => {
         const visible = new Set(shown.map((project) => project.path));
@@ -102,6 +121,7 @@ export function useProjectSelection({
         eligibleNew: selectedProjects.filter(canClearProjectNew),
         toggleEnabled,
         toggleProject,
+        toggleSection,
         selectAll: () => select(shown),
         selectNew: () => select(shown.filter(canClearProjectNew)),
         clear: () => select([]),

@@ -13,17 +13,17 @@ type NotificationOwner = { id: number } | { revision: number };
 
 /** Runs immediate bulk tag edits and retains failed-only original-intent recovery.
  * @param projects - Current registrations for stale-target validation.
- * @param blocked - Another project batch currently owns mutation controls.
+ * @param isBlocked - Checks whether another project batch owns mutation controls.
  */
 export function useProjectBatchTags(
     projects: ProjectDetails[],
-    blocked: boolean,
+    isBlocked: () => boolean,
 ) {
     const { t } = useTranslation('projects');
     const { save, reload } = useProjectTags();
     const notifications = useNotifications();
-    const current = useRef({ projects, blocked });
-    current.current = { projects, blocked };
+    const current = useRef({ projects, isBlocked });
+    current.current = { projects, isBlocked };
     const mounted = useRef(false);
     const pending = useRef(false);
     const owned = useRef<number | null>(null);
@@ -55,7 +55,7 @@ export function useProjectBatchTags(
     ): Promise<boolean> => {
         if (
             pending.current ||
-            current.current.blocked ||
+            current.current.isBlocked() ||
             !mounted.current ||
             !targets.length
         )

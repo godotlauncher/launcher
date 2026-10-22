@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} / {{total}}",
         "tagsSaved": "已儲存 {{count}} 個專案的標籤。",
         "tagProjectUnavailable": "此專案已無法使用。",
-        "tagUnavailable": "此標籤已無法使用。"
+        "tagUnavailable": "此標籤已無法使用。",
+        "pin": "置頂 ({{count}})",
+        "unpin": "取消置頂 ({{count}})",
+        "pinned": "已置頂專案: {{count}}。",
+        "unpinned": "已取消置頂專案: {{count}}。",
+        "pinOrderFailed": "無法儲存置頂順序: {{error}}",
+        "pinProjectUnavailable": "此專案已無法使用。"
     }
 }

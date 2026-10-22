@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} / {{total}}",
         "tagsSaved": "{{count}} proje için etiketler kaydedildi.",
         "tagProjectUnavailable": "Bu proje artık kullanılamıyor.",
-        "tagUnavailable": "Bu etiket artık kullanılamıyor."
+        "tagUnavailable": "Bu etiket artık kullanılamıyor.",
+        "pin": "Sabitle ({{count}})",
+        "unpin": "Sabitlemeyi kaldır ({{count}})",
+        "pinned": "Sabitlenen projeler: {{count}}.",
+        "unpinned": "Sabitlemesi kaldırılan projeler: {{count}}.",
+        "pinOrderFailed": "Sabitlenmiş proje sırası kaydedilemedi: {{error}}",
+        "pinProjectUnavailable": "Bu proje artık kullanılamıyor."
     }
 }

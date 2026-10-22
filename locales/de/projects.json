@@ -646,6 +646,12 @@
         "tagMembership": "{{members}} von {{total}}",
         "tagsSaved": "Tags für {{count}} Projekte gespeichert.",
         "tagProjectUnavailable": "Dieses Projekt ist nicht mehr verfügbar.",
-        "tagUnavailable": "Dieser Tag ist nicht mehr verfügbar."
+        "tagUnavailable": "Dieser Tag ist nicht mehr verfügbar.",
+        "pin": "Anheften ({{count}})",
+        "unpin": "Loslösen ({{count}})",
+        "pinned": "Projekte angeheftet: {{count}}.",
+        "unpinned": "Projekte losgelöst: {{count}}.",
+        "pinOrderFailed": "Reihenfolge konnte nicht gespeichert werden: {{error}}",
+        "pinProjectUnavailable": "Dieses Projekt ist nicht mehr verfügbar."
     }
 }
