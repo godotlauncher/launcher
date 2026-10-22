@@ -625,5 +625,22 @@
             "deleteTitle": "\"{{name}}\" löschen?",
             "deleteDescription": "Dieser Tag wird aus allen Projekten entfernt."
         }
+    },
+    "selection": {
+        "enable": "Mehrfachauswahl aktivieren",
+        "disable": "Mehrfachauswahl deaktivieren",
+        "selected": "{{count}} ausgewählt",
+        "actions": "Aktionen",
+        "clear": "Auswahl aufheben",
+        "selectAll": "Alle angezeigten auswählen",
+        "selectNew": "Angezeigte neue Projekte auswählen",
+        "selectProject": "{{name}} auswählen",
+        "clearNew": "Als nicht neu markieren ({{count}})",
+        "cleared": "Neu-Status entfernt: {{count}}.",
+        "restored": "Neu-Status wiederhergestellt: {{count}}.",
+        "failed": "Fehlgeschlagen: {{names}}.",
+        "retryClear": "Neu-Status erneut entfernen",
+        "retryUndo": "Rückgängig erneut versuchen",
+        "resultTitle": "Projekte"
     }
 }

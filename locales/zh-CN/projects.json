@@ -625,5 +625,22 @@
             "deleteTitle": "删除“{{name}}”？",
             "deleteDescription": "此标签将从所有项目中移除。"
         }
+    },
+    "selection": {
+        "enable": "启用多选",
+        "disable": "关闭多选",
+        "selected": "已选择 {{count}} 项",
+        "actions": "操作",
+        "clear": "清除选择",
+        "selectAll": "选择所有显示的项目",
+        "selectNew": "选择显示的新项目",
+        "selectProject": "选择 {{name}}",
+        "clearNew": "标记为非新项目 ({{count}})",
+        "cleared": "已清除新项目状态: {{count}}.",
+        "restored": "已恢复新项目状态: {{count}}.",
+        "failed": "失败: {{names}}.",
+        "retryClear": "重试清除新状态",
+        "retryUndo": "重试撤销",
+        "resultTitle": "项目"
     }
 }

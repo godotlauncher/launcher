@@ -625,5 +625,22 @@
             "deleteTitle": "Delete \"{{name}}\"?",
             "deleteDescription": "This tag will be removed from all projects."
         }
+    },
+    "selection": {
+        "enable": "Enable multi-select",
+        "disable": "Disable multi-select",
+        "selected": "{{count}} selected",
+        "actions": "Actions",
+        "clear": "Clear selection",
+        "selectAll": "Select all shown",
+        "selectNew": "Select New shown",
+        "selectProject": "Select {{name}}",
+        "clearNew": "Mark as not new ({{count}})",
+        "cleared": "New status cleared: {{count}}.",
+        "restored": "New status restored: {{count}}.",
+        "failed": "Failed: {{names}}.",
+        "retryClear": "Retry clearing New",
+        "retryUndo": "Retry Undo",
+        "resultTitle": "Projects"
     }
 }

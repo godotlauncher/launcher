@@ -625,5 +625,22 @@
             "deleteTitle": "Usunąć „{{name}}”?",
             "deleteDescription": "Ten tag zostanie usunięty ze wszystkich projektów."
         }
+    },
+    "selection": {
+        "enable": "Włącz wybór wielu elementów",
+        "disable": "Wyłącz wybór wielu elementów",
+        "selected": "Wybrano: {{count}}",
+        "actions": "Działania",
+        "clear": "Wyczyść wybór",
+        "selectAll": "Wybierz wszystkie widoczne",
+        "selectNew": "Wybierz widoczne nowe projekty",
+        "selectProject": "Wybierz {{name}}",
+        "clearNew": "Oznacz jako nie nowy ({{count}})",
+        "cleared": "Usunięto status Nowy: {{count}}.",
+        "restored": "Przywrócono status Nowy: {{count}}.",
+        "failed": "Niepowodzenie: {{names}}.",
+        "retryClear": "Ponów usuwanie statusu nowego",
+        "retryUndo": "Ponów cofanie",
+        "resultTitle": "Projekty"
     }
 }

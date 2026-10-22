@@ -625,5 +625,22 @@
             "deleteTitle": "刪除「{{name}}」？",
             "deleteDescription": "此標籤將從所有專案中移除。"
         }
+    },
+    "selection": {
+        "enable": "啟用多選",
+        "disable": "關閉多選",
+        "selected": "已選取 {{count}} 項",
+        "actions": "操作",
+        "clear": "清除選取",
+        "selectAll": "選取所有顯示的專案",
+        "selectNew": "選取顯示的新專案",
+        "selectProject": "選取 {{name}}",
+        "clearNew": "標記為非新專案 ({{count}})",
+        "cleared": "已清除新專案狀態: {{count}}.",
+        "restored": "已還原新專案狀態: {{count}}.",
+        "failed": "失敗: {{names}}.",
+        "retryClear": "重試清除新狀態",
+        "retryUndo": "重試復原",
+        "resultTitle": "專案"
     }
 }

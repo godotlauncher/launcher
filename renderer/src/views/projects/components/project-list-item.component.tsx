@@ -14,6 +14,10 @@ import type { ProjectListItemProps } from './project-list.types';
  */
 export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     viewMode = 'cards',
+    selectionEnabled = false,
+    selectedProjectPaths,
+    selectionBusy = false,
+    onToggleSelection,
     tagSnapshot,
     tagsLoadFailed,
     onRetryTags,
@@ -158,11 +162,27 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
         <li
             ref={pinnedItemRef}
             tabIndex={sectionKey === 'pinned' ? -1 : undefined}
-            className={`group/project relative rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${dense ? 'flex min-h-[40px] items-center px-3 py-1' : compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName}`}
+            className={`group/project relative rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${dense ? 'flex min-h-[40px] items-center px-3 py-1' : compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName} ${selectionEnabled ? 'flex items-center gap-3' : ''} ${selectionEnabled && selectedProjectPaths?.has(project.path) ? 'outline outline-primary bg-primary/10' : ''}`}
+            aria-busy={
+                (selectionBusy && selectedProjectPaths?.has(project.path)) ||
+                undefined
+            }
             data-project-view={viewMode}
             data-project-path={project.path}
             data-project-section={sectionKey}
         >
+            {selectionEnabled && (
+                <input
+                    type="checkbox"
+                    className="checkbox checkbox-sm shrink-0"
+                    aria-label={t('selection.selectProject', {
+                        name: project.name,
+                    })}
+                    checked={selectedProjectPaths?.has(project.path) ?? false}
+                    disabled={selectionBusy}
+                    onChange={() => onToggleSelection?.(project)}
+                />
+            )}
             {reorderHandle}
             {busyProjects.includes(project.path) && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-base-100">
@@ -170,23 +190,25 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
                 </div>
             )}
 
-            {dense ? (
-                <ProjectDenseRow
-                    {...presentationProps}
-                    editorMissing={editorMissing}
-                    editorDownloading={editorDownloading}
-                    versionLabel={versionLabel}
-                />
-            ) : compact ? (
-                <ProjectCompactRow
-                    {...presentationProps}
-                    editorMissing={editorMissing}
-                    editorDownloading={editorDownloading}
-                    versionLabel={versionLabel}
-                />
-            ) : (
-                <ProjectCard {...presentationProps} />
-            )}
+            <div className="min-w-0 flex-1" inert={selectionBusy || undefined}>
+                {dense ? (
+                    <ProjectDenseRow
+                        {...presentationProps}
+                        editorMissing={editorMissing}
+                        editorDownloading={editorDownloading}
+                        versionLabel={versionLabel}
+                    />
+                ) : compact ? (
+                    <ProjectCompactRow
+                        {...presentationProps}
+                        editorMissing={editorMissing}
+                        editorDownloading={editorDownloading}
+                        versionLabel={versionLabel}
+                    />
+                ) : (
+                    <ProjectCard {...presentationProps} />
+                )}
+            </div>
         </li>
     );
 };

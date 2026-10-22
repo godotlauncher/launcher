@@ -625,5 +625,22 @@
             "deleteTitle": "Tħassar \"{{name}}\"?",
             "deleteDescription": "Dan it-tag jitneħħa mill-proġetti kollha."
         }
+    },
+    "selection": {
+        "enable": "Attiva l-għażla multipla",
+        "disable": "Iddiżattiva l-għażla multipla",
+        "selected": "{{count}} magħżula",
+        "actions": "Azzjonijiet",
+        "clear": "Neħħi l-għażla",
+        "selectAll": "Agħżel dawk kollha murija",
+        "selectNew": "Agħżel il-proġetti ġodda murija",
+        "selectProject": "Agħżel {{name}}",
+        "clearNew": "Immarka bħala mhux ġdid ({{count}})",
+        "cleared": "L-istatus Ġdid tneħħa: {{count}}.",
+        "restored": "L-istatus Ġdid ġie rrestawrat: {{count}}.",
+        "failed": "Falla: {{names}}.",
+        "retryClear": "Erġa’ pprova neħħi l-istat ġdid",
+        "retryUndo": "Erġa’ pprova annulla",
+        "resultTitle": "Proġetti"
     }
 }

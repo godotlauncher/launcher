@@ -625,5 +625,22 @@
             "deleteTitle": "Eliminare \"{{name}}\"?",
             "deleteDescription": "Questo tag verrà rimosso da tutti i progetti."
         }
+    },
+    "selection": {
+        "enable": "Attiva selezione multipla",
+        "disable": "Disattiva selezione multipla",
+        "selected": "{{count}} selezionati",
+        "actions": "Azioni",
+        "clear": "Cancella selezione",
+        "selectAll": "Seleziona tutti i progetti mostrati",
+        "selectNew": "Seleziona i nuovi progetti mostrati",
+        "selectProject": "Seleziona {{name}}",
+        "clearNew": "Segna come non nuovo ({{count}})",
+        "cleared": "Stato Nuovo rimosso: {{count}}.",
+        "restored": "Stato Nuovo ripristinato: {{count}}.",
+        "failed": "Non riuscito: {{names}}.",
+        "retryClear": "Riprova a rimuovere lo stato nuovo",
+        "retryUndo": "Riprova ad annullare",
+        "resultTitle": "Progetti"
     }
 }

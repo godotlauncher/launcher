@@ -625,5 +625,22 @@
             "deleteTitle": "Eliminar \"{{name}}\"?",
             "deleteDescription": "Esta etiqueta será removida de todos os projetos."
         }
+    },
+    "selection": {
+        "enable": "Ativar seleção múltipla",
+        "disable": "Desativar seleção múltipla",
+        "selected": "{{count}} selecionados",
+        "actions": "Ações",
+        "clear": "Limpar seleção",
+        "selectAll": "Selecionar todos os apresentados",
+        "selectNew": "Selecionar novos projetos apresentados",
+        "selectProject": "Selecionar {{name}}",
+        "clearNew": "Marcar como não novo ({{count}})",
+        "cleared": "Estado Novo removido: {{count}}.",
+        "restored": "Estado Novo reposto: {{count}}.",
+        "failed": "Falhou: {{names}}.",
+        "retryClear": "Tentar novamente remover o estado novo",
+        "retryUndo": "Tentar anular novamente",
+        "resultTitle": "Projetos"
     }
 }

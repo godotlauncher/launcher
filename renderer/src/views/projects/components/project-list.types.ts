@@ -15,6 +15,10 @@ export type { ProjectSectionKey } from '@shared/contracts';
 
 export type ProjectsListProps = {
     viewMode?: ProjectViewMode;
+    selectionEnabled?: boolean;
+    selectedProjectPaths?: ReadonlySet<string>;
+    selectionBusy?: boolean;
+    onToggleSelection?: (project: ProjectDetails) => void;
     groupOrder?: readonly ProjectSectionKey[];
     tagSnapshot?: ProjectTagsSnapshot | null;
     tagsLoadFailed?: boolean;

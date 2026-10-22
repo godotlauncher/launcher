@@ -1,8 +1,8 @@
 import { ChevronDown, ListChecks } from 'lucide-react';
 import type { MouseEventHandler } from 'react';
-import { Tooltip } from '../../../components/ui/tooltip.component';
+import { Tooltip } from './tooltip.component';
 
-type EditorSelectionToolbarProps = {
+type SelectionToolbarProps = {
     enabled: boolean;
     selectedCount: number;
     disabled: boolean;
@@ -13,12 +13,12 @@ type EditorSelectionToolbarProps = {
 };
 
 /**
- * Shows the compact selection toggle beside the editor-list search controls.
+ * Shows the compact selection toggle beside list search controls.
  *
  * @param props - Selection state, localised labels and toolbar actions.
  * @returns The selection toolbar.
  */
-export function EditorSelectionToolbar({
+export function SelectionToolbar({
     enabled,
     selectedCount,
     disabled,
@@ -26,7 +26,7 @@ export function EditorSelectionToolbar({
     t,
     onToggle,
     onOpenActions,
-}: EditorSelectionToolbarProps) {
+}: SelectionToolbarProps) {
     const toggleLabel = t(enabled ? 'selection.disable' : 'selection.enable');
     return (
         <div className="flex shrink-0 items-center gap-3 pl-2">

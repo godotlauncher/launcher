@@ -625,5 +625,22 @@
             "deleteTitle": "「{{name}}」を削除しますか？",
             "deleteDescription": "このタグはすべてのプロジェクトから削除されます。"
         }
+    },
+    "selection": {
+        "enable": "複数選択を有効にする",
+        "disable": "複数選択を無効にする",
+        "selected": "{{count}} 個を選択中",
+        "actions": "操作",
+        "clear": "選択を解除",
+        "selectAll": "表示中のすべてを選択",
+        "selectNew": "表示中の新規プロジェクトを選択",
+        "selectProject": "{{name}} を選択",
+        "clearNew": "新規として扱わない ({{count}})",
+        "cleared": "新規状態を解除しました: {{count}}.",
+        "restored": "新規状態を元に戻しました: {{count}}.",
+        "failed": "失敗: {{names}}.",
+        "retryClear": "新規状態の解除を再試行",
+        "retryUndo": "元に戻す操作を再試行",
+        "resultTitle": "プロジェクト"
     }
 }

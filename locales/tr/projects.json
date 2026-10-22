@@ -625,5 +625,22 @@
             "deleteTitle": "\"{{name}}\" silinsin mi?",
             "deleteDescription": "Bu etiket tüm projelerden kaldırılacak."
         }
+    },
+    "selection": {
+        "enable": "Çoklu seçimi etkinleştir",
+        "disable": "Çoklu seçimi devre dışı bırak",
+        "selected": "{{count}} seçili",
+        "actions": "İşlemler",
+        "clear": "Seçimi temizle",
+        "selectAll": "Gösterilenlerin tümünü seç",
+        "selectNew": "Gösterilen yeni projeleri seç",
+        "selectProject": "{{name}} seç",
+        "clearNew": "Yeni değil olarak işaretle ({{count}})",
+        "cleared": "Yeni durumu kaldırıldı: {{count}}.",
+        "restored": "Yeni durumu geri yüklendi: {{count}}.",
+        "failed": "Başarısız: {{names}}.",
+        "retryClear": "Yeni durumunu kaldırmayı yeniden dene",
+        "retryUndo": "Geri almayı yeniden dene",
+        "resultTitle": "Projeler"
     }
 }
