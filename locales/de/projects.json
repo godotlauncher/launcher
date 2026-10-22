@@ -652,6 +652,12 @@
         "pinned": "Projekte angeheftet: {{count}}.",
         "unpinned": "Projekte losgelöst: {{count}}.",
         "pinOrderFailed": "Reihenfolge konnte nicht gespeichert werden: {{error}}",
-        "pinProjectUnavailable": "Dieses Projekt ist nicht mehr verfügbar."
+        "pinProjectUnavailable": "Dieses Projekt ist nicht mehr verfügbar.",
+        "remove": "Aus Liste entfernen ({{count}})",
+        "removeTitle": "Projekte aus Liste entfernen",
+        "removeMessage": "Zum Entfernen ausgewählte Projekte: {{count}}.",
+        "removeDetail": "Ihre Ordner und Dateien bleiben auf deinem Gerät.",
+        "removed": "Aus der Liste entfernte Projekte: {{count}}.",
+        "removeProjectUnavailable": "Dieses Projekt ist nicht mehr verfügbar."
     }
 }

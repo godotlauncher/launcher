@@ -13,6 +13,7 @@ import {
     Settings2,
     SquareMinus,
     Tag,
+    Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -44,6 +45,7 @@ import { appBridge, projectsBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { FolderProjectImportModal } from './projects/components/folder-project-import.modal';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
+import { ProjectBulkRemoveConfirm } from './projects/components/project-bulk-remove-confirm.component';
 import { ProjectBulkTagsPopover } from './projects/components/project-bulk-tags-popover.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
 import { ProjectViewOptionsModal } from './projects/components/project-view-options.modal';
@@ -59,6 +61,7 @@ import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hoo
 import { useProjectActions } from './projects/hooks/project-actions.hook';
 import { useProjectBatchNewStatus } from './projects/hooks/project-batch-new-status.hook';
 import { useProjectBatchPins } from './projects/hooks/project-batch-pins.hook';
+import { useProjectBatchRemove } from './projects/hooks/project-batch-remove.hook';
 import { useProjectBatchTags } from './projects/hooks/project-batch-tags.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
 import { useProjectNewStatus } from './projects/hooks/project-new-status.hook';
@@ -118,6 +121,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const [reconcileTagSelection, setReconcileTagSelection] = useState(false);
     const tagBatchPending = useRef(false);
     const pinBatchPending = useRef(false);
+    const removeConfirmationOpen = useRef(false);
+    const restoreRemovalSelection = useRef<(targets: ProjectDetails[]) => void>(
+        () => {},
+    );
     const tagCloseReturnsFocus = useRef(false);
     const [savingViewMode, setSavingViewMode] = useState(false);
     const savingViewModeRef = useRef(false);
@@ -703,13 +710,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             tagSession !== null ||
             reconcileTagSelection ||
             tagBatchPending.current ||
-            pinBatchPending.current,
+            pinBatchPending.current ||
+            removeConfirmationOpen.current,
         clearProjectNewStatus,
         undoClearProjectNewStatus,
     });
     const batchTags = useProjectBatchTags(
         projects,
-        () => batchNewStatus.busy || pinBatchPending.current,
+        () =>
+            batchNewStatus.busy ||
+            pinBatchPending.current ||
+            removeConfirmationOpen.current,
     );
     tagBatchPending.current = batchTags.busy;
     const batchPins = useProjectBatchPins({
@@ -717,13 +728,23 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             batchNewStatus.busy ||
             tagBatchPending.current ||
             tagSession !== null ||
-            reconcileTagSelection,
+            reconcileTagSelection ||
+            removeConfirmationOpen.current,
         setProjectPinned: (project, pinned) =>
             projectsBridge.setProjectPinned(project, pinned),
         reorderPinnedProjects: (paths) =>
             projectsBridge.reorderPinnedProjects(paths),
     });
     pinBatchPending.current = batchPins.busy;
+    const batchRemove = useProjectBatchRemove(
+        () =>
+            batchNewStatus.busy ||
+            tagBatchPending.current ||
+            tagSession !== null ||
+            reconcileTagSelection,
+        (targets) => restoreRemovalSelection.current(targets),
+    );
+    removeConfirmationOpen.current = batchRemove.session !== null;
     const projectFilterKey = JSON.stringify([
         textSearch,
         [...(preferences?.projects_tag_filter ?? [])].sort(),
@@ -734,6 +755,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         batchNewStatus.busy ||
         batchTags.busy ||
         batchPins.busy ||
+        batchRemove.session !== null ||
         activeTagSession !== null;
     const sectionProjects = {
         pinned: projectSections.pinnedProjects,
@@ -749,6 +771,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         filterKey: projectFilterKey,
         busy: selectionBusy,
     });
+    restoreRemovalSelection.current = selection.restoreFailed;
     const orderedSelection = getUniqueProjects(
         [...shownProjects, ...selection.selectedProjects],
         selection.selectedPaths,
@@ -976,7 +999,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     createLabel={t('buttons.newProject')}
                     copyPathLabel={t('common:buttons.copyPath')}
                     copiedLabel={t('common:success')}
-                    showControls={!showEmptyState}
+                    showControls={!showEmptyState || selection.enabled}
                     showAddMenu
                 />
 
@@ -1273,6 +1296,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                         onSelect: () =>
                             batchNewStatus.clearNew(selection.eligibleNew),
                     },
+                    { type: 'separator', key: 'selection-removal-divider' },
+                    {
+                        key: 'remove',
+                        destructive: true,
+                        icon: <Trash2 size={16} />,
+                        label: t('selection.remove', {
+                            count: orderedSelection.length,
+                        }),
+                        disabled: orderedSelection.length === 0,
+                        onSelect: () => batchRemove.request(orderedSelection),
+                    },
                 ]}
                 onClose={() => setSelectionMenu(null)}
             />
@@ -1287,6 +1321,14 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     onReload={reloadTags}
                     onChange={batchTags.change}
                     onClose={closeBulkTags}
+                />
+            )}
+            {batchRemove.session && (
+                <ProjectBulkRemoveConfirm
+                    targets={batchRemove.session.targets}
+                    pending={batchRemove.busy}
+                    onCancel={batchRemove.cancel}
+                    onConfirm={batchRemove.confirm}
                 />
             )}
             <ProjectFoldersMenu

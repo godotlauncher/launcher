@@ -652,6 +652,12 @@
         "pinned": "Projetos fixados: {{count}}.",
         "unpinned": "Projetos desafixados: {{count}}.",
         "pinOrderFailed": "Não foi possível guardar a ordem dos fixados: {{error}}",
-        "pinProjectUnavailable": "Este projeto já não está disponível."
+        "pinProjectUnavailable": "Este projeto já não está disponível.",
+        "remove": "Remover da lista ({{count}})",
+        "removeTitle": "Remover projetos da lista",
+        "removeMessage": "Projetos selecionados para remoção: {{count}}.",
+        "removeDetail": "As pastas e os ficheiros permanecerão no dispositivo.",
+        "removed": "Projetos removidos da lista: {{count}}.",
+        "removeProjectUnavailable": "Este projeto já não está disponível."
     }
 }

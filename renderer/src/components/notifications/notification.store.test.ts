@@ -6,12 +6,14 @@ describe('notification ownership', () => {
         const store = createNotificationsStore();
         const startedAt = store.getNotificationRevision();
         const newer = store.showNotification({ title: 'Group order saved' });
+        expect(store.isNotificationCurrent(newer)).toBe(true);
         expect(
             store.showNotificationIfUnchanged(startedAt, {
                 title: 'New status cleared',
             }),
         ).toBeNull();
         store.dismissNotification(newer);
+        expect(store.isNotificationCurrent(newer)).toBe(false);
         expect(
             store.showNotificationIfUnchanged(startedAt, {
                 title: 'Could not clear New status',

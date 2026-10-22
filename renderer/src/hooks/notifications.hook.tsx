@@ -15,6 +15,7 @@ import type {
 
 type NotificationsContextValue = {
     getNotificationRevision: () => number;
+    isNotificationCurrent: (id: number) => boolean;
     showNotificationIfUnchanged: (
         revision: number,
         options: NotificationOptions,

@@ -652,6 +652,12 @@
         "pinned": "Projets épinglés : {{count}}.",
         "unpinned": "Projets désépinglés : {{count}}.",
         "pinOrderFailed": "Impossible d'enregistrer l'ordre des projets épinglés : {{error}}",
-        "pinProjectUnavailable": "Ce projet n'est plus disponible."
+        "pinProjectUnavailable": "Ce projet n'est plus disponible.",
+        "remove": "Retirer de la liste ({{count}})",
+        "removeTitle": "Retirer les projets de la liste",
+        "removeMessage": "Projets sélectionnés pour le retrait : {{count}}.",
+        "removeDetail": "Leurs dossiers et fichiers resteront sur votre appareil.",
+        "removed": "Projets retirés de la liste : {{count}}.",
+        "removeProjectUnavailable": "Ce projet n'est plus disponible."
     }
 }

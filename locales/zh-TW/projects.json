@@ -652,6 +652,12 @@
         "pinned": "已置頂專案: {{count}}。",
         "unpinned": "已取消置頂專案: {{count}}。",
         "pinOrderFailed": "無法儲存置頂順序: {{error}}",
-        "pinProjectUnavailable": "此專案已無法使用。"
+        "pinProjectUnavailable": "此專案已無法使用。",
+        "remove": "從清單移除 ({{count}})",
+        "removeTitle": "從清單移除專案",
+        "removeMessage": "已選取移除的專案: {{count}}。",
+        "removeDetail": "專案資料夾和檔案將保留在您的裝置上。",
+        "removed": "已從清單移除的專案: {{count}}。",
+        "removeProjectUnavailable": "此專案已無法使用。"
     }
 }

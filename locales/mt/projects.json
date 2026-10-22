@@ -652,6 +652,12 @@
         "pinned": "Proġetti mwaħħla: {{count}}.",
         "unpinned": "Proġetti maqlugħa: {{count}}.",
         "pinOrderFailed": "Ma setgħetx tiġi salvata l-ordni tal-proġetti mwaħħla: {{error}}",
-        "pinProjectUnavailable": "Dan il-proġett m’għadux disponibbli."
+        "pinProjectUnavailable": "Dan il-proġett m’għadux disponibbli.",
+        "remove": "Neħħi mil-lista ({{count}})",
+        "removeTitle": "Neħħi l-proġetti mil-lista",
+        "removeMessage": "Proġetti magħżula biex jitneħħew: {{count}}.",
+        "removeDetail": "Il-folders u l-fajls tagħhom jibqgħu fuq it-tagħmir tiegħek.",
+        "removed": "Proġetti mneħħija mil-lista: {{count}}.",
+        "removeProjectUnavailable": "Dan il-proġett m’għadux disponibbli."
     }
 }

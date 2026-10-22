@@ -311,7 +311,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                     {items.map((item) => {
                         if (item.type === 'separator') {
                             return (
-                                <li key={item.key} aria-hidden="true">
+                                <li
+                                    key={item.key}
+                                    className="menu-title pointer-events-none p-0"
+                                    aria-hidden="true"
+                                >
                                     <MenuDivider />
                                 </li>
                             );

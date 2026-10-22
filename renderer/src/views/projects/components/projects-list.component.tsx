@@ -67,7 +67,9 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
             t={t}
             project={project}
             sectionKey="pinned"
-            pinnedItemRef={setItemRef}
+            pinnedItemRef={
+                itemProps.selectionEnabled ? pinnedItemRef : setItemRef
+            }
             reorderStateClassName={`${isDragging ? 'z-[1] [&>:not([data-project-drag-handle])]:opacity-70' : ''} ${isDropTarget ? 'outline outline-primary' : ''}`}
             reorderHandle={
                 !itemProps.selectionEnabled && (

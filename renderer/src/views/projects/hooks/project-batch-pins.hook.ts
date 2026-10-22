@@ -5,16 +5,16 @@ import type { NotificationOptions } from '../../../components/notifications/noti
 import { useNotifications } from '../../../hooks/notifications.hook';
 import { projectsBridge } from '../../../renderer.bridge';
 import {
+    beginProjectBatch,
+    finishProjectBatch,
+    isProjectBatchPending,
+    subscribeProjectBatch,
+} from '../project-batch-activity.store';
+import {
     getEligibleProjectPins,
     type ProjectPinBatch,
     runProjectPinBatch,
 } from '../project-bulk-pins.model';
-import {
-    beginProjectPinBatch,
-    finishProjectPinBatch,
-    isProjectPinBatchPending,
-    subscribeProjectPinBatch,
-} from '../project-pin-batch.store';
 
 type PinOptions = {
     isBlocked: () => boolean;
@@ -37,9 +37,9 @@ export function useProjectBatchPins(options: PinOptions) {
     const mounted = useRef(false);
     const owned = useRef<number | null>(null);
     const busy = useSyncExternalStore(
-        subscribeProjectPinBatch,
-        isProjectPinBatchPending,
-        isProjectPinBatchPending,
+        subscribeProjectBatch,
+        isProjectBatchPending,
+        isProjectBatchPending,
     );
     useEffect(() => {
         mounted.current = true;
@@ -61,7 +61,7 @@ export function useProjectBatchPins(options: PinOptions) {
         owner: NotificationOwner,
     ): Promise<void> => {
         if (current.current.isBlocked() || !mounted.current) return;
-        const ownerToken = beginProjectPinBatch();
+        const ownerToken = beginProjectBatch();
         if (ownerToken === null) return;
         try {
             const next = await runProjectPinBatch({
@@ -139,12 +139,12 @@ export function useProjectBatchPins(options: PinOptions) {
                       );
             if (id !== null) owned.current = id;
         } finally {
-            finishProjectPinBatch(ownerToken);
+            finishProjectBatch(ownerToken);
             if (mounted.current) {
                 requestAnimationFrame(() => {
                     if (
                         !mounted.current ||
-                        isProjectPinBatchPending() ||
+                        isProjectBatchPending() ||
                         document.activeElement !== document.body ||
                         document.querySelector(
                             'dialog[open], [role="dialog"][aria-modal="true"]:not(dialog), :popover-open',

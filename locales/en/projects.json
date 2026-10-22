@@ -652,6 +652,12 @@
         "pinned": "Projects pinned: {{count}}.",
         "unpinned": "Projects unpinned: {{count}}.",
         "pinOrderFailed": "Could not save pinned order: {{error}}",
-        "pinProjectUnavailable": "This project is no longer available."
+        "pinProjectUnavailable": "This project is no longer available.",
+        "remove": "Remove from list ({{count}})",
+        "removeTitle": "Remove projects from list",
+        "removeMessage": "Projects selected for removal: {{count}}.",
+        "removeDetail": "Their folders and files will stay on your device.",
+        "removed": "Projects removed from list: {{count}}.",
+        "removeProjectUnavailable": "This project is no longer available."
     }
 }

@@ -652,6 +652,12 @@
         "pinned": "Sabitlenen projeler: {{count}}.",
         "unpinned": "Sabitlemesi kaldırılan projeler: {{count}}.",
         "pinOrderFailed": "Sabitlenmiş proje sırası kaydedilemedi: {{error}}",
-        "pinProjectUnavailable": "Bu proje artık kullanılamıyor."
+        "pinProjectUnavailable": "Bu proje artık kullanılamıyor.",
+        "remove": "Listeden kaldır ({{count}})",
+        "removeTitle": "Projeleri listeden kaldır",
+        "removeMessage": "Kaldırılacak seçili proje sayısı: {{count}}.",
+        "removeDetail": "Klasörleri ve dosyaları cihazınızda kalacak.",
+        "removed": "Listeden kaldırılan proje sayısı: {{count}}.",
+        "removeProjectUnavailable": "Bu proje artık kullanılamıyor."
     }
 }

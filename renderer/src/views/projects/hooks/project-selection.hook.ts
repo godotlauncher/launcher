@@ -112,6 +112,25 @@ export function useProjectSelection({
         }));
     };
 
+    /** Restores eligible failed removal targets after returning to Projects.
+     * @param targets - Original failed registrations from the completed batch.
+     */
+    const restoreFailed = (targets: ProjectDetails[]) => {
+        const eligible = shown.filter((project) =>
+            targets.some(
+                (target) =>
+                    target.path === project.path &&
+                    target.added_at?.getTime() === project.added_at?.getTime(),
+            ),
+        );
+        if (!eligible.length) return;
+        setEnabled(true);
+        setSelection({
+            filterKey,
+            paths: new Set(eligible.map((project) => project.path)),
+        });
+    };
+
     return {
         enabled,
         selectedPaths: paths,
@@ -126,5 +145,6 @@ export function useProjectSelection({
         selectNew: () => select(shown.filter(canClearProjectNew)),
         clear: () => select([]),
         retainShown,
+        restoreFailed,
     };
 }

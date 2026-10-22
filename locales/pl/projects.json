@@ -652,6 +652,12 @@
         "pinned": "Przypięte projekty: {{count}}.",
         "unpinned": "Odpięte projekty: {{count}}.",
         "pinOrderFailed": "Nie udało się zapisać kolejności przypiętych projektów: {{error}}",
-        "pinProjectUnavailable": "Ten projekt nie jest już dostępny."
+        "pinProjectUnavailable": "Ten projekt nie jest już dostępny.",
+        "remove": "Usuń z listy ({{count}})",
+        "removeTitle": "Usuń projekty z listy",
+        "removeMessage": "Projekty wybrane do usunięcia: {{count}}.",
+        "removeDetail": "Ich foldery i pliki pozostaną na urządzeniu.",
+        "removed": "Projekty usunięte z listy: {{count}}.",
+        "removeProjectUnavailable": "Ten projekt nie jest już dostępny."
     }
 }

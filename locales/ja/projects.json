@@ -652,6 +652,12 @@
         "pinned": "ピン留めしたプロジェクト: {{count}}。",
         "unpinned": "ピン留めを解除したプロジェクト: {{count}}。",
         "pinOrderFailed": "ピン留めの順序を保存できませんでした: {{error}}",
-        "pinProjectUnavailable": "このプロジェクトは利用できなくなりました。"
+        "pinProjectUnavailable": "このプロジェクトは利用できなくなりました。",
+        "remove": "一覧から削除 ({{count}})",
+        "removeTitle": "プロジェクトを一覧から削除",
+        "removeMessage": "削除対象のプロジェクト: {{count}}。",
+        "removeDetail": "フォルダーとファイルはデバイスに残ります。",
+        "removed": "一覧から削除したプロジェクト: {{count}}。",
+        "removeProjectUnavailable": "このプロジェクトは利用できなくなりました。"
     }
 }

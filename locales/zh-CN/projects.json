@@ -652,6 +652,12 @@
         "pinned": "已置顶项目: {{count}}。",
         "unpinned": "已取消置顶项目: {{count}}。",
         "pinOrderFailed": "无法保存置顶顺序: {{error}}",
-        "pinProjectUnavailable": "此项目已不可用。"
+        "pinProjectUnavailable": "此项目已不可用。",
+        "remove": "从列表移除 ({{count}})",
+        "removeTitle": "从列表移除项目",
+        "removeMessage": "已选择移除的项目: {{count}}。",
+        "removeDetail": "项目文件夹和文件将保留在您的设备上。",
+        "removed": "已从列表移除的项目: {{count}}。",
+        "removeProjectUnavailable": "此项目已不可用。"
     }
 }
