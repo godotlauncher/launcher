@@ -135,6 +135,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const [textSearch, setTextSearch] = useState<string>('');
     const [duplicateSource, setDuplicateSource] =
         useState<ProjectDetails | null>(null);
+    const [revealedDuplicate, setRevealedDuplicate] = useState<{
+        path: string;
+        filterKey: string;
+    } | null>(null);
     const [localCreateOpen, setLocalCreateOpen] = useState<boolean>(false);
     const createOpen = controlledCreateOpen ?? localCreateOpen;
     const setCreateOpen = (open: boolean) => {
@@ -175,10 +179,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const [projectEditorInstallTargets, setProjectEditorInstallTargets] =
         useState<string[]>([]);
     const projectEditorInstallTargetRef = useRef(new Set<string>());
-    const [highlightedPinnedProjectPath, setHighlightedPinnedProjectPath] =
-        useState<string | null>(null);
-    const clearPinnedHighlight = useCallback(
-        () => setHighlightedPinnedProjectPath(null),
+    const [highlightedProjectPath, setHighlightedProjectPath] = useState<
+        string | null
+    >(null);
+    const clearProjectHighlight = useCallback(
+        () => setHighlightedProjectPath(null),
         [],
     );
 
@@ -453,7 +458,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         addCustomConfirm,
         updatePreferences,
         setProjectPinned,
-        onProjectPinned: setHighlightedPinnedProjectPath,
+        onProjectPinned: setHighlightedProjectPath,
         importProjectEditorSettings,
         removeProject,
     });
@@ -698,11 +703,33 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         return updatedProject;
     };
 
+    const projectFilterKey = JSON.stringify([
+        textSearch,
+        [...(preferences?.projects_tag_filter ?? [])].sort(),
+    ]);
+    useEffect(() => {
+        setRevealedDuplicate((current) =>
+            current?.filterKey === projectFilterKey ? current : null,
+        );
+    }, [projectFilterKey]);
+    /** Queues a registered copy for reveal without changing saved filters.
+     * @param project - Authoritative destination returned by duplication.
+     */
+    const handleDuplicateRegistered = (project: ProjectDetails): void => {
+        setRevealedDuplicate({
+            path: project.path,
+            filterKey: projectFilterKey,
+        });
+        setHighlightedProjectPath(project.path);
+    };
     const projectSections = getProjectSections(
         projects,
         textSearch,
         selectedFilterIds,
         tagSnapshot?.assignments,
+        revealedDuplicate?.filterKey === projectFilterKey
+            ? revealedDuplicate.path
+            : undefined,
     );
     const batchNewStatus = useProjectBatchNewStatus({
         projects,
@@ -745,10 +772,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         (targets) => restoreRemovalSelection.current(targets),
     );
     removeConfirmationOpen.current = batchRemove.session !== null;
-    const projectFilterKey = JSON.stringify([
-        textSearch,
-        [...(preferences?.projects_tag_filter ?? [])].sort(),
-    ]);
     const activeTagSession =
         tagSession?.filterKey === projectFilterKey ? tagSession : null;
     const selectionBusy =
@@ -1078,15 +1101,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                 busyProjects={busyProjects}
                                 codeEditorSettings={codeEditorSettings}
                                 terminalAvailable={terminalAvailable}
-                                highlightedPinnedProjectPath={
-                                    highlightedPinnedProjectPath
+                                highlightedProjectPath={
+                                    createOpen ? null : highlightedProjectPath
                                 }
                                 pinnedReorderingDisabled={
                                     selection.enabled ||
                                     textSearch.trim().length > 0 ||
                                     selectedFilterIds.length > 0
                                 }
-                                onPinnedHighlightComplete={clearPinnedHighlight}
+                                onProjectHighlightComplete={
+                                    clearProjectHighlight
+                                }
                                 onReorderPinnedProjects={async (
                                     orderedProjectPaths,
                                 ) => {
@@ -1401,6 +1426,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             />
             <CreateProjectDrawer
                 sourceProject={duplicateSource}
+                onDuplicateRegistered={handleDuplicateRegistered}
                 open={createOpen}
                 onOpenChange={setCreateOpen}
             />

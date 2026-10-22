@@ -432,11 +432,7 @@ export function FolderProjectImportModal({
                         : 'addProject.folder.stop',
                 )}
             </button>
-        ) : step === 'adding' ? (
-            <span className="text-sm text-base-content/75">
-                {t('addProject.remote.registration.adding', registration)}
-            </span>
-        ) : (
+        ) : step === 'adding' ? null : (
             <>
                 {step === 'review' && (
                     <span className="mr-auto self-center text-sm text-base-content/60">
@@ -517,9 +513,42 @@ export function FolderProjectImportModal({
                     </p>
                 </div>
             ) : step === 'adding' ? (
-                <p role="status">
-                    {t('addProject.remote.registration.adding', registration)}
-                </p>
+                <div className="flex min-h-0 flex-1 items-center justify-center px-4 py-8">
+                    <div className="flex w-full max-w-lg flex-col gap-5">
+                        <div className="flex items-center gap-3">
+                            <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <FolderSearch size={24} aria-hidden="true" />
+                            </span>
+                            <div
+                                role="status"
+                                aria-live="polite"
+                                aria-atomic="true"
+                            >
+                                <h2 className="text-lg font-semibold">
+                                    {t(
+                                        'addProject.remote.registration.adding',
+                                        registration,
+                                    )}
+                                </h2>
+                            </div>
+                        </div>
+                        <progress
+                            className="progress progress-primary h-3 w-full motion-reduce:transition-none"
+                            aria-label={t(
+                                'addProject.remote.registration.adding',
+                                registration,
+                            )}
+                            max={registration.total || 1}
+                            value={registration.current}
+                        />
+                        <p
+                            className="truncate text-sm text-base-content/60"
+                            title={folder}
+                        >
+                            {folder}
+                        </p>
+                    </div>
+                </div>
             ) : step === 'complete' ? (
                 <div className="flex min-h-0 flex-1 flex-col gap-3">
                     {error && notices}

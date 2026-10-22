@@ -16,6 +16,7 @@ export type FailedPublication = Extract<
 
 export type CreateProjectDrawerProps = {
     sourceProject?: ProjectDetails | null;
+    onDuplicateRegistered?: (project: ProjectDetails) => void;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 };
