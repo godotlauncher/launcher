@@ -71,6 +71,7 @@ for (const theme of THEMES) {
                     const state = globalThis as typeof globalThis & {
                         folderCalls: unknown[];
                         holdAdd?: boolean;
+                        holdAddFile?: string;
                         releaseAdd?: () => void;
                     };
                     state.folderCalls = [];
@@ -135,7 +136,8 @@ for (const theme of THEMES) {
                     ipcMain.handle(
                         'projects.addProject',
                         async (_event, file: string, options) => {
-                            if (state.holdAdd) {
+                            if (state.holdAdd || file === state.holdAddFile) {
+                                state.holdAddFile = undefined;
                                 state.holdAdd = false;
                                 await new Promise<void>((resolve) => {
                                     state.releaseAdd = resolve;
@@ -230,14 +232,14 @@ for (const theme of THEMES) {
                     .querySelector('section')!
                     .getBoundingClientRect();
                 const footer = element
-                    .querySelector('footer')!
-                    .getBoundingClientRect();
+                    .querySelector('footer')
+                    ?.getBoundingClientRect();
                 return {
                     width: innerWidth,
                     height: innerHeight,
                     top: panel.top,
                     bottom: panel.bottom,
-                    footerBottom: footer.bottom,
+                    footerBottom: footer?.bottom ?? panel.bottom,
                     bodyOverflow:
                         document.documentElement.scrollWidth > innerWidth,
                 };
@@ -558,10 +560,46 @@ for (const theme of THEMES) {
             await expect(modal.getByRole('status')).toContainText(
                 'Adding projects: 0/8',
             );
+            const progressBar = modal.getByRole('progressbar', {
+                name: 'Adding projects: 0/8',
+            });
+            await expect(progressBar).toBeInViewport({ ratio: 1 });
+            await expect(progressBar).toHaveAttribute('max', '8');
+            await expect(progressBar).toHaveAttribute('value', '0');
+            const barBounds = await progressBar.boundingBox();
+            expect(barBounds!.width).toBeGreaterThan(350);
+            expect(barBounds!.height).toBeGreaterThanOrEqual(10);
             await assertFits(modal);
             await page.screenshot({
                 path: test.info().outputPath('folder-import-adding.png'),
             });
+            await app.evaluate(
+                (_electron, file) => {
+                    (
+                        globalThis as typeof globalThis & {
+                            holdAddFile: string;
+                        }
+                    ).holdAddFile = file;
+                },
+                path.join(folder, 'game-4', 'project.godot'),
+            );
+            await app.evaluate(() => {
+                (
+                    globalThis as typeof globalThis & {
+                        releaseAdd?: () => void;
+                    }
+                ).releaseAdd?.();
+            });
+            const advancingProgress = modal.getByRole('progressbar', {
+                name: 'Adding projects: 3/8',
+            });
+            await expect(advancingProgress).toHaveAttribute('value', '3');
+            await expect(advancingProgress).toHaveAttribute('max', '8');
+            await page.emulateMedia({ reducedMotion: 'reduce' });
+            await page.screenshot({
+                path: test.info().outputPath('folder-import-progress.png'),
+            });
+            await page.emulateMedia({ reducedMotion: 'no-preference' });
             await app.evaluate(() => {
                 (
                     globalThis as typeof globalThis & {
@@ -572,6 +610,7 @@ for (const theme of THEMES) {
             await expect(
                 modal.getByText('Project import complete', { exact: true }),
             ).toBeVisible();
+            await expect(modal.getByRole('progressbar')).toHaveCount(0);
             await assertFits(modal);
             const results = modal.getByRole('list', {
                 name: 'Project import complete',

@@ -31,6 +31,44 @@ function project(
 }
 
 describe('getProjectSections', () => {
+    it('reveals only the duplicated path through search and tags without changing section order', () => {
+        const copy = project('Copy', {
+            isNew: true,
+            addedAt: '2026-10-22T12:00:00Z',
+        });
+        const matching = project('Source', {
+            isNew: true,
+            addedAt: '2026-10-22T13:00:00Z',
+        });
+        const unrelated = project('Hidden');
+        const projects = [unrelated, copy, matching];
+        const assignments = { [matching.path]: ['selected'] };
+
+        expect(
+            getProjectSections(
+                projects,
+                'Source',
+                ['selected'],
+                assignments,
+                copy.path,
+            ).newProjects,
+        ).toEqual([matching, copy]);
+        expect(
+            getProjectSections(
+                projects,
+                'Source',
+                ['selected'],
+                assignments,
+                copy.path,
+            ).recentProjects,
+        ).toEqual([]);
+        expect(
+            getProjectSections(projects, 'Source', ['selected'], assignments)
+                .newProjects,
+        ).toEqual([matching]);
+        expect(projects).toEqual([unrelated, copy, matching]);
+    });
+
     it('keeps pinned projects out of new and recents', () => {
         const newPinned = project('New Pinned', { pinned: true, isNew: true });
         const recentPinned = project('Recent Pinned', {

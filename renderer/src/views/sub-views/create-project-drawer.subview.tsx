@@ -37,6 +37,7 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
     open,
     onOpenChange,
     sourceProject,
+    onDuplicateRegistered,
 }) => {
     const { t } = useTranslation([
         'createProject',
@@ -101,6 +102,7 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
         form,
         integrations,
         showPublishedAlert,
+        onDuplicateRegistered,
     );
     const { publication, identity } = workflow;
     const releases = form.releaseApi;

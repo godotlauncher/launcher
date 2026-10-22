@@ -140,9 +140,9 @@ function renderProjectsList(
             projectGitHubUrls={projectGitHubUrls}
             codeEditorSettings={codeEditorSettings}
             terminalAvailable={options.terminalAvailable ?? true}
-            highlightedPinnedProjectPath={null}
+            highlightedProjectPath={null}
             pinnedReorderingDisabled={pinnedReorderingDisabled}
-            onPinnedHighlightComplete={vi.fn()}
+            onProjectHighlightComplete={vi.fn()}
             onReorderPinnedProjects={vi.fn()}
             isInstalledRelease={options.isInstalledRelease ?? vi.fn(() => true)}
             isProjectEditorDownloading={

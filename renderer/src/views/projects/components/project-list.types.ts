@@ -38,9 +38,9 @@ export type ProjectsListProps = {
     busyProjects: string[];
     codeEditorSettings: CodeEditorIntegrationSettings[];
     terminalAvailable: boolean;
-    highlightedPinnedProjectPath: string | null;
+    highlightedProjectPath: string | null;
     pinnedReorderingDisabled: boolean;
-    onPinnedHighlightComplete: () => void;
+    onProjectHighlightComplete: () => void;
     onReorderPinnedProjects: (orderedProjectPaths: string[]) => Promise<void>;
     isInstalledRelease: (version: string, mono: boolean) => boolean;
     isProjectEditorDownloading: (project: ProjectDetails) => boolean;
@@ -77,9 +77,9 @@ export type ProjectListItemProps = Omit<
     | 'sections'
     | 'groupOrder'
     | 'loading'
-    | 'highlightedPinnedProjectPath'
+    | 'highlightedProjectPath'
     | 'pinnedReorderingDisabled'
-    | 'onPinnedHighlightComplete'
+    | 'onProjectHighlightComplete'
     | 'onReorderPinnedProjects'
     | 'onToggleSectionSelection'
 > & {
@@ -87,7 +87,7 @@ export type ProjectListItemProps = Omit<
     githubIconSrc: string;
     sectionKey: ProjectSectionKey;
     highlighted: boolean;
-    pinnedItemRef?: (element: HTMLLIElement | null) => void;
+    projectItemRef?: (element: HTMLLIElement | null) => void;
     reorderHandle?: React.ReactNode;
     reorderStateClassName?: string;
 };

@@ -113,22 +113,25 @@ function sortPinnedProjects(projects: ProjectDetails[]): ProjectDetails[] {
  * @param textSearch - Project name search.
  * @param tagIds - Selected tag IDs, matched with OR semantics.
  * @param assignments - Persisted project-to-tag assignments.
+ * @param revealedProjectPath - Newly duplicated project included until filters change.
  */
 export function getProjectSections(
     projects: ProjectDetails[],
     textSearch: string,
     tagIds: readonly string[] = [],
     assignments: ProjectTagsSnapshot['assignments'] = {},
+    revealedProjectPath?: string,
 ): ProjectSections {
     const normalizedSearch = textSearch.trim().toLocaleLowerCase();
     const filteredProjects = projects.filter(
         (project) =>
-            (!normalizedSearch ||
+            project.path === revealedProjectPath ||
+            ((!normalizedSearch ||
                 project.name.toLocaleLowerCase().includes(normalizedSearch)) &&
-            (tagIds.length === 0 ||
-                (assignments[project.path] ?? []).some((id) =>
-                    tagIds.includes(id),
-                )),
+                (tagIds.length === 0 ||
+                    (assignments[project.path] ?? []).some((id) =>
+                        tagIds.includes(id),
+                    ))),
     );
 
     return {

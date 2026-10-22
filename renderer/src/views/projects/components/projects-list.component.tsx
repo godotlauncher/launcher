@@ -26,11 +26,11 @@ import { ProjectListItem } from './project-list-item.component';
 
 type SortablePinnedProjectItemProps = Omit<
     ProjectListItemProps,
-    'sectionKey' | 'pinnedItemRef' | 'reorderHandle' | 'reorderStateClassName'
+    'sectionKey' | 'projectItemRef' | 'reorderHandle' | 'reorderStateClassName'
 > & {
     index: number;
     reorderingDisabled: boolean;
-    pinnedItemRef: (element: HTMLLIElement | null) => void;
+    projectItemRef: (element: HTMLLIElement | null) => void;
 };
 
 /**
@@ -41,7 +41,7 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
     project,
     index,
     reorderingDisabled,
-    pinnedItemRef,
+    projectItemRef,
     t,
     ...itemProps
 }) => {
@@ -58,7 +58,7 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
      */
     const setItemRef = (element: HTMLLIElement | null) => {
         ref(element);
-        pinnedItemRef(element);
+        projectItemRef(element);
     };
 
     return (
@@ -67,8 +67,8 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
             t={t}
             project={project}
             sectionKey="pinned"
-            pinnedItemRef={
-                itemProps.selectionEnabled ? pinnedItemRef : setItemRef
+            projectItemRef={
+                itemProps.selectionEnabled ? projectItemRef : setItemRef
             }
             reorderStateClassName={`${isDragging ? 'z-[1] [&>:not([data-project-drag-handle])]:opacity-70' : ''} ${isDropTarget ? 'outline outline-primary' : ''}`}
             reorderHandle={
@@ -107,9 +107,9 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
     searchQuery,
     onClearSearch,
     clearSearchLabel,
-    highlightedPinnedProjectPath,
+    highlightedProjectPath,
     pinnedReorderingDisabled,
-    onPinnedHighlightComplete,
+    onProjectHighlightComplete,
     onReorderPinnedProjects,
     onToggleSectionSelection,
     ...itemProps
@@ -120,7 +120,10 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
         effectiveTheme === 'dark'
             ? githubInvertocatWhite
             : githubInvertocatBlack;
-    const pinnedItemRefs = useRef(new Map<string, HTMLLIElement>());
+    const projectItemRefs = useRef(new Map<string, HTMLLIElement>());
+    const [visibleHighlightPath, setVisibleHighlightPath] = useState<
+        string | null
+    >(null);
     const [isPersistingPinnedOrder, setIsPersistingPinnedOrder] =
         useState(false);
     const pinnedProjectsByPath = useMemo(
@@ -220,18 +223,55 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
         );
     };
 
+    const highlightedSection = Object.entries(sections).find(([, projects]) =>
+        projects.some((project) => project.path === highlightedProjectPath),
+    )?.[0];
     useEffect(() => {
-        if (!highlightedPinnedProjectPath) {
-            return;
-        }
+        setVisibleHighlightPath(null);
+        if (loading || !highlightedProjectPath || !highlightedSection) return;
+        const item = projectItemRefs.current.get(highlightedProjectPath);
+        if (!item) return;
 
-        const item = pinnedItemRefs.current.get(highlightedPinnedProjectPath);
-        item?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        item?.focus({ preventScroll: true });
-
-        const timeout = window.setTimeout(onPinnedHighlightComplete, 1600);
-        return () => window.clearTimeout(timeout);
-    }, [highlightedPinnedProjectPath, onPinnedHighlightComplete]);
+        let frame = 0;
+        let timeout: number | undefined;
+        const blockingDialogSelector =
+            'dialog[open], [role="dialog"][aria-modal="true"]:not(dialog)';
+        /** Reveals the copy after closing drawers and any result dialogs. */
+        const reveal = () => {
+            if (document.querySelector(blockingDialogSelector)) return;
+            observer.disconnect();
+            frame = window.requestAnimationFrame(() => {
+                const reducedMotion = window.matchMedia(
+                    '(prefers-reduced-motion: reduce)',
+                ).matches;
+                setVisibleHighlightPath(highlightedProjectPath);
+                item.scrollIntoView({
+                    behavior: reducedMotion ? 'instant' : 'smooth',
+                    block: 'nearest',
+                });
+                item.focus({ preventScroll: true });
+                timeout = window.setTimeout(onProjectHighlightComplete, 1600);
+            });
+        };
+        const observer = new MutationObserver(reveal);
+        observer.observe(document.body, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            attributeFilter: ['open', 'role', 'aria-modal'],
+        });
+        reveal();
+        return () => {
+            observer.disconnect();
+            window.cancelAnimationFrame(frame);
+            window.clearTimeout(timeout);
+        };
+    }, [
+        highlightedProjectPath,
+        highlightedSection,
+        loading,
+        onProjectHighlightComplete,
+    ]);
 
     if (loading) {
         return (
@@ -368,17 +408,17 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                                             isPersistingPinnedOrder
                                         }
                                         highlighted={
-                                            highlightedPinnedProjectPath ===
+                                            visibleHighlightPath ===
                                             project.path
                                         }
-                                        pinnedItemRef={(element) => {
+                                        projectItemRef={(element) => {
                                             if (element) {
-                                                pinnedItemRefs.current.set(
+                                                projectItemRefs.current.set(
                                                     project.path,
                                                     element,
                                                 );
                                             } else {
-                                                pinnedItemRefs.current.delete(
+                                                projectItemRefs.current.delete(
                                                     project.path,
                                                 );
                                             }
@@ -396,10 +436,19 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                                     githubIconSrc={githubIconSrc}
                                     project={project}
                                     sectionKey={section.key}
+                                    projectItemRef={(element) => {
+                                        if (element)
+                                            projectItemRefs.current.set(
+                                                project.path,
+                                                element,
+                                            );
+                                        else
+                                            projectItemRefs.current.delete(
+                                                project.path,
+                                            );
+                                    }}
                                     highlighted={
-                                        section.key === 'pinned' &&
-                                        highlightedPinnedProjectPath ===
-                                            project.path
+                                        visibleHighlightPath === project.path
                                     }
                                 />
                             ))}

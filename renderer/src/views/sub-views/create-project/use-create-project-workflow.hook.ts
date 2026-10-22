@@ -38,6 +38,7 @@ import { useCreateProjectPublication } from './use-create-project-publication.ho
  * @param form - Editable project values and destination validation.
  * @param integrations - Available tools and the selected integration options.
  * @param showPublishedAlert - Presents a successful publication and its repository action.
+ * @param onDuplicateRegistered - Records a registered copy for reveal after the drawer closes.
  * @returns Workflow state, publication and identity controls, and submission actions.
  */
 export function useCreateProjectWorkflow(
@@ -46,6 +47,7 @@ export function useCreateProjectWorkflow(
     form: ReturnType<typeof useCreateProjectForm>,
     integrations: ReturnType<typeof useCreateProjectIntegrations>,
     showPublishedAlert: (repository: PublishedGitHubRepository) => void,
+    onDuplicateRegistered?: (project: ProjectDetails) => void,
 ) {
     const { t } = useTranslation(['createProject', 'common']);
     const { addAlert } = useAlerts();
@@ -268,6 +270,10 @@ export function useCreateProjectWorkflow(
             return;
         } finally {
             copyJobRef.current = null;
+        }
+
+        if (submission.source && result.projectDetails) {
+            onDuplicateRegistered?.(result.projectDetails);
         }
 
         if (result.recoveryPaths?.length)

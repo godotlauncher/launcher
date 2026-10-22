@@ -25,7 +25,7 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
     project,
     sectionKey,
     highlighted,
-    pinnedItemRef,
+    projectItemRef,
     reorderHandle,
     reorderStateClassName = '',
     locale,
@@ -160,8 +160,8 @@ export const ProjectListItem: React.FC<ProjectListItemProps> = ({
 
     return (
         <li
-            ref={pinnedItemRef}
-            tabIndex={sectionKey === 'pinned' ? -1 : undefined}
+            ref={projectItemRef}
+            tabIndex={-1}
             className={`group/project relative rounded-md bg-base-content/2 text-base hover:bg-base-content/5 ${dense ? 'flex min-h-[40px] items-center px-3 py-1' : compact ? 'flex min-h-[68px] items-center px-3 py-3' : 'p-4'} motion-reduce:transition-none ${highlighted ? 'project-pin-highlight' : ''} ${reorderStateClassName} ${selectionEnabled ? 'flex items-center gap-3' : ''} ${selectionEnabled && selectedProjectPaths?.has(project.path) ? 'outline outline-primary bg-primary/10' : ''}`}
             aria-busy={
                 (selectionBusy && selectedProjectPaths?.has(project.path)) ||
