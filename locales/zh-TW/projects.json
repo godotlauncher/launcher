@@ -641,6 +641,11 @@
         "failed": "失敗: {{names}}.",
         "retryClear": "重試清除新狀態",
         "retryUndo": "重試復原",
-        "resultTitle": "專案"
+        "resultTitle": "專案",
+        "tags": "批次編輯標籤",
+        "tagMembership": "{{members}} / {{total}}",
+        "tagsSaved": "已儲存 {{count}} 個專案的標籤。",
+        "tagProjectUnavailable": "此專案已無法使用。",
+        "tagUnavailable": "此標籤已無法使用。"
     }
 }

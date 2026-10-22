@@ -80,6 +80,19 @@ export function useProjectSelection({
         setSelection({ filterKey, paths: next });
     };
 
+    /** Drops targets hidden by completed tag edits when their popover closes. */
+    const retainShown = () => {
+        const visible = new Set(shown.map((project) => project.path));
+        setSelection((current) => ({
+            filterKey,
+            paths: new Set(
+                current.filterKey === filterKey
+                    ? [...current.paths].filter((path) => visible.has(path))
+                    : [],
+            ),
+        }));
+    };
+
     return {
         enabled,
         selectedPaths: paths,
@@ -92,5 +105,6 @@ export function useProjectSelection({
         selectAll: () => select(shown),
         selectNew: () => select(shown.filter(canClearProjectNew)),
         clear: () => select([]),
+        retainShown,
     };
 }

@@ -641,6 +641,11 @@
         "failed": "Non riuscito: {{names}}.",
         "retryClear": "Riprova a rimuovere lo stato nuovo",
         "retryUndo": "Riprova ad annullare",
-        "resultTitle": "Progetti"
+        "resultTitle": "Progetti",
+        "tags": "Modifica tag in blocco",
+        "tagMembership": "{{members}} di {{total}}",
+        "tagsSaved": "Tag salvati per {{count}} progetti.",
+        "tagProjectUnavailable": "Questo progetto non è più disponibile.",
+        "tagUnavailable": "Questo tag non è più disponibile."
     }
 }

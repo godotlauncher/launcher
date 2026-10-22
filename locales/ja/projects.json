@@ -641,6 +641,11 @@
         "failed": "失敗: {{names}}.",
         "retryClear": "新規状態の解除を再試行",
         "retryUndo": "元に戻す操作を再試行",
-        "resultTitle": "プロジェクト"
+        "resultTitle": "プロジェクト",
+        "tags": "タグを一括編集",
+        "tagMembership": "{{total}} 件中 {{members}} 件",
+        "tagsSaved": "{{count}} 件のプロジェクトのタグを保存しました。",
+        "tagProjectUnavailable": "このプロジェクトは利用できなくなりました。",
+        "tagUnavailable": "このタグは利用できなくなりました。"
     }
 }

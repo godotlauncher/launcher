@@ -641,6 +641,11 @@
         "failed": "Ошибка: {{names}}.",
         "retryClear": "Повторить снятие статуса нового",
         "retryUndo": "Повторить отмену",
-        "resultTitle": "Проекты"
+        "resultTitle": "Проекты",
+        "tags": "Массовое изменение тегов",
+        "tagMembership": "{{members}} из {{total}}",
+        "tagsSaved": "Теги сохранены для {{count}} проектов.",
+        "tagProjectUnavailable": "Этот проект больше недоступен.",
+        "tagUnavailable": "Этот тег больше недоступен."
     }
 }

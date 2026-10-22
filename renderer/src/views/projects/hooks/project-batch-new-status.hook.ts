@@ -25,6 +25,7 @@ type BatchState = {
 };
 type BatchOptions = {
     projects: ProjectDetails[];
+    isBlocked?: () => boolean;
     clearProjectNewStatus: (
         project: ProjectDetails,
     ) => Promise<ClearProjectNewStatusResult>;
@@ -37,6 +38,7 @@ type NotificationOwner = { revision: number } | { id: number };
  */
 export function useProjectBatchNewStatus({
     projects,
+    isBlocked,
     clearProjectNewStatus,
     undoClearProjectNewStatus,
 }: BatchOptions) {
@@ -44,6 +46,8 @@ export function useProjectBatchNewStatus({
     const notifications = useNotifications();
     const current = useRef(projects);
     current.current = projects;
+    const blockedRef = useRef(isBlocked);
+    blockedRef.current = isBlocked;
     const pending = useRef(false);
     const mounted = useRef(false);
     const ownedId = useRef<number | null>(null);
@@ -203,7 +207,13 @@ export function useProjectBatchNewStatus({
         previous: BatchState,
         owner: NotificationOwner,
     ) => {
-        if (pending.current || !mounted.current || !targets.length) return;
+        if (
+            pending.current ||
+            blockedRef.current?.() ||
+            !mounted.current ||
+            !targets.length
+        )
+            return;
         pending.current = true;
         setBusy(true);
         try {
@@ -238,7 +248,8 @@ export function useProjectBatchNewStatus({
      * @param owner - Notification owning this Undo attempt.
      */
     const undo = async (previous: BatchState, owner: NotificationOwner) => {
-        if (pending.current || !mounted.current) return;
+        if (pending.current || blockedRef.current?.() || !mounted.current)
+            return;
         pending.current = true;
         setBusy(true);
         try {

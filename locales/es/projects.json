@@ -641,6 +641,11 @@
         "failed": "Fallido: {{names}}.",
         "retryClear": "Reintentar quitar el estado nuevo",
         "retryUndo": "Reintentar deshacer",
-        "resultTitle": "Proyectos"
+        "resultTitle": "Proyectos",
+        "tags": "Editar etiquetas en lote",
+        "tagMembership": "{{members}} de {{total}}",
+        "tagsSaved": "Etiquetas guardadas para {{count}} proyectos.",
+        "tagProjectUnavailable": "Este proyecto ya no está disponible.",
+        "tagUnavailable": "Esta etiqueta ya no está disponible."
     }
 }

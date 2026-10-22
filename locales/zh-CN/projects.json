@@ -641,6 +641,11 @@
         "failed": "失败: {{names}}.",
         "retryClear": "重试清除新状态",
         "retryUndo": "重试撤销",
-        "resultTitle": "项目"
+        "resultTitle": "项目",
+        "tags": "批量编辑标签",
+        "tagMembership": "{{members}} / {{total}}",
+        "tagsSaved": "已保存 {{count}} 个项目的标签。",
+        "tagProjectUnavailable": "此项目已不可用。",
+        "tagUnavailable": "此标签已不可用。"
     }
 }

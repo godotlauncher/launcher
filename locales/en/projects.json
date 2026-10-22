@@ -641,6 +641,11 @@
         "failed": "Failed: {{names}}.",
         "retryClear": "Retry clearing New",
         "retryUndo": "Retry Undo",
-        "resultTitle": "Projects"
+        "resultTitle": "Projects",
+        "tags": "Bulk edit tags",
+        "tagMembership": "{{members}} of {{total}}",
+        "tagsSaved": "Project tags updated: {{count}}.",
+        "tagProjectUnavailable": "This project is no longer available.",
+        "tagUnavailable": "This tag is no longer available."
     }
 }

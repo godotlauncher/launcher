@@ -5,7 +5,13 @@ import type {
     ProjectSectionKey,
     ReleaseSummary,
 } from '@shared/contracts';
-import { CheckSquare, CircleCheck, Settings2, SquareMinus } from 'lucide-react';
+import {
+    CheckSquare,
+    CircleCheck,
+    Settings2,
+    SquareMinus,
+    Tag,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -36,6 +42,7 @@ import { appBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { FolderProjectImportModal } from './projects/components/folder-project-import.modal';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
+import { ProjectBulkTagsPopover } from './projects/components/project-bulk-tags-popover.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
 import { ProjectViewOptionsModal } from './projects/components/project-view-options.modal';
 import { ProjectsDropOverlay } from './projects/components/projects-drop-overlay.component';
@@ -49,6 +56,7 @@ import {
 import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hook';
 import { useProjectActions } from './projects/hooks/project-actions.hook';
 import { useProjectBatchNewStatus } from './projects/hooks/project-batch-new-status.hook';
+import { useProjectBatchTags } from './projects/hooks/project-batch-tags.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
 import { useProjectNewStatus } from './projects/hooks/project-new-status.hook';
 import { useProjectSelection } from './projects/hooks/project-selection.hook';
@@ -97,6 +105,14 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     ]);
     const [selectionMenu, setSelectionMenu] =
         useState<ActionMenuAnchorRect | null>(null);
+    const [tagSession, setTagSession] = useState<{
+        targets: ProjectDetails[];
+        anchor: ActionMenuAnchorRect;
+        filterKey: string;
+    } | null>(null);
+    const [reconcileTagSelection, setReconcileTagSelection] = useState(false);
+    const tagBatchPending = useRef(false);
+    const tagCloseReturnsFocus = useRef(false);
     const [savingViewMode, setSavingViewMode] = useState(false);
     const savingViewModeRef = useRef(false);
     const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
@@ -677,9 +693,23 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     );
     const batchNewStatus = useProjectBatchNewStatus({
         projects,
+        isBlocked: () =>
+            tagSession !== null ||
+            reconcileTagSelection ||
+            tagBatchPending.current,
         clearProjectNewStatus,
         undoClearProjectNewStatus,
     });
+    const batchTags = useProjectBatchTags(projects, batchNewStatus.busy);
+    tagBatchPending.current = batchTags.busy;
+    const projectFilterKey = JSON.stringify([
+        textSearch,
+        [...(preferences?.projects_tag_filter ?? [])].sort(),
+    ]);
+    const activeTagSession =
+        tagSession?.filterKey === projectFilterKey ? tagSession : null;
+    const selectionBusy =
+        batchNewStatus.busy || batchTags.busy || activeTagSession !== null;
     const sectionProjects = {
         pinned: projectSections.pinnedProjects,
         new: projectSections.newProjects,
@@ -688,12 +718,42 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     const selection = useProjectSelection({
         projects,
         shownProjects: projectGroupOrder.flatMap((key) => sectionProjects[key]),
-        filterKey: JSON.stringify([
-            textSearch,
-            [...(preferences?.projects_tag_filter ?? [])].sort(),
-        ]),
-        busy: batchNewStatus.busy,
+        filterKey: projectFilterKey,
+        busy: selectionBusy,
     });
+    useEffect(() => {
+        if (tagSession && tagSession.filterKey !== projectFilterKey)
+            setTagSession(null);
+        if (reconcileTagSelection && !batchTags.busy) {
+            selection.retainShown();
+            setReconcileTagSelection(false);
+            if (tagCloseReturnsFocus.current) {
+                tagCloseReturnsFocus.current = false;
+                requestAnimationFrame(() => {
+                    if (document.activeElement !== document.body) return;
+                    document
+                        .querySelector<HTMLButtonElement>(
+                            '[data-project-selection-toolbar] button[aria-haspopup]',
+                        )
+                        ?.focus({ preventScroll: true });
+                });
+            }
+        }
+    }, [
+        tagSession,
+        projectFilterKey,
+        reconcileTagSelection,
+        batchTags.busy,
+        selection.retainShown,
+    ]);
+    /** Ends the frozen-target session, reconciling after any pending save finishes.
+     * @param restoreFocus - Whether keyboard or explicit closure should return to Actions.
+     */
+    const closeBulkTags = (restoreFocus: boolean) => {
+        tagCloseReturnsFocus.current = restoreFocus;
+        setTagSession(null);
+        setReconcileTagSelection(true);
+    };
     const viewState = getProjectsViewState({
         projectCount: projects.length,
         tagFilterActive:
@@ -814,15 +874,19 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             <SelectionToolbar
                                 enabled={selection.enabled}
                                 selectedCount={
+                                    activeTagSession?.targets.length ??
                                     selection.selectedProjects.length
                                 }
                                 disabled={
                                     loading ||
-                                    batchNewStatus.busy ||
+                                    selectionBusy ||
                                     savingTagFilter ||
                                     !preferences
                                 }
-                                actionsOpen={selectionMenu !== null}
+                                actionsOpen={
+                                    selectionMenu !== null ||
+                                    activeTagSession !== null
+                                }
                                 t={t}
                                 onToggle={() => {
                                     setSelectionMenu(null);
@@ -920,7 +984,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             <ProjectsList
                                 selectionEnabled={selection.enabled}
                                 selectedProjectPaths={selection.selectedPaths}
-                                selectionBusy={batchNewStatus.busy}
+                                selectionBusy={selectionBusy}
                                 onToggleSelection={selection.toggleProject}
                                 searchQuery={textSearch}
                                 onClearSearch={() => {
@@ -1101,7 +1165,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 open={
                     selectionMenu !== null &&
                     selection.enabled &&
-                    !batchNewStatus.busy
+                    !selectionBusy
                 }
                 anchorRect={selectionMenu}
                 ariaLabel={t('selection.actions')}
@@ -1130,6 +1194,21 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     },
                     { type: 'separator', key: 'selection-actions-divider' },
                     {
+                        key: 'tags',
+                        icon: <Tag size={16} />,
+                        label: t('selection.tags'),
+                        disabled: selection.selectedProjects.length === 0,
+                        onSelect: () => {
+                            if (!selectionMenu) return;
+                            batchTags.clearFailure();
+                            setTagSession({
+                                targets: [...selection.selectedProjects],
+                                anchor: selectionMenu,
+                                filterKey: projectFilterKey,
+                            });
+                        },
+                    },
+                    {
                         key: 'clear-new',
                         icon: <CircleCheck size={16} />,
                         label: t('selection.clearNew', {
@@ -1142,6 +1221,19 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 ]}
                 onClose={() => setSelectionMenu(null)}
             />
+            {activeTagSession && (
+                <ProjectBulkTagsPopover
+                    targets={activeTagSession.targets}
+                    anchor={activeTagSession.anchor}
+                    snapshot={tagSnapshot}
+                    loadFailed={tagsLoadFailed}
+                    busy={batchTags.busy}
+                    failure={batchTags.failure}
+                    onReload={reloadTags}
+                    onChange={batchTags.change}
+                    onClose={closeBulkTags}
+                />
+            )}
             <ProjectFoldersMenu
                 showCopyProjectPath={projectViewMode === 'dense'}
                 project={projectFoldersMenu?.project ?? null}

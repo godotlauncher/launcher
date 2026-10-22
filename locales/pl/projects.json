@@ -641,6 +641,11 @@
         "failed": "Niepowodzenie: {{names}}.",
         "retryClear": "Ponów usuwanie statusu nowego",
         "retryUndo": "Ponów cofanie",
-        "resultTitle": "Projekty"
+        "resultTitle": "Projekty",
+        "tags": "Zbiorcza edycja tagów",
+        "tagMembership": "{{members}} z {{total}}",
+        "tagsSaved": "Zapisano tagi dla {{count}} projektów.",
+        "tagProjectUnavailable": "Ten projekt nie jest już dostępny.",
+        "tagUnavailable": "Ten tag nie jest już dostępny."
     }
 }

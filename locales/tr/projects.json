@@ -641,6 +641,11 @@
         "failed": "Başarısız: {{names}}.",
         "retryClear": "Yeni durumunu kaldırmayı yeniden dene",
         "retryUndo": "Geri almayı yeniden dene",
-        "resultTitle": "Projeler"
+        "resultTitle": "Projeler",
+        "tags": "Etiketleri toplu düzenle",
+        "tagMembership": "{{members}} / {{total}}",
+        "tagsSaved": "{{count}} proje için etiketler kaydedildi.",
+        "tagProjectUnavailable": "Bu proje artık kullanılamıyor.",
+        "tagUnavailable": "Bu etiket artık kullanılamıyor."
     }
 }

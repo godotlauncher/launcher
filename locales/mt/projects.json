@@ -641,6 +641,11 @@
         "failed": "Falla: {{names}}.",
         "retryClear": "Erġa’ pprova neħħi l-istat ġdid",
         "retryUndo": "Erġa’ pprova annulla",
-        "resultTitle": "Proġetti"
+        "resultTitle": "Proġetti",
+        "tags": "Editja t-tags f’daqqa",
+        "tagMembership": "{{members}} minn {{total}}",
+        "tagsSaved": "It-tags ġew salvati għal {{count}} proġetti.",
+        "tagProjectUnavailable": "Dan il-proġett m’għadux disponibbli.",
+        "tagUnavailable": "Dan it-tag m’għadux disponibbli."
     }
 }
