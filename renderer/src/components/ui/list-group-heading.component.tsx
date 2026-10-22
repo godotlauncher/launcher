@@ -6,11 +6,12 @@ type ListGroupHeadingProps = {
     count: number;
     headingLevel: 'h2' | 'h3';
     icon?: ReactNode;
+    leadingControl?: ReactNode;
 };
 
 /**
  * Renders a sticky, subdued list heading with a count and separator.
- * @param props - Heading identity, title, count, semantic level and optional decorative icon.
+ * @param props - Heading identity, content, semantic level and optional leading control.
  */
 export function ListGroupHeading({
     id,
@@ -18,9 +19,11 @@ export function ListGroupHeading({
     count,
     headingLevel: Heading,
     icon,
+    leadingControl,
 }: ListGroupHeadingProps) {
     return (
         <div className="sticky top-0 z-10 flex items-center gap-3 bg-base-100 pl-3 pr-1 py-2">
+            {leadingControl}
             <Heading
                 id={id}
                 className="inline-flex items-center gap-2 text-base font-semibold text-base-content/50"

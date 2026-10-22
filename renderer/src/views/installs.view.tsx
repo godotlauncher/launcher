@@ -17,6 +17,7 @@ import {
 } from '../components/ui/action-menu.component.tsx';
 import { ContentDivider } from '../components/ui/content-divider.component';
 import { EmptyState } from '../components/ui/empty-state.component.tsx';
+import { SelectionToolbar } from '../components/ui/selection-toolbar.component';
 import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
 import { useAlerts } from '../hooks/alerts.hook';
 import { usePreferences } from '../hooks/preferences.hook';
@@ -24,7 +25,6 @@ import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
 import { appBridge, editorInstallsBridge } from '../renderer.bridge.ts';
 import { CustomEditorManifestDropOverlay } from './installs/components/custom-editor-manifest-drop-overlay.component';
-import { EditorSelectionToolbar } from './installs/components/editor-selection-toolbar.component';
 import { InstalledReleaseList } from './installs/components/installed-release-list.component';
 import { InstallsHeader } from './installs/components/installs-header.component';
 import { InstallsSearchEmptyState } from './installs/components/installs-search-empty-state.component';
@@ -250,7 +250,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     copiedLabel={t('common:success')}
                     showControls={viewState !== 'empty'}
                     selectionControls={
-                        <EditorSelectionToolbar
+                        <SelectionToolbar
                             enabled={selection.enabled}
                             selectedCount={selection.selections.length}
                             disabled={

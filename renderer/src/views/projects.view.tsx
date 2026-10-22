@@ -5,7 +5,16 @@ import type {
     ProjectSectionKey,
     ReleaseSummary,
 } from '@shared/contracts';
-import { Settings2 } from 'lucide-react';
+import {
+    CheckSquare,
+    CircleCheck,
+    Pin,
+    PinOff,
+    Settings2,
+    SquareMinus,
+    Tag,
+    Trash2,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -16,10 +25,12 @@ import {
     type ProjectTagFilterHandle,
 } from '../components/project-tags/project-tag-filter.component';
 import {
+    ActionMenu,
     type ActionMenuAnchorRect,
     getActionMenuAnchorRect,
 } from '../components/ui/action-menu.component';
 import { ContentDivider } from '../components/ui/content-divider.component';
+import { SelectionToolbar } from '../components/ui/selection-toolbar.component';
 import { Tooltip } from '../components/ui/tooltip.component';
 import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
 import { useAlerts } from '../hooks/alerts.hook';
@@ -30,10 +41,12 @@ import { useProjectTags } from '../hooks/project-tags.hook';
 import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
 import { useToolIntegrations } from '../hooks/tool-integrations.hook';
-import { appBridge, terminalBridge } from '../renderer.bridge';
+import { appBridge, projectsBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { FolderProjectImportModal } from './projects/components/folder-project-import.modal';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
+import { ProjectBulkRemoveConfirm } from './projects/components/project-bulk-remove-confirm.component';
+import { ProjectBulkTagsPopover } from './projects/components/project-bulk-tags-popover.component';
 import { ProjectFoldersMenu } from './projects/components/project-folders-menu.component';
 import { ProjectViewOptionsModal } from './projects/components/project-view-options.modal';
 import { ProjectsDropOverlay } from './projects/components/projects-drop-overlay.component';
@@ -46,10 +59,17 @@ import {
 } from './projects/components/remote-project-import.modal';
 import { useAddProjectWorkflow } from './projects/hooks/add-project-workflow.hook';
 import { useProjectActions } from './projects/hooks/project-actions.hook';
+import { useProjectBatchNewStatus } from './projects/hooks/project-batch-new-status.hook';
+import { useProjectBatchPins } from './projects/hooks/project-batch-pins.hook';
+import { useProjectBatchRemove } from './projects/hooks/project-batch-remove.hook';
+import { useProjectBatchTags } from './projects/hooks/project-batch-tags.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
 import { useProjectNewStatus } from './projects/hooks/project-new-status.hook';
+import { useProjectSelection } from './projects/hooks/project-selection.hook';
+import { getEligibleProjectPins } from './projects/project-bulk-pins.model';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
 import { DEFAULT_PROJECT_GROUP_ORDER } from './projects/project-group-order.model';
+import { getUniqueProjects } from './projects/project-selection.model';
 import type { ProjectViewMode } from './projects/project-view.types';
 import {
     getInvalidProjectMessageKey,
@@ -91,6 +111,21 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         'menus',
         'dialogs',
     ]);
+    const [selectionMenu, setSelectionMenu] =
+        useState<ActionMenuAnchorRect | null>(null);
+    const [tagSession, setTagSession] = useState<{
+        targets: ProjectDetails[];
+        anchor: ActionMenuAnchorRect;
+        filterKey: string;
+    } | null>(null);
+    const [reconcileTagSelection, setReconcileTagSelection] = useState(false);
+    const tagBatchPending = useRef(false);
+    const pinBatchPending = useRef(false);
+    const removeConfirmationOpen = useRef(false);
+    const restoreRemovalSelection = useRef<(targets: ProjectDetails[]) => void>(
+        () => {},
+    );
+    const tagCloseReturnsFocus = useRef(false);
     const [savingViewMode, setSavingViewMode] = useState(false);
     const savingViewModeRef = useRef(false);
     const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
@@ -669,6 +704,113 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         selectedFilterIds,
         tagSnapshot?.assignments,
     );
+    const batchNewStatus = useProjectBatchNewStatus({
+        projects,
+        isBlocked: () =>
+            tagSession !== null ||
+            reconcileTagSelection ||
+            tagBatchPending.current ||
+            pinBatchPending.current ||
+            removeConfirmationOpen.current,
+        clearProjectNewStatus,
+        undoClearProjectNewStatus,
+    });
+    const batchTags = useProjectBatchTags(
+        projects,
+        () =>
+            batchNewStatus.busy ||
+            pinBatchPending.current ||
+            removeConfirmationOpen.current,
+    );
+    tagBatchPending.current = batchTags.busy;
+    const batchPins = useProjectBatchPins({
+        isBlocked: () =>
+            batchNewStatus.busy ||
+            tagBatchPending.current ||
+            tagSession !== null ||
+            reconcileTagSelection ||
+            removeConfirmationOpen.current,
+        setProjectPinned: (project, pinned) =>
+            projectsBridge.setProjectPinned(project, pinned),
+        reorderPinnedProjects: (paths) =>
+            projectsBridge.reorderPinnedProjects(paths),
+    });
+    pinBatchPending.current = batchPins.busy;
+    const batchRemove = useProjectBatchRemove(
+        () =>
+            batchNewStatus.busy ||
+            tagBatchPending.current ||
+            tagSession !== null ||
+            reconcileTagSelection,
+        (targets) => restoreRemovalSelection.current(targets),
+    );
+    removeConfirmationOpen.current = batchRemove.session !== null;
+    const projectFilterKey = JSON.stringify([
+        textSearch,
+        [...(preferences?.projects_tag_filter ?? [])].sort(),
+    ]);
+    const activeTagSession =
+        tagSession?.filterKey === projectFilterKey ? tagSession : null;
+    const selectionBusy =
+        batchNewStatus.busy ||
+        batchTags.busy ||
+        batchPins.busy ||
+        batchRemove.session !== null ||
+        activeTagSession !== null;
+    const sectionProjects = {
+        pinned: projectSections.pinnedProjects,
+        new: projectSections.newProjects,
+        recents: projectSections.recentProjects,
+    };
+    const shownProjects = projectGroupOrder.flatMap(
+        (key) => sectionProjects[key],
+    );
+    const selection = useProjectSelection({
+        projects,
+        shownProjects,
+        filterKey: projectFilterKey,
+        busy: selectionBusy,
+    });
+    restoreRemovalSelection.current = selection.restoreFailed;
+    const orderedSelection = getUniqueProjects(
+        [...shownProjects, ...selection.selectedProjects],
+        selection.selectedPaths,
+    );
+    const eligiblePins = getEligibleProjectPins(orderedSelection, true);
+    const eligibleUnpins = getEligibleProjectPins(orderedSelection, false);
+    useEffect(() => {
+        if (tagSession && tagSession.filterKey !== projectFilterKey)
+            setTagSession(null);
+        if (reconcileTagSelection && !batchTags.busy) {
+            selection.retainShown();
+            setReconcileTagSelection(false);
+            if (tagCloseReturnsFocus.current) {
+                tagCloseReturnsFocus.current = false;
+                requestAnimationFrame(() => {
+                    if (document.activeElement !== document.body) return;
+                    document
+                        .querySelector<HTMLButtonElement>(
+                            '[data-project-selection-toolbar] button[aria-haspopup]',
+                        )
+                        ?.focus({ preventScroll: true });
+                });
+            }
+        }
+    }, [
+        tagSession,
+        projectFilterKey,
+        reconcileTagSelection,
+        batchTags.busy,
+        selection.retainShown,
+    ]);
+    /** Ends the frozen-target session, reconciling after any pending save finishes.
+     * @param restoreFocus - Whether keyboard or explicit closure should return to Actions.
+     */
+    const closeBulkTags = (restoreFocus: boolean) => {
+        tagCloseReturnsFocus.current = restoreFocus;
+        setTagSession(null);
+        setReconcileTagSelection(true);
+    };
     const viewState = getProjectsViewState({
         projectCount: projects.length,
         tagFilterActive:
@@ -784,6 +926,39 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             </button>
                         </Tooltip>
                     }
+                    selectionTools={
+                        <div data-project-selection-toolbar="">
+                            <SelectionToolbar
+                                enabled={selection.enabled}
+                                selectedCount={
+                                    activeTagSession?.targets.length ??
+                                    selection.selectedProjects.length
+                                }
+                                disabled={
+                                    loading ||
+                                    selectionBusy ||
+                                    savingTagFilter ||
+                                    !preferences
+                                }
+                                actionsOpen={
+                                    selectionMenu !== null ||
+                                    activeTagSession !== null
+                                }
+                                t={t}
+                                onToggle={() => {
+                                    setSelectionMenu(null);
+                                    selection.toggleEnabled();
+                                }}
+                                onOpenActions={(event) =>
+                                    setSelectionMenu(
+                                        getActionMenuAnchorRect(
+                                            event.currentTarget,
+                                        ),
+                                    )
+                                }
+                            />
+                        </div>
+                    }
                     tagFilter={
                         <ProjectTagFilter
                             controlRef={tagFilterControl}
@@ -824,7 +999,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     createLabel={t('buttons.newProject')}
                     copyPathLabel={t('common:buttons.copyPath')}
                     copiedLabel={t('common:success')}
-                    showControls={!showEmptyState}
+                    showControls={!showEmptyState || selection.enabled}
                     showAddMenu
                 />
 
@@ -864,6 +1039,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             </div>
                         ) : (
                             <ProjectsList
+                                selectionEnabled={selection.enabled}
+                                selectedProjectPaths={selection.selectedPaths}
+                                selectionBusy={selectionBusy}
+                                onToggleSelection={selection.toggleProject}
+                                onToggleSectionSelection={
+                                    selection.toggleSection
+                                }
                                 searchQuery={textSearch}
                                 onClearSearch={() => {
                                     if (selectedFilterIds.length) {
@@ -900,6 +1082,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                                     highlightedPinnedProjectPath
                                 }
                                 pinnedReorderingDisabled={
+                                    selection.enabled ||
                                     textSearch.trim().length > 0 ||
                                     selectedFilterIds.length > 0
                                 }
@@ -1038,6 +1221,116 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     </>
                 )}
             </div>
+            <ActionMenu
+                open={
+                    selectionMenu !== null &&
+                    selection.enabled &&
+                    !selectionBusy
+                }
+                anchorRect={selectionMenu}
+                ariaLabel={t('selection.actions')}
+                align="start"
+                items={[
+                    {
+                        key: 'select-all',
+                        icon: <CheckSquare size={16} />,
+                        label: t('selection.selectAll'),
+                        disabled: selection.shownCount === 0,
+                        onSelect: selection.selectAll,
+                    },
+                    {
+                        key: 'select-new',
+                        icon: <CircleCheck size={16} />,
+                        label: t('selection.selectNew'),
+                        disabled: selection.newCount === 0,
+                        onSelect: selection.selectNew,
+                    },
+                    {
+                        key: 'clear-selection',
+                        icon: <SquareMinus size={16} />,
+                        label: t('selection.clear'),
+                        disabled: selection.selectedProjects.length === 0,
+                        onSelect: selection.clear,
+                    },
+                    { type: 'separator', key: 'selection-actions-divider' },
+                    {
+                        key: 'pin',
+                        icon: <Pin size={16} />,
+                        label: t('selection.pin', {
+                            count: eligiblePins.length,
+                        }),
+                        disabled: eligiblePins.length === 0,
+                        onSelect: () => batchPins.change(eligiblePins, true),
+                    },
+                    {
+                        key: 'unpin',
+                        icon: <PinOff size={16} />,
+                        label: t('selection.unpin', {
+                            count: eligibleUnpins.length,
+                        }),
+                        disabled: eligibleUnpins.length === 0,
+                        onSelect: () => batchPins.change(eligibleUnpins, false),
+                    },
+                    {
+                        key: 'tags',
+                        icon: <Tag size={16} />,
+                        label: t('selection.tags'),
+                        disabled: selection.selectedProjects.length === 0,
+                        onSelect: () => {
+                            if (!selectionMenu) return;
+                            batchTags.clearFailure();
+                            setTagSession({
+                                targets: [...selection.selectedProjects],
+                                anchor: selectionMenu,
+                                filterKey: projectFilterKey,
+                            });
+                        },
+                    },
+                    {
+                        key: 'clear-new',
+                        icon: <CircleCheck size={16} />,
+                        label: t('selection.clearNew', {
+                            count: selection.eligibleNew.length,
+                        }),
+                        disabled: selection.eligibleNew.length === 0,
+                        onSelect: () =>
+                            batchNewStatus.clearNew(selection.eligibleNew),
+                    },
+                    { type: 'separator', key: 'selection-removal-divider' },
+                    {
+                        key: 'remove',
+                        destructive: true,
+                        icon: <Trash2 size={16} />,
+                        label: t('selection.remove', {
+                            count: orderedSelection.length,
+                        }),
+                        disabled: orderedSelection.length === 0,
+                        onSelect: () => batchRemove.request(orderedSelection),
+                    },
+                ]}
+                onClose={() => setSelectionMenu(null)}
+            />
+            {activeTagSession && (
+                <ProjectBulkTagsPopover
+                    targets={activeTagSession.targets}
+                    anchor={activeTagSession.anchor}
+                    snapshot={tagSnapshot}
+                    loadFailed={tagsLoadFailed}
+                    busy={batchTags.busy}
+                    failure={batchTags.failure}
+                    onReload={reloadTags}
+                    onChange={batchTags.change}
+                    onClose={closeBulkTags}
+                />
+            )}
+            {batchRemove.session && (
+                <ProjectBulkRemoveConfirm
+                    targets={batchRemove.session.targets}
+                    pending={batchRemove.busy}
+                    onCancel={batchRemove.cancel}
+                    onConfirm={batchRemove.confirm}
+                />
+            )}
             <ProjectFoldersMenu
                 showCopyProjectPath={projectViewMode === 'dense'}
                 project={projectFoldersMenu?.project ?? null}

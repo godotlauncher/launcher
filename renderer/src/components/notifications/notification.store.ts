@@ -54,6 +54,10 @@ export function createNotificationsStore() {
     const getSnapshot = () => current;
     /** Returns the latest shown identity so delayed operations can preserve newer feedback. */
     const getNotificationRevision = () => sequence;
+    /** Checks whether feedback is still visible before carrying its recovery across navigation.
+     * @param id - Notification owned by the completing workflow.
+     */
+    const isNotificationCurrent = (id: number): boolean => current?.id === id;
     /** Shows a delayed result only if no newer notification has been shown.
      * @param revision - Revision captured before the operation began.
      * @param options - Saved result or failure feedback for that operation.
@@ -72,6 +76,7 @@ export function createNotificationsStore() {
         subscribe,
         getSnapshot,
         getNotificationRevision,
+        isNotificationCurrent,
         showNotificationIfUnchanged,
         getServerSnapshot,
     };

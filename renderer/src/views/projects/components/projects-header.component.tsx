@@ -10,6 +10,7 @@ type ProjectsHeaderProps = {
     viewMode: ProjectViewMode;
     viewOptions?: React.ReactNode;
     tagFilter?: React.ReactNode;
+    selectionTools?: React.ReactNode;
     searchInputRef?: React.RefObject<HTMLInputElement | null>;
     searchShortcut?: string;
     searchAriaKeyShortcuts?: string;
@@ -44,6 +45,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
     viewMode,
     viewOptions,
     tagFilter,
+    selectionTools,
     searchInputRef,
     searchShortcut,
     searchAriaKeyShortcuts,
@@ -115,7 +117,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
             )}
         </div>
         {showControls && (
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex shrink-0 items-center gap-2">
                     <ProjectViewToggle
                         disabled={viewModeDisabled}
@@ -126,6 +128,7 @@ export const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({
                         compactLabel={compactViewLabel}
                     />
                     {viewOptions}
+                    {selectionTools}
                 </div>
                 <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
                     {tagFilter}

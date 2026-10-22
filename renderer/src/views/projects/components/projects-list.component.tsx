@@ -34,7 +34,7 @@ type SortablePinnedProjectItemProps = Omit<
 };
 
 /**
- * Reveals a pinned project's exterior handle on row hover and during a drag.
+ * Reveals a pinned project's exterior handle outside multi-select on hover or drag.
  * @param props - Project content and pinned sorting state.
  */
 const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
@@ -67,26 +67,30 @@ const SortablePinnedProjectItem: React.FC<SortablePinnedProjectItemProps> = ({
             t={t}
             project={project}
             sectionKey="pinned"
-            pinnedItemRef={setItemRef}
+            pinnedItemRef={
+                itemProps.selectionEnabled ? pinnedItemRef : setItemRef
+            }
             reorderStateClassName={`${isDragging ? 'z-[1] [&>:not([data-project-drag-handle])]:opacity-70' : ''} ${isDropTarget ? 'outline outline-primary' : ''}`}
             reorderHandle={
-                <div
-                    data-project-drag-handle=""
-                    className={`absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transition-opacity motion-reduce:transition-none ${isDragging ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover/project:pointer-events-auto group-hover/project:opacity-100'}`}
-                >
-                    <button
-                        ref={handleRef}
-                        type="button"
-                        data-testid="btnReorderPinnedProject"
-                        disabled={reorderingDisabled}
-                        className={`btn btn-sm h-10 w-8 bg-base-200 p-0 shadow-none transition-colors motion-reduce:transition-none ${isDragging ? 'border-primary text-primary cursor-grabbing' : 'border-transparent cursor-grab hover:border-primary hover:text-primary focus-visible:border-primary focus-visible:text-primary active:border-primary active:text-primary active:cursor-grabbing'}`}
-                        aria-label={t('pinning.reorder.label', {
-                            project: project.name,
-                        })}
+                !itemProps.selectionEnabled && (
+                    <div
+                        data-project-drag-handle=""
+                        className={`absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transition-opacity motion-reduce:transition-none ${isDragging ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover/project:pointer-events-auto group-hover/project:opacity-100'}`}
                     >
-                        <GripVertical size={16} aria-hidden="true" />
-                    </button>
-                </div>
+                        <button
+                            ref={handleRef}
+                            type="button"
+                            data-testid="btnReorderPinnedProject"
+                            disabled={reorderingDisabled}
+                            className={`btn btn-sm h-10 w-8 bg-base-200 p-0 shadow-none transition-colors motion-reduce:transition-none ${isDragging ? 'border-primary text-primary cursor-grabbing' : 'border-transparent cursor-grab hover:border-primary hover:text-primary focus-visible:border-primary focus-visible:text-primary active:border-primary active:text-primary active:cursor-grabbing'}`}
+                            aria-label={t('pinning.reorder.label', {
+                                project: project.name,
+                            })}
+                        >
+                            <GripVertical size={16} aria-hidden="true" />
+                        </button>
+                    </div>
+                )
             }
         />
     );
@@ -107,6 +111,7 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
     pinnedReorderingDisabled,
     onPinnedHighlightComplete,
     onReorderPinnedProjects,
+    onToggleSectionSelection,
     ...itemProps
 }) => {
     const { theme, systemTheme } = useTheme();
@@ -305,6 +310,38 @@ export const ProjectsList: React.FC<ProjectsListProps> = ({
                         icon={<ProjectGroupIcon group={section.key} />}
                         count={section.projects.length}
                         headingLevel="h2"
+                        leadingControl={
+                            itemProps.selectionEnabled && (
+                                <input
+                                    type="checkbox"
+                                    className="checkbox checkbox-sm shrink-0"
+                                    aria-labelledby={`${section.key}-projects-heading`}
+                                    checked={section.projects.every((project) =>
+                                        itemProps.selectedProjectPaths?.has(
+                                            project.path,
+                                        ),
+                                    )}
+                                    ref={(element) => {
+                                        if (!element) return;
+                                        const selected =
+                                            section.projects.filter((project) =>
+                                                itemProps.selectedProjectPaths?.has(
+                                                    project.path,
+                                                ),
+                                            ).length;
+                                        element.indeterminate =
+                                            selected > 0 &&
+                                            selected < section.projects.length;
+                                    }}
+                                    disabled={itemProps.selectionBusy}
+                                    onChange={() =>
+                                        onToggleSectionSelection?.(
+                                            section.projects,
+                                        )
+                                    }
+                                />
+                            )
+                        }
                     />
                     {section.key === 'pinned' ? (
                         <DragDropProvider
