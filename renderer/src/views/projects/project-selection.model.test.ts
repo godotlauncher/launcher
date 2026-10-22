@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
     canClearProjectNew,
     getUniqueProjects,
+    isSameProjectRegistration,
     runProjectBatch,
 } from './project-selection.model';
 
@@ -20,6 +21,37 @@ const project = (path: string, fields: Partial<ProjectDetails> = {}) =>
     }) as ProjectDetails;
 
 describe('project selection', () => {
+    it('accepts fresh metadata only for the same path and registration date', () => {
+        const target = project('/first', { added_at: new Date(1) });
+        expect(
+            isSameProjectRegistration(
+                {
+                    ...target,
+                    name: 'Renamed',
+                    pinned: true,
+                    added_at: new Date(1),
+                },
+                target,
+            ),
+        ).toBe(true);
+        expect(isSameProjectRegistration(undefined, target)).toBe(false);
+        expect(
+            isSameProjectRegistration({ ...target, path: '/second' }, target),
+        ).toBe(false);
+        expect(
+            isSameProjectRegistration(
+                { ...target, added_at: new Date(2) },
+                target,
+            ),
+        ).toBe(false);
+    });
+    it('preserves legacy registrations only when both added dates are absent', () => {
+        const legacy = project('/legacy');
+        const dated = { ...legacy, added_at: new Date(1) };
+        expect(isSameProjectRegistration({ ...legacy }, legacy)).toBe(true);
+        expect(isSameProjectRegistration(dated, legacy)).toBe(false);
+        expect(isSameProjectRegistration(legacy, dated)).toBe(false);
+    });
     it('counts each selected path once and drops removed registrations', () => {
         const first = project('/first');
         const second = project('/second');

@@ -3,7 +3,11 @@ import type {
     ProjectTagSelection,
     ProjectTagsSnapshot,
 } from '@shared/contracts';
-import { getUniqueProjects, runProjectBatch } from './project-selection.model';
+import {
+    getUniqueProjects,
+    isSameProjectRegistration,
+    runProjectBatch,
+} from './project-selection.model';
 
 export type ProjectTagIntent = { tag: ProjectTagSelection; add: boolean };
 
@@ -61,10 +65,7 @@ export async function runProjectTagBatch({
         const latest = getProjects().find(
             (project) => project.path === target.path,
         );
-        if (
-            !latest ||
-            latest.added_at?.getTime() !== target.added_at?.getTime()
-        )
+        if (!isSameProjectRegistration(latest, target))
             throw new Error(unavailable);
     };
     const result = await runProjectBatch(targets, async (target) => {

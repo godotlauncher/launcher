@@ -11,6 +11,7 @@ import type {
 import { useNotifications } from '../../../hooks/notifications.hook';
 import {
     canClearProjectNew,
+    isSameProjectRegistration,
     type ProjectBatchFailure,
     runProjectBatch,
 } from '../project-selection.model';
@@ -115,10 +116,7 @@ export function useProjectBatchNewStatus({
         const latest = current.current.find(
             (item) => item.path === project.path,
         );
-        if (
-            !latest ||
-            latest.added_at?.getTime() !== project.added_at?.getTime()
-        )
+        if (!isSameProjectRegistration(latest, project))
             throw new Error(t('newStatus.unavailable'));
         return latest;
     };

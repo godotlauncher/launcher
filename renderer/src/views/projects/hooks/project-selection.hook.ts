@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import {
     canClearProjectNew,
     getUniqueProjects,
+    isSameProjectRegistration,
 } from '../project-selection.model';
 
 type ProjectSelectionOptions = {
@@ -117,10 +118,8 @@ export function useProjectSelection({
      */
     const restoreFailed = (targets: ProjectDetails[]) => {
         const eligible = shown.filter((project) =>
-            targets.some(
-                (target) =>
-                    target.path === project.path &&
-                    target.added_at?.getTime() === project.added_at?.getTime(),
+            targets.some((target) =>
+                isSameProjectRegistration(project, target),
             ),
         );
         if (!eligible.length) return;

@@ -1,6 +1,7 @@
 import type { ProjectDetails } from '@shared/contracts';
 import {
     getUniqueProjects,
+    isSameProjectRegistration,
     type ProjectBatchFailure,
     runProjectBatch,
 } from './project-selection.model';
@@ -39,21 +40,6 @@ export function getEligibleProjectPins(
     );
 }
 
-/** Checks that a saved record is the original registered project.
- * @param project - Current saved project, if it still exists.
- * @param target - Project captured for the original operation.
- */
-function isSameRegistration(
-    project: ProjectDetails | undefined,
-    target: ProjectDetails,
-): project is ProjectDetails {
-    return (
-        project !== undefined &&
-        project.path === target.path &&
-        project.added_at?.getTime() === target.added_at?.getTime()
-    );
-}
-
 /** Keeps this batch's new pins together and preserves all other pins' relative order.
  * @param projects - Complete current saved list, including filtered-out pins.
  * @param state - Original display order and targets actually changed by this batch.
@@ -68,7 +54,9 @@ export function getProjectPinBatchOrder(
         .filter(
             (target) =>
                 changed.has(target.path) &&
-                pinned.some((project) => isSameRegistration(project, target)),
+                pinned.some((project) =>
+                    isSameProjectRegistration(project, target),
+                ),
         )
         .map((project) => project.path);
     const grouped = new Set(group);
@@ -97,7 +85,8 @@ export async function runProjectPinBatch({
         const project = current.find(
             (candidate) => candidate.path === target.path,
         );
-        if (!isSameRegistration(project, target)) throw new Error(unavailable);
+        if (!isSameProjectRegistration(project, target))
+            throw new Error(unavailable);
         if (Boolean(project.pinned) === state.pinned)
             return { project: target, changed: false };
         const saved = await setProjectPinned(project, state.pinned);
@@ -106,7 +95,7 @@ export async function runProjectPinBatch({
         );
         // The existing single-project API silently ignores removed paths.
         if (
-            !isSameRegistration(updated, target) ||
+            !isSameProjectRegistration(updated, target) ||
             Boolean(updated.pinned) !== state.pinned
         )
             throw new Error(unavailable);

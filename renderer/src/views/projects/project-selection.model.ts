@@ -10,6 +10,21 @@ export type ProjectBatchResult<T> = {
     failures: ProjectBatchFailure[];
 };
 
+/** Checks that a saved record is the original registered project.
+ * @param project - Current saved project, if it still exists.
+ * @param target - Project captured for the original operation.
+ */
+export function isSameProjectRegistration(
+    project: ProjectDetails | undefined,
+    target: ProjectDetails,
+): project is ProjectDetails {
+    return (
+        project !== undefined &&
+        project.path === target.path &&
+        project.added_at?.getTime() === target.added_at?.getTime()
+    );
+}
+
 /** Returns one canonical record per selected project path.
  * @param projects - Available project records in display order.
  * @param paths - Optional selected paths; omitted means every project.

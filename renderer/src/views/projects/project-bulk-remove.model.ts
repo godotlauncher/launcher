@@ -1,5 +1,8 @@
 import type { ProjectDetails } from '@shared/contracts';
-import { runProjectBatch } from './project-selection.model';
+import {
+    isSameProjectRegistration,
+    runProjectBatch,
+} from './project-selection.model';
 
 type RemovalOptions = {
     targets: ProjectDetails[];
@@ -22,10 +25,7 @@ export function runProjectRemoval({
         const current = projects.find(
             (project) => project.path === target.path,
         );
-        if (
-            !current ||
-            current.added_at?.getTime() !== target.added_at?.getTime()
-        )
+        if (!isSameProjectRegistration(current, target))
             throw new Error(unavailable);
         const saved = await removeProject(current);
         if (saved.some((project) => project.path === target.path))
