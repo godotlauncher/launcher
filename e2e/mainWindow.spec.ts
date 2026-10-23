@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { _electron, expect, test } from '@playwright/test';
+import { _electron, expect, test } from './support/electron.fixture';
 import type { ReleaseInstallProgress } from '@shared/contracts';
 import {
     createFixtureHome,
@@ -186,6 +186,7 @@ test('Can navigate the main window', async () => {
             prerelease: false,
             published_at: null,
             stage: 'downloading',
+            canCancel: true,
             percent: 55,
             receivedBytes: 55 * 1024 * 1024,
             totalBytes: 100 * 1024 * 1024,

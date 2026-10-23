@@ -6,7 +6,7 @@ import {
     expect,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import type {
     AddProjectEditorResolution,
     AddProjectOptions,
@@ -22,7 +22,7 @@ import {
     reloadE2eFixturePage,
     setAppLanguage,
     stubAppData,
-} from './support/e2e-fixture-runtime.ts';
+} from './support/e2e-fixture-runtime';
 import {
     createPreferences,
     SAMPLE_AVAILABLE_PRERELEASES,
@@ -32,8 +32,8 @@ import {
     SAMPLE_VSCODE_SETTINGS_AVAILABLE,
     SAMPLE_VSCODIUM_SETTINGS_AVAILABLE,
     TOOL_INTEGRATIONS_NO_GIT,
-} from './support/e2e-fixture-data.ts';
-import { getMainWindow } from './splashscreen/getMainWindow.ts';
+} from './support/e2e-fixture-data';
+import { getMainWindow } from './splashscreen/getMainWindow';
 
 let electronApp: ElectronApplication;
 let mainPage: Page;

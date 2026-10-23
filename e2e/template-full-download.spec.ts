@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { EditorCatalogRelease } from '@shared/contracts';
-import { _electron, type ElectronApplication, expect, type Page, test } from '@playwright/test';
+import { _electron, type ElectronApplication, expect, type Page, test } from './support/electron.fixture';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import { createFixtureHome } from './support/e2e-fixture-runtime';
 import { storedZip } from './support/stored-zip.util';
@@ -37,7 +37,7 @@ test.beforeAll(async () => {
     prefs.language='en'; prefs.export_template_migration_offered=true;
     await fs.writeFile(prefsPath,JSON.stringify(prefs));
     await fs.writeFile(path.join(home,'.gd-launcher','projects.json'),'[]');
-    const env={...process.env,HOME:home,USERPROFILE:home,APPDATA:path.join(home,'AppData','Roaming'),LOCALAPPDATA:path.join(home,'AppData','Local'),XDG_CONFIG_HOME:path.join(home,'.config'),XDG_DATA_HOME:path.join(home,'.local','share'),GODOT_LAUNCHER_E2E_FIXTURES:'1',GODOT_LAUNCHER_E2E_HOME_DIR:home};
+    const env: Record<string, string>={...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),HOME:home,USERPROFILE:home,APPDATA:path.join(home,'AppData','Roaming'),LOCALAPPDATA:path.join(home,'AppData','Local'),XDG_CONFIG_HOME:path.join(home,'.config'),XDG_DATA_HOME:path.join(home,'.local','share'),GODOT_LAUNCHER_E2E_FIXTURES:'1',GODOT_LAUNCHER_E2E_HOME_DIR:home};
     delete env.ELECTRON_RUN_AS_NODE;
     app=await _electron.launch({args:['.',`--user-data-dir=${path.join(home,'electron-user-data')}`],env});
     await app.evaluate((_electron, packages)=>{

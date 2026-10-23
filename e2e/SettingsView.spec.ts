@@ -1,4 +1,4 @@
-import { _electron, expect, test } from '@playwright/test';
+import { _electron, expect, test } from './support/electron.fixture';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { UserPreferences } from '@shared/contracts';

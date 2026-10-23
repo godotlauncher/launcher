@@ -7,7 +7,7 @@ import {
     type Locator,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import { applyTheme, createFixtureHome } from './support/e2e-fixture-runtime';
 import { THEMES } from './support/e2e-fixture-theme';
@@ -26,8 +26,8 @@ test.beforeAll(async () => {
     prefs.export_template_migration_offered = true;
     await fs.writeFile(prefsPath, JSON.stringify(prefs));
     await fs.writeFile(path.join(home, '.gd-launcher', 'projects.json'), '[]');
-    const env = {
-        ...process.env,
+    const env: Record<string, string> = {
+        ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
         HOME: home,
         USERPROFILE: home,
         APPDATA: path.join(home, 'AppData', 'Roaming'),

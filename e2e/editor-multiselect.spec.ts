@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { _electron, type ElectronApplication, expect, type Page, test } from '@playwright/test';
+import { _electron, type ElectronApplication, expect, type Page, test } from './support/electron.fixture';
 import type { EditorRemovalSelection, InstalledRelease } from '@shared/contracts';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import {

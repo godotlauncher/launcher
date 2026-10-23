@@ -6,7 +6,7 @@ import {
     expect,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import type { ReleaseSummary } from '@shared/contracts';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import { SAMPLE_PREFS } from './support/e2e-fixture-data';

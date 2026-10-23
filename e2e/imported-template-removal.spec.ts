@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { ImportedTemplateBuild, ProjectDetails } from '@shared/contracts';
-import { _electron, type ElectronApplication, expect, type Page, test } from '@playwright/test';
+import { _electron, type ElectronApplication, expect, type Page, test } from './support/electron.fixture';
 import { SAMPLE_PROJECTS } from './support/e2e-fixture-data';
 import { createFixtureHome } from './support/e2e-fixture-runtime';
 import { getMainWindow } from './splashscreen/getMainWindow';

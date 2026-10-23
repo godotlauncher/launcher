@@ -6,7 +6,7 @@ import {
     expect,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import type { EditorCatalogResult } from '@shared/contracts';
 import {
     createFixtureHome,

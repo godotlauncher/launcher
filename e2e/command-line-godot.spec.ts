@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { _electron, type ElectronApplication, expect, type Page, test } from '@playwright/test';
+import { _electron, type ElectronApplication, expect, type Page, test } from './support/electron.fixture';
 import { CommandLinePathAdapter } from '../main/src/editor-installs/command-line-path.adapter';
 import { createGodotWrapper } from '../main/src/editor-installs/command-line-godot.util';
 import { getMainWindow } from './splashscreen/getMainWindow';
@@ -35,7 +35,7 @@ test.beforeAll(async () => {
     }
     await writeJson(path.join(home, '.gd-launcher', 'installed-releases.json'), releases);
     await writeJson(path.join(home, '.gd-launcher', 'projects.json'), []);
-    const env = { ...process.env, GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
+    const env: Record<string, string> = { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')), GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
     delete env.ELECTRON_RUN_AS_NODE;
     app = await _electron.launch({ args: ['.', `--user-data-dir=${path.join(home, 'electron-user-data')}`], env });
     page = await getMainWindow(app);

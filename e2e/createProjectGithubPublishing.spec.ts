@@ -6,7 +6,7 @@ import {
     expect,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import {
     applyTheme,
     createFixtureHome,
@@ -493,6 +493,7 @@ test('keeps local and disconnected publishing layouts within the drawer', async 
     await stubCreateProjectPublicationTargets(electronApp, {
         success: false,
         reason: 'connection-required',
+        targets: [],
     });
     await mainPage.getByTestId('btnProjects').click();
     await mainPage.getByTestId('btnProjectCreate').click();

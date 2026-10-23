@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { _electron, type ElectronApplication, expect, type Page, test } from '@playwright/test';
+import { _electron, type ElectronApplication, expect, type Page, test } from './support/electron.fixture';
 import type {
     InstalledRelease,
     ProjectDetails,
@@ -29,12 +29,12 @@ for (const missingBeforeOpen of [true, false]) {
             importedAt: '2026-09-01T00:00:00Z', archiveName: 'custom-templates.tpz',
             files: ['web_release.zip'], sizeBytes: 100, available: !missingBeforeOpen,
         };
-        const settings: ProjectTemplateSettings = {
+        const settings = {
             projectPath: project.path, setId: id, status: 'shared', custom: false,
             files: [], hasLocalFiles: false,
             buildSelections: missingBeforeOpen ? { [id]: build.id } : {},
             importedBuilds: [build], sets: [{ id, files: [] }],
-        };
+        } satisfies ProjectTemplateSettings;
         await electronApp.evaluate(({ ipcMain }, value) => {
             for (const [channel, data] of Object.entries({
                 'exportTemplates.getProjectSettings': value,
@@ -430,7 +430,7 @@ test('supports keyboard navigation in both settings menus', async () => {
 });
 
 test('marks changed fields and menu items and clears indicators when reverted', async () => {
-    const selectedProject = { ...project, codeEditorId: 'vscode' };
+    const selectedProject: ProjectDetails = { ...project, codeEditorId: 'vscode' };
     await prepareAppWithStubbedData(page, electronApp, {
         projects: [selectedProject], installedReleases: [installedRelease],
         availableReleases: [catalogueRelease], availablePrereleases: [],
@@ -648,14 +648,18 @@ async function stubCatalogueEditorSave(
             const mono = selection.mono;
             const repairing = !('release' in selection);
             state.__settingsCatalogueEvents?.push(`${repairing ? 'repair' : 'editor'}:${selected.version}:${mono}`);
-            currentProject = repairing ? {
-                ...currentProject, release: selected, version: selected.version, version_number: selected.version_number,
-                launch_path: selected.editor_path, valid: true, invalid_reason: undefined,
-            } : {
-                ...currentProject,
-                release: { ...selected, mono, install_path: '', editor_path: '', valid: false, source: 'official' },
-                version: selected.version, version_number: selected.version_number, launch_path: '', valid: false, invalid_reason: 'missing_editor',
-            };
+            if ('release' in selection) {
+                currentProject = {
+                    ...currentProject,
+                    release: { ...injected.installedRelease, ...selection.release, mono, install_path: '', editor_path: '', valid: false, source: 'official' },
+                    version: selection.release.version, version_number: selection.release.version_number, launch_path: '', valid: false, invalid_reason: 'missing_editor',
+                };
+            } else {
+                currentProject = {
+                    ...currentProject, release: selection, version: selection.version, version_number: selection.version_number,
+                    launch_path: selection.editor_path, valid: true, invalid_reason: undefined,
+                };
+            }
             publishProjects();
             return { success: true, data: { success: true, projects: [currentProject] } };
         });

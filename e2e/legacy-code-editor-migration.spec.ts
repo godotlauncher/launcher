@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { _electron, expect, test } from '@playwright/test';
+import { _electron, expect, test } from './support/electron.fixture';
 import { createFixtureHome } from './support/e2e-fixture-runtime';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
@@ -32,8 +32,8 @@ test('upgrades a legacy VS Code selection without retaining its flag', async () 
         import(${JSON.stringify(path.resolve('dist-electron/main.js'))});
     `,
     );
-    const env = {
-        ...process.env,
+    const env: Record<string, string> = {
+        ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
         APPDATA: path.join(fixtureHome, 'AppData', 'Roaming'),
         HOME: fixtureHome,
         LOCALAPPDATA: path.join(fixtureHome, 'AppData', 'Local'),
