@@ -100,13 +100,13 @@ async function expectFilesKept() {
         expect(await fs.readFile(path.join(home, 'projects', name, 'project.godot'), 'utf8')).toContain(name);
     }
 }
-/** Waits for aggregate feedback and usable selection controls.
+/** Waits for aggregate feedback and an available next action.
  * @param message - Expected result text.
  */
 async function result(message: string) {
     const notification = page.getByRole('article', { name: 'Projects', exact: true });
     await expect(notification).toContainText(message);
-    await expect(page.getByRole('button', { name: 'Actions', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Actions', exact: true }).or(page.getByTestId('btnWelcomeCreateProject'))).toBeEnabled();
     await notification.hover();
     return notification;
 }
@@ -176,10 +176,14 @@ for (const [mode, theme] of [['tabProjectCards', 0], ['tabProjectList', 1], ['ta
             await dialog.getByRole('button', { name: 'Remove', exact: true }).click();
             await result('Projects removed from list: 3.');
             expect(await stored()).toEqual([]);
-            await expect(page.getByRole('button', { name: 'Disable multi-select', exact: true })).toBeVisible();
-            await expect(page.getByText('0 selected', { exact: true })).toBeVisible();
-            await expect((await actions()).getByRole('button', { name: 'Remove from list (0)', exact: true })).toBeDisabled();
-            await page.keyboard.press('Escape');
+            await expect(page.getByTestId('projectsWelcome')).toBeVisible();
+            await expect(page.getByTestId('projectsTitle')).toHaveCount(0);
+            await expect(page.getByTestId('btnProjectAdd')).toHaveCount(0);
+            await expect(page.getByRole('button', { name: 'Actions', exact: true })).toHaveCount(0);
+            await expect(page.getByText('0 selected', { exact: true })).toHaveCount(0);
+            await page.setViewportSize({ width: 1024, height: 600 });
+            await expect(page.getByTestId('projectsWelcome').getByRole('button')).toHaveCount(6);
+            await page.screenshot({ path: test.info().outputPath('empty-projects-after-removal.png'), animations: 'disabled' });
             await expectFilesKept();
             const preferenceWrites = await app.evaluate(({ ipcMain }) => (ipcMain as typeof ipcMain & { confirmationPreferences: boolean[] }).confirmationPreferences);
             expect(preferenceWrites.every(value => value === (preference === 'enabled'))).toBe(true);
@@ -187,6 +191,9 @@ for (const [mode, theme] of [['tabProjectCards', 0], ['tabProjectList', 1], ['ta
             expect(Object.keys(tags.assignments)).toEqual([]);
             await page.reload(); await page.getByTestId('btnProjects').click();
             await expect(page.locator('li[data-project-path]')).toHaveCount(0);
+            await expect(page.getByTestId('projectsWelcome')).toBeVisible();
+            await expect(page.getByTestId('projectsTitle')).toHaveCount(0);
+            await expect(page.getByTestId('btnProjectAdd')).toHaveCount(0);
         });
     }
 }

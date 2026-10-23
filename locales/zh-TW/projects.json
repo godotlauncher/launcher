@@ -57,6 +57,17 @@
                 "fromGitHub": "從 GitHub",
                 "fromPublicGit": "從公開 Git URL",
                 "gitRequired": "從 GitHub 匯入需要 Git"
+            },
+            "tiles": {
+                "createDescription": "選擇 Godot 版本，開始新專案。",
+                "godotDescription": "檢視已在 Godot 中註冊的專案。",
+                "scanTitle": "掃描資料夾",
+                "scanDescription": "在所選資料夾中尋找專案。",
+                "fileTitle": "選擇專案檔案",
+                "fileDescription": "透過 project.godot 檔案新增單一專案。",
+                "githubDescription": "瀏覽已連結的 GitHub 儲存庫。",
+                "publicGitDescription": "透過 Git URL 複製公開儲存庫。",
+                "gitRequired": "匯入儲存庫需要 Git。"
             }
         },
         "addExistingProject": "新增現有專案",
@@ -382,6 +393,19 @@
             "problems_other": "掃描問題：{{count}}",
             "moreProblems_one": "其他問題：{{count}}",
             "moreProblems_other": "其他問題：{{count}}"
+        },
+        "manager": {
+            "title": "從 Godot 專案管理員匯入",
+            "scanning": "正在讀取已註冊的專案",
+            "failed": "無法讀取專案清單。請選擇其他 projects.cfg 檔案。",
+            "limited": "僅顯示前 100 個不同的專案。清單不完整。",
+            "another": "選擇其他專案清單",
+            "empty": "找不到已註冊的專案。",
+            "choose": "選擇專案清單",
+            "selectSource": "選擇要匯入的 Godot 專案清單。",
+            "noSources": "在一般位置找不到 Godot 專案清單。",
+            "support": "支援 Godot 4 專案。無法新增舊版或無法使用的專案。",
+            "pickerFailed": "無法開啟檔案選擇器。請重試。"
         }
     },
     "messages": {

@@ -57,6 +57,17 @@
                 "fromGitHub": "Minn GitHub",
                 "fromPublicGit": "Minn URL pubbliku ta' Git",
                 "gitRequired": "Git huwa meħtieġ biex timporta minn GitHub"
+            },
+            "tiles": {
+                "createDescription": "Agħżel verżjoni ta’ Godot u ibda xi ħaġa ġdida.",
+                "godotDescription": "Irrevedi l-proġetti diġà rreġistrati f’Godot.",
+                "scanTitle": "Skennja folder",
+                "scanDescription": "Sib proġetti f’folder li tagħżel int.",
+                "fileTitle": "Agħżel fajl ta’ proġett",
+                "fileDescription": "Żid proġett permezz tal-fajl project.godot tiegħu.",
+                "githubDescription": "Ibbrawżja r-repożitorji GitHub konnessi tiegħek.",
+                "publicGitDescription": "Ikkopja repożitorju pubbliku permezz tal-URL Git tiegħu.",
+                "gitRequired": "Git huwa meħtieġ biex timporta repożitorji."
             }
         },
         "addExistingProject": "Żid proġett eżistenti",
@@ -382,6 +393,19 @@
             "problems_other": "Problemi fit-tfittxija: {{count}}",
             "moreProblems_one": "Problemi oħra: {{count}}",
             "moreProblems_other": "Problemi oħra: {{count}}"
+        },
+        "manager": {
+            "title": "Mill-Maniġer tal-Proġetti ta’ Godot",
+            "scanning": "Qed jinqraw il-proġetti rreġistrati",
+            "failed": "Il-lista tal-proġetti ma setgħetx tinqara. Agħżel fajl projects.cfg ieħor.",
+            "limited": "Qed jintwerew biss l-ewwel 100 proġett distint. Il-lista mhix kompluta.",
+            "another": "Agħżel lista oħra tal-proġetti",
+            "empty": "Ma nstab ebda proġett irreġistrat.",
+            "choose": "Agħżel lista tal-proġetti",
+            "selectSource": "Agħżel il-lista tal-proġetti ta’ Godot biex timporta.",
+            "noSources": "Ma nstabet ebda lista ta’ Godot fil-postijiet tas-soltu.",
+            "support": "Proġetti ta’ Godot 4 huma appoġġjati. Proġetti eqdem jew mhux disponibbli ma jistgħux jiżdiedu.",
+            "pickerFailed": "It-tieqa tal-għażla tal-fajl ma setgħetx tinfetaħ. Erġa’ pprova."
         }
     },
     "messages": {

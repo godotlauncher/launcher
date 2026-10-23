@@ -21,6 +21,7 @@ type AddProjectSourceMenuProps = {
     onClose: () => void;
     onFromComputer: () => void;
     onScanFolder: () => void;
+    onGodotProjectManager: () => void;
     onPublicGit: () => void;
     onGitHub: () => void;
 };
@@ -37,6 +38,7 @@ export const AddProjectSourceMenu: React.FC<AddProjectSourceMenuProps> = ({
     onClose,
     onFromComputer,
     onScanFolder,
+    onGodotProjectManager,
     onPublicGit,
     onGitHub,
 }) => {
@@ -67,6 +69,13 @@ export const AddProjectSourceMenu: React.FC<AddProjectSourceMenuProps> = ({
             icon: <FolderSearch className={iconClassName} />,
             testId: 'btnAddProjectScanFolder',
             onSelect: onScanFolder,
+        },
+        {
+            key: 'godot-project-manager',
+            label: t('addProject.manager.title'),
+            icon: <FolderOpen className={iconClassName} />,
+            testId: 'btnAddProjectGodotProjectManager',
+            onSelect: onGodotProjectManager,
         },
         {
             type: 'separator',

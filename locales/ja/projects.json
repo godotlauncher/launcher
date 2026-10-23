@@ -57,6 +57,17 @@
                 "fromGitHub": "GitHubから",
                 "fromPublicGit": "公開 Git URL から",
                 "gitRequired": "GitHub からインポートするには Git が必要です"
+            },
+            "tiles": {
+                "createDescription": "Godot のバージョンを選んで、新しいプロジェクトを始めます。",
+                "godotDescription": "Godot に登録済みのプロジェクトを確認します。",
+                "scanTitle": "フォルダーをスキャン",
+                "scanDescription": "選択したフォルダー内のプロジェクトを検索します。",
+                "fileTitle": "プロジェクトファイルを選択",
+                "fileDescription": "project.godot ファイルからプロジェクトを追加します。",
+                "githubDescription": "連携済みの GitHub リポジトリを参照します。",
+                "publicGitDescription": "Git URL から公開リポジトリをクローンします。",
+                "gitRequired": "リポジトリのインポートには Git が必要です。"
             }
         },
         "addExistingProject": "既存のプロジェクトを追加",
@@ -382,6 +393,19 @@
             "problems_other": "スキャンの問題: {{count}}",
             "moreProblems_one": "その他の問題: {{count}}",
             "moreProblems_other": "その他の問題: {{count}}"
+        },
+        "manager": {
+            "title": "Godot プロジェクトマネージャーから",
+            "scanning": "登録済みプロジェクトを読み込み中",
+            "failed": "プロジェクト一覧を読み込めませんでした。別の projects.cfg ファイルを選択してください。",
+            "limited": "最初の 100 件の異なるプロジェクトのみ表示しています。一覧は完全ではありません。",
+            "another": "別のプロジェクト一覧を選択",
+            "empty": "登録済みプロジェクトが見つかりませんでした。",
+            "choose": "プロジェクト一覧を選択",
+            "selectSource": "インポートする Godot プロジェクト一覧を選択してください。",
+            "noSources": "通常の場所に Godot プロジェクト一覧が見つかりませんでした。",
+            "support": "Godot 4 のプロジェクトに対応しています。古いプロジェクトや利用できないプロジェクトは追加できません。",
+            "pickerFailed": "ファイル選択画面を開けませんでした。もう一度お試しください。"
         }
     },
     "messages": {

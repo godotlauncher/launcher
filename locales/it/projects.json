@@ -57,6 +57,17 @@
                 "fromGitHub": "Da GitHub",
                 "fromPublicGit": "Da un URL Git pubblico",
                 "gitRequired": "Git è necessario per importare da GitHub"
+            },
+            "tiles": {
+                "createDescription": "Scegli una versione di Godot e inizia qualcosa di nuovo.",
+                "godotDescription": "Esamina i progetti già registrati in Godot.",
+                "scanTitle": "Scansiona una cartella",
+                "scanDescription": "Trova i progetti in una cartella a tua scelta.",
+                "fileTitle": "Scegli un file di progetto",
+                "fileDescription": "Aggiungi un progetto tramite il suo file project.godot.",
+                "githubDescription": "Esplora i tuoi repository GitHub collegati.",
+                "publicGitDescription": "Clona un repository pubblico tramite il suo URL Git.",
+                "gitRequired": "Git è necessario per importare repository."
             }
         },
         "addExistingProject": "Aggiungi un progetto esistente",
@@ -382,6 +393,19 @@
             "problems_other": "Problemi di ricerca: {{count}}",
             "moreProblems_one": "Altri problemi: {{count}}",
             "moreProblems_other": "Altri problemi: {{count}}"
+        },
+        "manager": {
+            "title": "Da Gestione progetti di Godot",
+            "scanning": "Lettura dei progetti registrati",
+            "failed": "Impossibile leggere la lista. Scegli un altro file projects.cfg.",
+            "limited": "Sono mostrati solo i primi 100 progetti distinti. La lista è incompleta.",
+            "another": "Scegli un’altra lista",
+            "empty": "Nessun progetto registrato trovato.",
+            "choose": "Scegli lista dei progetti",
+            "selectSource": "Scegli la lista dei progetti Godot da importare.",
+            "noSources": "Nessuna lista Godot trovata nelle posizioni abituali.",
+            "support": "Sono supportati i progetti Godot 4. I progetti precedenti o non disponibili non possono essere aggiunti.",
+            "pickerFailed": "Impossibile aprire la finestra di selezione. Riprova."
         }
     },
     "messages": {

@@ -1,7 +1,14 @@
-import { FolderOpen, FolderPlus } from 'lucide-react';
+import {
+    ArrowRight,
+    Box,
+    File,
+    FolderPlus,
+    FolderSearch,
+    GitBranch,
+} from 'lucide-react';
 import type React from 'react';
 import { useId } from 'react';
-import githubInvertocatWhite from '../../../assets/icons/github-invertocat-white.svg';
+import githubIcon from '../../../assets/icons/github-invertocat-black.svg';
 
 type Translate = (key: string) => string;
 
@@ -9,6 +16,8 @@ type ProjectsWelcomeProps = {
     gitAvailable: boolean;
     t: Translate;
     onCreateProject: () => void;
+    onAddFromGodotProjectManager: () => void;
+    onScanFolder: () => void;
     onAddFromComputer: () => void;
     onAddFromGitHub: () => void;
     onAddFromPublicGit: () => void;
@@ -24,164 +33,170 @@ export const ProjectsWelcome: React.FC<ProjectsWelcomeProps> = ({
     gitAvailable,
     t,
     onCreateProject,
+    onAddFromGodotProjectManager,
+    onScanFolder,
     onAddFromComputer,
     onAddFromGitHub,
     onAddFromPublicGit,
-}) => (
-    <section
-        className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-y-auto px-3 py-6 text-base"
-        aria-labelledby="projectsWelcomeHeading"
-        data-testid="projectsWelcome"
-    >
-        <div className="my-auto shrink-0 py-6">
-            <div className="text-center">
-                <h2
-                    id="projectsWelcomeHeading"
-                    className="text-2xl font-semibold"
-                >
-                    {t('emptyState.welcome.heading')}
-                </h2>
-                <p className="mt-2 text-base-content/75">
-                    {t('emptyState.welcome.description')}
-                </p>
-            </div>
-            <div className="mt-10 grid grid-cols-2 divide-x divide-base-content/5">
-                <WelcomeChoice
-                    icon={FolderPlus}
-                    heading={t('emptyState.welcome.newProject.heading')}
-                    description={t('emptyState.welcome.newProject.description')}
-                    actionLabel={t('emptyState.welcome.newProject.action')}
-                    actionTestId="btnWelcomeCreateProject"
-                    onAction={onCreateProject}
-                />
-                <WelcomeChoice
-                    icon={FolderOpen}
-                    heading={t('emptyState.welcome.existingProject.heading')}
-                    description={t(
-                        'emptyState.welcome.existingProject.description',
-                    )}
-                    actionLabel={t(
-                        'emptyState.welcome.existingProject.fromComputer',
-                    )}
-                    actionTestId="btnWelcomeAddFromComputer"
-                    onAction={onAddFromComputer}
-                    secondaryAction={{
-                        available: gitAvailable,
-                        unavailableReason: t(
-                            'emptyState.welcome.existingProject.gitRequired',
-                        ),
-                        label: t(
+}) => {
+    const gitReasonId = useId();
+    return (
+        <section
+            className="mx-auto flex min-h-0 w-full max-w-4xl flex-1 flex-col overflow-y-auto px-3 py-4 text-base"
+            aria-labelledby="projectsWelcomeHeading"
+            data-testid="projectsWelcome"
+        >
+            <div className="my-auto shrink-0 py-2">
+                <div className="text-center">
+                    <h2
+                        id="projectsWelcomeHeading"
+                        className="text-2xl font-semibold"
+                    >
+                        {t('emptyState.welcome.heading')}
+                    </h2>
+                    <p className="mt-2 text-base-content/75">
+                        {t('emptyState.welcome.description')}
+                    </p>
+                </div>
+                <div className="mt-6 grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <ActionTile
+                        icon={<FolderPlus className="size-6" />}
+                        primary
+                        title={t('emptyState.welcome.newProject.action')}
+                        description={t(
+                            'emptyState.welcome.tiles.createDescription',
+                        )}
+                        testId="btnWelcomeCreateProject"
+                        onAction={onCreateProject}
+                    />
+                    <ActionTile
+                        icon={<Box className="size-6" />}
+                        title={t('addProject.manager.title')}
+                        description={t(
+                            'emptyState.welcome.tiles.godotDescription',
+                        )}
+                        testId="btnWelcomeAddFromGodotProjectManager"
+                        onAction={onAddFromGodotProjectManager}
+                    />
+                    <ActionTile
+                        icon={<FolderSearch className="size-6" />}
+                        title={t('emptyState.welcome.tiles.scanTitle')}
+                        description={t(
+                            'emptyState.welcome.tiles.scanDescription',
+                        )}
+                        testId="btnWelcomeScanFolder"
+                        onAction={onScanFolder}
+                    />
+                    <ActionTile
+                        icon={<File className="size-6" />}
+                        title={t('emptyState.welcome.tiles.fileTitle')}
+                        description={t(
+                            'emptyState.welcome.tiles.fileDescription',
+                        )}
+                        testId="btnWelcomeAddFromComputer"
+                        onAction={onAddFromComputer}
+                    />
+                    <ActionTile
+                        icon={
+                            <img
+                                src={githubIcon}
+                                alt=""
+                                className="size-6 dark:invert"
+                            />
+                        }
+                        title={t(
                             'emptyState.welcome.existingProject.fromGitHub',
-                        ),
-                        testId: 'btnWelcomeAddFromGitHub',
-                        onAction: onAddFromGitHub,
-                        publicGitLabel: t(
+                        )}
+                        description={t(
+                            'emptyState.welcome.tiles.githubDescription',
+                        )}
+                        testId="btnWelcomeAddFromGitHub"
+                        onAction={onAddFromGitHub}
+                        disabled={!gitAvailable}
+                        unavailableReasonId={gitReasonId}
+                    />
+                    <ActionTile
+                        icon={<GitBranch className="size-6" />}
+                        title={t(
                             'emptyState.welcome.existingProject.fromPublicGit',
-                        ),
-                        onPublicGit: onAddFromPublicGit,
-                    }}
-                />
+                        )}
+                        description={t(
+                            'emptyState.welcome.tiles.publicGitDescription',
+                        )}
+                        testId="btnWelcomeAddFromPublicGit"
+                        onAction={onAddFromPublicGit}
+                        disabled={!gitAvailable}
+                        unavailableReasonId={gitReasonId}
+                    />
+                </div>
+                {!gitAvailable && (
+                    <p
+                        id={gitReasonId}
+                        className="mt-3 text-center text-sm text-base-content/70"
+                    >
+                        {t('emptyState.welcome.tiles.gitRequired')}
+                    </p>
+                )}
             </div>
-        </div>
-    </section>
-);
+        </section>
+    );
+};
 
-type WelcomeChoiceProps = {
-    icon: typeof FolderOpen;
-    heading: string;
+type ActionTileProps = {
+    icon: React.ReactNode;
+    title: string;
     description: string;
-    actionLabel: string;
-    actionTestId: string;
+    testId: string;
     onAction: () => void;
-    secondaryAction?: {
-        available: boolean;
-        unavailableReason: string;
-        label: string;
-        testId: string;
-        onAction: () => void;
-        publicGitLabel: string;
-        onPublicGit: () => void;
-    };
+    primary?: boolean;
+    disabled?: boolean;
+    unavailableReasonId?: string;
 };
 
 /**
- * Renders one action column in the Projects welcome experience.
+ * Renders a keyboard-accessible action with its explanation inside the tile.
  *
- * @param props - The choice copy, icon, and actions.
- * @returns A welcome action column.
+ * @param props - The tile's content, availability and existing action.
+ * @returns One whole-tile button.
  */
-const WelcomeChoice: React.FC<WelcomeChoiceProps> = ({
-    icon: Icon,
-    heading,
+const ActionTile: React.FC<ActionTileProps> = ({
+    icon,
+    title,
     description,
-    actionLabel,
-    actionTestId,
+    testId,
     onAction,
-    secondaryAction,
+    primary = false,
+    disabled = false,
+    unavailableReasonId,
 }) => {
-    const reasonId = useId();
+    const titleId = useId();
+    const descriptionId = useId();
     return (
-        <div className="flex flex-col items-center px-6 py-8 text-center">
-            <div
-                className="flex size-16 items-center justify-center rounded-md text-primary ring-1 ring-primary/15"
+        <button
+            type="button"
+            data-testid={testId}
+            onClick={onAction}
+            disabled={disabled}
+            aria-labelledby={titleId}
+            aria-describedby={`${descriptionId}${disabled && unavailableReasonId ? ` ${unavailableReasonId}` : ''}`}
+            className={`group flex min-h-44 flex-col rounded-md border p-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50 ${primary ? 'border-primary/30 bg-primary/5 enabled:hover:bg-primary/10' : 'border-base-content/15 bg-base-100 enabled:hover:border-primary/40 enabled:hover:bg-base-200'}`}
+        >
+            <span
+                className="flex w-full items-center justify-between"
                 aria-hidden="true"
             >
-                <Icon className="size-8" />
-            </div>
-            <h3 className="mt-6 text-base font-semibold">{heading}</h3>
-            <p className="mt-3 max-w-xs whitespace-pre-line text-base-content/75">
+                <span className="text-primary">{icon}</span>
+                <ArrowRight className="size-4 text-base-content/40 group-enabled:group-hover:text-primary" />
+            </span>
+            <span id={titleId} className="mt-3 font-semibold leading-snug">
+                {title}
+            </span>
+            <span
+                id={descriptionId}
+                className="mt-2 text-sm leading-5 text-base-content/70"
+            >
                 {description}
-            </p>
-            <div className="mt-6 flex w-full max-w-xs flex-col gap-3">
-                <button
-                    type="button"
-                    className="btn btn-primary w-full text-base"
-                    data-testid={actionTestId}
-                    onClick={onAction}
-                >
-                    {actionLabel}
-                </button>
-                {secondaryAction && (
-                    <>
-                        <button
-                            type="button"
-                            className="btn btn-neutral w-full text-base"
-                            data-testid={secondaryAction.testId}
-                            disabled={!secondaryAction.available}
-                            aria-describedby={
-                                !secondaryAction.available
-                                    ? reasonId
-                                    : undefined
-                            }
-                            onClick={secondaryAction.onAction}
-                        >
-                            <img
-                                src={githubInvertocatWhite}
-                                alt=""
-                                className="size-5"
-                                aria-hidden="true"
-                            />
-                            {secondaryAction.label}
-                        </button>
-                        <button
-                            type="button"
-                            className="link link-primary self-center text-base disabled:opacity-50"
-                            data-testid="btnWelcomeAddFromPublicGit"
-                            disabled={!secondaryAction.available}
-                            onClick={secondaryAction.onPublicGit}
-                        >
-                            {secondaryAction.publicGitLabel}
-                        </button>
-                        <p
-                            id={reasonId}
-                            aria-hidden={secondaryAction.available}
-                            className={`text-sm text-base-content/60 ${secondaryAction.available ? 'invisible' : ''}`}
-                        >
-                            {secondaryAction.unavailableReason}
-                        </p>
-                    </>
-                )}
-            </div>
-        </div>
+            </span>
+        </button>
     );
 };

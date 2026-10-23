@@ -57,6 +57,17 @@
                 "fromGitHub": "Desde GitHub",
                 "fromPublicGit": "Desde una URL de Git pública",
                 "gitRequired": "Se necesita Git para importar desde GitHub"
+            },
+            "tiles": {
+                "createDescription": "Elige una versión de Godot y empieza algo nuevo.",
+                "godotDescription": "Revisa los proyectos ya registrados en Godot.",
+                "scanTitle": "Buscar en una carpeta",
+                "scanDescription": "Encuentra proyectos en la carpeta que elijas.",
+                "fileTitle": "Elegir un archivo de proyecto",
+                "fileDescription": "Añade un proyecto mediante su archivo project.godot.",
+                "githubDescription": "Explora tus repositorios de GitHub conectados.",
+                "publicGitDescription": "Clona un repositorio público mediante su URL de Git.",
+                "gitRequired": "Se necesita Git para importar repositorios."
             }
         },
         "addExistingProject": "Añadir un proyecto existente",
@@ -382,6 +393,19 @@
             "problems_other": "Problemas de búsqueda: {{count}}",
             "moreProblems_one": "Otros problemas: {{count}}",
             "moreProblems_other": "Otros problemas: {{count}}"
+        },
+        "manager": {
+            "title": "Desde el gestor de proyectos de Godot",
+            "scanning": "Leyendo proyectos registrados",
+            "failed": "No se pudo leer la lista. Elige otro archivo projects.cfg.",
+            "limited": "Solo se muestran los primeros 100 proyectos distintos. La lista está incompleta.",
+            "another": "Elegir otra lista de proyectos",
+            "empty": "No se encontraron proyectos registrados.",
+            "choose": "Elegir lista de proyectos",
+            "selectSource": "Elige la lista de proyectos de Godot que quieres importar.",
+            "noSources": "No se encontró ninguna lista de Godot en las ubicaciones habituales.",
+            "support": "Se admiten proyectos de Godot 4. No se pueden añadir proyectos antiguos o no disponibles.",
+            "pickerFailed": "No se pudo abrir el selector de archivos. Inténtalo de nuevo."
         }
     },
     "messages": {

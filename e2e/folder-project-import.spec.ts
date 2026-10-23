@@ -383,7 +383,7 @@ for (const theme of THEMES) {
                     data: { canceled: true, filePaths: [] },
                 }));
             });
-            await openScan();
+            await page.getByTestId('btnWelcomeScanFolder').click();
             await expect(
                 page.getByTestId('folderProjectImportDialog'),
             ).not.toBeVisible();

@@ -57,6 +57,17 @@
                 "fromGitHub": "GitHub'dan",
                 "fromPublicGit": "Herkese açık Git URL'sinden",
                 "gitRequired": "GitHub’dan içe aktarmak için Git gereklidir"
+            },
+            "tiles": {
+                "createDescription": "Bir Godot sürümü seçin ve yeni bir projeye başlayın.",
+                "godotDescription": "Godot'ta kayıtlı projeleri inceleyin.",
+                "scanTitle": "Bir klasörü tara",
+                "scanDescription": "Seçtiğiniz klasördeki projeleri bulun.",
+                "fileTitle": "Bir proje dosyası seç",
+                "fileDescription": "project.godot dosyasını kullanarak tek bir proje ekleyin.",
+                "githubDescription": "Bağlı GitHub depolarınıza göz atın.",
+                "publicGitDescription": "Git URL'sini kullanarak herkese açık bir depoyu klonlayın.",
+                "gitRequired": "Depoları içe aktarmak için Git gereklidir."
             }
         },
         "addExistingProject": "Mevcut bir proje ekle",
@@ -382,6 +393,19 @@
             "problems_other": "Tarama sorunları: {{count}}",
             "moreProblems_one": "Diğer sorunlar: {{count}}",
             "moreProblems_other": "Diğer sorunlar: {{count}}"
+        },
+        "manager": {
+            "title": "Godot Proje Yöneticisinden",
+            "scanning": "Kayıtlı projeler okunuyor",
+            "failed": "Proje listesi okunamadı. Başka bir projects.cfg dosyası seçin.",
+            "limited": "Yalnızca ilk 100 farklı proje gösteriliyor. Liste eksik.",
+            "another": "Başka proje listesi seç",
+            "empty": "Kayıtlı proje bulunamadı.",
+            "choose": "Proje listesi seç",
+            "selectSource": "İçe aktarılacak Godot proje listesini seçin.",
+            "noSources": "Normal konumlarda Godot proje listesi bulunamadı.",
+            "support": "Godot 4 projeleri desteklenir. Eski veya kullanılamayan projeler eklenemez.",
+            "pickerFailed": "Dosya seçici açılamadı. Yeniden deneyin."
         }
     },
     "messages": {

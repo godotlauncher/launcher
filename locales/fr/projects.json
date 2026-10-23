@@ -57,6 +57,17 @@
                 "fromGitHub": "Depuis GitHub",
                 "fromPublicGit": "Depuis une URL Git publique",
                 "gitRequired": "Git est requis pour importer depuis GitHub"
+            },
+            "tiles": {
+                "createDescription": "Choisissez une version de Godot et créez un nouveau projet.",
+                "godotDescription": "Consultez les projets déjà enregistrés dans Godot.",
+                "scanTitle": "Analyser un dossier",
+                "scanDescription": "Trouvez les projets dans le dossier de votre choix.",
+                "fileTitle": "Choisir un fichier de projet",
+                "fileDescription": "Ajoutez un projet à partir de son fichier project.godot.",
+                "githubDescription": "Parcourez vos dépôts GitHub connectés.",
+                "publicGitDescription": "Clonez un dépôt public à partir de son URL Git.",
+                "gitRequired": "Git est nécessaire pour importer des dépôts."
             }
         },
         "addExistingProject": "Ajouter un projet existant",
@@ -382,6 +393,19 @@
             "problems_other": "Problèmes d’analyse : {{count}}",
             "moreProblems_one": "Autres problèmes : {{count}}",
             "moreProblems_other": "Autres problèmes : {{count}}"
+        },
+        "manager": {
+            "title": "Depuis le gestionnaire de projets Godot",
+            "scanning": "Lecture des projets enregistrés",
+            "failed": "Impossible de lire la liste. Choisissez un autre fichier projects.cfg.",
+            "limited": "Seuls les 100 premiers projets distincts sont affichés. La liste est incomplète.",
+            "another": "Choisir une autre liste",
+            "empty": "Aucun projet enregistré trouvé.",
+            "choose": "Choisir une liste de projets",
+            "selectSource": "Choisissez la liste de projets Godot à importer.",
+            "noSources": "Aucune liste Godot trouvée aux emplacements habituels.",
+            "support": "Les projets Godot 4 sont pris en charge. Les projets plus anciens ou indisponibles ne peuvent pas être ajoutés.",
+            "pickerFailed": "Impossible d’ouvrir le sélecteur de fichiers. Réessayez."
         }
     },
     "messages": {

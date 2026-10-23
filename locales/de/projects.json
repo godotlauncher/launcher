@@ -57,6 +57,17 @@
                 "fromGitHub": "Von GitHub",
                 "fromPublicGit": "Über öffentliche Git-URL",
                 "gitRequired": "Git ist erforderlich, um aus GitHub zu importieren"
+            },
+            "tiles": {
+                "createDescription": "Wähle eine Godot-Version und starte etwas Neues.",
+                "godotDescription": "Sieh dir bereits in Godot registrierte Projekte an.",
+                "scanTitle": "Ordner durchsuchen",
+                "scanDescription": "Finde Projekte in einem Ordner deiner Wahl.",
+                "fileTitle": "Projektdatei auswählen",
+                "fileDescription": "Füge ein einzelnes Projekt über seine project.godot-Datei hinzu.",
+                "githubDescription": "Durchsuche deine verbundenen GitHub-Repositories.",
+                "publicGitDescription": "Klone ein öffentliches Repository über seine Git-URL.",
+                "gitRequired": "Git wird zum Importieren von Repositories benötigt."
             }
         },
         "addExistingProject": "Vorhandenes Projekt hinzufügen",
@@ -382,6 +393,19 @@
             "problems_other": "Suchprobleme: {{count}}",
             "moreProblems_one": "Weitere Probleme: {{count}}",
             "moreProblems_other": "Weitere Probleme: {{count}}"
+        },
+        "manager": {
+            "title": "Aus dem Godot-Projektmanager",
+            "scanning": "Registrierte Projekte werden gelesen",
+            "failed": "Die Projektliste konnte nicht gelesen werden. Wähle eine andere projects.cfg-Datei.",
+            "limited": "Nur die ersten 100 unterschiedlichen Projekte werden angezeigt. Die Liste ist unvollständig.",
+            "another": "Andere Projektliste wählen",
+            "empty": "Keine registrierten Projekte gefunden.",
+            "choose": "Projektliste wählen",
+            "selectSource": "Wähle die zu importierende Godot-Projektliste.",
+            "noSources": "An den üblichen Speicherorten wurde keine Godot-Projektliste gefunden.",
+            "support": "Godot-4-Projekte werden unterstützt. Ältere oder nicht verfügbare Projekte können nicht hinzugefügt werden.",
+            "pickerFailed": "Die Dateiauswahl konnte nicht geöffnet werden. Versuche es erneut."
         }
     },
     "setCodeEditor": {

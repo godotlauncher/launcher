@@ -57,6 +57,17 @@
                 "fromGitHub": "Do GitHub",
                 "fromPublicGit": "A partir de um URL Git público",
                 "gitRequired": "É necessário ter o Git para importar do GitHub"
+            },
+            "tiles": {
+                "createDescription": "Escolha uma versão do Godot e comece algo novo.",
+                "godotDescription": "Reveja os projetos já registados no Godot.",
+                "scanTitle": "Pesquisar numa pasta",
+                "scanDescription": "Encontre projetos numa pasta à sua escolha.",
+                "fileTitle": "Escolher um ficheiro de projeto",
+                "fileDescription": "Adicione um projeto através do respetivo ficheiro project.godot.",
+                "githubDescription": "Explore os seus repositórios GitHub associados.",
+                "publicGitDescription": "Clone um repositório público através do respetivo URL Git.",
+                "gitRequired": "É necessário Git para importar repositórios."
             }
         },
         "addExistingProject": "Adicionar um projeto existente",
@@ -382,6 +393,19 @@
             "problems_other": "Problemas na pesquisa: {{count}}",
             "moreProblems_one": "Outros problemas: {{count}}",
             "moreProblems_other": "Outros problemas: {{count}}"
+        },
+        "manager": {
+            "title": "Do gestor de projetos Godot",
+            "scanning": "A ler projetos registados",
+            "failed": "Não foi possível ler a lista. Escolhe outro ficheiro projects.cfg.",
+            "limited": "São mostrados apenas os primeiros 100 projetos distintos. A lista está incompleta.",
+            "another": "Escolher outra lista de projetos",
+            "empty": "Não foram encontrados projetos registados.",
+            "choose": "Escolher lista de projetos",
+            "selectSource": "Escolhe a lista de projetos Godot a importar.",
+            "noSources": "Não foi encontrada uma lista Godot nas localizações habituais.",
+            "support": "São suportados projetos Godot 4. Projetos mais antigos ou indisponíveis não podem ser adicionados.",
+            "pickerFailed": "Não foi possível abrir o seletor de ficheiros. Tenta novamente."
         }
     },
     "messages": {

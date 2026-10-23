@@ -16,6 +16,7 @@ import type {
     ReleaseSummary,
 } from '@shared/contracts';
 import {
+    applyTheme,
     createFixtureHome,
     prepareAppWithStubbedData,
     prepareOnboardingFixture,
@@ -34,6 +35,7 @@ import {
     TOOL_INTEGRATIONS_NO_GIT,
 } from './support/e2e-fixture-data';
 import { getMainWindow } from './splashscreen/getMainWindow';
+import { THEMES } from './support/e2e-fixture-theme';
 
 let electronApp: ElectronApplication;
 let mainPage: Page;
@@ -311,6 +313,67 @@ test('Custom editor manifest controls remain usable at supported desktop sizes',
     }
 });
 
+test('Projects welcome tiles fit the minimum window in both themes and discover Godot only on request', async () => {
+    await electronApp.evaluate(({ ipcMain }) => {
+        const state = globalThis as typeof globalThis & { __welcomeDiscoveryCalls?: number };
+        state.__welcomeDiscoveryCalls = 0;
+        ipcMain.removeHandler('projects.discoverGodotProjectLists');
+        ipcMain.handle('projects.discoverGodotProjectLists', () => {
+            state.__welcomeDiscoveryCalls = (state.__welcomeDiscoveryCalls ?? 0) + 1;
+            return { success: true, data: [] };
+        });
+    });
+    await prepareEmptyApp([]);
+    await stubOpenFileDialog();
+    await mainPage.setViewportSize({ width: 1024, height: 600 });
+    for (const theme of THEMES) {
+        await applyTheme(mainPage, theme);
+        const welcome = mainPage.getByTestId('projectsWelcome');
+        const actions = welcome.getByRole('button');
+        await expect(actions).toHaveText([
+            'Create projectChoose a Godot version. Start something new.',
+            'From Godot Project ManagerReview projects already registered with Godot.',
+            'Scan a folderFind projects in a folder you choose.',
+            'Choose a project fileAdd a single project using its project.godot file.',
+            'From GitHubBrowse your connected GitHub repositories.',
+            'From public Git URLClone a public repository using its Git URL.',
+        ]);
+        for (const action of await actions.all()) {
+            await expect(action).toBeInViewport({ ratio: 1 });
+        }
+        expect(await welcome.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+        expect(await welcome.evaluate(element => element.scrollHeight <= element.clientHeight)).toBe(true);
+        await mainPage.screenshot({ path: test.info().outputPath(`project-tiles-${theme.name}.png`), animations: 'disabled' });
+    }
+    expect(await electronApp.evaluate(() => (globalThis as typeof globalThis & { __welcomeDiscoveryCalls?: number }).__welcomeDiscoveryCalls)).toBe(0);
+
+    const create = mainPage.getByTestId('btnWelcomeCreateProject');
+    await create.focus();
+    await mainPage.keyboard.press('Tab');
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGodotProjectManager')).toBeFocused();
+    await mainPage.keyboard.press('Enter');
+    const godot = mainPage.getByTestId('godotProjectManagerSourceDialog');
+    await expect(godot.getByText('No Godot project list was found in the usual locations.')).toBeVisible();
+    expect(await electronApp.evaluate(() => (globalThis as typeof globalThis & { __welcomeDiscoveryCalls?: number }).__welcomeDiscoveryCalls)).toBeGreaterThan(0);
+    await godot.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGodotProjectManager')).toBeFocused();
+    await mainPage.keyboard.press('Tab');
+    await expect(mainPage.getByTestId('btnWelcomeScanFolder')).toBeFocused();
+    await mainPage.keyboard.press('Space');
+    await expect.poll(readOpenFileDialogCallCount).toBe(1);
+    await expect(mainPage.getByTestId('projectsWelcome')).toBeVisible();
+
+    await mainPage.getByTestId('btnWelcomeAddFromGitHub').click();
+    const remote = mainPage.getByTestId('remoteProjectImportDialog');
+    await expect(remote).toBeVisible();
+    await remote.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(remote).not.toBeVisible();
+    await mainPage.getByTestId('btnWelcomeAddFromPublicGit').click();
+    await expect(remote.getByTestId('inputPublicGitRepositoryUrl')).toBeFocused();
+    await remote.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(remote).not.toBeVisible();
+});
+
 test('Projects welcome supports creation and local import without an installed editor', async () => {
     await prepareEmptyApp([]);
     await stubOpenFileDialog();
@@ -322,6 +385,7 @@ test('Projects welcome supports creation and local import without an installed e
         welcome.getByRole('heading', { name: 'Add or create a project' }),
     ).toBeVisible();
     await expect(mainPage.getByTestId('projectsTitle')).toHaveCount(0);
+    await expect(mainPage.getByTestId('btnProjectAdd')).toHaveCount(0);
     await expect(mainPage.getByTestId('btnCopyProjectsLocation')).toHaveCount(
         0,
     );
@@ -417,10 +481,12 @@ test('Projects welcome keeps local import available when Git is unavailable', as
 
     await expect(mainPage.getByTestId('btnWelcomeAddFromComputer')).toBeVisible();
     await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toBeDisabled();
-    await expect(mainPage.getByText('Git is required to import from GitHub', { exact: true })).toBeVisible();
-    const reviewDirectory = path.resolve('.internal-docs/shared-github-connection');
-    await fs.mkdir(reviewDirectory, { recursive: true });
-    await mainPage.screenshot({ path: path.join(reviewDirectory, 'welcome-git-unavailable.png') });
+    await expect(mainPage.getByTestId('btnWelcomeAddFromPublicGit')).toBeDisabled();
+    await expect(mainPage.getByTestId('btnWelcomeScanFolder')).toBeEnabled();
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGodotProjectManager')).toBeEnabled();
+    await expect(mainPage.getByTestId('btnWelcomeAddFromGitHub')).toHaveAccessibleDescription(/Git is required to import repositories/);
+    await expect(mainPage.getByText('Git is required to import repositories.', { exact: true })).toBeVisible();
+    await mainPage.screenshot({ path: test.info().outputPath('welcome-git-unavailable.png') });
 });
 
 test('Native import offers the newest stable patch for an inferred Godot branch', async () => {

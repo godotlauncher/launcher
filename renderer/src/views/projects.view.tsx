@@ -44,6 +44,7 @@ import { useToolIntegrations } from '../hooks/tool-integrations.hook';
 import { appBridge, projectsBridge, terminalBridge } from '../renderer.bridge';
 import { AddProjectSourceMenu } from './projects/components/add-project-source-menu.component';
 import { FolderProjectImportModal } from './projects/components/folder-project-import.modal';
+import { GodotProjectManagerImportModal } from './projects/components/godot-project-manager-import.modal';
 import { ProjectActionsMenu } from './projects/components/project-actions-menu.component';
 import { ProjectBulkRemoveConfirm } from './projects/components/project-bulk-remove-confirm.component';
 import { ProjectBulkTagsPopover } from './projects/components/project-bulk-tags-popover.component';
@@ -483,6 +484,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
     });
 
     const [terminalAvailable, setTerminalAvailable] = useState(true);
+    const [projectManagerImportOpen, setProjectManagerImportOpen] =
+        useState(false);
 
     /** Refreshes Git and terminal actions from the shared tool summaries. */
     const refreshToolAvailability = useCallback(async () => {
@@ -912,119 +915,119 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                     />
                 )}
                 {isDraggingOver && <ProjectsDropOverlay t={t} />}
-                <ProjectsHeader
-                    searchInputRef={searchInput}
-                    searchShortcut={`${shortcutModifier} K`}
-                    searchAriaKeyShortcuts={`${ariaShortcutModifier}+K`}
-                    viewMode={projectViewMode}
-                    onViewModeChange={(mode) => void setProjectViewMode(mode)}
-                    viewModeDisabled={
-                        savingViewMode ||
-                        savingTagFilter ||
-                        savingGroupOrder ||
-                        !preferences
-                    }
-                    viewOptions={
-                        <Tooltip
-                            tip={t('viewOptions.title')}
-                            placement="top"
-                            delay={1000}
-                        >
-                            <button
-                                ref={viewOptionsButtonRef}
-                                type="button"
-                                className="btn btn-ghost btn-sm btn-square"
-                                data-testid="btnProjectViewOptions"
-                                aria-label={t('viewOptions.title')}
-                                aria-haspopup="dialog"
-                                disabled={
-                                    !preferences ||
-                                    savingViewMode ||
+                {!showEmptyState && (
+                    <ProjectsHeader
+                        searchInputRef={searchInput}
+                        searchShortcut={`${shortcutModifier} K`}
+                        searchAriaKeyShortcuts={`${ariaShortcutModifier}+K`}
+                        viewMode={projectViewMode}
+                        onViewModeChange={(mode) =>
+                            void setProjectViewMode(mode)
+                        }
+                        viewModeDisabled={
+                            savingViewMode ||
+                            savingTagFilter ||
+                            savingGroupOrder ||
+                            !preferences
+                        }
+                        viewOptions={
+                            <Tooltip
+                                tip={t('viewOptions.title')}
+                                placement="top"
+                                delay={1000}
+                            >
+                                <button
+                                    ref={viewOptionsButtonRef}
+                                    type="button"
+                                    className="btn btn-ghost btn-sm btn-square"
+                                    data-testid="btnProjectViewOptions"
+                                    aria-label={t('viewOptions.title')}
+                                    aria-haspopup="dialog"
+                                    disabled={
+                                        !preferences ||
+                                        savingViewMode ||
+                                        savingTagFilter ||
+                                        savingGroupOrder
+                                    }
+                                    onClick={() => setViewOptionsOpen(true)}
+                                >
+                                    <Settings2 size={17} aria-hidden="true" />
+                                </button>
+                            </Tooltip>
+                        }
+                        selectionTools={
+                            <div data-project-selection-toolbar="">
+                                <SelectionToolbar
+                                    enabled={selection.enabled}
+                                    selectedCount={
+                                        activeTagSession?.targets.length ??
+                                        selection.selectedProjects.length
+                                    }
+                                    disabled={
+                                        loading ||
+                                        selectionBusy ||
+                                        savingTagFilter ||
+                                        !preferences
+                                    }
+                                    actionsOpen={
+                                        selectionMenu !== null ||
+                                        activeTagSession !== null
+                                    }
+                                    t={t}
+                                    onToggle={() => {
+                                        setSelectionMenu(null);
+                                        selection.toggleEnabled();
+                                    }}
+                                    onOpenActions={(event) =>
+                                        setSelectionMenu(
+                                            getActionMenuAnchorRect(
+                                                event.currentTarget,
+                                            ),
+                                        )
+                                    }
+                                />
+                            </div>
+                        }
+                        tagFilter={
+                            <ProjectTagFilter
+                                controlRef={tagFilterControl}
+                                shortcut={`${shortcutModifier} T`}
+                                ariaKeyShortcuts={`${ariaShortcutModifier}+T`}
+                                tags={tagSnapshot?.tags ?? []}
+                                selected={selectedFilterTags}
+                                disabled={!preferences || !tagSnapshot}
+                                saving={
                                     savingTagFilter ||
+                                    savingViewMode ||
                                     savingGroupOrder
                                 }
-                                onClick={() => setViewOptionsOpen(true)}
-                            >
-                                <Settings2 size={17} aria-hidden="true" />
-                            </button>
-                        </Tooltip>
-                    }
-                    selectionTools={
-                        <div data-project-selection-toolbar="">
-                            <SelectionToolbar
-                                enabled={selection.enabled}
-                                selectedCount={
-                                    activeTagSession?.targets.length ??
-                                    selection.selectedProjects.length
-                                }
-                                disabled={
-                                    loading ||
-                                    selectionBusy ||
-                                    savingTagFilter ||
-                                    !preferences
-                                }
-                                actionsOpen={
-                                    selectionMenu !== null ||
-                                    activeTagSession !== null
-                                }
-                                t={t}
-                                onToggle={() => {
-                                    setSelectionMenu(null);
-                                    selection.toggleEnabled();
-                                }}
-                                onOpenActions={(event) =>
-                                    setSelectionMenu(
-                                        getActionMenuAnchorRect(
-                                            event.currentTarget,
-                                        ),
-                                    )
-                                }
+                                loadFailed={tagsLoadFailed}
+                                onRetry={reloadTags}
+                                onChange={setTagFilter}
                             />
-                        </div>
-                    }
-                    tagFilter={
-                        <ProjectTagFilter
-                            controlRef={tagFilterControl}
-                            shortcut={`${shortcutModifier} T`}
-                            ariaKeyShortcuts={`${ariaShortcutModifier}+T`}
-                            tags={tagSnapshot?.tags ?? []}
-                            selected={selectedFilterTags}
-                            disabled={!preferences || !tagSnapshot}
-                            saving={
-                                savingTagFilter ||
-                                savingViewMode ||
-                                savingGroupOrder
-                            }
-                            loadFailed={tagsLoadFailed}
-                            onRetry={reloadTags}
-                            onChange={setTagFilter}
-                        />
-                    }
-                    cardsViewLabel={t('view.cards')}
-                    listViewLabel={t('view.list')}
-                    compactViewLabel={t('view.compact')}
-                    title={t('title')}
-                    projectsLocation={
-                        showEmptyState
-                            ? undefined
-                            : preferences?.projects_location
-                    }
-                    searchPlaceholder={t('search.placeholder')}
-                    searchValue={textSearch}
-                    onSearchChange={setTextSearch}
-                    onAddProject={openAddProjectSourceMenu}
-                    onCreateProject={() => {
-                        setDuplicateSource(null);
-                        setCreateOpen(true);
-                    }}
-                    createDisabled={false}
-                    addLabel={t('buttons.add')}
-                    createLabel={t('buttons.newProject')}
-                    copyPathLabel={t('common:buttons.copyPath')}
-                    copiedLabel={t('common:success')}
-                    showControls={!showEmptyState || selection.enabled}
-                    showAddMenu
-                />
+                        }
+                        cardsViewLabel={t('view.cards')}
+                        listViewLabel={t('view.list')}
+                        compactViewLabel={t('view.compact')}
+                        title={t('title')}
+                        projectsLocation={preferences?.projects_location}
+                        searchPlaceholder={t('search.placeholder')}
+                        searchValue={textSearch}
+                        onSearchChange={setTextSearch}
+                        onAddProject={openAddProjectSourceMenu}
+                        onCreateProject={() => {
+                            setDuplicateSource(null);
+                            setCreateOpen(true);
+                        }}
+                        createDisabled={false}
+                        addLabel={t('buttons.add')}
+                        createLabel={t('buttons.newProject')}
+                        copyPathLabel={t('common:buttons.copyPath')}
+                        copiedLabel={t('common:success')}
+                        showControls
+                        showAddMenu
+                    />
+                )}
 
                 {viewState === 'empty' && (
                     <ProjectsWelcome
@@ -1035,6 +1038,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                             setCreateOpen(true);
                         }}
                         onAddFromComputer={() => void onAddProject()}
+                        onAddFromGodotProjectManager={() => {
+                            setAddSourceMenuAnchor(null);
+                            setProjectManagerImportOpen(true);
+                        }}
+                        onScanFolder={() => void chooseScanFolder()}
                         onAddFromGitHub={() =>
                             openRemoteProjectSource('github')
                         }
@@ -1380,6 +1388,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 onClose={() => setAddSourceMenuAnchor(null)}
                 onFromComputer={() => void onAddProject()}
                 onScanFolder={() => void chooseScanFolder()}
+                onGodotProjectManager={() => {
+                    setAddSourceMenuAnchor(null);
+                    setProjectManagerImportOpen(true);
+                }}
                 onPublicGit={() => openRemoteProjectSource('public-git-url')}
                 onGitHub={() => openRemoteProjectSource('github')}
             />
@@ -1458,6 +1470,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 />
             )}
             {localImportDialog}
+            {projectManagerImportOpen && (
+                <GodotProjectManagerImportModal
+                    onClose={() => setProjectManagerImportOpen(false)}
+                    handleAddProjectResult={handleAddProjectResult}
+                    queueProjectEditorRepairs={queueProjectEditorRepairs}
+                />
+            )}
             <RemoteProjectImportModal
                 source={remoteProjectSource}
                 onOpenChange={(open) => {

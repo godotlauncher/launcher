@@ -57,6 +57,17 @@
                 "fromGitHub": "从 GitHub",
                 "fromPublicGit": "从公共 Git URL",
                 "gitRequired": "从 GitHub 导入需要 Git"
+            },
+            "tiles": {
+                "createDescription": "选择 Godot 版本，开始新项目。",
+                "godotDescription": "查看已在 Godot 中注册的项目。",
+                "scanTitle": "扫描文件夹",
+                "scanDescription": "在所选文件夹中查找项目。",
+                "fileTitle": "选择项目文件",
+                "fileDescription": "通过 project.godot 文件添加单个项目。",
+                "githubDescription": "浏览已关联的 GitHub 仓库。",
+                "publicGitDescription": "通过 Git URL 克隆公开仓库。",
+                "gitRequired": "导入仓库需要 Git。"
             }
         },
         "addExistingProject": "添加现有项目",
@@ -382,6 +393,19 @@
             "problems_other": "扫描问题：{{count}}",
             "moreProblems_one": "其他问题：{{count}}",
             "moreProblems_other": "其他问题：{{count}}"
+        },
+        "manager": {
+            "title": "从 Godot 项目管理器导入",
+            "scanning": "正在读取已注册的项目",
+            "failed": "无法读取项目列表。请选择其他 projects.cfg 文件。",
+            "limited": "仅显示前 100 个不同的项目。列表不完整。",
+            "another": "选择其他项目列表",
+            "empty": "未找到已注册的项目。",
+            "choose": "选择项目列表",
+            "selectSource": "选择要导入的 Godot 项目列表。",
+            "noSources": "在常用位置未找到 Godot 项目列表。",
+            "support": "支持 Godot 4 项目。无法添加旧版或不可用的项目。",
+            "pickerFailed": "无法打开文件选择器。请重试。"
         }
     },
     "messages": {
