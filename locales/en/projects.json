@@ -57,6 +57,17 @@
                 "fromGitHub": "From GitHub",
                 "fromPublicGit": "From public Git URL",
                 "gitRequired": "Git is required to import from GitHub"
+            },
+            "tiles": {
+                "createDescription": "Choose a Godot version. Start something new.",
+                "godotDescription": "Review projects already registered with Godot.",
+                "scanTitle": "Scan a folder",
+                "scanDescription": "Find projects in a folder you choose.",
+                "fileTitle": "Choose a project file",
+                "fileDescription": "Add a single project using its project.godot file.",
+                "githubDescription": "Browse your connected GitHub repositories.",
+                "publicGitDescription": "Clone a public repository using its Git URL.",
+                "gitRequired": "Git is required to import repositories."
             }
         },
         "addExistingProject": "Add an existing project",
@@ -347,7 +358,9 @@
             "details": "Editor requirement details",
             "summary": "{{count}} selected · Downloads: {{downloads}}",
             "download": "Download",
-            "missing": "Missing editor"
+            "missing": "Missing editor",
+            "downloadMissingEditors": "Download missing editors",
+            "addWithoutDownload": "Add without downloading {{version}}"
         },
         "folder": {
             "sections": {
@@ -382,6 +395,19 @@
             "problems_other": "Scan problems: {{count}}",
             "moreProblems_one": "Additional problems: {{count}}",
             "moreProblems_other": "Additional problems: {{count}}"
+        },
+        "manager": {
+            "title": "From Godot Project Manager",
+            "scanning": "Reading registered projects",
+            "failed": "The project list could not be read. Choose another projects.cfg file.",
+            "limited": "Only the first 100 distinct projects are shown. The list is incomplete.",
+            "another": "Choose another project list",
+            "empty": "No registered projects were found.",
+            "choose": "Choose project list",
+            "selectSource": "Choose the Godot project list to import.",
+            "noSources": "No Godot project list was found in the usual locations.",
+            "support": "Godot 4 projects are supported. Older or unavailable projects cannot be added.",
+            "pickerFailed": "The file picker could not be opened. Try again."
         }
     },
     "messages": {

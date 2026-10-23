@@ -19,6 +19,7 @@ import type {
     FolderProjectScanResult,
     GitIdentity,
     GitRepositoryInspection,
+    GodotProjectListResult,
     InitialiseRemoteProjectSubmodulesResult,
     InitializeProjectGitResult,
     LaunchProjectOptions,
@@ -46,6 +47,13 @@ import type {
 
 /** Defines project requests available to the renderer. */
 export type ProjectsBridge = {
+    /** Finds known Godot Project Manager registration lists. */
+    discoverGodotProjectLists(): Promise<string[]>;
+    /** Inspects a selected registration list without modifying source files. */
+    readGodotProjectList(
+        source: string,
+        scanId: string,
+    ): Promise<GodotProjectListResult>;
     /** Scans one existing folder without changing its contents. */
     scanProjectFolder(
         folder: string,

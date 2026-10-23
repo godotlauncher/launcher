@@ -8,6 +8,7 @@ import { TrayAvailabilityModule } from '../services/tray-availability.module.js'
 import { GitModule } from '../tool-integration/integrations/git/git.module.js';
 import { GitLfsModule } from '../tool-integration/integrations/git-lfs/git-lfs.module.js';
 import { TerminalModule } from '../tool-integration/integrations/terminal/terminal.module.js';
+import { GodotProjectListService } from './godot-project-list.service.js';
 import { ProjectCreationService } from './project-creation.service.js';
 import { ProjectDiscoveryService } from './project-discovery.service.js';
 import { ProjectEditorService } from './project-editor.service.js';
@@ -44,6 +45,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
         ProjectDiscoveryService,
         ProjectFolderScanService,
         ProjectImportService,
+        GodotProjectListService,
         ProjectEditorChoiceService,
         ProjectPublicationService,
         ProjectRepositoryOriginIndexService,

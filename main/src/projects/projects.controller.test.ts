@@ -17,6 +17,9 @@ vi.mock('@mariodebono/di-electron', () => ({
 vi.mock('./projects.service.js', () => ({
     ProjectsService: class ProjectsService {},
 }));
+vi.mock('./godot-project-list.service.js', () => ({
+    GodotProjectListService: class GodotProjectListService {},
+}));
 
 import { ProjectsController } from './projects.controller.js';
 import type { ProjectsService } from './projects.service.js';
@@ -46,7 +49,11 @@ describe('ProjectsController', () => {
             allowMissingCodeEditor: true,
         } satisfies LaunchProjectOptions;
         const service = createServiceMock();
-        const controller = new ProjectsController(service, {} as never);
+        const controller = new ProjectsController(
+            service,
+            {} as never,
+            {} as never,
+        );
 
         const remoteRequest = {
             source: 'public-git-url' as const,

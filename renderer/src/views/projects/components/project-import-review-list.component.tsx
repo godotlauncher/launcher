@@ -40,6 +40,8 @@ type SelectAllControl = {
 };
 
 type ProjectImportReviewListProps = {
+    downloadMissingEditors: boolean;
+    onDownloadMissingEditorsChange: (enabled: boolean) => void;
     items: ProjectImportReviewListItem[];
     editingId: string | null;
     draft: string;
@@ -55,10 +57,12 @@ type ProjectImportReviewListProps = {
     onEditorChange: (id: string, editorActionId: string) => void;
 };
 
-/** Renders the shared compact project import rows and their inline controls.
+/** Keeps bulk import controls fixed above the scrolling compact review rows.
  * @param props - Controlled project rows, editing state and selection callbacks.
  */
 export function ProjectImportReviewList({
+    downloadMissingEditors,
+    onDownloadMissingEditorsChange,
     items,
     editingId,
     draft,
@@ -327,9 +331,14 @@ export function ProjectImportReviewList({
                                 : undefined,
                             label:
                                 candidate.kind === 'missing'
-                                    ? t(
-                                          'addProject.editorResolution.addMissing',
-                                      )
+                                    ? candidate.version
+                                        ? t(
+                                              'addProject.editorReview.addWithoutDownload',
+                                              { version: candidate.version },
+                                          )
+                                        : t(
+                                              'addProject.editorResolution.addMissing',
+                                          )
                                     : t(
                                           candidate.kind === 'download'
                                               ? 'addProject.editorResolution.download'
@@ -362,67 +371,85 @@ export function ProjectImportReviewList({
     };
 
     return (
-        <div className="flex flex-col gap-2 p-1 text-base">
-            {sections.map((section) => (
-                <section
-                    key={section.key}
-                    aria-labelledby={
-                        groupByAvailability
-                            ? `${descriptionId}-${section.key}-heading`
-                            : undefined
-                    }
-                >
-                    {groupByAvailability && (
-                        <ListGroupHeading
-                            id={`${descriptionId}-${section.key}-heading`}
-                            title={t(
-                                `addProject.folder.sections.${section.key}`,
-                            )}
-                            count={section.items.length}
-                            headingLevel="h3"
+        <div className="flex min-h-0 flex-1 flex-col gap-2 p-1 text-base">
+            {sections.some(
+                (section) =>
+                    section.key === 'all' || section.key === 'available',
+            ) && (
+                <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 rounded-md bg-base-200/70 px-3 py-3">
+                    {selectAll && (
+                        <label className="flex items-center gap-4">
+                            <input
+                                ref={selectAll.inputRef}
+                                type="checkbox"
+                                className="checkbox checkbox-sm"
+                                checked={selectAll.checked}
+                                onChange={(event) =>
+                                    selectAll.onChange(event.target.checked)
+                                }
+                            />
+                            {selectAll.label}
+                        </label>
+                    )}
+                    <label className="flex items-center gap-3">
+                        <input
+                            type="checkbox"
+                            className="checkbox checkbox-sm"
+                            checked={downloadMissingEditors}
+                            onChange={(event) =>
+                                onDownloadMissingEditorsChange(
+                                    event.target.checked,
+                                )
+                            }
+                        />
+                        {t('addProject.editorReview.downloadMissingEditors')}
+                    </label>
+                    {onTagsChange && items.length > 1 && (
+                        <ProjectImportBulkTagsAction
+                            items={items.map((item) => ({
+                                id: item.id,
+                                selection: item.tagSelection ?? [],
+                                selected: item.selected,
+                                disabled:
+                                    !!item.disabled ||
+                                    !!item.row.error ||
+                                    !!item.row.registered ||
+                                    item.conflict === 'folder',
+                            }))}
+                            onChange={onTagsChange}
                         />
                     )}
-                    <ul className="flex flex-col gap-2">
-                        {selectAll &&
-                            (section.key === 'all' ||
-                                section.key === 'available') && (
-                                <li className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-base-200/70 px-3 py-3">
-                                    <label className="flex items-center gap-4">
-                                        <input
-                                            ref={selectAll.inputRef}
-                                            type="checkbox"
-                                            className="checkbox checkbox-sm"
-                                            checked={selectAll.checked}
-                                            onChange={(event) =>
-                                                selectAll.onChange(
-                                                    event.target.checked,
-                                                )
-                                            }
-                                        />
-                                        {selectAll.label}
-                                    </label>
-                                    {onTagsChange && items.length > 1 && (
-                                        <ProjectImportBulkTagsAction
-                                            items={items.map((item) => ({
-                                                id: item.id,
-                                                selection:
-                                                    item.tagSelection ?? [],
-                                                selected: item.selected,
-                                                disabled:
-                                                    !!item.disabled ||
-                                                    !!item.row.error ||
-                                                    !!item.row.registered ||
-                                                    item.conflict === 'folder',
-                                            }))}
-                                            onChange={onTagsChange}
-                                        />
-                                    )}
-                                </li>
-                            )}
-                        {section.items.map(renderItem)}
-                    </ul>
-                </section>
-            ))}
+                </div>
+            )}
+            <section
+                aria-label={t('addProject.remote.review.title')}
+                className="project-import-scroll min-h-0 flex-1 pr-3"
+            >
+                {sections.map((section) => (
+                    <section
+                        key={section.key}
+                        aria-labelledby={
+                            groupByAvailability
+                                ? `${descriptionId}-${section.key}-heading`
+                                : undefined
+                        }
+                    >
+                        {groupByAvailability && (
+                            <ListGroupHeading
+                                id={`${descriptionId}-${section.key}-heading`}
+                                title={t(
+                                    `addProject.folder.sections.${section.key}`,
+                                )}
+                                count={section.items.length}
+                                headingLevel="h3"
+                            />
+                        )}
+                        <ul className="flex flex-col gap-2">
+                            {section.items.map(renderItem)}
+                        </ul>
+                    </section>
+                ))}
+            </section>
         </div>
     );
 }

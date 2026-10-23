@@ -55,6 +55,7 @@ describe('AddProjectSourceMenu', () => {
                 onClose={vi.fn()}
                 onFromComputer={vi.fn()}
                 onScanFolder={vi.fn()}
+                onGodotProjectManager={vi.fn()}
                 onPublicGit={vi.fn()}
                 onGitHub={vi.fn()}
             />,
@@ -82,6 +83,7 @@ describe('AddProjectSourceMenu', () => {
                 onClose={vi.fn()}
                 onFromComputer={vi.fn()}
                 onScanFolder={vi.fn()}
+                onGodotProjectManager={vi.fn()}
                 onPublicGit={vi.fn()}
                 onGitHub={vi.fn()}
             />,
@@ -100,6 +102,7 @@ describe('AddProjectSourceMenu', () => {
                 onClose={vi.fn()}
                 onFromComputer={vi.fn()}
                 onScanFolder={vi.fn()}
+                onGodotProjectManager={vi.fn()}
                 onPublicGit={vi.fn()}
                 onGitHub={vi.fn()}
             />,

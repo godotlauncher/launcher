@@ -36,6 +36,7 @@ import {
 import { getProjectPathSuffixDisplay } from '../../sub-views/create-project/create-project.model';
 import { useRemoteProjectGitIdentity } from '../hooks/remote-project-git-identity.hook';
 import {
+    applyImportDownloadPreference,
     type LocalImportRow,
     prepareLocalImportRow,
 } from '../local-import-editor.model';
@@ -195,6 +196,7 @@ export const RemoteProjectImportModal: React.FC<
     const [registrationOutcomes, setRegistrationOutcomes] = useState<
         RemoteProjectRegistrationOutcome[]
     >([]);
+    const [downloadMissingEditors, setDownloadMissingEditors] = useState(true);
     const [editorDownloadsQueued, setEditorDownloadsQueued] = useState(false);
     const [registrationProgress, setRegistrationProgress] = useState({
         current: 0,
@@ -410,6 +412,7 @@ export const RemoteProjectImportModal: React.FC<
         setReviewEditing(false);
         setRegistrationOutcomes([]);
         setEditorDownloadsQueued(false);
+        setDownloadMissingEditors(true);
         setRegistrationProgress({ current: 0, total: 0 });
         importPendingRef.current = false;
         activeJobIdRef.current = null;
@@ -836,7 +839,11 @@ export const RemoteProjectImportModal: React.FC<
      *
      * @returns A promise that ends when the modal advances to its next step.
      */
-    const selectedImportRows = reviewRows
+    const effectiveRows = applyImportDownloadPreference(
+        reviewRows,
+        downloadMissingEditors,
+    );
+    const selectedImportRows = effectiveRows
         .filter((row) => selectedProjectPaths.has(row.projectFilePath))
         .map((row) => ({
             ...row,
@@ -1200,13 +1207,15 @@ export const RemoteProjectImportModal: React.FC<
     } else if (step === 'review') {
         body = (
             <RemoteProjectReview
+                downloadMissingEditors={downloadMissingEditors}
+                onDownloadMissingEditorsChange={setDownloadMissingEditors}
                 tagSelections={tagSelections}
                 onTagsChange={(updates) =>
                     setTagSelections((current) => ({ ...current, ...updates }))
                 }
                 repositoryPath={repositoryPath}
                 projects={discoveredProjects}
-                rows={reviewRows}
+                rows={effectiveRows}
                 importNames={importNames}
                 editorActionIds={editorActionIds}
                 conflicts={Object.fromEntries(

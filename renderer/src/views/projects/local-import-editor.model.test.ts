@@ -4,7 +4,10 @@ import type {
     ReleaseSummary,
 } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
-import { prepareLocalImportRow } from './local-import-editor.model';
+import {
+    applyImportDownloadPreference,
+    prepareLocalImportRow,
+} from './local-import-editor.model';
 
 const beta: ReleaseSummary = {
     version: '4.8-beta2',
@@ -173,5 +176,74 @@ describe('local import editor preparation', () => {
         );
         expect(prepared.editorActionId).toBe('missing');
         expect(prepared.editorActions).toHaveLength(1);
+    });
+});
+
+describe('import editor download preference', () => {
+    it('preserves selected versions and installed actions while disabling every download without mutating the source', () => {
+        const prepared = prepareLocalImportRow(
+            {
+                ...row,
+                editorResolution: {
+                    requested: {
+                        kind: 'exact',
+                        channel: 'official',
+                        flavor: 'gdscript',
+                        base_version: '4.8',
+                        version: beta.version,
+                    },
+                    choices: [
+                        {
+                            id: 'download-beta',
+                            version: beta.version,
+                            source: 'official',
+                            flavor: 'gdscript',
+                            prerelease: true,
+                            installed: false,
+                            recommended: true,
+                            release: beta,
+                        },
+                        {
+                            id: 'installed',
+                            version: '4.7-stable',
+                            source: 'official',
+                            flavor: 'gdscript',
+                            prerelease: false,
+                            installed: true,
+                            recommended: false,
+                        },
+                    ],
+                },
+            },
+            [],
+            [],
+        );
+        const disabled = applyImportDownloadPreference([prepared], false)[0];
+        expect(disabled.downloadMissingEditors).toBe(false);
+        expect(disabled.editorActionId).toBe('download-beta');
+        expect(disabled.editorActions[0]).toMatchObject({
+            id: 'download-beta',
+            kind: 'missing',
+            version: beta.version,
+            options: {
+                resolution: 'add_missing',
+                editorChoiceId: 'download-beta',
+            },
+        });
+        expect(disabled.editorActions.every((action) => !action.download)).toBe(
+            true,
+        );
+        expect(disabled.editorActions[1]).toEqual(prepared.editorActions[1]);
+        expect(prepared.editorActions[0].download).toBe(beta);
+        expect(
+            applyImportDownloadPreference([prepared], true)[0].editorActions,
+        ).toEqual(prepared.editorActions);
+    });
+    it('retains a deliberate installed-editor selection and automatic resolved editors', () => {
+        const prepared = prepareLocalImportRow(row, [], []);
+        const disabled = applyImportDownloadPreference([prepared], false)[0];
+        expect(disabled.editorActionId).toBe('automatic');
+        expect(disabled.editorActions).toEqual(prepared.editorActions);
+        expect(disabled.downloadMissingEditors).toBe(false);
     });
 });

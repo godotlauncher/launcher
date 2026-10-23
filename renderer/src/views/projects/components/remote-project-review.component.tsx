@@ -21,6 +21,8 @@ import {
 } from './project-import-review-list.component';
 
 type RemoteProjectReviewProps = {
+    downloadMissingEditors: boolean;
+    onDownloadMissingEditorsChange: (enabled: boolean) => void;
     tagSelections: Record<string, ProjectTagSelection[]>;
     onTagsChange: (updates: Record<string, ProjectTagSelection[]>) => void;
     importNames: Record<string, string>;
@@ -49,10 +51,12 @@ type RemoteProjectReviewProps = {
     ) => void;
 };
 
-/** Renders discovered remote projects with the shared compact import controls.
+/** Reviews remote and scanned projects with fixed context above the shared rows.
  * @param props - Inspected projects, current choices and controlled callbacks.
  */
 export function RemoteProjectReview({
+    downloadMissingEditors,
+    onDownloadMissingEditorsChange,
     tagSelections,
     onTagsChange,
     repositoryPath,
@@ -160,7 +164,7 @@ export function RemoteProjectReview({
 
     return (
         <div className="flex h-full min-h-0 flex-col gap-4">
-            <div>
+            <div className="shrink-0">
                 <h2 className="text-base font-semibold">
                     {t('addProject.remote.review.title')}
                 </h2>
@@ -172,7 +176,7 @@ export function RemoteProjectReview({
                 value={repositoryPath}
                 label={t('common:buttons.copyPath')}
                 copiedLabel={t('common:success')}
-                className="self-start"
+                className="shrink-0 self-start"
             />
             {headerContent}
             {projects.length === 0 ? (
@@ -188,12 +192,13 @@ export function RemoteProjectReview({
                     <p>{emptyMessage ?? t('addProject.remote.review.empty')}</p>
                 </div>
             ) : (
-                <section
-                    aria-label={t('addProject.remote.review.title')}
-                    className="project-import-scroll min-h-0 flex-1 pr-3"
-                >
+                <div className="flex min-h-0 flex-1 flex-col">
                     <ProjectImportReviewList
                         items={items}
+                        downloadMissingEditors={downloadMissingEditors}
+                        onDownloadMissingEditorsChange={
+                            onDownloadMissingEditorsChange
+                        }
                         onTagsChange={onTagsChange}
                         groupByAvailability={lockUnavailable}
                         editingId={editingId}
@@ -230,7 +235,7 @@ export function RemoteProjectReview({
                         }}
                         onEditorChange={onGodotEditorChange}
                     />
-                </section>
+                </div>
             )}
         </div>
     );

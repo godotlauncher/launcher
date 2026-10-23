@@ -24,6 +24,8 @@ import type {
     ResolveRemoteProjectCloneAction,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { GodotProjectListService } from './godot-project-list.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectFolderScanService } from './project-folder-scan.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsService } from './projects.service.js';
@@ -38,11 +40,28 @@ export class ProjectsController implements ProjectsBridge {
      *
      * @param projects - Project workflow facade.
      * @param folderScan - Read-only local project scanner.
+     * @param godotLists - Read-only Godot registration source reader.
      */
     constructor(
         private readonly projects: ProjectsService,
         private readonly folderScan: ProjectFolderScanService,
+        private readonly godotLists: GodotProjectListService,
     ) {}
+
+    /** Finds existing normal Godot project lists. */
+    @ProjectsHandler('discoverGodotProjectLists')
+    discoverGodotProjectLists() {
+        return this.godotLists.discover();
+    }
+
+    /** Inspects a Godot project list without changing its contents.
+     * @param source - Absolute source file chosen by the user.
+     * @param scanId - Renderer identity for this read.
+     */
+    @ProjectsHandler('readGodotProjectList')
+    readGodotProjectList(source: string, scanId: string) {
+        return this.godotLists.read(source, scanId);
+    }
 
     /** Scans the selected folder without changing project files.
      * @param folder - Absolute root selected in the native picker.

@@ -2,7 +2,10 @@ import type { ProjectDetails, ProjectTagSelection } from '@shared/contracts';
 import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '../../../components/dialog.component';
 import { ProjectEntryTagField } from '../../../components/project-tags/project-entry-tag-field.component';
-import type { LocalImportRow } from '../local-import-editor.model';
+import {
+    applyImportDownloadPreference,
+    type LocalImportRow,
+} from '../local-import-editor.model';
 import { getImportConflicts } from '../project-import-conflict.model';
 import {
     ProjectImportReviewList,
@@ -18,7 +21,7 @@ type Props = {
     onCancel: () => void;
 };
 
-/** Reviews conflicting imports using the app's compact item presentation.
+/** Reviews local imports with bulk controls above the scrolling project rows.
  * @param props - Inspected files, existing projects and completion callbacks.
  */
 export function ProjectImportReview({
@@ -29,6 +32,13 @@ export function ProjectImportReview({
     onConfirm,
     onCancel,
 }: Props) {
+    const [downloadMissingEditors, setDownloadMissingEditors] = useState(
+        rows[0]?.downloadMissingEditors ?? true,
+    );
+    const effectiveRows = applyImportDownloadPreference(
+        rows,
+        downloadMissingEditors,
+    );
     const [editorIds, setEditorIds] = useState(
         rows.map((row) => row.editorActionId),
     );
@@ -40,7 +50,7 @@ export function ProjectImportReview({
     const [editing, setEditing] = useState<number | null>(null);
     const selectAllRef = useRef<HTMLInputElement>(null);
     const [draft, setDraft] = useState('');
-    const selected = rows.flatMap((row, index) =>
+    const selected = effectiveRows.flatMap((row, index) =>
         skipped.has(index)
             ? []
             : [
@@ -54,39 +64,41 @@ export function ProjectImportReview({
     );
     const conflicts = getImportConflicts(selected, existing, platform);
     let selectedIndex = 0;
-    const items: ProjectImportReviewListItem[] = rows.map((row, index) => {
-        const selected = !skipped.has(index);
-        return {
-            id: String(index),
-            row,
-            name: names[index],
-            selected,
-            editorActionId: editorIds[index],
-            conflict: selected ? conflicts[selectedIndex++] : undefined,
-            tagSelection: tagSelections[index],
-            tagControl: (
-                <ProjectEntryTagField
-                    selection={tagSelections[index]}
-                    disabled={
-                        !selected ||
-                        !!row.error ||
-                        row.registered ||
-                        conflicts[selectedIndex - 1] === 'folder'
-                    }
-                    onChange={(tags) =>
-                        setTagSelections((current) =>
-                            current.map((value, position) =>
-                                position === index ? tags : value,
-                            ),
-                        )
-                    }
-                />
-            ),
-            path:
-                row.directory ??
-                row.projectFilePath.replace(/[\\/][^\\/]*$/, ''),
-        };
-    });
+    const items: ProjectImportReviewListItem[] = effectiveRows.map(
+        (row, index) => {
+            const selected = !skipped.has(index);
+            return {
+                id: String(index),
+                row,
+                name: names[index],
+                selected,
+                editorActionId: editorIds[index],
+                conflict: selected ? conflicts[selectedIndex++] : undefined,
+                tagSelection: tagSelections[index],
+                tagControl: (
+                    <ProjectEntryTagField
+                        selection={tagSelections[index]}
+                        disabled={
+                            !selected ||
+                            !!row.error ||
+                            row.registered ||
+                            conflicts[selectedIndex - 1] === 'folder'
+                        }
+                        onChange={(tags) =>
+                            setTagSelections((current) =>
+                                current.map((value, position) =>
+                                    position === index ? tags : value,
+                                ),
+                            )
+                        }
+                    />
+                ),
+                path:
+                    row.directory ??
+                    row.projectFilePath.replace(/[\\/][^\\/]*$/, ''),
+            };
+        },
+    );
 
     const eligible = items.filter(
         (item) =>
@@ -119,7 +131,7 @@ export function ProjectImportReview({
         <Dialog
             title={t('addProject.conflicts.title')}
             panelClassName="max-w-5xl"
-            bodyClassName="overflow-y-auto pr-6"
+            bodyClassName="flex flex-col overflow-hidden pr-6"
             onRequestClose={onCancel}
             footer={
                 <>
@@ -163,11 +175,13 @@ export function ProjectImportReview({
                 </>
             }
         >
-            <p className="mb-4 text-base text-base-content/75">
+            <p className="mb-4 shrink-0 text-base text-base-content/75">
                 {t('addProject.editorReview.description')}
             </p>
             <ProjectImportReviewList
                 items={items}
+                downloadMissingEditors={downloadMissingEditors}
+                onDownloadMissingEditorsChange={setDownloadMissingEditors}
                 selectAll={
                     rows.length > 1
                         ? {

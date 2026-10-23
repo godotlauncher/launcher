@@ -57,6 +57,17 @@
                 "fromGitHub": "Do GitHub",
                 "fromPublicGit": "A partir de uma URL Git pública",
                 "gitRequired": "É necessário ter o Git para importar do GitHub"
+            },
+            "tiles": {
+                "createDescription": "Escolha uma versão do Godot e comece algo novo.",
+                "godotDescription": "Revise os projetos já registrados no Godot.",
+                "scanTitle": "Examinar uma pasta",
+                "scanDescription": "Encontre projetos em uma pasta de sua escolha.",
+                "fileTitle": "Escolher um arquivo de projeto",
+                "fileDescription": "Adicione um projeto pelo arquivo project.godot.",
+                "githubDescription": "Explore seus repositórios GitHub conectados.",
+                "publicGitDescription": "Clone um repositório público pelo URL do Git.",
+                "gitRequired": "O Git é necessário para importar repositórios."
             }
         },
         "addExistingProject": "Adicionar um projeto existente",
@@ -347,7 +358,9 @@
             "details": "Detalhes do editor necessário",
             "summary": "{{count}} selecionados · {{downloads}} downloads",
             "download": "Download",
-            "missing": "Editor ausente"
+            "missing": "Editor ausente",
+            "downloadMissingEditors": "Baixar os editores ausentes",
+            "addWithoutDownload": "Adicionar sem baixar {{version}}"
         },
         "folder": {
             "sections": {
@@ -382,6 +395,19 @@
             "problems_other": "Problemas na busca: {{count}}",
             "moreProblems_one": "Outros problemas: {{count}}",
             "moreProblems_other": "Outros problemas: {{count}}"
+        },
+        "manager": {
+            "title": "Do gerenciador de projetos Godot",
+            "scanning": "Lendo projetos registrados",
+            "failed": "Não foi possível ler a lista. Escolha outro arquivo projects.cfg.",
+            "limited": "Apenas os primeiros 100 projetos distintos são exibidos. A lista está incompleta.",
+            "another": "Escolher outra lista de projetos",
+            "empty": "Nenhum projeto registrado foi encontrado.",
+            "choose": "Escolher lista de projetos",
+            "selectSource": "Escolha a lista de projetos Godot para importar.",
+            "noSources": "Nenhuma lista Godot foi encontrada nos locais habituais.",
+            "support": "Projetos Godot 4 são compatíveis. Projetos mais antigos ou indisponíveis não podem ser adicionados.",
+            "pickerFailed": "Não foi possível abrir o seletor de arquivos. Tente novamente."
         }
     },
     "messages": {

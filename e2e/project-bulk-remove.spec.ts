@@ -100,13 +100,13 @@ async function expectFilesKept() {
         expect(await fs.readFile(path.join(home, 'projects', name, 'project.godot'), 'utf8')).toContain(name);
     }
 }
-/** Waits for aggregate feedback and usable selection controls.
+/** Waits for aggregate feedback and an available next action.
  * @param message - Expected result text.
  */
 async function result(message: string) {
     const notification = page.getByRole('article', { name: 'Projects', exact: true });
     await expect(notification).toContainText(message);
-    await expect(page.getByRole('button', { name: 'Actions', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Actions', exact: true }).or(page.getByTestId('btnWelcomeCreateProject'))).toBeEnabled();
     await notification.hover();
     return notification;
 }
@@ -155,6 +155,63 @@ async function removeElsewhere(name: string) {
     }, name);
 }
 
+for (const theme of THEMES) {
+    test(`only the reviewed project names scroll at 1024x600 (${theme.name})`, async () => {
+        const prototype = SAMPLE_PROJECTS.find(project => project.name === 'My Prototype')!;
+        const projects = Array.from({ length: 40 }, (_, index) => ({
+            ...prototype,
+            name: `Removal project ${String(index + 1).padStart(2, '0')}${index === 0 ? ' with a long name that wraps onto several lines in the confirmation dialog' : ''}`,
+            path: path.join(home, 'review', `project-${index}`),
+            pinned: false,
+            is_new: false,
+            last_opened: new Date(index + 1),
+        }));
+        for (const project of projects) {
+            await fs.mkdir(project.path, { recursive: true });
+            await fs.writeFile(path.join(project.path, 'project.godot'), '; Review fixture\n');
+        }
+        await writeJson(path.join(home, '.gd-launcher', 'projects.json'), projects);
+        await prepareAppWithStubbedData(page, app, { projects, preferences: { ...SAMPLE_PREFS, language: 'en' } });
+        await applyTheme(page, theme);
+        await page.setViewportSize({ width: 1024, height: 600 });
+        await selectAll();
+        const dialog = await openRemoval(40);
+        const cancel = dialog.getByRole('button', { name: 'Cancel', exact: true });
+        const remove = dialog.getByRole('button', { name: 'Remove', exact: true });
+        const list = dialog.getByRole('list', { name: 'Projects selected for removal: 40.', exact: true });
+        const fixed = [
+            dialog.getByRole('heading', { name: 'Remove projects from list', exact: true }),
+            dialog.getByText('Projects selected for removal: 40.', { exact: true }),
+            dialog.getByText('Their folders and files will stay on your device.', { exact: true }),
+            cancel,
+            remove,
+        ];
+        await expect(cancel).toBeFocused();
+        const before = await Promise.all(fixed.map(element => element.boundingBox()));
+        const listBounds = await list.boundingBox();
+        expect(before[1]!.y + before[1]!.height).toBeLessThan(listBounds!.y);
+        expect(before[2]!.y + before[2]!.height).toBeLessThan(listBounds!.y);
+        await list.focus();
+        await page.keyboard.press('PageDown');
+        await expect.poll(() => list.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+        await page.keyboard.press('End');
+        await expect(list.getByRole('listitem').last()).toBeInViewport({ ratio: 1 });
+        for (let index = 0; index < fixed.length; index++) {
+            await expect(fixed[index]).toBeInViewport({ ratio: 1 });
+            const after = await fixed[index].boundingBox();
+            expect(after!.y).toBeCloseTo(before[index]!.y, 0);
+        }
+        expect(await list.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+        expect(await list.evaluate(element => element.parentElement!.scrollTop)).toBe(0);
+        await page.screenshot({ path: test.info().outputPath(`removal-list-scrolled-${theme.name}.png`), animations: 'disabled' });
+        await page.keyboard.press('Tab');
+        await expect(cancel).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        expect(await stored()).toHaveLength(40);
+    });
+}
+
 for (const [mode, theme] of [['tabProjectCards', 0], ['tabProjectList', 1], ['tabProjectDenseList', 0]] as const) {
     for (const preference of ['enabled', 'disabled']) {
         test(`always confirms and preserves folders in ${mode} with individual confirmation ${preference}`, async () => {
@@ -176,10 +233,14 @@ for (const [mode, theme] of [['tabProjectCards', 0], ['tabProjectList', 1], ['ta
             await dialog.getByRole('button', { name: 'Remove', exact: true }).click();
             await result('Projects removed from list: 3.');
             expect(await stored()).toEqual([]);
-            await expect(page.getByRole('button', { name: 'Disable multi-select', exact: true })).toBeVisible();
-            await expect(page.getByText('0 selected', { exact: true })).toBeVisible();
-            await expect((await actions()).getByRole('button', { name: 'Remove from list (0)', exact: true })).toBeDisabled();
-            await page.keyboard.press('Escape');
+            await expect(page.getByTestId('projectsWelcome')).toBeVisible();
+            await expect(page.getByTestId('projectsTitle')).toHaveCount(0);
+            await expect(page.getByTestId('btnProjectAdd')).toHaveCount(0);
+            await expect(page.getByRole('button', { name: 'Actions', exact: true })).toHaveCount(0);
+            await expect(page.getByText('0 selected', { exact: true })).toHaveCount(0);
+            await page.setViewportSize({ width: 1024, height: 600 });
+            await expect(page.getByTestId('projectsWelcome').getByRole('button')).toHaveCount(6);
+            await page.screenshot({ path: test.info().outputPath('empty-projects-after-removal.png'), animations: 'disabled' });
             await expectFilesKept();
             const preferenceWrites = await app.evaluate(({ ipcMain }) => (ipcMain as typeof ipcMain & { confirmationPreferences: boolean[] }).confirmationPreferences);
             expect(preferenceWrites.every(value => value === (preference === 'enabled'))).toBe(true);
@@ -187,6 +248,9 @@ for (const [mode, theme] of [['tabProjectCards', 0], ['tabProjectList', 1], ['ta
             expect(Object.keys(tags.assignments)).toEqual([]);
             await page.reload(); await page.getByTestId('btnProjects').click();
             await expect(page.locator('li[data-project-path]')).toHaveCount(0);
+            await expect(page.getByTestId('projectsWelcome')).toBeVisible();
+            await expect(page.getByTestId('projectsTitle')).toHaveCount(0);
+            await expect(page.getByTestId('btnProjectAdd')).toHaveCount(0);
         });
     }
 }

@@ -162,16 +162,12 @@ vi.mock('react-i18next', () => {
         'projects:emptyState.welcome.heading': 'Add or create a project',
         'projects:emptyState.welcome.description':
             'Bring your existing work into Launcher, or start something new.',
-        'projects:emptyState.welcome.newProject.heading': 'New project',
-        'projects:emptyState.welcome.newProject.description':
-            'Choose a Godot version.\nLauncher downloads it if needed.',
         'projects:emptyState.welcome.newProject.action': 'Create project',
-        'projects:emptyState.welcome.existingProject.heading':
-            'Existing project',
-        'projects:emptyState.welcome.existingProject.description':
-            'Launcher finds the Godot\nversion each project needs.',
-        'projects:emptyState.welcome.existingProject.fromComputer':
-            'From this computer',
+        'projects:addProject.manager.title': 'From Godot Project Manager',
+        'projects:emptyState.welcome.tiles.scanTitle': 'Scan a folder',
+        'projects:emptyState.welcome.tiles.fileTitle': 'Choose a project file',
+        'projects:emptyState.welcome.existingProject.fromPublicGit':
+            'From public Git URL',
         'projects:emptyState.welcome.existingProject.fromGitHub': 'From GitHub',
         'common:buttons.copyPath': 'Copy path',
         'common:success': 'Copied',
@@ -211,6 +207,7 @@ describe('ProjectsView', () => {
         expect(html).toContain('role="alert"');
         expect(html).toContain('tags.loadFailed');
         expect(html).toContain('tags.retry');
+        expect(html).toContain('data-testid="btnProjectAdd"');
         expect(html).not.toContain('Add or create a project');
     });
 
@@ -218,13 +215,16 @@ describe('ProjectsView', () => {
         const html = renderToStaticMarkup(<ProjectsView />);
 
         expect(html).toContain('Add or create a project');
-        expect(html).toContain('New project');
-        expect(html).toContain('Existing project');
+        expect(html).toContain('From Godot Project Manager');
+        expect(html).toContain('Scan a folder');
         expect(html).toContain('Create project');
-        expect(html).toContain('From this computer');
+        expect(html).toContain('Choose a project file');
+        expect(html).toContain('From GitHub');
+        expect(html).toContain('From public Git URL');
         expect(html).not.toContain('/Users/test/GodotProjects');
         expect(html).not.toContain('placeholder="Search"');
-        expect(html).toContain('data-testid="btnProjectAdd"');
+        expect(html).not.toContain('data-testid="projectsTitle"');
+        expect(html).not.toContain('data-testid="btnProjectAdd"');
         expect(html).not.toContain('>New Project<');
         expect(html).not.toContain('No projects found');
     });
@@ -238,7 +238,7 @@ describe('ProjectsView', () => {
         expect(html).toContain('/Users/test/GodotProjects');
     });
 
-    it('keeps welcome choices and the Add menu available with an editor', () => {
+    it('keeps welcome choices available without a header with an editor', () => {
         releaseState.installedReleases = [{} as InstalledRelease];
 
         const html = renderToStaticMarkup(<ProjectsView />);
@@ -246,7 +246,8 @@ describe('ProjectsView', () => {
         expect(html).toContain('Add or create a project');
         expect(html).toContain('Create project');
         expect(html).not.toContain('placeholder="Search"');
-        expect(html).toContain('data-testid="btnProjectAdd"');
+        expect(html).not.toContain('data-testid="projectsTitle"');
+        expect(html).not.toContain('data-testid="btnProjectAdd"');
         expect(html).not.toContain('>New Project<');
     });
 
@@ -269,6 +270,7 @@ describe('ProjectsView', () => {
         expect(html).toContain('Add or create a project');
         expect(html).toContain('Create project');
         expect(html).not.toContain('placeholder="Search"');
+        expect(html).not.toContain('data-testid="projectsTitle"');
         expect(html).not.toContain('>New Project<');
     });
 });

@@ -57,6 +57,17 @@
                 "fromGitHub": "Z GitHub",
                 "fromPublicGit": "Z publicznego adresu URL Git",
                 "gitRequired": "Git jest wymagany, aby importować z GitHub"
+            },
+            "tiles": {
+                "createDescription": "Wybierz wersję Godot i rozpocznij nowy projekt.",
+                "godotDescription": "Przejrzyj projekty już zarejestrowane w Godot.",
+                "scanTitle": "Przeskanuj folder",
+                "scanDescription": "Znajdź projekty w wybranym folderze.",
+                "fileTitle": "Wybierz plik projektu",
+                "fileDescription": "Dodaj pojedynczy projekt za pomocą pliku project.godot.",
+                "githubDescription": "Przeglądaj połączone repozytoria GitHub.",
+                "publicGitDescription": "Sklonuj publiczne repozytorium za pomocą adresu URL Git.",
+                "gitRequired": "Importowanie repozytoriów wymaga Git."
             }
         },
         "addExistingProject": "Dodaj istniejący projekt",
@@ -347,7 +358,9 @@
             "details": "Szczegóły wymaganego edytora",
             "summary": "Wybrano: {{count}} · Pobrania: {{downloads}}",
             "download": "Pobieranie",
-            "missing": "Brak edytora"
+            "missing": "Brak edytora",
+            "downloadMissingEditors": "Pobierz brakujące edytory",
+            "addWithoutDownload": "Dodaj bez pobierania {{version}}"
         },
         "folder": {
             "sections": {
@@ -382,6 +395,19 @@
             "problems_other": "Problemy wyszukiwania: {{count}}",
             "moreProblems_one": "Dodatkowe problemy: {{count}}",
             "moreProblems_other": "Dodatkowe problemy: {{count}}"
+        },
+        "manager": {
+            "title": "Z menedżera projektów Godot",
+            "scanning": "Odczytywanie zarejestrowanych projektów",
+            "failed": "Nie można odczytać listy. Wybierz inny plik projects.cfg.",
+            "limited": "Pokazano tylko pierwsze 100 różnych projektów. Lista jest niepełna.",
+            "another": "Wybierz inną listę projektów",
+            "empty": "Nie znaleziono zarejestrowanych projektów.",
+            "choose": "Wybierz listę projektów",
+            "selectSource": "Wybierz listę projektów Godot do zaimportowania.",
+            "noSources": "Nie znaleziono listy Godot w typowych lokalizacjach.",
+            "support": "Obsługiwane są projekty Godot 4. Nie można dodać starszych lub niedostępnych projektów.",
+            "pickerFailed": "Nie można otworzyć okna wyboru pliku. Spróbuj ponownie."
         }
     },
     "messages": {

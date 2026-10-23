@@ -10,7 +10,7 @@ type BulkRemoveConfirmProps = {
     onConfirm: () => Promise<void>;
 };
 
-/** Confirms a fixed removal list without changing individual confirmation preferences.
+/** Keeps removal context and actions visible while the reviewed names scroll.
  * @param props - Reviewed targets, pending state and guarded batch actions.
  */
 export function ProjectBulkRemoveConfirm({
@@ -27,6 +27,7 @@ export function ProjectBulkRemoveConfirm({
             tone="warning"
             initialFocusRef={cancelRef}
             onRequestClose={onCancel}
+            bodyClassName="flex flex-col gap-4 overflow-hidden"
             footer={
                 <>
                     <button
@@ -56,19 +57,26 @@ export function ProjectBulkRemoveConfirm({
                 </>
             }
         >
-            <div className="flex flex-col gap-4 text-base">
+            <div className="shrink-0 space-y-2">
                 <p>{t('selection.removeMessage', { count: targets.length })}</p>
-                <ul className="list-disc space-y-1 pl-6">
-                    {targets.map((project) => (
-                        <li className="break-words" key={project.path}>
-                            {project.name}
-                        </li>
-                    ))}
-                </ul>
                 <p className="text-base-content/75">
                     {t('selection.removeDetail')}
                 </p>
             </div>
+            <ul
+                // biome-ignore lint/a11y/noNoninteractiveTabindex: The scrolling list needs keyboard access to review every project name.
+                tabIndex={0}
+                aria-label={t('selection.removeMessage', {
+                    count: targets.length,
+                })}
+                className="min-h-0 list-disc space-y-1 overflow-y-auto overscroll-contain pl-6 pr-2 focus-visible:outline-2 focus-visible:outline-primary"
+            >
+                {targets.map((project) => (
+                    <li className="break-words" key={project.path}>
+                        {project.name}
+                    </li>
+                ))}
+            </ul>
         </Dialog>
     );
 }

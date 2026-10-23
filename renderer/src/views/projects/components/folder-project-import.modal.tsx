@@ -3,6 +3,7 @@ import type {
     AddProjectToListResult,
     FolderProjectScanProgress,
     FolderProjectScanResult,
+    GodotProjectListResult,
     ProjectTagSelection,
 } from '@shared/contracts';
 import { FolderSearch } from 'lucide-react';
@@ -18,6 +19,7 @@ import {
 import { useRelease } from '../../../hooks/release.hook';
 import { projectsBridge, subscribeAppEvent } from '../../../renderer.bridge';
 import {
+    applyImportDownloadPreference,
     type LocalImportRow,
     prepareLocalImportRow,
 } from '../local-import-editor.model';
@@ -33,6 +35,7 @@ import { RemoteProjectReview } from './remote-project-review.component';
 
 type Props = {
     folder: string;
+    projectManager?: boolean;
     onClose: () => void;
     onChooseFolder: () => void;
     handleAddProjectResult: (
@@ -48,6 +51,7 @@ type Props = {
  */
 export function FolderProjectImportModal({
     folder,
+    projectManager = false,
     onClose,
     onChooseFolder,
     handleAddProjectResult,
@@ -60,6 +64,16 @@ export function FolderProjectImportModal({
         'installEditor',
         'createProject',
     ]);
+    /** Selects source-specific copy while retaining shared scan messages.
+     * @param key - Local source message name.
+     */
+    const sourceKey = (key: string) =>
+        projectManager &&
+        ['title', 'scanning', 'failed', 'limited', 'another', 'empty'].includes(
+            key,
+        )
+            ? `addProject.manager.${key}`
+            : `addProject.folder.${key}`;
     const { platform } = usePreferences();
     const { projects, addProject, codeEditorSettings } = useProjects();
     const { availableReleases, availablePrereleases } = useRelease();
@@ -70,7 +84,9 @@ export function FolderProjectImportModal({
     const catalogue = useRef({ availableReleases, availablePrereleases });
     catalogue.current = { availableReleases, availablePrereleases };
     const [scanId] = useState(() => crypto.randomUUID());
-    const started = useRef<Promise<FolderProjectScanResult> | null>(null);
+    const started = useRef<Promise<
+        FolderProjectScanResult | GodotProjectListResult
+    > | null>(null);
     const [step, setStep] = useState<
         'scanning' | 'review' | 'adding' | 'complete'
     >('scanning');
@@ -91,6 +107,7 @@ export function FolderProjectImportModal({
     const [outcomes, setOutcomes] = useState<
         RemoteProjectRegistrationOutcome[]
     >([]);
+    const [downloadMissingEditors, setDownloadMissingEditors] = useState(true);
     const [downloadsQueued, setDownloadsQueued] = useState(false);
     const [registration, setRegistration] = useState({ current: 0, total: 0 });
     const selectAllRef = useRef<HTMLInputElement>(null);
@@ -107,14 +124,21 @@ export function FolderProjectImportModal({
                 if (snapshot.scanId === scanId && live) setProgress(snapshot);
             },
         );
-        started.current ??= projectsBridge.scanProjectFolder(folder, scanId);
+        started.current ??= projectManager
+            ? projectsBridge.readGodotProjectList(folder, scanId)
+            : projectsBridge.scanProjectFolder(folder, scanId);
         void started.current
             .then(async (scan) => {
                 if (!live) return;
                 setResult(scan);
-                const inspected = await projectsBridge.inspectProjectImports(
-                    scan.projects.map((project) => project.projectFilePath),
-                );
+                const inspected =
+                    'inspections' in scan
+                        ? scan.inspections
+                        : await projectsBridge.inspectProjectImports(
+                              scan.projects.map(
+                                  (project) => project.projectFilePath,
+                              ),
+                          );
                 if (!live) return;
                 const nextRows = inspected.map((row) =>
                     prepareLocalImportRow(
@@ -157,10 +181,14 @@ export function FolderProjectImportModal({
             unsubscribe();
         };
         // Catalogue updates must not start another scan or replace reviewed choices.
-    }, [folder, scanId]);
+    }, [folder, scanId, projectManager]);
 
+    const effectiveRows = applyImportDownloadPreference(
+        rows,
+        downloadMissingEditors,
+    );
     const eligible = rows.filter((row) => !row.registered && !row.error);
-    const selectedRows = rows
+    const selectedRows = effectiveRows
         .filter(
             (row) =>
                 selected.has(row.projectFilePath) &&
@@ -200,6 +228,10 @@ export function FolderProjectImportModal({
 
     /** Stops the matching scan and lets its terminal response retain partial results. */
     const stop = async () => {
+        if (projectManager) {
+            onClose();
+            return;
+        }
         setStopping(true);
         try {
             await projectsBridge.cancelProjectFolderScan(scanId);
@@ -368,12 +400,12 @@ export function FolderProjectImportModal({
         result && (result.issues.length > 0 || result.omittedIssueCount > 0) ? (
             <details className="shrink-0 rounded-md bg-warning/10 px-3 py-2 text-sm text-warning-content dark:text-warning">
                 <summary className="cursor-pointer font-semibold">
-                    {t('addProject.folder.problems', {
+                    {t(sourceKey('problems'), {
                         count: result.issues.length + result.omittedIssueCount,
                     })}
                 </summary>
                 <ul
-                    aria-label={t('addProject.folder.problemList')}
+                    aria-label={t(sourceKey('problemList'))}
                     className="project-import-scroll mt-2 max-h-28 space-y-2 pr-3"
                 >
                     {result.issues.map((issue) => (
@@ -388,7 +420,7 @@ export function FolderProjectImportModal({
                     ))}
                     {result.omittedIssueCount > 0 && (
                         <li>
-                            {t('addProject.folder.moreProblems', {
+                            {t(sourceKey('moreProblems'), {
                                 count: result.omittedIssueCount,
                             })}
                         </li>
@@ -398,12 +430,17 @@ export function FolderProjectImportModal({
         ) : null;
     const notices = (
         <>
+            {projectManager && (
+                <p className="shrink-0 text-sm text-base-content/65">
+                    {t('addProject.manager.support')}
+                </p>
+            )}
             {result?.status === 'cancelled' && (
                 <p
                     role="status"
                     className="shrink-0 text-sm text-base-content/75"
                 >
-                    {t('addProject.folder.stopped')}
+                    {t(sourceKey('stopped'))}
                 </p>
             )}
             {result?.status === 'limited' && (
@@ -411,7 +448,7 @@ export function FolderProjectImportModal({
                     role="status"
                     className="shrink-0 text-sm text-warning-content dark:text-warning"
                 >
-                    {t('addProject.folder.limited')}
+                    {t(sourceKey('limited'))}
                 </p>
             )}
             {(error || result?.status === 'failed') && (
@@ -419,7 +456,7 @@ export function FolderProjectImportModal({
                     role="alert"
                     className="shrink-0 text-sm text-error-content dark:text-error"
                 >
-                    {t('addProject.folder.failed')}
+                    {t(sourceKey('failed'))}
                 </p>
             )}
             {scanProblems}
@@ -435,9 +472,11 @@ export function FolderProjectImportModal({
                 onClick={() => void stop()}
             >
                 {t(
-                    stopping
-                        ? 'addProject.folder.stopping'
-                        : 'addProject.folder.stop',
+                    projectManager
+                        ? 'common:buttons.cancel'
+                        : stopping
+                          ? sourceKey('stopping')
+                          : sourceKey('stop'),
                 )}
             </button>
         ) : step === 'adding' ? null : (
@@ -455,11 +494,15 @@ export function FolderProjectImportModal({
                     className="btn btn-ghost"
                     onClick={onChooseFolder}
                 >
-                    {t('addProject.folder.another')}
+                    {t(sourceKey('another'))}
                 </button>
                 <button
                     type="button"
-                    className="btn btn-ghost"
+                    className={
+                        step === 'complete'
+                            ? 'btn btn-primary'
+                            : 'btn btn-ghost'
+                    }
                     onClick={onClose}
                 >
                     {t(
@@ -488,9 +531,13 @@ export function FolderProjectImportModal({
         );
     return (
         <Dialog
-            title={t('addProject.folder.title')}
+            title={t(sourceKey('title'))}
             icon={<FolderSearch size={24} />}
-            testId="folderProjectImportDialog"
+            testId={
+                projectManager
+                    ? 'godotProjectManagerImportDialog'
+                    : 'folderProjectImportDialog'
+            }
             panelClassName="h-[85vh] max-w-5xl"
             bodyClassName="flex flex-col overflow-hidden"
             footer={footer}
@@ -505,19 +552,22 @@ export function FolderProjectImportModal({
             {step === 'scanning' ? (
                 <div role="status" className="flex min-h-0 flex-col gap-4">
                     <h2 className="font-semibold">
-                        {t('addProject.folder.scanning')}
+                        {t(sourceKey('scanning'))}
                     </h2>
                     <p className="break-all font-mono text-sm text-base-content/75">
                         {folder}
                     </p>
-                    <p>
-                        {t('addProject.folder.progress', {
+                    <p hidden={projectManager}>
+                        {t(sourceKey('progress'), {
                             folders: progress?.visitedDirectories ?? 0,
                             projects: progress?.projectCount ?? 0,
                         })}
                     </p>
-                    <p className="text-sm text-base-content/75">
-                        {t('addProject.folder.stopHint')}
+                    <p
+                        hidden={projectManager}
+                        className="text-sm text-base-content/75"
+                    >
+                        {t(sourceKey('stopHint'))}
                     </p>
                 </div>
             ) : step === 'adding' ? (
@@ -564,12 +614,14 @@ export function FolderProjectImportModal({
                         outcomes={outcomes}
                         editorDownloadsQueued={downloadsQueued}
                         cloneRecoveryError={null}
-                        description={t('addProject.folder.preserved')}
+                        description={t(sourceKey('preserved'))}
                         t={t}
                     />
                 </div>
             ) : (
                 <RemoteProjectReview
+                    downloadMissingEditors={downloadMissingEditors}
+                    onDownloadMissingEditorsChange={setDownloadMissingEditors}
                     tagSelections={tagSelections}
                     onTagsChange={(updates) =>
                         setTagSelections((current) => ({
@@ -579,7 +631,7 @@ export function FolderProjectImportModal({
                     }
                     repositoryPath={folder}
                     projects={result?.projects ?? []}
-                    rows={rows}
+                    rows={effectiveRows}
                     selectedPaths={selected}
                     allSelected={allSelected}
                     codeEditorChoices={codeEditors}
@@ -590,7 +642,7 @@ export function FolderProjectImportModal({
                     importNames={names}
                     conflicts={conflictsByPath}
                     headerContent={notices}
-                    emptyMessage={t('addProject.folder.empty')}
+                    emptyMessage={t(sourceKey('empty'))}
                     lockUnavailable
                     onToggleAll={(checked) =>
                         setSelected(

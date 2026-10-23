@@ -383,7 +383,7 @@ for (const theme of THEMES) {
                     data: { canceled: true, filePaths: [] },
                 }));
             });
-            await openScan();
+            await page.getByTestId('btnWelcomeScanFolder').click();
             await expect(
                 page.getByTestId('folderProjectImportDialog'),
             ).not.toBeVisible();
@@ -439,7 +439,8 @@ for (const theme of THEMES) {
                 name: 'Available',
                 exact: true,
             });
-            await expect(availableGroup.getByRole('checkbox')).toHaveCount(9);
+            await expect(availableGroup.getByRole('checkbox', { name: /^Include project:/ })).toHaveCount(8);
+            await expect(modal.getByRole('checkbox', { name: 'Select all projects', exact: true })).toBeVisible();
             await expect(
                 availableGroup.getByText('8', { exact: true }),
             ).toBeVisible();

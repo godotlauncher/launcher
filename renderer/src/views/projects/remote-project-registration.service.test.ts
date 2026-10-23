@@ -1,9 +1,13 @@
 import type {
     ProjectDetails,
+    ReleaseSummary,
     RemoteDiscoveredProject,
 } from '@shared/contracts';
 import { describe, expect, it, vi } from 'vitest';
-import type { LocalImportRow } from './local-import-editor.model';
+import {
+    applyImportDownloadPreference,
+    type LocalImportRow,
+} from './local-import-editor.model';
 import { registerResolvedRemoteProjectBatch } from './remote-project-registration.service';
 
 /** Builds a reviewed row without real editor or filesystem dependencies.
@@ -51,4 +55,49 @@ describe('registerResolvedRemoteProjectBatch tag assignments', () => {
         ]);
         expect(result.staleResults.has('stale')).toBe(true);
     });
+});
+
+it('registers the selected missing version without queuing editor repairs when downloads are disabled', async () => {
+    const original = row('missing');
+    original.editorActions = [
+        {
+            id: 'chosen-version',
+            kind: 'download',
+            version: '4.8-beta2',
+            download: { version: '4.8-beta2' } as ReleaseSummary,
+            options: {
+                resolution: 'add_missing',
+                editorChoiceId: 'chosen-version',
+            },
+        },
+    ];
+    original.editorActionId = 'chosen-version';
+    const addProject = vi.fn(async () => ({
+        success: true,
+        newProject: { path: 'missing' } as ProjectDetails,
+    }));
+    const result = await registerResolvedRemoteProjectBatch({
+        rows: applyImportDownloadPreference([original], false),
+        projects: [
+            {
+                projectFilePath: 'missing',
+                name: 'missing',
+            } as RemoteDiscoveredProject,
+        ],
+        codeEditorChoices: {},
+        addProject,
+        handleAddProjectResult: vi.fn(async () => true),
+        t: (key) => key,
+        onProgress: vi.fn(),
+        onOutcomesChange: vi.fn(),
+    });
+    expect(addProject).toHaveBeenCalledWith(
+        'missing',
+        expect.objectContaining({
+            resolution: 'add_missing',
+            editorChoiceId: 'chosen-version',
+        }),
+    );
+    expect(result.outcomes[0].status).toBe('added');
+    expect(result.repairRequests).toEqual([]);
 });
