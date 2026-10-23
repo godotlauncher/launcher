@@ -1,6 +1,7 @@
 import type {
     AddProjectOptions,
     AddProjectToListResult,
+    ProjectDetails,
 } from '@shared/contracts';
 import type { ProjectEditorRepairRequest } from '../../hooks/projects.hook';
 import type { LocalImportRow } from './local-import-editor.model';
@@ -24,6 +25,10 @@ type HandleAddProjectResult = (
 ) => Promise<boolean>;
 
 type RegisterResolvedRemoteProjectBatchArgs = {
+    onRegistered?: (
+        project: ProjectDetails,
+        row: LocalImportRow,
+    ) => Promise<void>;
     rows: LocalImportRow[];
     projects: RemoteProjectRegistrationOutcome['project'][];
     codeEditorChoices: Record<string, RemoteProjectCodeEditorChoice>;
@@ -45,6 +50,7 @@ export type ResolvedRemoteProjectBatchResult = {
  * @returns Final outcomes, stale rows to review again and grouped repairs.
  */
 export async function registerResolvedRemoteProjectBatch({
+    onRegistered,
     rows,
     projects,
     codeEditorChoices,
@@ -93,6 +99,7 @@ export async function registerResolvedRemoteProjectBatch({
             if (result.importConflict || result.editorResolution) {
                 staleResults.set(row.projectFilePath, result);
             } else if (result.success && result.newProject) {
+                await onRegistered?.(result.newProject, row);
                 await handleAddProjectResult(
                     row.projectFilePath,
                     result,

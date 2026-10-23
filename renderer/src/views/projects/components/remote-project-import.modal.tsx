@@ -1,6 +1,7 @@
 import type {
     AddProjectOptions,
     AddProjectToListResult,
+    ProjectTagSelection,
     RemoteDiscoveredProject,
     RemoteProjectImportProgress,
     RemoteProjectImportRequest,
@@ -21,6 +22,7 @@ import { Dialog } from '../../../components/dialog.component';
 import { GitHubConnectionFlow } from '../../../components/github-connection/github-connection-flow.component';
 import { useGit } from '../../../hooks/git.hook';
 import { usePreferences } from '../../../hooks/preferences.hook';
+import { useProjectEntryTags } from '../../../hooks/project-entry-tags.hook';
 import {
     type ProjectEditorRepairRequest,
     useProjects,
@@ -118,6 +120,10 @@ export const RemoteProjectImportModal: React.FC<
     const { preferences, platform } = usePreferences();
     const { addProject, codeEditorSettings, projects } = useProjects();
     const { availableReleases, availablePrereleases } = useRelease();
+    const { apply: applyEntryTags } = useProjectEntryTags();
+    const [tagSelections, setTagSelections] = useState<
+        Record<string, ProjectTagSelection[]>
+    >({});
 
     const {
         getIdentitySettings,
@@ -398,6 +404,7 @@ export const RemoteProjectImportModal: React.FC<
         setSelectedProjectPaths(new Set());
         setCodeEditorChoices({});
         setImportNames({});
+        setTagSelections({});
         setReviewRows([]);
         setEditorActionIds({});
         setReviewEditing(false);
@@ -655,6 +662,7 @@ export const RemoteProjectImportModal: React.FC<
             );
             setCodeEditorChoices({});
             setImportNames({});
+            setTagSelections({});
             setReviewRows([]);
             setEditorActionIds({});
             setReviewEditing(false);
@@ -715,6 +723,7 @@ export const RemoteProjectImportModal: React.FC<
             );
             setCodeEditorChoices({});
             setImportNames({});
+            setTagSelections({});
             setReviewRows([]);
             setEditorActionIds({});
             setReviewEditing(false);
@@ -872,6 +881,8 @@ export const RemoteProjectImportModal: React.FC<
             codeEditorChoices,
             addProject,
             handleAddProjectResult,
+            onRegistered: (project, row) =>
+                applyEntryTags(project, tagSelections[row.projectFilePath]),
             t,
             onProgress: (current, total) =>
                 setRegistrationProgress({ current, total }),
@@ -1189,6 +1200,10 @@ export const RemoteProjectImportModal: React.FC<
     } else if (step === 'review') {
         body = (
             <RemoteProjectReview
+                tagSelections={tagSelections}
+                onTagsChange={(updates) =>
+                    setTagSelections((current) => ({ ...current, ...updates }))
+                }
                 repositoryPath={repositoryPath}
                 projects={discoveredProjects}
                 rows={reviewRows}

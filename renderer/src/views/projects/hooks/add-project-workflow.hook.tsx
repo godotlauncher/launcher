@@ -7,6 +7,7 @@ import type {
     InstallReleaseResult,
     ProjectDetails,
     ProjectEditorSelectionExpectation,
+    ProjectTagSelection,
     ReleaseSummary,
 } from '@shared/contracts';
 import logger from 'electron-log';
@@ -15,6 +16,7 @@ import type React from 'react';
 import { useState } from 'react';
 import type { ConfirmButton } from '../../../components/confirm.component';
 import type { DialogTone } from '../../../components/dialog.component';
+import { useProjectEntryTags } from '../../../hooks/project-entry-tags.hook';
 import { appBridge, projectsBridge } from '../../../renderer.bridge.ts';
 import {
     ProjectEditorRecoveryActions,
@@ -26,7 +28,6 @@ import {
     prepareLocalImportRow,
 } from '../local-import-editor.model';
 import { findDownloadableProjectEditor } from '../project-editor-resolution.model.ts';
-import { getImportConflicts } from '../project-import-conflict.model';
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
@@ -72,6 +73,9 @@ type AddProjectWorkflowArgs = {
     showRecoveredCodeEditorConfigWarning: (recoveredFiles?: string[]) => void;
 };
 
+/** Reviews local imports and coordinates registration, editor repair and staged tags.
+ * @param args - Project operations, catalogues and application feedback callbacks.
+ */
 export function useAddProjectWorkflow({
     t,
     addingProject,
@@ -86,6 +90,7 @@ export function useAddProjectWorkflow({
     setProjectEditor,
     showRecoveredCodeEditorConfigWarning,
 }: AddProjectWorkflowArgs) {
+    const { apply: applyEntryTags } = useProjectEntryTags();
     const [localReview, setLocalReview] = useState<{
         rows: LocalImportRow[];
         existing: ProjectDetails[];
@@ -131,6 +136,7 @@ export function useAddProjectWorkflow({
      * @param editorChoiceId - Revalidated catalogue choice to retain while missing.
      * @param projectOptions - Registration choices to preserve while adding.
      * @param onResolution - Reopens local review when the selected action is stale.
+     * @param tagSelection - Staged tags retained for this registration.
      * @returns Whether the project was added before installation and repair.
      */
     const downloadEditorAndAddProject = async (
@@ -140,6 +146,7 @@ export function useAddProjectWorkflow({
         editorChoiceId: string | undefined,
         projectOptions: AddProjectOptions,
         onResolution?: (result: AddProjectToListResult) => Promise<boolean>,
+        tagSelection?: ProjectTagSelection[],
     ): Promise<boolean> => {
         const mono = getRequestedMono(result);
         const addMissingResult = await addProject(projectPath, {
@@ -161,6 +168,7 @@ export function useAddProjectWorkflow({
         }
 
         const addedProject = addMissingResult.newProject;
+        await applyEntryTags(addedProject, tagSelection);
         const installTarget = {
             projectPath,
             version: release.version,
@@ -438,12 +446,14 @@ export function useAddProjectWorkflow({
      * @param chosenNames - Names retained after a stale registration conflict.
      * @param refreshedResult - Current requirement returned by a rejected registration.
      * @param previousEditorId - Preserve a prior editor action when still eligible.
+     * @param tagSelection - Choices retained while reviewing a stale row.
      */
     const reviewLocalProjects = async (
         paths: string[],
         chosenNames: Record<string, string> = {},
         refreshedResult?: AddProjectToListResult,
         previousEditorId?: string,
+        tagSelection?: ProjectTagSelection[],
     ): Promise<LocalImportRow[]> => {
         const inspected = await projectsBridge.inspectProjectImports(paths);
         const rows = inspected.map((row) =>
@@ -465,6 +475,7 @@ export function useAddProjectWorkflow({
             ),
         );
         for (const row of rows) {
+            row.tagSelection = tagSelection;
             if (
                 previousEditorId &&
                 row.editorActions.some(
@@ -475,19 +486,13 @@ export function useAddProjectWorkflow({
         }
         const existing = await projectsBridge.getProjectsDetails();
         const platform = await appBridge.getPlatform();
-        if (
-            !getImportConflicts(rows, existing, platform).some(Boolean) &&
-            !rows.some((row) => row.editorResolution) &&
-            !refreshedResult
-        )
-            return rows;
         return new Promise((resolve) =>
             setLocalReview({ rows, existing, platform, resolve }),
         );
     };
 
     /** Registers one reviewed item, reopening the combined review if its choices became stale.
-     * @param row - Confirmed name and editor action.
+     * @param row - Confirmed name, editor action and staged tags.
      */
     const registerLocalRow = async (row: LocalImportRow): Promise<boolean> => {
         const action = row.editorActions.find(
@@ -504,8 +509,15 @@ export function useAddProjectWorkflow({
                 { [row.projectFilePath]: row.name },
                 result,
                 row.editorActionId,
+                row.tagSelection,
             );
-            return selected.length ? registerLocalRow(selected[0]) : false;
+            return selected.length
+                ? registerLocalRow({
+                      ...selected[0],
+                      tagSelection:
+                          selected[0].tagSelection ?? row.tagSelection,
+                  })
+                : false;
         };
         if (action.download && row.editorResolution) {
             return downloadEditorAndAddProject(
@@ -517,12 +529,15 @@ export function useAddProjectWorkflow({
                     : undefined,
                 options,
                 reviewChanged,
+                row.tagSelection,
             );
         }
         const result = await addProject(row.projectFilePath, options);
         if (result.importConflict || result.editorResolution) {
             return reviewChanged(result);
         }
+        if (result.success && result.newProject)
+            await applyEntryTags(result.newProject, row.tagSelection);
         return handleAddProjectResult(row.projectFilePath, result, options);
     };
 

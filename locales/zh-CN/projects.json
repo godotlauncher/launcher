@@ -131,6 +131,7 @@
         "codeEditorUnavailable": "未检测到 {{editor}}。"
     },
     "addProject": {
+        "tagSelected": "为所选项目添加标签 ({{count}})",
         "selectFile": "选择项目文件",
         "godotProject": "Godot 项目",
         "editorResolution": {

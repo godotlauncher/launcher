@@ -131,6 +131,7 @@
         "codeEditorUnavailable": "{{editor}} algılanmadı."
     },
     "addProject": {
+        "tagSelected": "Seçilenleri etiketle ({{count}})",
         "selectFile": "Proje Dosyasını Seç",
         "godotProject": "Godot Projesi",
         "editorResolution": {

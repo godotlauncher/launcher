@@ -12,6 +12,7 @@ type CreateProjectProjectSectionProps = {
     t: Translate;
     inputNameRef: React.RefObject<HTMLInputElement | null>;
     editorPicker?: React.ReactNode;
+    tagControl?: React.ReactNode;
     duplicate?: boolean;
     destinationStatus?: React.ReactNode;
     destinationAvailable?: boolean;
@@ -30,7 +31,7 @@ type CreateProjectProjectSectionProps = {
 };
 
 /**
- * Renders project identity, editor selection, and destination controls.
+ * Renders project identity, compact tags, editor selection and destination controls.
  *
  * @param props - Project field values, actions, and the reusable editor picker.
  * @returns The primary Create Project form section.
@@ -41,6 +42,7 @@ export const CreateProjectProjectSection: React.FC<
     t,
     inputNameRef,
     editorPicker,
+    tagControl,
     duplicate = false,
     destinationStatus,
     destinationAvailable = false,
@@ -71,18 +73,21 @@ export const CreateProjectProjectSection: React.FC<
                             : 'grid min-w-0 grid-cols-1 items-start gap-4 sm:grid-cols-2'
                     }
                 >
-                    <div className="min-w-0 flex-1">
-                        <TextField
-                            inputRef={inputNameRef}
-                            id="inputProjectName"
-                            testId="inputProjectName"
-                            label={t('project.nameplaceholder')}
-                            ariaLabel={t('project.title')}
-                            placeholder={t('project.nameplaceholder')}
-                            value={projectName}
-                            onChange={onProjectNameChange}
-                            error={projectNameError}
-                        />
+                    <div className="flex min-w-0 items-end gap-2">
+                        <div className="min-w-0 flex-1">
+                            <TextField
+                                inputRef={inputNameRef}
+                                id="inputProjectName"
+                                testId="inputProjectName"
+                                label={t('project.nameplaceholder')}
+                                ariaLabel={t('project.title')}
+                                placeholder={t('project.nameplaceholder')}
+                                value={projectName}
+                                onChange={onProjectNameChange}
+                                error={projectNameError}
+                            />
+                        </div>
+                        {tagControl}
                     </div>
                     {editorPicker && (
                         <FormField

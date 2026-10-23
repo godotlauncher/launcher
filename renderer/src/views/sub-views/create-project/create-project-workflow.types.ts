@@ -5,6 +5,7 @@ import type {
     CreateProjectSource,
     GitLfsTrackingPolicy,
     ProjectDetails,
+    ProjectTagSelection,
     RendererType,
 } from '@shared/contracts';
 import type { CreateProjectEditorSelection } from './create-project.model';
@@ -22,6 +23,7 @@ export type CreateProjectDrawerProps = {
 };
 
 export type CreateProjectSubmission = {
+    tagSelection?: ProjectTagSelection[];
     source?: CreateProjectSource;
     projectName: string;
     editorSelection: CreateProjectEditorSelection;

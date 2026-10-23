@@ -1,3 +1,4 @@
+import type { ProjectTagSelection } from '@shared/contracts';
 import {
     CircleCheck,
     CircleHelp,
@@ -15,6 +16,7 @@ import { SelectField } from '../../../components/ui/select-field.component';
 import { Tooltip } from '../../../components/ui/tooltip.component';
 import { TooltipIconButton } from '../../../components/ui/tooltip-icon-button.component';
 import type { LocalImportRow } from '../local-import-editor.model';
+import { ProjectImportBulkTagsAction } from './project-import-bulk-tags-action.component';
 
 export type ProjectImportReviewListItem = {
     id: string;
@@ -25,6 +27,8 @@ export type ProjectImportReviewListItem = {
     conflict?: string;
     path: string;
     secondaryControl?: ReactNode;
+    tagControl?: ReactNode;
+    tagSelection?: ProjectTagSelection[];
     disabled?: boolean;
 };
 
@@ -41,6 +45,7 @@ type ProjectImportReviewListProps = {
     draft: string;
     t: (key: string, options?: Record<string, unknown>) => string;
     selectAll?: SelectAllControl;
+    onTagsChange?: (updates: Record<string, ProjectTagSelection[]>) => void;
     groupByAvailability?: boolean;
     onToggle: (id: string, selected: boolean) => void;
     onEdit: (id: string) => void;
@@ -59,6 +64,7 @@ export function ProjectImportReviewList({
     draft,
     t,
     selectAll,
+    onTagsChange,
     groupByAvailability = false,
     onToggle,
     onEdit,
@@ -195,31 +201,34 @@ export function ProjectImportReviewList({
                     }
                 />
                 <div className="col-start-2 row-start-1 flex min-w-0 flex-col items-start gap-2">
-                    <EditableTextField
-                        value={item.name}
-                        draft={draft}
-                        editing={editingId === item.id}
-                        ariaLabel={t('addProject.conflicts.label')}
-                        ariaDescribedBy={
-                            hasNameConflict ? conflictId : undefined
-                        }
-                        editLabel={`${t('addProject.conflicts.edit')}: ${item.name}`}
-                        saveLabel={t('common:buttons.ok')}
-                        cancelLabel={t('common:buttons.cancel')}
-                        placeholder={t('addProject.conflicts.label')}
-                        maxLength={255}
-                        disabled={
-                            !item.selected ||
-                            item.conflict === 'folder' ||
-                            !!row.error
-                        }
-                        invalid={item.conflict === 'name'}
-                        className="pl-3"
-                        onEdit={() => onEdit(item.id)}
-                        onDraftChange={onDraftChange}
-                        onSave={() => onSave(item.id)}
-                        onCancel={onCancel}
-                    />
+                    <div className="flex w-full min-w-0 items-center gap-1">
+                        <EditableTextField
+                            value={item.name}
+                            draft={draft}
+                            editing={editingId === item.id}
+                            ariaLabel={t('addProject.conflicts.label')}
+                            ariaDescribedBy={
+                                hasNameConflict ? conflictId : undefined
+                            }
+                            editLabel={`${t('addProject.conflicts.edit')}: ${item.name}`}
+                            saveLabel={t('common:buttons.ok')}
+                            cancelLabel={t('common:buttons.cancel')}
+                            placeholder={t('addProject.conflicts.label')}
+                            maxLength={255}
+                            disabled={
+                                !item.selected ||
+                                item.conflict === 'folder' ||
+                                !!row.error
+                            }
+                            invalid={item.conflict === 'name'}
+                            className="pl-3"
+                            onEdit={() => onEdit(item.id)}
+                            onDraftChange={onDraftChange}
+                            onSave={() => onSave(item.id)}
+                            onCancel={onCancel}
+                        />
+                        {item.tagControl}
+                    </div>
                     {hasNameConflict && (
                         <p
                             id={conflictId}
@@ -377,7 +386,7 @@ export function ProjectImportReviewList({
                         {selectAll &&
                             (section.key === 'all' ||
                                 section.key === 'available') && (
-                                <li className="rounded-md bg-base-200/70 px-3 py-3">
+                                <li className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-base-200/70 px-3 py-3">
                                     <label className="flex items-center gap-4">
                                         <input
                                             ref={selectAll.inputRef}
@@ -392,6 +401,22 @@ export function ProjectImportReviewList({
                                         />
                                         {selectAll.label}
                                     </label>
+                                    {onTagsChange && items.length > 1 && (
+                                        <ProjectImportBulkTagsAction
+                                            items={items.map((item) => ({
+                                                id: item.id,
+                                                selection:
+                                                    item.tagSelection ?? [],
+                                                selected: item.selected,
+                                                disabled:
+                                                    !!item.disabled ||
+                                                    !!item.row.error ||
+                                                    !!item.row.registered ||
+                                                    item.conflict === 'folder',
+                                            }))}
+                                            onChange={onTagsChange}
+                                        />
+                                    )}
                                 </li>
                             )}
                         {section.items.map(renderItem)}

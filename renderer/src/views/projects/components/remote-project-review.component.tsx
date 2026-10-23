@@ -1,8 +1,12 @@
-import type { RemoteDiscoveredProject } from '@shared/contracts';
+import type {
+    ProjectTagSelection,
+    RemoteDiscoveredProject,
+} from '@shared/contracts';
 import type { TFunction } from 'i18next';
 import { Code2, FolderSearch } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { type RefObject, useEffect, useState } from 'react';
+import { ProjectEntryTagField } from '../../../components/project-tags/project-entry-tag-field.component';
 import { CopyBadge } from '../../../components/ui/copy-badge.component';
 import {
     SelectField,
@@ -17,6 +21,8 @@ import {
 } from './project-import-review-list.component';
 
 type RemoteProjectReviewProps = {
+    tagSelections: Record<string, ProjectTagSelection[]>;
+    onTagsChange: (updates: Record<string, ProjectTagSelection[]>) => void;
     importNames: Record<string, string>;
     editorActionIds: Record<string, string>;
     conflicts: Record<string, string | undefined>;
@@ -47,6 +53,8 @@ type RemoteProjectReviewProps = {
  * @param props - Inspected projects, current choices and controlled callbacks.
  */
 export function RemoteProjectReview({
+    tagSelections,
+    onTagsChange,
     repositoryPath,
     headerContent,
     emptyMessage,
@@ -107,6 +115,22 @@ export function RemoteProjectReview({
                     ? (row.directory ??
                       getProjectDirectoryFromFilePath(project.projectFilePath))
                     : project.relativePath,
+                tagSelection: tagSelections[project.projectFilePath] ?? [],
+                tagControl: (
+                    <ProjectEntryTagField
+                        selection={tagSelections[project.projectFilePath] ?? []}
+                        disabled={
+                            !selected ||
+                            unavailable ||
+                            !!row.error ||
+                            row.registered ||
+                            conflicts[project.projectFilePath] === 'folder'
+                        }
+                        onChange={(tags) =>
+                            onTagsChange({ [project.projectFilePath]: tags })
+                        }
+                    />
+                ),
                 secondaryControl: (
                     <SelectField
                         id={`selectRemoteProjectCodeEditor-${project.projectFilePath.replace(/[^a-zA-Z0-9_-]/g, '-')}`}
@@ -170,6 +194,7 @@ export function RemoteProjectReview({
                 >
                     <ProjectImportReviewList
                         items={items}
+                        onTagsChange={onTagsChange}
                         groupByAvailability={lockUnavailable}
                         editingId={editingId}
                         draft={draft}

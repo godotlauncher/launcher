@@ -2,6 +2,7 @@ import type { PublishedGitHubRepository } from '@shared/contracts';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GitHubConnectionDialog } from '../../components/github-connection/github-connection-dialog.component';
+import { ProjectEntryTagField } from '../../components/project-tags/project-entry-tag-field.component';
 import { Drawer } from '../../components/ui/drawer/drawer.component';
 import { WaitingForDialogOverlay } from '../../components/waiting-for-dialog-overlay.component';
 import { useAlerts } from '../../hooks/alerts.hook';
@@ -143,6 +144,7 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
               )
             : undefined;
     const continueDisabled =
+        !form.tagsReady ||
         workflow.closeDisabled ||
         form.projectName.trim() === '' ||
         form.projectNameAvailability !== 'available' ||
@@ -310,6 +312,15 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                                         t={t}
                                         duplicate={Boolean(sourceProject)}
                                         inputNameRef={inputNameRef}
+                                        tagControl={
+                                            <ProjectEntryTagField
+                                                selection={form.tagSelection}
+                                                onChange={form.setTagSelection}
+                                                disabled={
+                                                    workflow.submissionBusy
+                                                }
+                                            />
+                                        }
                                         editorPicker={
                                             !sourceProject && (
                                                 <CreateProjectEditorPicker

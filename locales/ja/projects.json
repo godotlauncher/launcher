@@ -131,6 +131,7 @@
         "codeEditorUnavailable": "{{editor}} が検出されませんでした。"
     },
     "addProject": {
+        "tagSelected": "選択したプロジェクトにタグを付ける ({{count}})",
         "selectFile": "プロジェクトファイルを選択",
         "godotProject": "Godotプロジェクト",
         "editorResolution": {
