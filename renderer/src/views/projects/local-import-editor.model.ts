@@ -2,6 +2,7 @@ import type {
     AddProjectOptions,
     EditorFlavor,
     ProjectImportInspection,
+    ProjectTagSelection,
     ReleaseSummary,
 } from '@shared/contracts';
 import { findDownloadableProjectEditor } from './project-editor-resolution.model';
@@ -17,6 +18,7 @@ export type LocalImportEditorAction = {
     download?: ReleaseSummary;
 };
 export type LocalImportRow = ProjectImportInspection & {
+    tagSelection?: ProjectTagSelection[];
     editorActions: LocalImportEditorAction[];
     editorActionId: string;
 };

@@ -4,7 +4,6 @@ import type {
     ProjectTagsSnapshot,
 } from '@shared/contracts';
 import {
-    getUniqueProjects,
     isSameProjectRegistration,
     runProjectBatch,
 } from './project-selection.model';
@@ -30,13 +29,13 @@ type TagBatchOptions = {
  * @param tagId - Catalogue tag whose membership is displayed.
  */
 export function getBulkTagMembership(
-    targets: ProjectDetails[],
+    targets: readonly Pick<ProjectDetails, 'path'>[],
     snapshot: ProjectTagsSnapshot,
     tagId: string,
 ) {
-    const unique = getUniqueProjects(targets);
-    const count = unique.filter((project) =>
-        snapshot.assignments[project.path]?.includes(tagId),
+    const unique = [...new Set(targets.map((project) => project.path))];
+    const count = unique.filter((path) =>
+        snapshot.assignments[path]?.includes(tagId),
     ).length;
     return {
         count,

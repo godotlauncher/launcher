@@ -2,6 +2,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { RemoteProjectImportModal } from './remote-project-import.modal';
 
+vi.mock('../../../hooks/project-entry-tags.hook', () => ({
+    useProjectEntryTags: () => ({ apply: vi.fn(), recovering: false }),
+}));
+
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key }),
 }));

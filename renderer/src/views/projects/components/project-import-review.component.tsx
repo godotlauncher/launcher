@@ -1,6 +1,7 @@
-import type { ProjectDetails } from '@shared/contracts';
-import { useState } from 'react';
+import type { ProjectDetails, ProjectTagSelection } from '@shared/contracts';
+import { useEffect, useRef, useState } from 'react';
 import { Dialog } from '../../../components/dialog.component';
+import { ProjectEntryTagField } from '../../../components/project-tags/project-entry-tag-field.component';
 import type { LocalImportRow } from '../local-import-editor.model';
 import { getImportConflicts } from '../project-import-conflict.model';
 import {
@@ -31,9 +32,13 @@ export function ProjectImportReview({
     const [editorIds, setEditorIds] = useState(
         rows.map((row) => row.editorActionId),
     );
+    const [tagSelections, setTagSelections] = useState<ProjectTagSelection[][]>(
+        rows.map((row) => row.tagSelection ?? []),
+    );
     const [names, setNames] = useState(rows.map((row) => row.name));
     const [skipped, setSkipped] = useState(new Set<number>());
     const [editing, setEditing] = useState<number | null>(null);
+    const selectAllRef = useRef<HTMLInputElement>(null);
     const [draft, setDraft] = useState('');
     const selected = rows.flatMap((row, index) =>
         skipped.has(index)
@@ -42,6 +47,7 @@ export function ProjectImportReview({
                   {
                       ...row,
                       name: names[index],
+                      tagSelection: tagSelections[index],
                       editorActionId: editorIds[index],
                   },
               ],
@@ -57,11 +63,44 @@ export function ProjectImportReview({
             selected,
             editorActionId: editorIds[index],
             conflict: selected ? conflicts[selectedIndex++] : undefined,
+            tagSelection: tagSelections[index],
+            tagControl: (
+                <ProjectEntryTagField
+                    selection={tagSelections[index]}
+                    disabled={
+                        !selected ||
+                        !!row.error ||
+                        row.registered ||
+                        conflicts[selectedIndex - 1] === 'folder'
+                    }
+                    onChange={(tags) =>
+                        setTagSelections((current) =>
+                            current.map((value, position) =>
+                                position === index ? tags : value,
+                            ),
+                        )
+                    }
+                />
+            ),
             path:
                 row.directory ??
                 row.projectFilePath.replace(/[\\/][^\\/]*$/, ''),
         };
     });
+
+    const eligible = items.filter(
+        (item) =>
+            !item.row.error &&
+            !item.row.registered &&
+            item.conflict !== 'folder',
+    );
+    const allSelected =
+        eligible.length > 0 && eligible.every((item) => item.selected);
+    useEffect(() => {
+        if (selectAllRef.current)
+            selectAllRef.current.indeterminate =
+                !allSelected && eligible.some((item) => item.selected);
+    }, [eligible, allSelected]);
 
     /** Saves the current inline name and returns to the compact display.
      * @param id - Stable row index being edited.
@@ -129,6 +168,34 @@ export function ProjectImportReview({
             </p>
             <ProjectImportReviewList
                 items={items}
+                selectAll={
+                    rows.length > 1
+                        ? {
+                              checked: allSelected,
+                              inputRef: selectAllRef,
+                              label: t('addProject.remote.review.selectAll'),
+                              onChange: (checked) =>
+                                  setSkipped(
+                                      new Set(
+                                          items
+                                              .filter(
+                                                  (item) =>
+                                                      !checked ||
+                                                      !eligible.includes(item),
+                                              )
+                                              .map((item) => Number(item.id)),
+                                      ),
+                                  ),
+                          }
+                        : undefined
+                }
+                onTagsChange={(updates) =>
+                    setTagSelections((current) =>
+                        current.map(
+                            (tags, index) => updates[String(index)] ?? tags,
+                        ),
+                    )
+                }
                 editingId={editing === null ? null : String(editing)}
                 draft={draft}
                 t={t}

@@ -1,8 +1,13 @@
-import type { ProjectDetails, RendererType } from '@shared/contracts';
+import type {
+    ProjectDetails,
+    ProjectTagSelection,
+    RendererType,
+} from '@shared/contracts';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFileSystem } from '../../../hooks/file-system.hook.tsx';
 import { usePreferences } from '../../../hooks/preferences.hook.tsx';
+import { useProjectTags } from '../../../hooks/project-tags.hook';
 import { useProjects } from '../../../hooks/projects.hook.tsx';
 import { useRelease } from '../../../hooks/release.hook.tsx';
 import { appBridge } from '../../../renderer.bridge.ts';
@@ -36,6 +41,24 @@ export function useCreateProjectForm(
 ) {
     const { t } = useTranslation('createProject');
     const releaseApi = useRelease();
+    const { snapshot: tagSnapshot } = useProjectTags();
+    const [tagSelection, setTagSelection] = useState<ProjectTagSelection[]>([]);
+    const tagsInitialised = useRef(false);
+    useEffect(() => {
+        if (!open) {
+            tagsInitialised.current = false;
+            return;
+        }
+        if (tagsInitialised.current || !tagSnapshot) return;
+        tagsInitialised.current = true;
+        setTagSelection(
+            sourceProject
+                ? (tagSnapshot.assignments[sourceProject.path] ?? []).map(
+                      (id) => ({ id }),
+                  )
+                : [],
+        );
+    }, [open, sourceProject, tagSnapshot]);
     const { projects } = useProjects();
     const { pathExists } = useFileSystem();
     const { preferences, platform } = usePreferences();
@@ -311,6 +334,14 @@ export function useCreateProjectForm(
 
     /** Restores the form values that were reset when the drawer opened. */
     const reset = (): void => {
+        tagsInitialised.current = Boolean(tagSnapshot);
+        setTagSelection(
+            sourceProject
+                ? (tagSnapshot?.assignments[sourceProject.path] ?? []).map(
+                      (id) => ({ id }),
+                  )
+                : [],
+        );
         setCopyEditorSettings(true);
         setCopySaveData(false);
         setEditorSelection(initialEditorSelection);
@@ -345,6 +376,9 @@ export function useCreateProjectForm(
     };
 
     return {
+        tagsReady: !sourceProject || tagSnapshot !== null,
+        tagSelection,
+        setTagSelection,
         sourceProject,
         copyEditorSettings,
         setCopyEditorSettings,

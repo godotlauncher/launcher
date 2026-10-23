@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAlerts } from '../../../hooks/alerts.hook';
 import { useAppNavigation } from '../../../hooks/app-navigation.hook';
+import { useProjectEntryTags } from '../../../hooks/project-entry-tags.hook';
 import { useProjects } from '../../../hooks/projects.hook';
 import { projectsBridge, subscribeAppEvent } from '../../../renderer.bridge';
 import {
@@ -51,6 +52,8 @@ export function useCreateProjectWorkflow(
 ) {
     const { t } = useTranslation(['createProject', 'common']);
     const { addAlert } = useAlerts();
+    const { apply: applyEntryTags, recovering: recoveringTags } =
+        useProjectEntryTags();
     const { openExternalLink } = useAppNavigation();
     const [copyProgress, setCopyProgress] =
         useState<ProjectCopyProgress | null>(null);
@@ -271,6 +274,12 @@ export function useCreateProjectWorkflow(
         } finally {
             copyJobRef.current = null;
         }
+
+        if (result.projectDetails)
+            await applyEntryTags(
+                result.projectDetails,
+                preparedSubmission.tagSelection,
+            );
 
         if (submission.source && result.projectDetails) {
             onDuplicateRegistered?.(result.projectDetails);
@@ -508,6 +517,7 @@ export function useCreateProjectWorkflow(
      * @returns A promise that resolves after preflight or creation handling.
      */
     const onCreateProject = async () => {
+        if (!form.tagsReady) return;
         if (publishToGitHub && !publication.publicationOptionsValid) return;
         if (!(await validateProjectDestination())) return;
 
@@ -519,6 +529,7 @@ export function useCreateProjectWorkflow(
             return;
         }
         const submission: CreateProjectSubmission = {
+            tagSelection: form.tagSelection.map((tag) => ({ ...tag })),
             source: form.sourceProject
                 ? {
                       projectPath: form.sourceProject.path,
@@ -650,6 +661,7 @@ export function useCreateProjectWorkflow(
         existingRepositoryDialog !== null;
 
     const createDisabled =
+        !form.tagsReady ||
         connectionOpen ||
         destinationCheck.status !== 'available' ||
         integrations.loadingTools ||
@@ -684,6 +696,7 @@ export function useCreateProjectWorkflow(
             checkingGitIdentity ||
             checkingProjectRepository,
         trapFocus:
+            !recoveringTags &&
             !connectionOpen &&
             gitIdentityDialogPage === null &&
             publicationFailure === null &&

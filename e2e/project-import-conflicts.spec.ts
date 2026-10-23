@@ -94,7 +94,7 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await expect(dialog.getByRole('heading')).toBeFocused();
     await expect(dialog.getByRole('heading')).toHaveCSS('outline-style', 'none');
     await expect(dialog.getByText('addProject.conflicts.badges.ready', { exact: true })).toHaveCount(0);
-    await expect(dialog.getByRole('listitem')).toHaveCount(4);
+    await expect(dialog.getByRole('checkbox', { name: /^Include project:/ })).toHaveCount(4);
     await expect(dialog.getByRole('button', { name: 'Copy path', exact: true })).toHaveCount(4);
     await expect(dialog.getByRole('img', { name: 'Name conflict', exact: true })).toHaveCount(3);
     await expect(dialog.getByRole('alert')).toHaveText(Array(3).fill(nameConflictMessage));
@@ -112,12 +112,12 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await expect(page.getByRole('tooltip')).toContainText('official');
     await expect(page.getByRole('tooltip')).toContainText('gdscript');
     await dialog.getByRole('heading').click();
-    await dialog.screenshot({ path: path.resolve('.internal-docs/import-conflicts/combined-review.png') });
-    await dialog.getByRole('checkbox').nth(3).uncheck();
-    await dialog.getByRole('checkbox').nth(2).uncheck();
+    await dialog.screenshot({ path: test.info().outputPath('combined-review.png') });
+    await dialog.getByRole('checkbox', { name: /^Include project:/ }).nth(3).uncheck();
+    await dialog.getByRole('checkbox', { name: /^Include project:/ }).nth(2).uncheck();
     await expect(dialog.getByRole('alert')).toHaveText([nameConflictMessage]);
     await dialog.locator('button[aria-haspopup="listbox"]').nth(1).click();
-    await dialog.screenshot({ path: path.resolve('.internal-docs/import-conflicts/resolution-menu.png') });
+    await dialog.screenshot({ path: test.info().outputPath('resolution-menu.png') });
     await page.getByRole('option', { name: 'Add With Missing Editor', exact: true }).click();
     await expect(dialog.getByText('Requested: 4.8 · Standard', { exact: true })).toHaveCount(4);
     await dialog.locator('button[aria-haspopup="listbox"]').nth(1).click();
@@ -138,7 +138,7 @@ test('uses compact conflict items for dropped files with inline editing, skippin
     await dialog.getByRole('button', { name: 'Edit name:', exact: true }).click();
     await expect(dialog.getByRole('alert')).toHaveCount(0);
     await name.fill('Launcher copy');
-    await dialog.screenshot({ path: path.resolve('.internal-docs/import-conflicts/compact-edit.png') });
+    await dialog.screenshot({ path: test.info().outputPath('compact-edit.png') });
     await name.press('Enter');
     await app.evaluate(({ ipcMain }) => {
         const state = globalThis as typeof globalThis & { importCalls: unknown[]; continueImport?: () => void };
@@ -208,7 +208,7 @@ for (const source of ['public-git-url', 'github'] as const) {
         await expect(page.getByRole('button', { name: 'Edit name: Same', exact: true })).toHaveCount(2);
         await expect(page.getByTestId('btnAddDiscoveredProjects')).toBeDisabled();
         await expect(page.getByRole('alert')).toHaveText([nameConflictMessage]);
-        await page.screenshot({ path: path.resolve(`.internal-docs/import-conflicts/${source}-name-conflict.png`) });
+        await page.screenshot({ path: test.info().outputPath(`${source}-name-conflict.png`) });
         const include = page.getByRole('checkbox', { name: 'Include project: Same', exact: true }).last();
         await include.uncheck();
         await expect(page.getByRole('alert')).toHaveCount(0);
@@ -221,7 +221,7 @@ for (const source of ['public-git-url', 'github'] as const) {
         await page.getByRole('button', { name: 'Edit name: Same', exact: true }).click();
         await name.fill('Remote copy two');
         await name.press('Enter');
-        await page.screenshot({ path: path.resolve('.internal-docs/import-conflicts/remote-review.png') });
+        await page.screenshot({ path: test.info().outputPath('remote-review.png') });
         await page.getByTestId('btnAddDiscoveredProjects').click();
         await expect.poll(async () => app.evaluate(() => (globalThis as typeof globalThis & { remoteImportCalls: unknown[] }).remoteImportCalls.length)).toBe(2);
         await page.getByRole('button', { name: 'Edit name: Remote copy two', exact: true }).click();

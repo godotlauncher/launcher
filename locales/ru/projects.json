@@ -131,6 +131,7 @@
         "codeEditorUnavailable": "{{editor}} не обнаружен."
     },
     "addProject": {
+        "tagSelected": "Добавить теги выбранным ({{count}})",
         "selectFile": "Выбрать файл проекта",
         "godotProject": "Проект Godot",
         "editorResolution": {

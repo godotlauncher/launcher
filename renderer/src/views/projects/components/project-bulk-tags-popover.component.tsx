@@ -12,25 +12,22 @@ import {
     type ProjectTagIntent,
 } from '../project-bulk-tags.model';
 
-type BulkTagsProps = {
-    targets: ProjectDetails[];
+type BulkTagsProps<T extends Pick<ProjectDetails, 'path'>> = {
+    targets: T[];
     anchor: ActionMenuAnchorRect;
     snapshot: ProjectTagsSnapshot | null;
     loadFailed: boolean;
     busy: boolean;
     onReload: () => Promise<void>;
-    onChange: (
-        targets: ProjectDetails[],
-        intent: ProjectTagIntent,
-    ) => Promise<boolean>;
+    onChange: (targets: T[], intent: ProjectTagIntent) => Promise<boolean>;
     onClose: (restoreFocus: boolean) => void;
     failure: { description: string; retry: () => Promise<boolean> } | null;
 };
 
-/** Edits tag membership immediately against one frozen project target set.
+/** Edits tag membership against one frozen target set using the caller's save policy.
  * @param props - Captured targets, saved tags and guarded mutation operations.
  */
-export function ProjectBulkTagsPopover({
+export function ProjectBulkTagsPopover<T extends Pick<ProjectDetails, 'path'>>({
     targets,
     anchor,
     snapshot,
@@ -40,7 +37,7 @@ export function ProjectBulkTagsPopover({
     onChange,
     onClose,
     failure,
-}: BulkTagsProps) {
+}: BulkTagsProps<T>) {
     const { t } = useTranslation(['projects', 'menus']);
     const panel = useRef<HTMLDialogElement>(null);
     const input = useRef<HTMLInputElement>(null);

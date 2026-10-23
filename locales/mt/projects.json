@@ -131,6 +131,7 @@
         "codeEditorUnavailable": "{{editor}} ma ġiex identifikat."
     },
     "addProject": {
+        "tagSelected": "Żid tags mal-magħżula ({{count}})",
         "selectFile": "Agħżel Fajl tal-Proġett",
         "godotProject": "Proġett Godot",
         "editorResolution": {

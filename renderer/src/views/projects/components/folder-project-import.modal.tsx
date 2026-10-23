@@ -3,12 +3,14 @@ import type {
     AddProjectToListResult,
     FolderProjectScanProgress,
     FolderProjectScanResult,
+    ProjectTagSelection,
 } from '@shared/contracts';
 import { FolderSearch } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog } from '../../../components/dialog.component';
 import { usePreferences } from '../../../hooks/preferences.hook';
+import { useProjectEntryTags } from '../../../hooks/project-entry-tags.hook';
 import {
     type ProjectEditorRepairRequest,
     useProjects,
@@ -61,6 +63,10 @@ export function FolderProjectImportModal({
     const { platform } = usePreferences();
     const { projects, addProject, codeEditorSettings } = useProjects();
     const { availableReleases, availablePrereleases } = useRelease();
+    const { apply: applyEntryTags } = useProjectEntryTags();
+    const [tagSelections, setTagSelections] = useState<
+        Record<string, ProjectTagSelection[]>
+    >({});
     const catalogue = useRef({ availableReleases, availablePrereleases });
     catalogue.current = { availableReleases, availablePrereleases };
     const [scanId] = useState(() => crypto.randomUUID());
@@ -219,6 +225,8 @@ export function FolderProjectImportModal({
             codeEditorChoices: codeEditors,
             addProject,
             handleAddProjectResult,
+            onRegistered: (project, row) =>
+                applyEntryTags(project, tagSelections[row.projectFilePath]),
             t,
             onProgress: (current, total) => setRegistration({ current, total }),
             onOutcomesChange: (next) => setOutcomes([...prior, ...next]),
@@ -562,6 +570,13 @@ export function FolderProjectImportModal({
                 </div>
             ) : (
                 <RemoteProjectReview
+                    tagSelections={tagSelections}
+                    onTagsChange={(updates) =>
+                        setTagSelections((current) => ({
+                            ...current,
+                            ...updates,
+                        }))
+                    }
                     repositoryPath={folder}
                     projects={result?.projects ?? []}
                     rows={rows}
