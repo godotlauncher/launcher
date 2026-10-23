@@ -358,7 +358,9 @@
             "details": "所需编辑器详情",
             "summary": "已选 {{count}} 项 · {{downloads}} 项下载",
             "download": "下载",
-            "missing": "缺少编辑器"
+            "missing": "缺少编辑器",
+            "downloadMissingEditors": "下载缺失的编辑器",
+            "addWithoutDownload": "添加但不下载 {{version}}"
         },
         "folder": {
             "sections": {

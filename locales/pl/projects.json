@@ -358,7 +358,9 @@
             "details": "Szczegóły wymaganego edytora",
             "summary": "Wybrano: {{count}} · Pobrania: {{downloads}}",
             "download": "Pobieranie",
-            "missing": "Brak edytora"
+            "missing": "Brak edytora",
+            "downloadMissingEditors": "Pobierz brakujące edytory",
+            "addWithoutDownload": "Dodaj bez pobierania {{version}}"
         },
         "folder": {
             "sections": {

@@ -626,7 +626,7 @@ test('Remote repository discovery lets users exclude projects before adding', as
     await modal.getByRole('button', { name: 'Clone repository' }).click();
 
     await expect(modal.getByText('Choose projects to add')).toBeVisible();
-    const checkboxes = modal.getByRole('checkbox');
+    const checkboxes = modal.getByRole('checkbox', { name: /^(Select all projects|Include project:)/ });
     await expect(checkboxes).toHaveCount(3);
     await expect(checkboxes.nth(0)).toBeChecked();
     await expect(checkboxes.nth(1)).toBeChecked();
@@ -1199,7 +1199,7 @@ test('GitHub repositories use the same multi-project review', async () => {
     await expect(
         modal.getByText('Exact: 4.3.2-stable · .NET', { exact: true }),
     ).toBeVisible();
-    await expect(modal.getByRole('checkbox')).toHaveCount(3);
+    await expect(modal.getByRole('checkbox', { name: /^(Select all projects|Include project:)/ })).toHaveCount(3);
     await expect(
         modal.getByTestId('selectRemoteProjectCodeEditor-0'),
     ).toContainText('Automatic detection');
@@ -1376,8 +1376,8 @@ test('Remote registration collects editor resolution inside the import modal', a
         .getByRole('button', { name: 'Clone repository' })
         .click();
     await expect(importModal.getByText('Choose projects to add')).toBeVisible();
-    await importModal.getByRole('checkbox').first().click();
-    await importModal.getByRole('checkbox').nth(2).click();
+    await importModal.getByRole('checkbox', { name: /^(Select all projects|Include project:)/ }).first().click();
+    await importModal.getByRole('checkbox', { name: /^(Select all projects|Include project:)/ }).nth(2).click();
     await expect(
         importModal.getByText('Requested: 4.4 · Standard', { exact: true }),
     ).toHaveCount(2);
@@ -1406,7 +1406,7 @@ test('Remote registration collects editor resolution inside the import modal', a
         }),
     ).toBeVisible();
     await mainPage.keyboard.press('Escape');
-    await importModal.getByRole('checkbox').nth(2).click();
+    await importModal.getByRole('checkbox', { name: /^(Select all projects|Include project:)/ }).nth(2).click();
     await expect(importModal.getByTestId('btnAddDiscoveredProjects')).toBeDisabled();
     await expect.poll(readRemoteAddProjectOptions).toEqual([]);
 });
@@ -1432,7 +1432,7 @@ test('Remote registration preserves the code editor through editor resolution re
         .getByRole('button', { name: 'Clone repository' })
         .click();
     await expect(importModal.getByText('Choose projects to add')).toBeVisible();
-    await importModal.getByRole('checkbox').nth(1).click();
+    await importModal.getByRole('checkbox', { name: /^(Select all projects|Include project:)/ }).nth(1).click();
     await importModal.getByTestId('selectRemoteProjectCodeEditor-1').click();
     await importModal.getByRole('option', { name: 'VSCodium' }).click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
@@ -1481,7 +1481,7 @@ test('Remote registration continues while Installs shows editor progress', async
     await importModal
         .getByRole('button', { name: 'Clone repository' })
         .click();
-    await importModal.getByRole('checkbox').nth(1).click();
+    await importModal.getByRole('checkbox', { name: /^(Select all projects|Include project:)/ }).nth(1).click();
     await importModal.getByTestId('btnAddDiscoveredProjects').click();
 
     await expect(

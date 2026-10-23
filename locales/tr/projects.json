@@ -358,7 +358,9 @@
             "details": "Gerekli editör ayrıntıları",
             "summary": "{{count}} seçili · {{downloads}} indirme",
             "download": "İndirme",
-            "missing": "Editör eksik"
+            "missing": "Editör eksik",
+            "downloadMissingEditors": "Eksik düzenleyicileri indir",
+            "addWithoutDownload": "{{version}} indirilmeden ekle"
         },
         "folder": {
             "sections": {

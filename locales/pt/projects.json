@@ -358,7 +358,9 @@
             "details": "Detalhes do editor necessário",
             "summary": "{{count}} selecionados · {{downloads}} transferências",
             "download": "Transferência",
-            "missing": "Editor em falta"
+            "missing": "Editor em falta",
+            "downloadMissingEditors": "Transferir os editores em falta",
+            "addWithoutDownload": "Adicionar sem transferir {{version}}"
         },
         "folder": {
             "sections": {

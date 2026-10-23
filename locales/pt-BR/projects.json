@@ -358,7 +358,9 @@
             "details": "Detalhes do editor necessário",
             "summary": "{{count}} selecionados · {{downloads}} downloads",
             "download": "Download",
-            "missing": "Editor ausente"
+            "missing": "Editor ausente",
+            "downloadMissingEditors": "Baixar os editores ausentes",
+            "addWithoutDownload": "Adicionar sem baixar {{version}}"
         },
         "folder": {
             "sections": {

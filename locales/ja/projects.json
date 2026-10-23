@@ -358,7 +358,9 @@
             "details": "必要なエディターの詳細",
             "summary": "選択: {{count}} · ダウンロード: {{downloads}}",
             "download": "ダウンロード",
-            "missing": "エディターなし"
+            "missing": "エディターなし",
+            "downloadMissingEditors": "不足しているエディターをダウンロード",
+            "addWithoutDownload": "{{version}} をダウンロードせずに追加"
         },
         "folder": {
             "sections": {

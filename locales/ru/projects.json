@@ -358,7 +358,9 @@
             "details": "Сведения о требуемом редакторе",
             "summary": "Выбрано: {{count}} · Загрузок: {{downloads}}",
             "download": "Загрузка",
-            "missing": "Нет редактора"
+            "missing": "Нет редактора",
+            "downloadMissingEditors": "Скачать недостающие редакторы",
+            "addWithoutDownload": "Добавить без скачивания {{version}}"
         },
         "folder": {
             "sections": {

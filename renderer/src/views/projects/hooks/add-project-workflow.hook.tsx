@@ -447,6 +447,7 @@ export function useAddProjectWorkflow({
      * @param refreshedResult - Current requirement returned by a rejected registration.
      * @param previousEditorId - Preserve a prior editor action when still eligible.
      * @param tagSelection - Choices retained while reviewing a stale row.
+     * @param downloadMissingEditors - Batch download permission retained during stale review.
      */
     const reviewLocalProjects = async (
         paths: string[],
@@ -454,6 +455,7 @@ export function useAddProjectWorkflow({
         refreshedResult?: AddProjectToListResult,
         previousEditorId?: string,
         tagSelection?: ProjectTagSelection[],
+        downloadMissingEditors = true,
     ): Promise<LocalImportRow[]> => {
         const inspected = await projectsBridge.inspectProjectImports(paths);
         const rows = inspected.map((row) =>
@@ -476,6 +478,7 @@ export function useAddProjectWorkflow({
         );
         for (const row of rows) {
             row.tagSelection = tagSelection;
+            row.downloadMissingEditors = downloadMissingEditors;
             if (
                 previousEditorId &&
                 row.editorActions.some(
@@ -510,6 +513,7 @@ export function useAddProjectWorkflow({
                 result,
                 row.editorActionId,
                 row.tagSelection,
+                row.downloadMissingEditors,
             );
             return selected.length
                 ? registerLocalRow({

@@ -358,7 +358,9 @@
             "details": "Détails de l’éditeur requis",
             "summary": "{{count}} sélectionnés · {{downloads}} téléchargements",
             "download": "Téléchargement",
-            "missing": "Éditeur manquant"
+            "missing": "Éditeur manquant",
+            "downloadMissingEditors": "Télécharger les éditeurs manquants",
+            "addWithoutDownload": "Ajouter sans télécharger {{version}}"
         },
         "folder": {
             "sections": {

@@ -439,7 +439,8 @@ for (const theme of THEMES) {
                 name: 'Available',
                 exact: true,
             });
-            await expect(availableGroup.getByRole('checkbox')).toHaveCount(9);
+            await expect(availableGroup.getByRole('checkbox', { name: /^Include project:/ })).toHaveCount(8);
+            await expect(modal.getByRole('checkbox', { name: 'Select all projects', exact: true })).toBeVisible();
             await expect(
                 availableGroup.getByText('8', { exact: true }),
             ).toBeVisible();

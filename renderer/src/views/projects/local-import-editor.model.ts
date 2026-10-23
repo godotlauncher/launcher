@@ -18,6 +18,7 @@ export type LocalImportEditorAction = {
     download?: ReleaseSummary;
 };
 export type LocalImportRow = ProjectImportInspection & {
+    downloadMissingEditors?: boolean;
     tagSelection?: ProjectTagSelection[];
     editorActions: LocalImportEditorAction[];
     editorActionId: string;
@@ -104,4 +105,24 @@ export function prepareLocalImportRow(
         editorActionId:
             actions.find((a) => a.recommended)?.id ?? actions[0]?.id ?? '',
     };
+}
+
+/** Applies the import's download choice without changing selected versions or installed editors.
+ * @param rows - Original inspected rows with their available editor actions.
+ * @param downloadMissingEditors - Whether this import may download missing editors.
+ * @returns Review/registration rows whose download actions match the batch choice.
+ */
+export function applyImportDownloadPreference(
+    rows: LocalImportRow[],
+    downloadMissingEditors: boolean,
+): LocalImportRow[] {
+    return rows.map((row) => ({
+        ...row,
+        downloadMissingEditors,
+        editorActions: row.editorActions.map((action) =>
+            !downloadMissingEditors && action.kind === 'download'
+                ? { ...action, kind: 'missing' as const, download: undefined }
+                : action,
+        ),
+    }));
 }

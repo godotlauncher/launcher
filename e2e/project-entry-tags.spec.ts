@@ -2,8 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { _electron, type ElectronApplication, expect, type Locator, type Page, test } from './support/electron.fixture';
 import { getMainWindow } from './splashscreen/getMainWindow';
-import { SAMPLE_PROJECTS } from './support/e2e-fixture-data';
-import { createFixtureHome, prepareAppWithStubbedData, setAppLanguage, stubGitIdentitySettings } from './support/e2e-fixture-runtime';
+import { SAMPLE_AVAILABLE_RELEASES, SAMPLE_PROJECTS } from './support/e2e-fixture-data';
+import { THEMES } from './support/e2e-fixture-theme';
+import { applyTheme, createFixtureHome, prepareAppWithStubbedData, setAppLanguage, stubGitIdentitySettings } from './support/e2e-fixture-runtime';
 
 let app: ElectronApplication;
 let page: Page;
@@ -88,18 +89,20 @@ async function savedTags() {
     return JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'project-tags.json'), 'utf8').catch(() => '{"tags":[],"assignments":{}}')) as { tags: { id: string; name: string }[]; assignments: Record<string, string[]> };
 }
 
-/** Opens a real import review through its existing entry point.
+/** Opens import review, dropping on the heading to avoid project-row drag handlers.
  * @param route - User-facing source to exercise.
  */
 async function openImport(route: string) {
     if (route === 'drop') {
         const cdp = await page.context().newCDPSession(page);
         const data = { items: [], files, dragOperationsMask: 1 };
-        await cdp.send('Input.dispatchDragEvent', { type: 'dragEnter', x: 400, y: 300, data });
-        await cdp.send('Input.dispatchDragEvent', { type: 'drop', x: 400, y: 300, data });
+        const target = await page.getByTestId('projectsTitle').boundingBox();
+        const point = { x: target!.x + target!.width / 2, y: target!.y + target!.height / 2 };
+        await cdp.send('Input.dispatchDragEvent', { type: 'dragEnter', ...point, data });
+        await cdp.send('Input.dispatchDragEvent', { type: 'drop', ...point, data });
     } else {
         await page.getByTestId('btnProjectAdd').click();
-        await page.getByTestId({ file: 'btnAddProjectFromComputer', folder: 'btnAddProjectScanFolder', public: 'btnAddProjectPublicGit', github: 'btnAddProjectGitHub' }[route]!).click();
+        await page.getByTestId({ file: 'btnAddProjectFromComputer', folder: 'btnAddProjectScanFolder', godot: 'btnAddProjectGodotProjectManager', public: 'btnAddProjectPublicGit', github: 'btnAddProjectGitHub' }[route]!).click();
         if (route === 'public' || route === 'github') {
             const modal = page.getByTestId('remoteProjectImportDialog');
             if (route === 'public') {
@@ -113,9 +116,162 @@ async function openImport(route: string) {
             await modal.getByRole('button', { name: 'Clone repository', exact: true }).click();
         }
     }
-    const review = route === 'folder' ? page.getByTestId('folderProjectImportDialog') : route === 'public' || route === 'github' ? page.getByTestId('remoteProjectImportDialog') : page.getByRole('dialog', { name: 'Review project imports', exact: true });
+    const review = route === 'godot' ? page.getByTestId('godotProjectManagerImportDialog') : route === 'folder' ? page.getByTestId('folderProjectImportDialog') : route === 'public' || route === 'github' ? page.getByTestId('remoteProjectImportDialog') : page.getByRole('dialog', { name: 'Review project imports', exact: true });
     await expect(review.getByTestId('btnProjectTags').first()).toBeVisible();
     return review;
+}
+
+/** Supplies missing and installed editor choices and records all download requests.
+ * @param stale - Reject the first registration to exercise review re-entry.
+ */
+async function stubDownloadPreference(stale = false) {
+    await app.evaluate(({ ipcMain }, injected) => {
+        const state = globalThis as typeof globalThis & { downloadRequests: number; downloadRegistrations: { file: string; options: unknown }[]; rejectFirst: boolean };
+        state.downloadRequests = 0;
+        state.downloadRegistrations = [];
+        state.rejectFirst = injected.stale;
+        const result = (data: unknown) => ({ success: true, data });
+        const inspect = (paths: string[]) => paths.map(file => ({
+            projectFilePath: file, name: `Imported ${injected.files.indexOf(file)}`, registered: false,
+            ...(injected.files.indexOf(file) === 1 ? { editor: injected.projects[1].release } : {
+                editorRequest: { kind: 'exact', channel: 'official', flavor: 'gdscript', base_version: '4.7', version: injected.release.version },
+                editorResolution: {
+                    requested: { kind: 'exact', channel: 'official', flavor: 'gdscript', base_version: '4.7', version: injected.release.version },
+                    choices: [{ id: 'wanted-version', version: injected.release.version, source: 'official', flavor: 'gdscript', installed: false, recommended: true, prerelease: false, release: injected.release }],
+                },
+            }),
+        }));
+        const scan = { scanId: 'downloads', folder: injected.home, status: 'complete', projects: injected.files.map((projectFilePath, index) => ({ projectFilePath, name: `Imported ${index}`, relativePath: `game-${index}/project.godot`, detectedEditor: null })), inspections: inspect(injected.files), issues: [], omittedIssueCount: 0, visitedDirectories: 0, visitedEntries: 0 };
+        const replacements: Record<string, (...args: any[]) => unknown> = {
+            'projects.inspectProjectImports': (_event, paths: string[]) => result(inspect(paths)),
+            'projects.scanProjectFolder': () => result(scan),
+            'projects.discoverGodotProjectLists': () => result([`${injected.home}/projects.cfg`]),
+            'projects.readGodotProjectList': () => result(scan),
+            'projects.addProject': (_event, file: string, options: unknown) => {
+                state.downloadRegistrations.push({ file, options });
+                if (state.rejectFirst) { state.rejectFirst = false; return result({ success: false, importConflict: 'name' }); }
+                return result({ success: true, newProject: injected.projects[injected.files.indexOf(file)], projects: injected.projects });
+            },
+            'editorInstalls.installEditor': () => { state.downloadRequests++; return result({ success: false }); },
+        };
+        for (const [channel, handler] of Object.entries(replacements)) { ipcMain.removeHandler(channel); ipcMain.handle(channel, handler); }
+    }, { files, home, projects: SAMPLE_PROJECTS, release: SAMPLE_AVAILABLE_RELEASES[0], stale });
+}
+
+for (const route of ['file', 'drop', 'folder', 'godot', 'public', 'github']) {
+    test(`can import through ${route} with all editor downloads disabled`, async () => {
+        await stubDownloadPreference();
+        await applyTheme(page, THEMES[route === 'folder' ? 1 : 0]);
+        await page.setViewportSize({ width: 1024, height: 600 });
+        const review = await openImport(route);
+        const toggle = review.getByRole('checkbox', { name: 'Download missing editors', exact: true });
+        await expect(toggle).toBeChecked();
+        await expect(review.getByText(/Downloads: 1/, { exact: false })).toBeVisible();
+        await toggle.uncheck();
+        await expect(review.getByText(/Downloads: 0/, { exact: false })).toBeVisible();
+        const editor = review.getByRole('button', { name: /^Godot Editor: Imported 0:/ });
+        await editor.click();
+        await expect(page.getByRole('option', { name: `Add without downloading ${SAMPLE_AVAILABLE_RELEASES[0].version}`, exact: true })).toBeVisible();
+        await page.keyboard.press('Escape');
+        await toggle.check();
+        await expect(review.getByText(/Downloads: 1/, { exact: false })).toBeVisible();
+        await toggle.uncheck();
+        await page.screenshot({ path: test.info().outputPath(`downloads-off-${route}.png`), animations: 'disabled' });
+        await review.getByRole('button', { name: /^Add (?:selected )?projects/i }).click();
+        if (route === 'file' || route === 'drop') await expect(review).not.toBeVisible();
+        else {
+            await expect(review.getByText('Project import complete', { exact: true })).toBeVisible();
+            await expect(review.getByRole('button', { name: 'Done', exact: true })).toBeVisible();
+            await page.screenshot({ path: test.info().outputPath(`import-done-${route}.png`), animations: 'disabled' });
+            await review.getByRole('button', { name: 'Done', exact: true }).click();
+        }
+        const recorded = await app.evaluate(() => {
+            const state = globalThis as typeof globalThis & { downloadRequests: number; downloadRegistrations: { file: string; options: unknown }[] };
+            return { requests: state.downloadRequests, rows: state.downloadRegistrations };
+        });
+        expect(recorded.requests).toBe(0);
+        expect(recorded.rows).toHaveLength(route === 'file' ? 1 : 3);
+        expect(recorded.rows[0].options).toMatchObject({ resolution: 'add_missing', editorChoiceId: 'wanted-version' });
+        if (route !== 'file') expect(recorded.rows[1].options).not.toHaveProperty('resolution');
+        if (route === 'file') {
+            const next = await openImport('file');
+            await expect(next.getByRole('checkbox', { name: 'Download missing editors', exact: true })).toBeChecked();
+        }
+    });
+}
+
+test('keeps editor downloads disabled when a single-file import needs review again', async () => {
+    await stubDownloadPreference(true);
+    let review = await openImport('file');
+    await review.getByRole('checkbox', { name: 'Download missing editors', exact: true }).uncheck();
+    await review.getByRole('button', { name: 'Add projects', exact: true }).click();
+    review = page.getByRole('dialog', { name: 'Review project imports', exact: true });
+    await expect(review.getByRole('checkbox', { name: 'Download missing editors', exact: true })).not.toBeChecked();
+    await expect(review.getByText(/Downloads: 0/, { exact: false })).toBeVisible();
+    await review.getByRole('button', { name: 'Add projects', exact: true }).click();
+    await expect(review).not.toBeVisible();
+    expect(await app.evaluate(() => (globalThis as typeof globalThis & { downloadRequests: number }).downloadRequests)).toBe(0);
+});
+
+for (const theme of THEMES) {
+    for (const route of ['file', 'drop', 'folder', 'godot', 'public', 'github']) {
+        test(`keeps bulk controls visible while scrolling ${route} imports (${theme.name})`, async () => {
+            files = Array.from({ length: 13 }, (_, index) => path.join(home, 'long-review', `game-${index}`, 'project.godot'));
+            for (const file of files) {
+                await fs.mkdir(path.dirname(file), { recursive: true });
+                await fs.writeFile(file, 'config_version=5\n[application]\nconfig/name="Long review"\n');
+            }
+            await app.evaluate(({ ipcMain }, injected) => {
+                const result = (data: unknown) => ({ success: true, data });
+                const discovered = injected.files.map((projectFilePath, index) => ({ projectFilePath, name: `Bulk Import ${index}`, relativePath: `game-${index}/project.godot`, detectedEditor: null }));
+                const inspections = injected.files.map((projectFilePath, index) => ({
+                    projectFilePath, name: `Bulk Import ${index}`, editor: injected.editor,
+                    registered: injected.grouped && index === 11,
+                    error: injected.grouped && index === 12 ? 'Unavailable project' : undefined,
+                }));
+                const scan = { scanId: 'long-review', folder: injected.home, status: 'complete', projects: discovered, inspections, issues: [], omittedIssueCount: 0, visitedDirectories: 0, visitedEntries: 0 };
+                const replacements: Record<string, (...args: any[]) => unknown> = {
+                    'app.openFileDialog': () => result({ canceled: false, filePaths: injected.route === 'folder' ? [injected.home] : injected.files }),
+                    'projects.inspectProjectImports': () => result(inspections),
+                    'projects.scanProjectFolder': () => result(scan),
+                    'projects.discoverGodotProjectLists': () => result([`${injected.home}/projects.cfg`]),
+                    'projects.readGodotProjectList': () => result(scan),
+                    'projects.importRemoteProject': () => result({ ok: true, jobId: 'long-review', repositoryPath: injected.home, projects: discovered, hasSubmodules: false }),
+                };
+                for (const [channel, handler] of Object.entries(replacements)) { ipcMain.removeHandler(channel); ipcMain.handle(channel, handler); }
+            }, { files, home, route, grouped: route === 'folder' || route === 'godot', editor: SAMPLE_PROJECTS[0].release });
+            await applyTheme(page, theme);
+            await page.setViewportSize({ width: 1024, height: 600 });
+            const review = await openImport(route);
+            const select = review.getByRole('checkbox', { name: 'Select all projects', exact: true });
+            const count = route === 'folder' || route === 'godot' ? 11 : 13;
+            const tag = review.getByRole('button', { name: `Tag selected (${count})`, exact: true });
+            await expect(select).toBeChecked();
+            const beforeSelect = await select.boundingBox();
+            const beforeTag = await tag.boundingBox();
+            const list = review.getByRole('region', { name: 'Choose projects to add', exact: true });
+            await list.evaluate(element => { element.scrollTop = element.scrollHeight; });
+            await expect.poll(() => list.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+            await expect(list.getByRole('listitem').last()).toBeInViewport({ ratio: 1 });
+            await expect(select).toBeInViewport({ ratio: 1 });
+            await expect(tag).toBeInViewport({ ratio: 1 });
+            expect((await select.boundingBox())!.y).toBeCloseTo(beforeSelect!.y, 0);
+            expect((await tag.boundingBox())!.y).toBeCloseTo(beforeTag!.y, 0);
+            await tag.click();
+            const bulk = page.getByRole('dialog', { name: 'Bulk edit tags', exact: true });
+            await bulk.getByRole('searchbox').fill('Pinned controls');
+            await bulk.getByRole('searchbox').press('Enter');
+            await expect(bulk.getByRole('checkbox', { name: 'Pinned controls', exact: true })).toBeChecked();
+            await page.keyboard.press('Escape');
+            await expect(tag).toBeFocused();
+            await select.uncheck();
+            await expect(review.getByRole('button', { name: 'Tag selected (0)', exact: true })).toBeDisabled();
+            await select.check();
+            await expect(tag).toBeEnabled();
+            expect((await savedTags()).tags).toHaveLength(0);
+            await page.screenshot({ path: test.info().outputPath(`fixed-import-controls-${route}-${theme.name}.png`), animations: 'disabled' });
+        });
+    }
 }
 
 for (const route of ['file', 'drop', 'folder', 'public', 'github']) {

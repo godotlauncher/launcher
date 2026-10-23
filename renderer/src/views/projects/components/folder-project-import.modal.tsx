@@ -19,6 +19,7 @@ import {
 import { useRelease } from '../../../hooks/release.hook';
 import { projectsBridge, subscribeAppEvent } from '../../../renderer.bridge';
 import {
+    applyImportDownloadPreference,
     type LocalImportRow,
     prepareLocalImportRow,
 } from '../local-import-editor.model';
@@ -106,6 +107,7 @@ export function FolderProjectImportModal({
     const [outcomes, setOutcomes] = useState<
         RemoteProjectRegistrationOutcome[]
     >([]);
+    const [downloadMissingEditors, setDownloadMissingEditors] = useState(true);
     const [downloadsQueued, setDownloadsQueued] = useState(false);
     const [registration, setRegistration] = useState({ current: 0, total: 0 });
     const selectAllRef = useRef<HTMLInputElement>(null);
@@ -181,8 +183,12 @@ export function FolderProjectImportModal({
         // Catalogue updates must not start another scan or replace reviewed choices.
     }, [folder, scanId, projectManager]);
 
+    const effectiveRows = applyImportDownloadPreference(
+        rows,
+        downloadMissingEditors,
+    );
     const eligible = rows.filter((row) => !row.registered && !row.error);
-    const selectedRows = rows
+    const selectedRows = effectiveRows
         .filter(
             (row) =>
                 selected.has(row.projectFilePath) &&
@@ -492,7 +498,11 @@ export function FolderProjectImportModal({
                 </button>
                 <button
                     type="button"
-                    className="btn btn-ghost"
+                    className={
+                        step === 'complete'
+                            ? 'btn btn-primary'
+                            : 'btn btn-ghost'
+                    }
                     onClick={onClose}
                 >
                     {t(
@@ -610,6 +620,8 @@ export function FolderProjectImportModal({
                 </div>
             ) : (
                 <RemoteProjectReview
+                    downloadMissingEditors={downloadMissingEditors}
+                    onDownloadMissingEditorsChange={setDownloadMissingEditors}
                     tagSelections={tagSelections}
                     onTagsChange={(updates) =>
                         setTagSelections((current) => ({
@@ -619,7 +631,7 @@ export function FolderProjectImportModal({
                     }
                     repositoryPath={folder}
                     projects={result?.projects ?? []}
-                    rows={rows}
+                    rows={effectiveRows}
                     selectedPaths={selected}
                     allSelected={allSelected}
                     codeEditorChoices={codeEditors}

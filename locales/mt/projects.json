@@ -358,7 +358,9 @@
             "details": "Dettalji tal-editur meħtieġ",
             "summary": "{{count}} magħżula · {{downloads}} downloads",
             "download": "Niżżel",
-            "missing": "Editur nieqes"
+            "missing": "Editur nieqes",
+            "downloadMissingEditors": "Niżżel l-edituri neqsin",
+            "addWithoutDownload": "Żid mingħajr ma tniżżel {{version}}"
         },
         "folder": {
             "sections": {
