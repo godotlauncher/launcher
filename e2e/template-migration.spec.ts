@@ -7,7 +7,7 @@ import {
     type Locator,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import type {
     ImportedTemplateInventory,
     ProjectDetails,

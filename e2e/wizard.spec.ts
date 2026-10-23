@@ -7,7 +7,7 @@ import {
     type Locator,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import { createFixtureHome } from './support/e2e-fixture-runtime';
 import { mountWizardFixture } from './support/wizard-fixture.util';

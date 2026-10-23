@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { _electron, type ElectronApplication, expect, type Page, test } from '@playwright/test';
+import { _electron, type ElectronApplication, expect, type Page, test } from './support/electron.fixture';
 import type { AppUpdateMessage } from '@shared/contracts';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import { SAMPLE_PREFS } from './support/e2e-fixture-data';
@@ -115,7 +115,7 @@ test('keeps downloading and ready state across dismissal, navigation and late ch
     await page.getByTestId('btnSettings').click();
     await expect(panel).not.toBeVisible();
     await page.getByTestId('tabUpdates').click();
-    await expect(page.getByRole('status')).toContainText('Downloading update: 55%');
+    await expect(page.getByRole('tabpanel').getByRole('status')).toContainText('Downloading update: 55%');
     await expect(page.getByRole('button', { name: 'Check for updates', exact: true })).toBeEnabled();
     await expect(page.getByTestId('chkReceiveBetaUpdates')).toBeEnabled();
     await page.getByTestId('btnProjects').click();

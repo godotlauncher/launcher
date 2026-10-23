@@ -7,7 +7,7 @@ import {
     type Locator,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import type { FolderProjectScanResult } from '@shared/contracts';
 import { getMainWindow } from './splashscreen/getMainWindow';
 import {

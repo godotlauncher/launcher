@@ -1,4 +1,4 @@
-import { _electron, expect, test, type ElectronApplication, type Page } from '@playwright/test';
+import { _electron, expect, test, type ElectronApplication, type Page } from './support/electron.fixture';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createFixtureHome, setAppLanguage } from './support/e2e-fixture-runtime';

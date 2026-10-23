@@ -1,5 +1,13 @@
 import { vi } from 'vitest';
 
+// Scenario-specific mocks may replace this default. Restoring globals must never
+// restore a live fetch implementation in a unit test.
+globalThis.fetch = vi.fn<typeof fetch>(async () => {
+    throw new Error(
+        'Unexpected network request: mock fetch in this unit test.',
+    );
+});
+
 const loggerMock = {
     debug: vi.fn(),
     error: vi.fn(),

@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { _electron, expect, test } from '@playwright/test';
+import { _electron, expect, test } from './support/electron.fixture';
 import {
     applyTheme,
     createFixtureHome,
@@ -138,6 +138,7 @@ test('recovers unsupported terminal settings through the warning shortcut', asyn
             ],
         });
         await applyTheme(page, {
+            name: 'light', description: 'light mode',
             colorScheme: 'light',
             toggleTestId: 'themeLight',
         });
@@ -171,6 +172,7 @@ test('recovers unsupported terminal settings through the warning shortcut', asyn
         await page.keyboard.press('Escape');
 
         await applyTheme(page, {
+            name: 'dark', description: 'dark mode',
             colorScheme: 'dark',
             toggleTestId: 'themeDark',
         });
@@ -189,7 +191,7 @@ test('recovers unsupported terminal settings through the warning shortcut', asyn
             testInfo.outputPath('terminal-invalid-configuration-drawer-dark.png'),
         );
         await page.keyboard.press('Escape');
-        await applyTheme(page, { colorScheme: 'dark', toggleTestId: 'themeAuto' });
+        await applyTheme(page, { name: 'dark', description: 'automatic dark mode', colorScheme: 'dark', toggleTestId: 'themeAuto' });
         await page.getByTestId('btnProjectTerminal').first().click();
         await captureSettledScreenshot(page, testInfo.outputPath('terminal-invalid-configuration-warning-auto-dark.png'));
         await warning.getByRole('button', { name: 'Open terminal settings' }).click();

@@ -6,7 +6,7 @@ import {
     expect,
     type Page,
     test,
-} from '@playwright/test';
+} from './support/electron.fixture';
 import {
     createFixtureHome,
     prepareAppWithStubbedData,

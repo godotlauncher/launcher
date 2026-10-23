@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { _electron, type ElectronApplication, type Page, expect, test } from '@playwright/test';
+import { _electron, type ElectronApplication, type Page, expect, test } from './support/electron.fixture';
 import { createFixtureHome, prepareAppWithStubbedData, setAppLanguage } from './support/e2e-fixture-runtime';
 import { SAMPLE_PREFS, SAMPLE_PROJECTS, SAMPLE_VSCODE_SETTINGS_AVAILABLE } from './support/e2e-fixture-data';
 import { getMainWindow } from './splashscreen/getMainWindow';
