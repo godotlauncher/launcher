@@ -13,11 +13,8 @@ import type {
     SetProjectCodeEditorResult,
 } from '@shared/contracts';
 import { app } from 'electron';
-import logger from 'electron-log';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import { getUserPreferences } from '../commands/userPreferences.js';
-import { EDITOR_CONFIG_DIRNAME } from '../constants.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { InstalledEditorService } from '../editor-installs/installed-editor.service.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
@@ -25,10 +22,9 @@ import { t } from '../i18n/index.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
-    SetProjectEditorRelease,
 } from '../utils/godot.utils.js';
-import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
+import { assignProjectEditor } from './project-editor-assignment.util.js';
 import { publishProjectUpdates } from './project-events.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
@@ -129,7 +125,18 @@ export class ProjectEditorService {
                       candidate.mono === selection.mono,
               )
             : selection;
-        const recoveredFiles = new Set<string>();
+        if (installedRelease) {
+            const previousRelease = project.release;
+            const result = await assignProjectEditor(
+                project,
+                installedRelease,
+                this.codeEditors,
+                this.store,
+                expectedEditor,
+            );
+            if (project.release !== previousRelease) void updateLinuxTray();
+            return result;
+        }
         let failure: ChangeProjectEditorResult | undefined;
         let updatedProject: ProjectDetails | undefined;
 
@@ -158,22 +165,10 @@ export class ProjectEditorService {
                 return currentProjects;
             }
 
-            const release =
-                installedRelease ??
-                createMissingOfficialRelease(selection, currentProject);
-            if (
-                currentProject.release.version === release.version &&
-                currentProject.release.mono === release.mono &&
-                currentProject.release.editor_path === release.editor_path &&
-                currentProject.release.valid === release.valid &&
-                installedRelease !== undefined
-            ) {
-                logger.warn(
-                    `Project already using the selected release, ${release.version} - ${release.mono ? 'mono' : ''}`,
-                );
-                return currentProjects;
-            }
-
+            const release = createMissingOfficialRelease(
+                selection,
+                currentProject,
+            );
             const config = getProjectDefinition(
                 release.version_number,
                 DEFAULT_PROJECT_DEFINITION,
@@ -200,97 +195,18 @@ export class ProjectEditorService {
                 return currentProjects;
             }
 
-            if (!installedRelease) {
-                updatedProject = {
-                    ...currentProject,
-                    release,
-                    version: release.version,
-                    version_number: release.version_number,
-                    launch_path: '',
-                    valid: false,
-                    invalid_reason:
-                        !hasProjectFile(currentProject.path) ||
-                        currentProject.invalid_reason === 'missing_project_file'
-                            ? 'missing_project_file'
-                            : 'missing_editor',
-                };
-                await writeProjectLauncherConfig(updatedProject.path, {
-                    release: updatedProject.release,
-                    projectName: updatedProject.name,
-                    launcherVersion: app.getVersion(),
-                });
-
-                const updatedProjects = [...currentProjects];
-                updatedProjects[projectIndex] = updatedProject;
-                return updatedProjects;
-            }
-
-            const { install_location: installLocation } =
-                await getUserPreferences();
-            const projectEditorPath = resolveProjectEditorPath(
-                currentProject,
-                installLocation,
-            );
-            const newLaunchPath = await SetProjectEditorRelease(
-                projectEditorPath,
-                release,
-                currentProject.release,
-                currentProject.exportTemplateMode,
-                currentProject.exportTemplateBuilds,
-            );
-            const editorSettingsFilename = config.editorConfigFilename(
-                release.version_number,
-            );
-            let newEditorSettingsFile = path.resolve(
-                projectEditorPath,
-                'editor_data',
-                editorSettingsFilename,
-            );
-
-            if (currentProject.codeEditorId) {
-                const installation = await this.codeEditors.scanIntegration(
-                    currentProject.codeEditorId,
-                );
-                if (installation) {
-                    const applied = await this.codeEditors.applyToProject(
-                        currentProject.codeEditorId,
-                        {
-                            projectPath: currentProject.path,
-                            godotLaunchPath: newLaunchPath,
-                            godotVersion: release.version_number,
-                            mono: release.mono,
-                            editorSettingsFile: newEditorSettingsFile,
-                            editorSettingsFilename,
-                            editorSettingsFormat: config.editorConfigFormat,
-                        },
-                    );
-                    newEditorSettingsFile = applied.editorSettingsFile;
-                    for (const recoveredFile of applied.recoveredConfigFiles) {
-                        recoveredFiles.add(recoveredFile);
-                    }
-                }
-            } else {
-                await this.codeEditors.disableForProject(
-                    newEditorSettingsFile,
-                    release.mono ? 'dotnet' : 'standard',
-                );
-            }
-
-            const projectFileExists = hasProjectFile(currentProject.path);
             updatedProject = {
                 ...currentProject,
-                release: { ...release, valid: true },
+                release,
                 version: release.version,
                 version_number: release.version_number,
-                launch_path: newLaunchPath,
-                editor_settings_path: path.resolve(
-                    path.dirname(newEditorSettingsFile),
-                ),
-                editor_settings_file: newEditorSettingsFile,
-                valid: projectFileExists,
-                invalid_reason: projectFileExists
-                    ? undefined
-                    : 'missing_project_file',
+                launch_path: '',
+                valid: false,
+                invalid_reason:
+                    !hasProjectFile(currentProject.path) ||
+                    currentProject.invalid_reason === 'missing_project_file'
+                        ? 'missing_project_file'
+                        : 'missing_editor',
             };
             await writeProjectLauncherConfig(updatedProject.path, {
                 release: updatedProject.release,
@@ -322,8 +238,7 @@ export class ProjectEditorService {
         return {
             success: true,
             projects,
-            recoveredCodeEditorConfigFiles:
-                recoveredFiles.size > 0 ? [...recoveredFiles] : undefined,
+            recoveredCodeEditorConfigFiles: undefined,
         };
     }
 
@@ -524,32 +439,4 @@ export class ProjectEditorService {
         project.editor_settings_path = path.dirname(applied.editorSettingsFile);
         return applied.recoveredConfigFiles;
     }
-}
-
-/**
- * Resolves the isolated editor configuration directory for a project.
- *
- * @param project - Project whose editor directory is required.
- * @param installLocation - Configured editor installation location.
- * @returns The project editor directory.
- */
-function resolveProjectEditorPath(
-    project: ProjectDetails,
-    installLocation: string,
-): string {
-    if (project.launch_path) {
-        return path.dirname(project.launch_path);
-    }
-    if (project.editor_settings_file) {
-        return path.dirname(path.dirname(project.editor_settings_file));
-    }
-    if (project.editor_settings_path) {
-        return path.dirname(project.editor_settings_path);
-    }
-
-    return path.resolve(
-        installLocation,
-        EDITOR_CONFIG_DIRNAME,
-        sanitiseProjectDirectoryName(project.name),
-    );
 }
