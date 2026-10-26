@@ -49,6 +49,7 @@ import {
     subscribeAppEvent,
 } from '../renderer.bridge.ts';
 import { useAlerts } from './alerts.hook';
+import { showProjectRunRecovery } from './project-run-recovery.util';
 import type {
     ProjectSettingsDraft,
     ProjectSettingsSave,
@@ -818,6 +819,35 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     const refreshProjects = async () => {
         await getProjects();
     };
+
+    const runFailureHandler = useRef<
+        (project: ProjectDetails, diagnostic?: string) => void
+    >(() => {});
+    runFailureHandler.current = (project, diagnostic) => {
+        showProjectRunRecovery({
+            project,
+            reason: 'launch_failed',
+            afterStartup: true,
+            diagnostic,
+            t,
+            addCustomConfirm,
+            onEditProject: async (selected) => {
+                const result = await launchProject(selected);
+                if (result && !result.valid)
+                    addAlert(t('common:error'), t('messages.invalidProject'));
+            },
+        });
+    };
+    useEffect(
+        () =>
+            subscribeAppEvent(
+                'project-run-failed',
+                ({ project, diagnostic }) => {
+                    runFailureHandler.current(project, diagnostic);
+                },
+            ),
+        [],
+    );
 
     const checkProjectValid = (project: ProjectDetails) => {
         const result = projectsBridge.checkProjectValid(project);

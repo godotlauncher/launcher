@@ -686,5 +686,21 @@
         "removeDetail": "Ich foldery i pliki pozostaną na urządzeniu.",
         "removed": "Projekty usunięte z listy: {{count}}.",
         "removeProjectUnavailable": "Ten projekt nie jest już dostępny."
+    },
+    "runProject": {
+        "label": "Uruchom projekt",
+        "failureTitle": "Nie udało się uruchomić \"{{project}}\"",
+        "close": "Zamknij",
+        "reasons": {
+            "checking": "Sprawdzanie, czy można uruchomić projekt...",
+            "starting": "Uruchamianie projektu...",
+            "missing_main_scene": "Ustaw scenę główną w Godot, aby uruchomić ten projekt.",
+            "project_unavailable": "Ten projekt nie jest już dostępny. Sprawdź jego folder i plik project.godot.",
+            "editor_unavailable": "Przed uruchomieniem zainstaluj lub wybierz edytor Godot dla tego projektu.",
+            "check_failed": "Nie udało się sprawdzić projektu. Zamknij to menu i spróbuj ponownie.",
+            "already_running": "Ten projekt jest już uruchomiony.",
+            "launch_failed": "Godot nie mógł uruchomić tego projektu. Otwórz go w Godot, aby sprawdzić błędy."
+        },
+        "runtimeFailure": "Godot zgłosił błąd. Otwórz ten projekt w Godot, aby go sprawdzić."
     }
 }

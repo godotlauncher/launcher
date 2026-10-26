@@ -35,6 +35,7 @@ import { ProjectEditorService } from './project-editor.service.js';
 import { ProjectGitService } from './project-git.service.js';
 import { ProjectLaunchService } from './project-launch.service.js';
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
+import { ProjectRunService } from './project-run.service.js';
 import { ProjectsController } from './projects.controller.js';
 import { ProjectsModule } from './projects.module.js';
 import { ProjectsService } from './projects.service.js';
@@ -74,6 +75,9 @@ describe('ProjectsModule', () => {
 
         expect(application.get(ProjectsService)).toBeInstanceOf(
             ProjectsService,
+        );
+        expect(application.get(ProjectRunService)).toBeInstanceOf(
+            ProjectRunService,
         );
         expect(application.get(ProjectLaunchService)).toBeInstanceOf(
             ProjectLaunchService,

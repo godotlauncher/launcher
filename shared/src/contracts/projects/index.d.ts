@@ -222,6 +222,27 @@ export type LaunchProjectResult =
           integration: CodeEditorIntegrationSummary;
       };
 
+/** Current readiness for running a project's configured main scene. */
+export type ProjectRunReadiness = {
+    status:
+        | 'ready'
+        | 'missing_main_scene'
+        | 'project_unavailable'
+        | 'editor_unavailable'
+        | 'check_failed'
+        | 'already_running';
+};
+
+/** Result of starting a separate Godot game process. */
+export type RunProjectResult =
+    | { launched: true }
+    | {
+          launched: false;
+          reason:
+              | Exclude<ProjectRunReadiness['status'], 'ready'>
+              | 'launch_failed';
+      };
+
 export type ProjectDetails = {
     name: string;
     version: string;

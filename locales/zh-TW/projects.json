@@ -686,5 +686,21 @@
         "removeDetail": "專案資料夾和檔案將保留在您的裝置上。",
         "removed": "已從清單移除的專案: {{count}}。",
         "removeProjectUnavailable": "此專案已無法使用。"
+    },
+    "runProject": {
+        "label": "執行專案",
+        "failureTitle": "無法執行「{{project}}」",
+        "close": "關閉",
+        "reasons": {
+            "checking": "正在檢查此專案是否可以執行...",
+            "starting": "正在啟動專案...",
+            "missing_main_scene": "請在 Godot 中設定主場景後再執行此專案。",
+            "project_unavailable": "此專案已無法使用。請檢查其資料夾及 project.godot 檔案。",
+            "editor_unavailable": "執行前，請安裝或選擇此專案的 Godot 編輯器。",
+            "check_failed": "無法檢查此專案。請關閉此選單後重試。",
+            "already_running": "此專案已在執行。",
+            "launch_failed": "Godot 無法啟動此專案。請在 Godot 中開啟以檢查錯誤。"
+        },
+        "runtimeFailure": "Godot 回報了錯誤。請在 Godot 中開啟此專案進行檢查。"
     }
 }

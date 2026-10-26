@@ -66,6 +66,7 @@ import { useProjectBatchRemove } from './projects/hooks/project-batch-remove.hoo
 import { useProjectBatchTags } from './projects/hooks/project-batch-tags.hook';
 import { useProjectDropImport } from './projects/hooks/project-drop-import.hook';
 import { useProjectNewStatus } from './projects/hooks/project-new-status.hook';
+import { useProjectRun } from './projects/hooks/project-run.hook';
 import { useProjectSelection } from './projects/hooks/project-selection.hook';
 import { getEligibleProjectPins } from './projects/project-bulk-pins.model';
 import { findDownloadableMissingProjectEditor } from './projects/project-editor-resolution.model';
@@ -681,6 +682,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             addAlert(t('common:error'), t('messages.invalidReleaseEditor'));
         }
     };
+
+    const projectRun = useProjectRun({
+        project: projectActionsMenu?.project ?? null,
+        onEditProject: onLaunchProject,
+    });
 
     const onSetProjectCodeEditor = async (
         project: ProjectDetails,
@@ -1398,6 +1404,14 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             <ProjectActionsMenu
                 project={projectActionsMenu?.project ?? null}
                 anchorRect={projectActionsMenu?.anchorRect ?? null}
+                runReadiness={projectRun.readiness}
+                runStarting={Boolean(
+                    projectActionsMenu &&
+                        projectRun.starting.has(
+                            projectActionsMenu.project.path,
+                        ),
+                )}
+                onRunProject={(project) => void projectRun.runProject(project)}
                 t={t}
                 onClose={() => setProjectActionsMenu(null)}
                 onDuplicateProject={(project) => {

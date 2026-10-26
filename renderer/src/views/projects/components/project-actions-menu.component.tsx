@@ -1,5 +1,12 @@
-import type { ProjectDetails } from '@shared/contracts';
-import { CircleCheck, Copy, Download, Trash2, Upload } from 'lucide-react';
+import type { ProjectDetails, ProjectRunReadiness } from '@shared/contracts';
+import {
+    CircleCheck,
+    Copy,
+    Download,
+    Play,
+    Trash2,
+    Upload,
+} from 'lucide-react';
 import type React from 'react';
 import {
     ActionMenu,
@@ -19,6 +26,9 @@ type ProjectActionsMenuProps = {
     onImportEditorSettings: (project: ProjectDetails) => void;
     onRemoveProject: (project: ProjectDetails) => void;
     onClearNewStatus: (project: ProjectDetails) => void;
+    runReadiness?: ProjectRunReadiness | null;
+    runStarting?: boolean;
+    onRunProject?: (project: ProjectDetails) => void;
 };
 
 const iconClassName = 'size-[16px]';
@@ -36,9 +46,31 @@ export const ProjectActionsMenu: React.FC<ProjectActionsMenuProps> = ({
     onImportEditorSettings,
     onRemoveProject,
     onClearNewStatus,
+    runReadiness,
+    runStarting = false,
+    onRunProject,
 }) => {
+    const runStatus = runStarting
+        ? 'starting'
+        : (runReadiness?.status ?? 'checking');
+    const runEnabled = runStatus === 'ready';
     const items: ActionMenuItem[] = project
         ? [
+              {
+                  key: 'run-project',
+                  label: t('runProject.label'),
+                  description: runEnabled
+                      ? undefined
+                      : t(`runProject.reasons.${runStatus}`),
+                  icon: runStarting ? (
+                      <span className="loading loading-spinner loading-xs" />
+                  ) : (
+                      <Play className={iconClassName} />
+                  ),
+                  disabled: !runEnabled,
+                  onSelect: () => onRunProject?.(project),
+              },
+              { type: 'separator', key: 'run-separator' },
               ...(project.is_new === true && !project.last_opened
                   ? [
                         {

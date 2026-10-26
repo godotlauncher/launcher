@@ -19,6 +19,11 @@ import type {
 export type AppEventMap = {
     'app-updates': AppUpdateMessage;
     'projects-updated': ProjectDetails[];
+    'project-run-failed': {
+        project: ProjectDetails;
+        reason: 'launch_failed';
+        diagnostic?: string;
+    };
     'project-copy-progress': ProjectCopyProgress;
     'folder-project-scan-progress': FolderProjectScanProgress;
     'project-tags-updated': ProjectTagsSnapshot;

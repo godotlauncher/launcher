@@ -686,5 +686,21 @@
         "removeDetail": "フォルダーとファイルはデバイスに残ります。",
         "removed": "一覧から削除したプロジェクト: {{count}}。",
         "removeProjectUnavailable": "このプロジェクトは利用できなくなりました。"
+    },
+    "runProject": {
+        "label": "プロジェクトを実行",
+        "failureTitle": "「{{project}}」を実行できませんでした",
+        "close": "閉じる",
+        "reasons": {
+            "checking": "プロジェクトを実行できるか確認しています...",
+            "starting": "プロジェクトを起動しています...",
+            "missing_main_scene": "このプロジェクトを実行するには、Godotでメインシーンを設定してください。",
+            "project_unavailable": "このプロジェクトは利用できなくなりました。フォルダーとproject.godotファイルを確認してください。",
+            "editor_unavailable": "実行する前に、このプロジェクトのGodotエディターをインストールまたは選択してください。",
+            "check_failed": "プロジェクトを確認できませんでした。このメニューを閉じて再試行してください。",
+            "already_running": "このプロジェクトはすでに実行中です。",
+            "launch_failed": "Godotはこのプロジェクトを起動できませんでした。Godotで開いてエラーを確認してください。"
+        },
+        "runtimeFailure": "Godotがエラーを報告しました。Godotでこのプロジェクトを開いて確認してください。"
     }
 }
