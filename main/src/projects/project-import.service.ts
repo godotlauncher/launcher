@@ -49,7 +49,7 @@ import {
     readProjectLauncherConfig,
     writeProjectLauncherConfig,
 } from '../utils/projectLauncherConfig.utils.js';
-import { sortReleases } from '../utils/releaseSorting.utils.js';
+import { sortReleases } from '../utils/release-sorting.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectEditorChoiceService } from './project-editor-choice.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata

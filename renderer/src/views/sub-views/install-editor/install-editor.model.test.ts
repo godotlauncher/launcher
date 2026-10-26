@@ -81,6 +81,34 @@ describe('install editor drawer model', () => {
         ]);
     });
 
+    it('orders prerelease channels and iterations while retaining the selected channel', () => {
+        const candidates = [
+            createRelease('4.7-beta20', true),
+            createRelease('4.7-rc2', true),
+            createRelease('4.7-dev10', true),
+            createRelease('4.7-rc10', true),
+            createRelease('4.7-alpha1', true),
+        ];
+        expect(
+            getInstallEditorRows({
+                show: 'all',
+                channel: 'prerelease',
+                availableReleases: stable,
+                availablePrereleases: candidates,
+                search: '',
+            }).map(({ version }) => version),
+        ).toEqual([
+            '4.7-rc10',
+            '4.7-rc2',
+            '4.7-beta20',
+            '4.7-alpha1',
+            '4.7-dev10',
+        ]);
+        expect(
+            getLatestInstallEditorRows('prerelease', stable, candidates),
+        ).toEqual([candidates[3]]);
+    });
+
     it('counts refresh cooldown seconds from the current time', () => {
         expect(getInstallEditorRefreshCooldownSeconds(60_000, 0)).toBe(60);
         expect(getInstallEditorRefreshCooldownSeconds(60_000, 18_100)).toBe(42);

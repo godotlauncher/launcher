@@ -20,7 +20,7 @@ import {
 } from './jsonStoreFactory.js';
 import { getMacosAssetArchitectures } from './macos-asset.util.js';
 
-export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
+export { parseReleaseName, sortReleases } from './release-sorting.util.js';
 
 /**
  * Creates a summary of a release asset with relevant tags and download URL.

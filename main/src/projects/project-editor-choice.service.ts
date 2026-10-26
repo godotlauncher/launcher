@@ -14,6 +14,7 @@ import {
     getReleaseBaseVersion,
     getReleaseFlavor,
 } from '../utils/projectLauncherConfig.utils.js';
+import { sortReleases } from '../utils/release-sorting.util.js';
 
 /** Resolves safe editor choices for metadata-free project imports. */
 @Injectable()
@@ -81,7 +82,7 @@ export class ProjectEditorChoiceService {
                         ? candidate.prerelease
                         : !candidate.prerelease),
             )
-            .sort(compareEditorVersions)) {
+            .sort(sortReleases)) {
             officialChoices.set(getIdentity(release.version, release.mono), {
                 id: getInstalledChoiceId(release),
                 version: release.version,
@@ -123,7 +124,7 @@ export class ProjectEditorChoiceService {
         }
 
         const orderedOfficial = [...officialChoices.values()].sort(
-            compareEditorVersions,
+            sortReleases,
         );
         if (usePrerelease) {
             orderedOfficial.splice(1);
@@ -133,7 +134,7 @@ export class ProjectEditorChoiceService {
         }
         const customChoices = installed
             .filter((release) => release.source === 'custom')
-            .sort(compareEditorVersions)
+            .sort(sortReleases)
             .map<ProjectEditorChoice>((release) => ({
                 id: getInstalledChoiceId(release),
                 version: release.version,
@@ -195,59 +196,6 @@ function getIdentity(version: string, mono: boolean): string {
  */
 function getInstalledChoiceId(release: InstalledRelease): string {
     return `installed:${release.source ?? 'official'}:${getIdentity(release.version, release.mono)}`;
-}
-
-/**
- * Orders Godot stable, RC, beta, and development versions newest first.
- *
- * @param first - First editor version.
- * @param second - Second editor version.
- * @returns A negative number when the first version is newer.
- */
-function compareEditorVersions(
-    first: Pick<InstalledRelease, 'version'>,
-    second: Pick<InstalledRelease, 'version'>,
-): number {
-    const firstParts = parseEditorVersion(first.version);
-    const secondParts = parseEditorVersion(second.version);
-    for (let index = 0; index < 4; index++) {
-        if (firstParts.numbers[index] !== secondParts.numbers[index]) {
-            return secondParts.numbers[index] - firstParts.numbers[index];
-        }
-    }
-    if (firstParts.channel !== secondParts.channel) {
-        return firstParts.channel - secondParts.channel;
-    }
-    return secondParts.iteration - firstParts.iteration;
-}
-
-/**
- * Parses the sortable parts of one Godot editor version.
- *
- * @param version - Godot editor version.
- * @returns Numeric version and channel ordering fields.
- */
-function parseEditorVersion(version: string): {
-    numbers: number[];
-    channel: number;
-    iteration: number;
-} {
-    const match = version.match(
-        /^v?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-(stable|rc|beta|dev)(\d+)?)?/i,
-    );
-    const channelPriority: Record<string, number> = {
-        stable: 0,
-        rc: 1,
-        beta: 2,
-        dev: 3,
-    };
-    return {
-        numbers: [1, 2, 3, 4].map((index) =>
-            Number.parseInt(match?.[index] ?? '0', 10),
-        ),
-        channel: channelPriority[match?.[5]?.toLowerCase() ?? 'dev'] ?? 3,
-        iteration: Number.parseInt(match?.[6] ?? '0', 10),
-    };
 }
 
 /**

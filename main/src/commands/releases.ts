@@ -4,7 +4,7 @@ import logger from 'electron-log';
 import { CACHE_LENGTH, MIN_VERSION } from '../constants.js';
 import { getReleases } from '../utils/github.utils.js';
 import { getDefaultDirs } from '../utils/platform.utils.js';
-import { sortByPublishDate } from '../utils/releaseSorting.utils.js';
+import { sortByPublishDate } from '../utils/release-sorting.util.js';
 import {
     getStoredAvailableReleases,
     storeAvailableReleases,

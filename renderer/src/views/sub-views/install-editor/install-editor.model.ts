@@ -1,3 +1,5 @@
+import { sortReleases } from '../../../release-sorting.util';
+
 type InstallEditorRelease = {
     version: string;
     name?: string;
@@ -14,22 +16,6 @@ type GetInstallEditorRowsOptions<T extends InstallEditorRelease> = {
     availableReleases: T[];
     availablePrereleases: T[];
     search: string;
-};
-
-type InstallEditorVersionParts = {
-    major: number;
-    minor: number;
-    patch: number;
-    channelRank: number;
-    iteration: number;
-};
-
-const installEditorChannelRanks: Record<string, number> = {
-    dev: 0,
-    alpha: 1,
-    beta: 2,
-    rc: 3,
-    stable: 4,
 };
 
 /**
@@ -69,7 +55,7 @@ export function getInstallEditorRows<T extends InstallEditorRelease>({
 
     const releases = [
         ...(channel === 'stable' ? availableReleases : availablePrereleases),
-    ].sort(compareInstallEditorReleases);
+    ].sort(sortReleases);
     const normalizedSearch = search.trim().toLowerCase();
 
     if (!normalizedSearch) {
@@ -97,16 +83,14 @@ export function getLatestInstallEditorRows<T extends InstallEditorRelease>(
     availablePrereleases: T[],
 ): T[] {
     if (channel === 'stable') {
-        return [...availableReleases]
-            .sort(compareInstallEditorReleases)
-            .slice(0, 4);
+        return [...availableReleases].sort(sortReleases).slice(0, 4);
     }
 
     const stableBaseVersions = new Set(
         availableReleases.map((release) => getReleaseBaseVersion(release)),
     );
     const latestPrerelease = [...availablePrereleases]
-        .sort(compareInstallEditorReleases)
+        .sort(sortReleases)
         .find(
             (release) =>
                 !stableBaseVersions.has(getReleaseBaseVersion(release)),
@@ -124,57 +108,4 @@ export function getLatestInstallEditorRows<T extends InstallEditorRelease>(
 function getReleaseBaseVersion(release: InstallEditorRelease): string {
     const match = release.version.match(/^v?(\d+)\.(\d+)/i);
     return match ? `${match[1]}.${match[2]}` : release.version;
-}
-
-/**
- * Sorts releases from newest version to oldest version.
- *
- * @param first - The first release to compare.
- * @param second - The second release to compare.
- * @returns A negative value when the first release should come first.
- */
-function compareInstallEditorReleases(
-    first: InstallEditorRelease,
-    second: InstallEditorRelease,
-): number {
-    const firstParts = getInstallEditorVersionParts(first);
-    const secondParts = getInstallEditorVersionParts(second);
-
-    for (const key of [
-        'major',
-        'minor',
-        'patch',
-        'channelRank',
-        'iteration',
-    ] as const) {
-        const difference = secondParts[key] - firstParts[key];
-        if (difference !== 0) {
-            return difference;
-        }
-    }
-
-    return second.version.localeCompare(first.version);
-}
-
-/**
- * Reads sortable values from one editor version.
- *
- * @param release - The release version to read.
- * @returns Numeric values used to sort the release.
- */
-function getInstallEditorVersionParts(
-    release: InstallEditorRelease,
-): InstallEditorVersionParts {
-    const match = release.version.match(
-        /^v?(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-z]+)(\d+)?)?/i,
-    );
-    const channel = match?.[4]?.toLowerCase() ?? 'stable';
-
-    return {
-        major: Number(match?.[1] ?? release.version_number ?? 0),
-        minor: Number(match?.[2] ?? 0),
-        patch: Number(match?.[3] ?? 0),
-        channelRank: installEditorChannelRanks[channel] ?? 0,
-        iteration: Number(match?.[5] ?? 0),
-    };
 }

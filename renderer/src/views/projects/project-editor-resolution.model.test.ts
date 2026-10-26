@@ -183,7 +183,7 @@ describe('project editor resolution model', () => {
     });
 
     it('offers the latest compatible prerelease when no stable flavour exists', () => {
-        const latest = createRelease('4.8-beta10', true);
+        const latest = createRelease('4.8-rc10', true);
         const standardOnly = createRelease('4.8-stable');
         standardOnly.assets = standardOnly.assets.filter(
             (asset) => !asset.mono,
@@ -194,7 +194,8 @@ describe('project editor resolution model', () => {
                 [standardOnly],
                 [
                     createRelease('4.8-dev9', true),
-                    createRelease('4.8-beta2', true),
+                    createRelease('4.8-beta20', true),
+                    createRelease('4.8-rc2', true),
                     latest,
                 ],
             ),

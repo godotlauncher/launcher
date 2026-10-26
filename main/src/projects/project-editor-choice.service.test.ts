@@ -64,16 +64,28 @@ describe('ProjectEditorChoiceService', () => {
         });
     });
 
-    it('offers only the latest official prerelease when no stable exists', async () => {
+    it('offers only the latest official prerelease across channels when no stable exists', async () => {
         const service = createService([
+            createCatalogueRelease('4.4-beta20', true),
             createCatalogueRelease('4.4-rc2', true),
-            createCatalogueRelease('4.4-rc1', true),
+            createCatalogueRelease('4.4-rc10', true),
         ]);
 
         const choices = await service.getChoices(request, 5, []);
 
-        expect(choices.map((choice) => choice.version)).toEqual(['4.4-rc2']);
+        expect(choices.map((choice) => choice.version)).toEqual(['4.4-rc10']);
         expect(choices[0]?.recommended).toBe(true);
+    });
+
+    it('prefers compatible stable choices even when a newer prerelease patch exists', async () => {
+        const service = createService([
+            createCatalogueRelease('4.4.1-stable'),
+            createCatalogueRelease('4.4.2-rc1', true),
+            createCatalogueRelease('4.5-stable'),
+        ]);
+        const choices = await service.getChoices(request, 5, []);
+        expect(choices.map(({ version }) => version)).toEqual(['4.4.1-stable']);
+        expect(choices[0].recommended).toBe(true);
     });
 
     it('places compatible custom editors after official choices', async () => {

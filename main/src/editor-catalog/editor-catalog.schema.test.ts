@@ -4,6 +4,7 @@ import type {
 } from '@shared/contracts';
 import { describe, expect, it } from 'vitest';
 import {
+    compareEditorReleases,
     createEmptyEditorCatalog,
     normalizeEditorCatalog,
 } from './editor-catalog.schema.js';
@@ -80,6 +81,28 @@ describe('editor catalog schema', () => {
             expect(normalizeEditorCatalog(normalized)).toEqual(normalized);
         },
     );
+
+    it('orders catalogue releases by version, channel and iteration', () => {
+        const versions = [
+            '4.6-stable',
+            '4.7-beta20',
+            '4.7-rc2',
+            '4.7-rc10',
+            '4.7-stable',
+        ];
+        const releases = versions.map((version) => ({
+            version,
+        })) as EditorCatalogRelease[];
+        expect(
+            releases.sort(compareEditorReleases).map(({ version }) => version),
+        ).toEqual([
+            '4.7-stable',
+            '4.7-rc10',
+            '4.7-rc2',
+            '4.7-beta20',
+            '4.6-stable',
+        ]);
+    });
 
     it('creates both official provider states', () => {
         expect(createEmptyEditorCatalog()).toEqual({
