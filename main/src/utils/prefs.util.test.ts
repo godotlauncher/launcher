@@ -17,6 +17,7 @@ import { APP_INTERNAL_NAME } from '../constants';
 import { getDefaultDirs } from './platform.utils';
 import {
     __resetPrefsCacheForTesting,
+    ensurePreferencesStorage,
     getConfigDir,
     getDefaultPrefs,
     getPrefsPath,
@@ -103,9 +104,9 @@ const fsPromisesMock = fs.promises as unknown as MockedObject<
 >;
 
 suite('prefs.util', (_test) => {
-    afterEach(() => {
+    afterEach(async () => {
         __resetCurrentAppConfigForTesting();
-        __resetPrefsCacheForTesting();
+        await __resetPrefsCacheForTesting();
         vi.clearAllMocks();
     });
     describe('should be able to get default data and config locations for Windows', () => {
@@ -503,6 +504,71 @@ suite('prefs.util', (_test) => {
         expect(dialog.showMessageBox).not.toHaveBeenCalled();
     });
 
+    it('reports malformed preferences and recovers their defaults', async () => {
+        fsMock.existsSync.mockReturnValue(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce('{invalid');
+
+        const prefs = await readPrefsFromDisk(
+            path.resolve('/home/user/.godot/prefs.json'),
+            await getDefaultPrefs(),
+        );
+
+        expect(prefs.language).toBe('system');
+        expect(dialog.showMessageBox).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ type: 'error' }),
+        );
+        expect(fsPromisesMock.writeFile).not.toHaveBeenCalled();
+    });
+
+    it('keeps preferences cached at the saved value when a write fails', async () => {
+        const prefsPath = path.resolve('/home/user/.godot/prefs.json');
+        fsMock.existsSync.mockReturnValue(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify({ language: 'it' }),
+        );
+        const defaults = await getDefaultPrefs();
+        await readPrefsFromDisk(prefsPath, defaults);
+        fsPromisesMock.writeFile.mockRejectedValueOnce(
+            new Error('disk unavailable'),
+        );
+
+        await expect(
+            writePrefsToDisk(prefsPath, { language: 'de' }),
+        ).rejects.toThrow('disk unavailable');
+        expect((await readPrefsFromDisk(prefsPath, defaults)).language).toBe(
+            'it',
+        );
+    });
+
+    it('creates initial preferences through the shared writer', async () => {
+        fsMock.existsSync.mockReturnValue(false);
+        const prefsPath = await getPrefsPath();
+
+        await ensurePreferencesStorage();
+
+        expect(fsPromisesMock.writeFile).toHaveBeenCalledWith(
+            path.resolve(prefsPath),
+            JSON.stringify(await getDefaultPrefs(), null, 4),
+            'utf-8',
+        );
+    });
+
+    it('recovers defaults when the preferences file cannot be read', async () => {
+        fsMock.existsSync.mockReturnValue(true);
+        fsPromisesMock.readFile.mockRejectedValueOnce(
+            new Error('permission denied'),
+        );
+
+        const prefs = await readPrefsFromDisk(
+            path.resolve('/home/user/.godot/prefs.json'),
+            await getDefaultPrefs(),
+        );
+
+        expect(prefs.language).toBe('system');
+        expect(dialog.showMessageBox).not.toHaveBeenCalled();
+    });
+
     it('should write prefs to disk', async () => {
         const prefsPath = '/home/user/.godot/prefs.json';
         await writePrefsToDisk(prefsPath, { a: 1 });
@@ -561,3 +627,19 @@ suite('prefs.util', (_test) => {
         ]);
     });
 });
+
+vi.mock('../json-store/atomic-json-file.adapter.js', () => ({
+    AtomicJsonFileAdapter: class {
+        async read(filePath: string): Promise<string | undefined> {
+            return fs.existsSync(filePath)
+                ? fs.promises.readFile(filePath, 'utf-8')
+                : undefined;
+        }
+        async write(filePath: string, contents: string): Promise<void> {
+            await fs.promises.writeFile(filePath, contents, 'utf-8');
+        }
+    },
+}));
+
+vi.mock('../mainWindow.js', () => ({ getMainWindow: () => ({}) }));
+vi.mock('../i18n/index.js', () => ({ t: (key: string) => key }));

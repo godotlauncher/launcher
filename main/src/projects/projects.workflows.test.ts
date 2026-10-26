@@ -9,9 +9,9 @@ import type {
 } from '@shared/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
+import { JsonStoreConflictError } from '../json-store/json-store.types.js';
 import type { TrayAvailabilityService } from '../services/tray-availability.service.js';
 import type { GitService } from '../tool-integration/integrations/git/git.service.js';
-import { JsonStoreConflictError } from '../utils/jsonStore.js';
 import type { ProjectCreationService } from './project-creation.service.js';
 import { ProjectEditorService } from './project-editor.service.js';
 import { ProjectGitService } from './project-git.service.js';

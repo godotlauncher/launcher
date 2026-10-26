@@ -12,7 +12,6 @@ import {
 import { t } from '../i18n/index.js';
 import { isLinuxCredentialStoragePreference } from '../linux-credential-storage.utils.js';
 import { getMainWindow } from '../mainWindow.js';
-import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
     __resetJsonStoreFactoryForTesting,
     createTypedJsonStore,
@@ -194,20 +193,11 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
     };
 }
 
+/** Creates missing preferences through the shared atomic writer. */
 export async function ensurePreferencesStorage(): Promise<void> {
-    const configDir = await getConfigDir();
     const prefsPath = await getPrefsPath();
-
-    if (!fs.existsSync(configDir)) {
-        await fs.promises.mkdir(configDir, { recursive: true });
-    }
-
     if (!fs.existsSync(prefsPath)) {
-        const defaultPrefs = await getDefaultPrefs();
-        await fs.promises.writeFile(
-            prefsPath,
-            JSON.stringify(defaultPrefs, null, 4),
-        );
+        await writePrefsToDisk(prefsPath, await getDefaultPrefs());
     }
 }
 
@@ -260,9 +250,9 @@ export async function setAutoCheckUpdates(enabled: boolean): Promise<boolean> {
     return enabled;
 }
 
-export function __resetPrefsCacheForTesting(): void {
+/** Clears preference helper state after test operations have completed. */
+export async function __resetPrefsCacheForTesting(): Promise<void> {
     prefsStore = null;
     prefsPathCache = null;
-    __resetJsonStoreFactoryForTesting();
-    __resetJsonStoreForTesting();
+    await __resetJsonStoreFactoryForTesting();
 }

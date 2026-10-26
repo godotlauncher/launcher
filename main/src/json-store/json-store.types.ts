@@ -12,6 +12,8 @@ export interface JsonStoreDefinition<T> {
     serialize?: (value: T) => MaybePromise<string>;
     /** Cleans or validates a value before it enters the cache. */
     normalize?: (value: T) => MaybePromise<T>;
+    /** Optional recovery for read or parse failures; other stores reject them. */
+    onLoadError?: (error: unknown, raw: string | undefined) => MaybePromise<T>;
 }
 
 /** A safe copy of the stored value and its optimistic version. */
