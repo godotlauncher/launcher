@@ -209,6 +209,30 @@ test('keeps Run available for uncertain overrides and unprepared C# projects', a
     }
 });
 
+test('preserves the missing-code-editor warning opened by Edit recovery', async () => {
+    await fs.writeFile(path.join(project.path, 'project.godot'), '[application]\nrun/main_scene="res://main.tscn"\n');
+    await stubRunResult({ launched: false, reason: 'launch_failed' });
+    await application.evaluate(({ ipcMain }) => {
+        const state = globalThis as typeof globalThis & { modalRecoveryLaunches?: boolean[] };
+        state.modalRecoveryLaunches = [];
+        ipcMain.removeHandler('projects.launchProject');
+        ipcMain.handle('projects.launchProject', (_event, _project: ProjectDetails, options?: { allowMissingCodeEditor?: boolean }) => {
+            state.modalRecoveryLaunches?.push(options?.allowMissingCodeEditor === true);
+            return { success: true, data: options?.allowMissingCodeEditor
+                ? { launched: true }
+                : { launched: false, reason: 'code_editor_unavailable', integration: { displayName: 'Visual Studio Code' } } };
+        });
+    });
+    await (await openMenu()).getByRole('button', { name: 'Run project', exact: true }).click();
+    const recovery = page.getByRole('dialog', { name: 'Could not run "Run Example"', exact: true });
+    await recovery.getByRole('button', { name: 'Edit in Godot', exact: true }).click();
+    const warning = page.getByRole('dialog', { name: 'Visual Studio Code was not found', exact: true });
+    await expect(warning).toBeVisible();
+    await warning.getByRole('button', { name: 'Launch anyway', exact: true }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    expect(await application.evaluate(() => (globalThis as typeof globalThis & { modalRecoveryLaunches?: boolean[] }).modalRecoveryLaunches)).toEqual([false, true]);
+});
+
 test('lets a running project write output and finish after Godot Launcher quits', async () => {
     test.skip(process.platform === 'win32', 'The native fixture checks POSIX broken-pipe handling.');
     await closeFixtureApp();
