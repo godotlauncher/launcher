@@ -1,9 +1,11 @@
+import 'reflect-metadata';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
-
+import { createApplication } from '@mariodebono/di';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { __resetJsonStoreForTesting } from './jsonStore.js';
+import { JsonStoreModule } from '../json-store/json-store.module.js';
+import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
 import {
     __resetJsonStoreFactoryForTesting,
     createTypedJsonStore,
@@ -23,18 +25,74 @@ function filePath(name: string): string {
 }
 
 describe('jsonStoreFactory', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         fs.rmSync(TEMP_DIR, { recursive: true, force: true });
         fs.mkdirSync(TEMP_DIR, { recursive: true });
-        __resetJsonStoreFactoryForTesting();
-        __resetJsonStoreForTesting();
+        await __resetJsonStoreFactoryForTesting();
     });
 
-    afterEach(() => {
+    afterEach(async () => {
         fs.rmSync(TEMP_DIR, { recursive: true, force: true });
-        __resetJsonStoreFactoryForTesting();
-        __resetJsonStoreForTesting();
+        await __resetJsonStoreFactoryForTesting();
         vi.restoreAllMocks();
+    });
+
+    it('shares queued updates with stores using the injected coordinator', async () => {
+        const application = await createApplication(JsonStoreModule, {
+            logger: false,
+        });
+        try {
+            const definition = {
+                pathProvider: () => filePath('shared.json'),
+                defaultValue: () => ({ value: 0 }),
+            };
+            const helper = createTypedJsonStore({
+                ...definition,
+                id: 'shared',
+            });
+            const coordinator = application.get(JsonStoreCoordinatorService);
+
+            await Promise.all([
+                helper.update(async (current) => {
+                    await Promise.resolve();
+                    return { value: current.value + 1 };
+                }),
+                coordinator.update(definition, (current) => ({
+                    value: current.value + 1,
+                })),
+            ]);
+
+            expect(await helper.read()).toEqual({ value: 2 });
+            expect((await coordinator.read(definition)).value).toEqual({
+                value: 2,
+            });
+        } finally {
+            await application.destroyAsync();
+        }
+    });
+
+    it('preserves parse recovery and repairs the recovered value when explicitly saved', async () => {
+        const file = filePath('corrupt.json');
+        fs.writeFileSync(file, '{invalid', 'utf-8');
+        const onParseError = vi.fn(() => ({ value: 42 }));
+        const helper = createTypedJsonStore({
+            id: 'corrupt',
+            pathProvider: () => file,
+            defaultValue: () => ({ value: 0 }),
+            onParseError,
+        });
+
+        const recovered = await helper.read();
+        expect(recovered).toEqual({ value: 42 });
+        expect(onParseError).toHaveBeenCalledWith(
+            expect.any(Error),
+            '{invalid',
+        );
+        expect(fs.readFileSync(file, 'utf-8')).toBe('{invalid');
+        await helper.write(recovered);
+        expect(JSON.parse(fs.readFileSync(file, 'utf-8'))).toEqual({
+            value: 42,
+        });
     });
 
     it('memoizes stores by identifier', async () => {

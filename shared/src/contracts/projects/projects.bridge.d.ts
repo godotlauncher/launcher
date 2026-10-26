@@ -33,6 +33,7 @@ import type {
     ProjectGitIdentityResult,
     ProjectImportInspection,
     ProjectPublicationRecoveryAction,
+    ProjectRunReadiness,
     PublicGitSourceInspectionResult,
     RemoteProjectImportRequest,
     RemoteProjectImportResult,
@@ -41,6 +42,7 @@ import type {
     RendererType,
     ResolveRemoteProjectCloneAction,
     ResolveRemoteProjectCloneResult,
+    RunProjectResult,
     SetProjectCodeEditorResult,
     SetRemoteProjectGitIdentityResult,
 } from './index.js';
@@ -271,6 +273,16 @@ export type ProjectsBridge = {
         project: ProjectDetails,
         options?: LaunchProjectOptions,
     ): Promise<LaunchProjectResult>;
+
+    /** Checks the registered project's configured main scene.
+     * @param projectPath - Exact registered project directory.
+     */
+    inspectProjectRun(projectPath: string): Promise<ProjectRunReadiness>;
+
+    /** Starts a separate runtime for the registered project.
+     * @param projectPath - Exact registered project directory.
+     */
+    runProject(projectPath: string): Promise<RunProjectResult>;
 
     /** Revalidates one project. */
     checkProjectValid(project: ProjectDetails): Promise<ProjectDetails>;

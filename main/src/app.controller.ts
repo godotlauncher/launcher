@@ -29,7 +29,6 @@ import {
     pathExists,
 } from './commands/fileSystem.js';
 import {
-    clearReleaseCaches,
     getAvailablePrereleases,
     getAvailableReleases,
 } from './commands/releases.js';
@@ -43,6 +42,8 @@ import {
     setUserPreferences,
 } from './commands/userPreferences.js';
 import { getCurrentAppConfig } from './config/index.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { EditorCatalogService } from './editor-catalog/editor-catalog.service.js';
 import { refreshMenu } from './helpers/menu.helper.js';
 import { getLinuxCredentialStorageStatus } from './linux-credential-storage.utils.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -65,11 +66,13 @@ export class AppController implements AppBridge {
      * @param i18nService - Main-process localization service.
      * @param appLifecycleService - Application lifecycle coordinator.
      * @param trayAvailabilityService - System tray availability service.
+     * @param editorCatalog - Active editor catalogue and safe rebuild operations.
      */
     constructor(
         private readonly i18nService: I18nService,
         private readonly appLifecycleService: AppLifecycleService,
         private readonly trayAvailabilityService: TrayAvailabilityService,
+        private readonly editorCatalog: EditorCatalogService,
     ) {}
     @AppHandler('getUserPreferences')
     getUserPreferences() {
@@ -193,12 +196,15 @@ export class AppController implements AppBridge {
         return createCustomEngineManifest(outputDirectory, manifest);
     }
 
+    /** Rebuilds the active catalogue while sharing repeated Settings requests. */
     @AppHandler('clearReleaseCache')
     clearReleaseCache(): Promise<void> {
         if (!this.clearReleaseCachePromise) {
-            this.clearReleaseCachePromise = clearReleaseCaches().finally(() => {
-                this.clearReleaseCachePromise = null;
-            });
+            this.clearReleaseCachePromise = this.editorCatalog
+                .rebuildCatalog()
+                .finally(() => {
+                    this.clearReleaseCachePromise = null;
+                });
         }
         return this.clearReleaseCachePromise;
     }

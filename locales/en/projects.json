@@ -686,5 +686,21 @@
         "removeDetail": "Their folders and files will stay on your device.",
         "removed": "Projects removed from list: {{count}}.",
         "removeProjectUnavailable": "This project is no longer available."
+    },
+    "runProject": {
+        "label": "Run project",
+        "failureTitle": "Could not run \"{{project}}\"",
+        "close": "Close",
+        "reasons": {
+            "checking": "Checking whether this project can run...",
+            "starting": "Starting project...",
+            "missing_main_scene": "Set a main scene in Godot to run this project.",
+            "project_unavailable": "This project is no longer available. Check its folder and project.godot file.",
+            "editor_unavailable": "Install or select this project's Godot editor before running.",
+            "check_failed": "Could not check this project. Close this menu and try again.",
+            "already_running": "This project is already running.",
+            "launch_failed": "Godot could not start this project. Open it in Godot to check for errors."
+        },
+        "runtimeFailure": "Godot reported an error. Open this project in Godot to check it."
     }
 }

@@ -8,6 +8,7 @@ const menuCapture = vi.hoisted(() => ({
     items: [] as Array<{
         key: string;
         label?: ReactNode;
+        description?: ReactNode;
         disabled?: boolean;
         closeOnSelect?: boolean;
         onSelect?: () => void | Promise<void>;
@@ -23,6 +24,7 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
         items: Array<{
             key: string;
             label?: ReactNode;
+            description?: ReactNode;
             disabled?: boolean;
             closeOnSelect?: boolean;
             onSelect?: () => void | Promise<void>;
@@ -32,13 +34,12 @@ vi.mock('../../../components/ui/action-menu.component', () => ({
         return open ? (
             <div>
                 {items.map((item) => (
-                    <button
-                        key={item.key}
-                        type="button"
-                        disabled={item.disabled}
-                    >
-                        {item.label}
-                    </button>
+                    <div key={item.key}>
+                        <button type="button" disabled={item.disabled}>
+                            {item.label}
+                        </button>
+                        {item.description && <p>{item.description}</p>}
+                    </div>
                 ))}
             </div>
         ) : null;
@@ -77,6 +78,42 @@ const project: ProjectDetails = {
 
 describe('ProjectActionsMenu', () => {
     afterEach(() => vi.unstubAllGlobals());
+
+    it.each([
+        ['ready', false],
+        ['missing_main_scene', true],
+        ['editor_unavailable', true],
+        ['already_running', true],
+        ['check_failed', true],
+    ] as const)(
+        'offers Run first with the current %s state',
+        async (status, disabled) => {
+            const run = vi.fn();
+            const html = renderToStaticMarkup(
+                <ProjectActionsMenu
+                    project={project}
+                    anchorRect={null}
+                    t={(key) => key}
+                    onClose={vi.fn()}
+                    runReadiness={{ status }}
+                    onRunProject={run}
+                    onExportEditorSettings={vi.fn()}
+                    onImportEditorSettings={vi.fn()}
+                    onRemoveProject={vi.fn()}
+                    onClearNewStatus={vi.fn()}
+                />,
+            );
+            const action = menuCapture.items[0];
+            expect(action.key).toBe('run-project');
+            expect(action.disabled).toBe(disabled);
+            if (disabled) {
+                expect(html).toContain(`runProject.reasons.${status}`);
+            } else {
+                await action.onSelect?.();
+                expect(run).toHaveBeenCalledExactlyOnceWith(project);
+            }
+        },
+    );
 
     it('starts duplication with the selected source project', async () => {
         const duplicate = vi.fn();

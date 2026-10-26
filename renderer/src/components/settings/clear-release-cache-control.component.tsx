@@ -57,11 +57,7 @@ const persistTimestamp = (timestamp: number | null) => {
 
 export const ClearReleaseCacheControl: React.FC = () => {
     const { t } = useTranslation('settings');
-    const {
-        clearReleaseCache,
-        refreshAvailableReleases,
-        loading: releaseLoading,
-    } = useRelease();
+    const { clearReleaseCache, loading: releaseLoading } = useRelease();
     const { addAlert } = useAlerts();
     const [lastClearedAt, setLastClearedAt] = useState<number | null>(() =>
         getStoredTimestamp(),
@@ -126,7 +122,6 @@ export const ClearReleaseCacheControl: React.FC = () => {
         setIsProcessing(true);
         try {
             await clearReleaseCache();
-            await refreshAvailableReleases();
             addAlert(
                 t('behavior.clearReleaseCache.successTitle'),
                 t('behavior.clearReleaseCache.successMessage'),
@@ -146,14 +141,7 @@ export const ClearReleaseCacheControl: React.FC = () => {
         } finally {
             setIsProcessing(false);
         }
-    }, [
-        addAlert,
-        buttonDisabled,
-        clearReleaseCache,
-        isProcessing,
-        refreshAvailableReleases,
-        t,
-    ]);
+    }, [addAlert, buttonDisabled, clearReleaseCache, isProcessing, t]);
 
     return (
         <SettingsSection

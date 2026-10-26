@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
     getMainWindow: vi.fn(),
     ipcWebContentsSend: vi.fn(),
     updateLinuxTray: vi.fn(),
+    assignProjectEditor: vi.fn(),
 }));
 
 vi.mock('../checks.js', () => ({
@@ -35,8 +36,8 @@ vi.mock('./installed-editor.store.js', () => ({
             first.version === second.version && first.mono === second.mono,
     ),
 }));
-vi.mock('./project-editor-repair.util.js', () => ({
-    setProjectEditor: vi.fn(),
+vi.mock('../projects/project-editor-assignment.util.js', () => ({
+    assignProjectEditor: mocks.assignProjectEditor,
 }));
 vi.mock('electron-log', () => ({
     default: { warn: vi.fn() },
@@ -136,5 +137,48 @@ describe('EditorProjectRepairAdapter', () => {
             missingProject,
             samePath,
         ]);
+    });
+
+    it('repairs matching projects through the shared assignment operation', async () => {
+        const previous = {
+            version: '4.5-stable',
+            mono: false,
+            editor_path: '/old/Godot',
+        } as InstalledRelease;
+        const replacement = { ...previous, editor_path: '/new/Godot' };
+        const project = {
+            path: '/projects/game',
+            release: previous,
+        } as ProjectDetails;
+        const other = {
+            path: '/projects/other',
+            release: {
+                version: '4.6-stable',
+                mono: false,
+                editor_path: '/other/Godot',
+            },
+        } as ProjectDetails;
+        const store = { list: vi.fn().mockResolvedValue([project, other]) };
+        const codeEditors = {} as never;
+        mocks.assignProjectEditor.mockResolvedValue({
+            success: true,
+            projects: [project, other],
+        });
+        mocks.checkAndUpdateProjects.mockResolvedValue([project, other]);
+        const adapter = new EditorProjectRepairAdapter(
+            codeEditors,
+            store as never,
+        );
+
+        await adapter.repairAfterReinstall(previous, replacement);
+
+        expect(mocks.assignProjectEditor).toHaveBeenCalledExactlyOnceWith(
+            project,
+            replacement,
+            codeEditors,
+            store,
+            { version: previous.version, mono: previous.mono },
+        );
+        expect(mocks.checkAndUpdateProjects).toHaveBeenCalledOnce();
     });
 });

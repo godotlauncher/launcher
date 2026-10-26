@@ -23,7 +23,9 @@ export async function openMacOSTerminalLaunchScript(
  * Resolves the executable named by a macOS app bundle.
  * @param bundlePath - Godot app bundle path.
  */
-async function resolveBundleExecutable(bundlePath: string): Promise<string> {
+export async function resolveBundleExecutable(
+    bundlePath: string,
+): Promise<string> {
     const infoPath = path.join(bundlePath, 'Contents', 'Info.plist');
     const stdout = await new Promise<string>((resolve, reject) =>
         execFile(

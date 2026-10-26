@@ -131,6 +131,89 @@ describe('JsonStoreCoordinatorService', () => {
         expect(adapter.write).not.toHaveBeenCalled();
     });
 
+    it('recovers invalid JSON only when the store opts in and repairs it on write', async () => {
+        const adapter = createFileAdapter('{invalid');
+        const coordinator = new JsonStoreCoordinatorService(adapter);
+        const onLoadError = vi.fn(() => ({ values: [] }));
+        const definition = { ...createDefinition(), onLoadError };
+
+        const current = await coordinator.read(definition);
+
+        expect(onLoadError).toHaveBeenCalledWith(expect.any(Error), '{invalid');
+        expect(current.value).toEqual({ values: [] });
+        expect(adapter.write).not.toHaveBeenCalled();
+        await coordinator.write(definition, current.value);
+        expect(adapter.write).toHaveBeenCalledOnce();
+        expect(JSON.parse(adapter.contents ?? '')).toEqual({ values: [] });
+    });
+
+    it('allows an opted-in store to recover a read failure', async () => {
+        const adapter = createFileAdapter();
+        const error = new Error('permission denied');
+        vi.spyOn(adapter, 'read').mockRejectedValueOnce(error);
+        const coordinator = new JsonStoreCoordinatorService(adapter);
+        const onLoadError = vi.fn(() => ({ values: ['recovered'] }));
+
+        expect(
+            (await coordinator.read({ ...createDefinition(), onLoadError }))
+                .value,
+        ).toEqual({ values: ['recovered'] });
+        expect(onLoadError).toHaveBeenCalledWith(error, undefined);
+        expect(adapter.write).not.toHaveBeenCalled();
+    });
+
+    it('does not treat a normalisation failure as a recoverable load error', async () => {
+        const adapter = createFileAdapter('{"values":[]}');
+        const coordinator = new JsonStoreCoordinatorService(adapter);
+        const onLoadError = vi.fn();
+        const definition = {
+            ...createDefinition(),
+            onLoadError,
+            normalize: () => {
+                throw new Error('invalid state');
+            },
+        };
+
+        await expect(coordinator.read(definition)).rejects.toThrow(
+            'invalid state',
+        );
+        expect(onLoadError).not.toHaveBeenCalled();
+    });
+
+    it('writes unchanged values only once and persists normalised content', async () => {
+        const adapter = createFileAdapter('{"values":["b","a","a"]}');
+        const coordinator = new JsonStoreCoordinatorService(adapter);
+        const definition = createDefinition();
+        const current = await coordinator.read(definition);
+
+        await coordinator.write(definition, current.value);
+        await coordinator.write(definition, current.value);
+
+        expect(adapter.write).toHaveBeenCalledOnce();
+        expect(JSON.parse(adapter.contents ?? '')).toEqual({
+            values: ['a', 'b'],
+        });
+    });
+
+    it('rejects an update based on a stale version', async () => {
+        const adapter = createFileAdapter();
+        const coordinator = new JsonStoreCoordinatorService(adapter);
+        const definition = createDefinition();
+        const previous = await coordinator.write(definition, {
+            values: ['old'],
+        });
+        await coordinator.write(definition, { values: ['saved'] });
+
+        await expect(
+            coordinator.update(definition, () => ({ values: ['stale'] }), {
+                expectedVersion: previous.version,
+            }),
+        ).rejects.toBeInstanceOf(JsonStoreConflictError);
+        expect((await coordinator.read(definition)).value).toEqual({
+            values: ['saved'],
+        });
+    });
+
     it('keeps the last persisted value cached when a write fails', async () => {
         const adapter = createFileAdapter('{"values":["persisted"]}');
         const coordinator = new JsonStoreCoordinatorService(adapter);

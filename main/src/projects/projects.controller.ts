@@ -28,6 +28,8 @@ import { GodotProjectListService } from './godot-project-list.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectFolderScanService } from './project-folder-scan.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
+import { ProjectRunService } from './project-run.service.js';
+// biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsService } from './projects.service.js';
 
 const ProjectsHandler = createIpcHandleTyped<ProjectsBridge>();
@@ -41,11 +43,13 @@ export class ProjectsController implements ProjectsBridge {
      * @param projects - Project workflow facade.
      * @param folderScan - Read-only local project scanner.
      * @param godotLists - Read-only Godot registration source reader.
+     * @param projectRuns - Separate game runtime boundary.
      */
     constructor(
         private readonly projects: ProjectsService,
         private readonly folderScan: ProjectFolderScanService,
         private readonly godotLists: GodotProjectListService,
+        private readonly projectRuns: ProjectRunService,
     ) {}
 
     /** Finds existing normal Godot project lists. */
@@ -533,6 +537,22 @@ export class ProjectsController implements ProjectsBridge {
     @ProjectsHandler('launchProject')
     launchProject(project: ProjectDetails, options?: LaunchProjectOptions) {
         return this.projects.launchProject(project, options);
+    }
+
+    /** Checks the registered project's current run readiness.
+     * @param projectPath - Exact registered project folder.
+     */
+    @ProjectsHandler('inspectProjectRun')
+    inspectProjectRun(projectPath: string) {
+        return this.projectRuns.inspectProjectRun(projectPath);
+    }
+
+    /** Starts the registered project's configured main scene.
+     * @param projectPath - Exact registered project folder.
+     */
+    @ProjectsHandler('runProject')
+    runProject(projectPath: string) {
+        return this.projectRuns.runProject(projectPath);
     }
 
     /**

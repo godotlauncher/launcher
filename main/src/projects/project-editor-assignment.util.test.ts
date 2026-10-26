@@ -6,8 +6,8 @@ import type {
 } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
-import type { ProjectsStore } from '../projects/projects.store.js';
-import { setProjectEditor as setProjectEditorForRepair } from './project-editor-repair.util.js';
+import { assignProjectEditor } from './project-editor-assignment.util.js';
+import type { ProjectsStore } from './projects.store.js';
 
 const fsMocks = vi.hoisted(() => ({
     existsSync: vi.fn(),
@@ -138,7 +138,7 @@ const projectsStore = {
 } as unknown as ProjectsStore;
 
 /**
- * Calls the editor repair utility with the canonical test store.
+ * Calls the shared editor assignment utility with the canonical test store.
  *
  * @param project - Project to update.
  * @param release - Replacement editor release.
@@ -151,7 +151,7 @@ function setProjectEditor(
     codeEditors: CodeEditorIntegrationService,
     expectedEditor?: ProjectEditorSelectionExpectation,
 ) {
-    return setProjectEditorForRepair(
+    return assignProjectEditor(
         project,
         release,
         codeEditors,
@@ -362,21 +362,25 @@ describe('setProjectEditor', () => {
         );
     });
 
-    it('applies the selected integration', async () => {
-        existsSync.mockReturnValue(true);
+    it.each(['vscode', 'vscodium'] as const)(
+        'applies the selected %s integration',
+        async (integrationId) => {
+            existsSync.mockReturnValue(true);
+            mockProject.codeEditorId = integrationId;
 
-        const result = await setProjectEditor(
-            mockProject,
-            mockNewRelease,
-            codeEditorIntegrationService,
-        );
+            const result = await setProjectEditor(
+                mockProject,
+                mockNewRelease,
+                codeEditorIntegrationService,
+            );
 
-        expect(result.success).toBe(true);
-        expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
-            'vscode',
-            expect.objectContaining({ projectPath: '/fake/project' }),
-        );
-    });
+            expect(result.success).toBe(true);
+            expect(integrationMocks.applyToProject).toHaveBeenCalledWith(
+                integrationId,
+                expect.objectContaining({ projectPath: '/fake/project' }),
+            );
+        },
+    );
 
     it('passes the changed Godot editor context to the integration', async () => {
         const result = await setProjectEditor(
@@ -496,6 +500,24 @@ describe('setProjectEditor', () => {
 
         expect(result.success).toBe(true);
         expect(result.projects).toEqual([mockProject]);
+        expect(SetProjectEditorRelease).not.toHaveBeenCalled();
+        expect(integrationMocks.scanIntegration).not.toHaveBeenCalled();
+        expect(writeProjectLauncherConfig).not.toHaveBeenCalled();
+    });
+
+    it('keeps the caller project unchanged when persistence fails', async () => {
+        const originalProject = structuredClone(mockProject);
+        storeProjectsList.mockRejectedValueOnce(new Error('write failed'));
+
+        await expect(
+            setProjectEditor(
+                mockProject,
+                mockNewRelease,
+                codeEditorIntegrationService,
+            ),
+        ).rejects.toThrow('write failed');
+
+        expect(mockProject).toEqual(originalProject);
     });
 
     it('should return error when project is not found', async () => {

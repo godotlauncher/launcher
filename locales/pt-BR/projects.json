@@ -686,5 +686,21 @@
         "removeDetail": "As pastas e os arquivos permanecerão no dispositivo.",
         "removed": "Projetos removidos da lista: {{count}}.",
         "removeProjectUnavailable": "Este projeto não está mais disponível."
+    },
+    "runProject": {
+        "label": "Executar projeto",
+        "failureTitle": "Não foi possível executar \"{{project}}\"",
+        "close": "Fechar",
+        "reasons": {
+            "checking": "Verificando se este projeto pode ser executado...",
+            "starting": "Iniciando projeto...",
+            "missing_main_scene": "Defina uma cena principal no Godot para executar este projeto.",
+            "project_unavailable": "Este projeto não está mais disponível. Verifique a pasta e o arquivo project.godot.",
+            "editor_unavailable": "Instale ou selecione o editor Godot deste projeto antes de executá-lo.",
+            "check_failed": "Não foi possível verificar este projeto. Feche este menu e tente novamente.",
+            "already_running": "Este projeto já está em execução.",
+            "launch_failed": "O Godot não conseguiu iniciar este projeto. Abra-o no Godot para verificar os erros."
+        },
+        "runtimeFailure": "O Godot relatou um erro. Abra este projeto no Godot para verificá-lo."
     }
 }

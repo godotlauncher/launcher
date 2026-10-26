@@ -6,12 +6,12 @@ import { checkAndUpdateProjects } from '../checks.js';
 import { CodeEditorIntegrationService } from '../codeEditorIntegration/codeEditorIntegration.service.js';
 import { updateLinuxTray } from '../helpers/tray.helper.js';
 import { getMainWindow } from '../mainWindow.js';
+import { assignProjectEditor } from '../projects/project-editor-assignment.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from '../projects/projects.store.js';
 import { removeProjectEditor } from '../utils/godot.utils.js';
 import { ipcWebContentsSend } from '../utils.js';
 import { hasSameInstalledEditorIdentity } from './installed-editor.store.js';
-import { setProjectEditor } from './project-editor-repair.util.js';
 
 function projectUsesEditor(
     project: ProjectDetails,
@@ -98,7 +98,7 @@ export class EditorProjectRepairAdapter {
         for (const project of projects.filter((candidate) =>
             projectUsesEditor(candidate, previousRelease),
         )) {
-            const result = await setProjectEditor(
+            const result = await assignProjectEditor(
                 project,
                 newRelease,
                 this.codeEditorIntegrationService,

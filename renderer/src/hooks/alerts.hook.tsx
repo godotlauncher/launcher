@@ -133,8 +133,9 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
         });
     };
 
+    /** Closes this confirmation without dismissing a replacement dialog. */
     const closeConfirm = (): void => {
-        setConfirm(null);
+        setConfirm((current) => (current === confirm ? null : current));
     };
 
     const showConfirm = () => {

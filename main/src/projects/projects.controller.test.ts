@@ -21,10 +21,35 @@ vi.mock('./godot-project-list.service.js', () => ({
     GodotProjectListService: class GodotProjectListService {},
 }));
 
+vi.mock('./project-run.service.js', () => ({
+    ProjectRunService: class ProjectRunService {},
+}));
+
 import { ProjectsController } from './projects.controller.js';
 import type { ProjectsService } from './projects.service.js';
 
 describe('ProjectsController', () => {
+    it('delegates run inspection and launching with only the stored path', async () => {
+        const runs = {
+            inspectProjectRun: vi.fn().mockResolvedValue({ status: 'ready' }),
+            runProject: vi.fn().mockResolvedValue({ launched: true }),
+        };
+        const controller = new ProjectsController(
+            {} as never,
+            {} as never,
+            {} as never,
+            runs as never,
+        );
+        await expect(controller.inspectProjectRun('/project')).resolves.toEqual(
+            { status: 'ready' },
+        );
+        await expect(controller.runProject('/project')).resolves.toEqual({
+            launched: true,
+        });
+        expect(runs.inspectProjectRun).toHaveBeenCalledWith('/project');
+        expect(runs.runProject).toHaveBeenCalledWith('/project');
+    });
+
     it('delegates the complete project bridge to ProjectsService', async () => {
         const project = { path: '/projects/game' } as ProjectDetails;
         const release = { version: '4.5-stable' } as InstalledRelease;
@@ -51,6 +76,7 @@ describe('ProjectsController', () => {
         const service = createServiceMock();
         const controller = new ProjectsController(
             service,
+            {} as never,
             {} as never,
             {} as never,
         );

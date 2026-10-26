@@ -12,7 +12,6 @@ import type { CodeEditorIntegrationService } from '../codeEditorIntegration/code
 import { getUserPreferences } from '../commands/userPreferences.js';
 import { EDITOR_CONFIG_DIRNAME } from '../constants.js';
 import { t } from '../i18n/index.js';
-import type { ProjectsStore } from '../projects/projects.store.js';
 import {
     DEFAULT_PROJECT_DEFINITION,
     getProjectDefinition,
@@ -20,7 +19,12 @@ import {
 } from '../utils/godot.utils.js';
 import { sanitiseProjectDirectoryName } from '../utils/projectDirectoryName.utils.js';
 import { writeProjectLauncherConfig } from '../utils/projectLauncherConfig.utils.js';
+import type { ProjectsStore } from './projects.store.js';
 
+/** Resolves the existing isolated editor directory or its name-based fallback.
+ * @param project - Current registered project.
+ * @param installLocation - Configured editor installation root.
+ */
 function resolveProjectEditorPath(
     project: ProjectDetails,
     installLocation: string,
@@ -54,14 +58,13 @@ function resolveProjectEditorPath(
  * @param expectedEditor - Optional current selection required for repair.
  * @returns The bridge-compatible editor change result.
  */
-export async function setProjectEditor(
+export async function assignProjectEditor(
     project: ProjectDetails,
     newRelease: InstalledRelease,
     codeEditorIntegrationService: CodeEditorIntegrationService,
     projectsStore: ProjectsStore,
     expectedEditor?: ProjectEditorSelectionExpectation,
 ): Promise<ChangeProjectEditorResult> {
-    const { install_location: installLocation } = await getUserPreferences();
     const recoveredCodeEditorConfigFiles = new Set<string>();
     let failure: ChangeProjectEditorResult | undefined;
     let updatedProject: ProjectDetails | undefined;
@@ -95,7 +98,7 @@ export async function setProjectEditor(
             currentProject.release.version === newRelease.version &&
             currentProject.release.mono === newRelease.mono &&
             currentProject.release.editor_path === newRelease.editor_path &&
-            currentProject.release.valid !== false
+            currentProject.release.valid === newRelease.valid
         ) {
             logger.warn(
                 `Project already using the selected release, ${newRelease.version} - ${newRelease.mono ? 'mono' : ''}`,
@@ -127,6 +130,8 @@ export async function setProjectEditor(
             return currentProjects;
         }
 
+        const { install_location: installLocation } =
+            await getUserPreferences();
         const projectEditorPath = resolveProjectEditorPath(
             currentProject,
             installLocation,

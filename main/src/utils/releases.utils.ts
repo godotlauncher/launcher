@@ -12,7 +12,6 @@ import {
     archiveDigestsMatch,
     normalizeGithubAssetDigest,
 } from './archive-integrity.util.js';
-import { __resetJsonStoreForTesting } from './jsonStore.js';
 import {
     __resetJsonStoreFactoryForTesting,
     createTypedJsonStore,
@@ -20,7 +19,7 @@ import {
 } from './jsonStoreFactory.js';
 import { getMacosAssetArchitectures } from './macos-asset.util.js';
 
-export { parseReleaseName, sortReleases } from './releaseSorting.utils.js';
+export { parseReleaseName, sortReleases } from './release-sorting.util.js';
 
 /**
  * Creates a summary of a release asset with relevant tags and download URL.
@@ -462,15 +461,9 @@ export async function storeAvailableReleases(
     return normalizeReleaseCache(persisted);
 }
 
-export function __resetReleaseCachesForTesting(): void {
-    availableReleaseStores.forEach((store) => {
-        void store.clear();
-    });
-    prereleaseStores.forEach((store) => {
-        void store.clear();
-    });
+/** Clears release helper state after test operations have completed. */
+export async function __resetReleaseCachesForTesting(): Promise<void> {
+    await __resetJsonStoreFactoryForTesting();
     availableReleaseStores.clear();
     prereleaseStores.clear();
-    __resetJsonStoreFactoryForTesting();
-    __resetJsonStoreForTesting();
 }

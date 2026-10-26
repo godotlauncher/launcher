@@ -128,7 +128,7 @@ const defaultDirs: {
 };
 
 describe('getAvailableReleases', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         getDefaultDirs.mockReset();
         getReleases.mockReset();
         storeAvailableReleases.mockReset();
@@ -136,12 +136,12 @@ describe('getAvailableReleases', () => {
         vi.mocked(fs.existsSync).mockReset();
         vi.mocked(fs.promises.readFile).mockReset();
         vi.mocked(fs.promises.writeFile).mockReset();
-        releasesUtils.__resetReleaseCachesForTesting();
+        await releasesUtils.__resetReleaseCachesForTesting();
         getDefaultDirs.mockReturnValue({ ...defaultDirs });
     });
 
-    afterEach(() => {
-        releasesUtils.__resetReleaseCachesForTesting();
+    afterEach(async () => {
+        await releasesUtils.__resetReleaseCachesForTesting();
     });
 
     it('returns stale cached releases with a refresh error when GitHub refresh fails', async () => {
@@ -375,3 +375,16 @@ describe('clearReleaseCaches', () => {
         );
     });
 });
+
+vi.mock('../json-store/atomic-json-file.adapter.js', () => ({
+    AtomicJsonFileAdapter: class {
+        async read(filePath: string): Promise<string | undefined> {
+            return fs.existsSync(filePath)
+                ? fs.promises.readFile(filePath, 'utf-8')
+                : undefined;
+        }
+        async write(filePath: string, contents: string): Promise<void> {
+            await fs.promises.writeFile(filePath, contents, 'utf-8');
+        }
+    },
+}));

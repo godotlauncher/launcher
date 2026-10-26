@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { Check } from 'lucide-react';
 import type React from 'react';
 import type { CSSProperties, ReactNode } from 'react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MenuDivider } from './menu-divider.component';
 
@@ -15,6 +15,7 @@ export type ActionMenuActionItem = {
     type?: 'item';
     key: string;
     label: ReactNode;
+    description?: ReactNode;
     icon?: ReactNode;
     trailingIcon?: ReactNode;
     checked?: boolean;
@@ -179,6 +180,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     className,
     align = 'end',
 }) => {
+    const descriptionId = useId();
     const panelRef = useRef<HTMLElement | null>(null);
     const portalAnchorRef = useRef<HTMLSpanElement | null>(null);
     const [portalTarget, setPortalTarget] = useState<Element | null>(null);
@@ -331,6 +333,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                                             : item.checked
                                     }
                                     disabled={item.disabled}
+                                    aria-describedby={
+                                        item.description
+                                            ? `${descriptionId}-${item.key}`
+                                            : undefined
+                                    }
                                     data-testid={item.testId}
                                     className={clsx(
                                         'w-full',
@@ -367,6 +374,15 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
                                         )}
                                     </span>
                                 </button>
+                                {item.description && (
+                                    <p
+                                        id={`${descriptionId}-${item.key}`}
+                                        aria-live="polite"
+                                        className="pointer-events-none block! px-3 pb-2 pt-0 pl-9 text-xs font-normal text-base-content/75"
+                                    >
+                                        {item.description}
+                                    </p>
+                                )}
                             </li>
                         );
                     })}

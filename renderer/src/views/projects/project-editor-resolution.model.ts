@@ -3,6 +3,7 @@ import type {
     ProjectDetails,
     ReleaseSummary,
 } from '@shared/contracts';
+import { sortReleases } from '../../release-sorting.util';
 
 /**
  * Returns the Godot major/minor branch represented by a release version.
@@ -13,54 +14,6 @@ import type {
 function getReleaseBaseVersion(version: string): string | null {
     const match = version.match(/^v?(\d+)\.(\d+)/i);
     return match ? `${match[1]}.${match[2]}` : null;
-}
-
-/**
- * Parses the numeric version parts used to order stable releases.
- *
- * @param version - Release version or tag-like version text.
- * @returns Major, minor, patch, and revision numbers.
- */
-function getReleaseVersionParts(version: string): number[] {
-    const match = version.match(/^v?(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?/i);
-    return match
-        ? [
-              Number.parseInt(match[1], 10),
-              Number.parseInt(match[2], 10),
-              Number.parseInt(match[3] ?? '0', 10),
-              Number.parseInt(match[4] ?? '0', 10),
-          ]
-        : [0, 0, 0, 0];
-}
-
-/**
- * Compares release versions by patch, then stable/RC/beta/dev and iteration.
- *
- * @param first - First release to compare.
- * @param second - Second release to compare.
- * @returns A negative value when the first release is newer.
- */
-function compareEditorReleases(
-    first: ReleaseSummary,
-    second: ReleaseSummary,
-): number {
-    const firstParts = getReleaseVersionParts(first.version);
-    const secondParts = getReleaseVersionParts(second.version);
-
-    for (let index = 0; index < firstParts.length; index++) {
-        if (firstParts[index] !== secondParts[index]) {
-            return secondParts[index] - firstParts[index];
-        }
-    }
-
-    const firstChannel = first.version.match(/-(stable|rc|beta|dev)(\d*)$/i);
-    const secondChannel = second.version.match(/-(stable|rc|beta|dev)(\d*)$/i);
-    const channels = ['dev', 'beta', 'rc', 'stable'];
-    return (
-        channels.indexOf(secondChannel?.[1]?.toLowerCase() ?? '') -
-            channels.indexOf(firstChannel?.[1]?.toLowerCase() ?? '') ||
-        Number(secondChannel?.[2] || 0) - Number(firstChannel?.[2] || 0)
-    );
 }
 
 /**
@@ -110,7 +63,7 @@ export function findDownloadableProjectEditor(
                     downloadable.base_version &&
                 hasEditorFlavor(release, downloadable.flavor),
         )
-        .sort(compareEditorReleases)[0];
+        .sort(sortReleases)[0];
 }
 
 /**
@@ -146,9 +99,7 @@ export function findDownloadableMissingProjectEditor(
                 ),
         );
         const stable = compatible.filter((release) => !release.prerelease);
-        return (stable.length ? stable : compatible).sort(
-            compareEditorReleases,
-        )[0];
+        return (stable.length ? stable : compatible).sort(sortReleases)[0];
     }
 
     return [...availableReleases, ...availablePrereleases].find(

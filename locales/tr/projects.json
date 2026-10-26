@@ -686,5 +686,21 @@
         "removeDetail": "Klasörleri ve dosyaları cihazınızda kalacak.",
         "removed": "Listeden kaldırılan proje sayısı: {{count}}.",
         "removeProjectUnavailable": "Bu proje artık kullanılamıyor."
+    },
+    "runProject": {
+        "label": "Projeyi çalıştır",
+        "failureTitle": "\"{{project}}\" çalıştırılamadı",
+        "close": "Kapat",
+        "reasons": {
+            "checking": "Projenin çalıştırılabilirliği denetleniyor...",
+            "starting": "Proje başlatılıyor...",
+            "missing_main_scene": "Bu projeyi çalıştırmak için Godot'ta bir ana sahne belirleyin.",
+            "project_unavailable": "Bu proje artık kullanılamıyor. Klasörünü ve project.godot dosyasını denetleyin.",
+            "editor_unavailable": "Çalıştırmadan önce bu projenin Godot düzenleyicisini yükleyin veya seçin.",
+            "check_failed": "Bu proje denetlenemedi. Bu menüyü kapatıp yeniden deneyin.",
+            "already_running": "Bu proje zaten çalışıyor.",
+            "launch_failed": "Godot bu projeyi başlatamadı. Hataları denetlemek için Godot'ta açın."
+        },
+        "runtimeFailure": "Godot bir hata bildirdi. Denetlemek için bu projeyi Godot'ta açın."
     }
 }

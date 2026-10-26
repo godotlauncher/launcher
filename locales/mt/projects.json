@@ -686,5 +686,21 @@
         "removeDetail": "Il-folders u l-fajls tagħhom jibqgħu fuq it-tagħmir tiegħek.",
         "removed": "Proġetti mneħħija mil-lista: {{count}}.",
         "removeProjectUnavailable": "Dan il-proġett m’għadux disponibbli."
+    },
+    "runProject": {
+        "label": "Ħaddem il-proġett",
+        "failureTitle": "Ma setax jitħaddem \"{{project}}\"",
+        "close": "Agħlaq",
+        "reasons": {
+            "checking": "Qed jiġi ċċekkjat jekk il-proġett jistax jitħaddem...",
+            "starting": "Il-proġett qed jinbeda...",
+            "missing_main_scene": "Issettja xena prinċipali f'Godot biex tħaddem dan il-proġett.",
+            "project_unavailable": "Dan il-proġett m'għadux disponibbli. Iċċekkja l-fowlder tiegħu u l-fajl project.godot.",
+            "editor_unavailable": "Installa jew agħżel l-editur Godot ta' dan il-proġett qabel tħaddmu.",
+            "check_failed": "Dan il-proġett ma setax jiġi ċċekkjat. Agħlaq dan il-menu u erġa' pprova.",
+            "already_running": "Dan il-proġett diġà qed jitħaddem.",
+            "launch_failed": "Godot ma setax jibda dan il-proġett. Iftħu f'Godot biex tiċċekkja għal żbalji."
+        },
+        "runtimeFailure": "Godot irrapporta żball. Iftaħ dan il-proġett f'Godot biex tiċċekkjah."
     }
 }

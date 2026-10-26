@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { getMacosAssetArchitectures } from '../utils/macos-asset.util.js';
+import { sortReleases as compareEditorReleases } from '../utils/release-sorting.util.js';
 import {
     EDITOR_CATALOG_PROVIDER_IDS,
     EDITOR_CATALOG_SCHEMA_VERSION,
@@ -8,6 +9,8 @@ import type {
     EditorCatalogFile,
     EditorCatalogProviderState,
 } from './editor-catalog.types.js';
+
+export { compareEditorReleases };
 
 const EditorCatalogProviderIdSchema = z.enum(EDITOR_CATALOG_PROVIDER_IDS);
 const EditorCatalogFlavorSchema = z.enum(['gdscript', 'dotnet']);
@@ -190,45 +193,4 @@ function normalizeRelease(
             }))
             .sort((a, b) => a.flavor.localeCompare(b.flavor)),
     };
-}
-
-/**
- * Compares two releases so newer versions come first.
- *
- * @param a - The first release.
- * @param b - The second release.
- * @returns A sort value for the two releases.
- */
-export function compareEditorReleases(
-    a: EditorCatalogProviderState['releases'][number],
-    b: EditorCatalogProviderState['releases'][number],
-): number {
-    const fields = ['major', 'minor', 'patch'] as const;
-    for (const field of fields) {
-        const difference = b.versionParts[field] - a.versionParts[field];
-        if (difference !== 0) {
-            return difference;
-        }
-    }
-
-    const channelDifference =
-        channelPriority(a.versionParts.channel) -
-        channelPriority(b.versionParts.channel);
-    if (channelDifference !== 0) {
-        return channelDifference;
-    }
-
-    return b.versionParts.iteration - a.versionParts.iteration;
-}
-
-/**
- * Gets the sort priority for a release channel.
- *
- * @param channel - The release channel name.
- * @returns The channel sort priority.
- */
-function channelPriority(channel: string): number {
-    return ['stable', 'rc', 'beta', 'alpha', 'dev'].indexOf(channel) === -1
-        ? 99
-        : ['stable', 'rc', 'beta', 'alpha', 'dev'].indexOf(channel);
 }

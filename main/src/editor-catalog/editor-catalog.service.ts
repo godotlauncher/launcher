@@ -97,6 +97,45 @@ export class EditorCatalogService {
     }
 
     /**
+     * Rebuilds both providers before atomically replacing the saved catalogue.
+     * Existing data is retained when any fetch, validation or write fails.
+     */
+    async rebuildCatalog(): Promise<void> {
+        if (this.configService.get('e2eFixtures')) return;
+
+        while (this.activeRefresh && !this.activeRefresh.rebuild) {
+            await this.activeRefresh.promise.catch(() => undefined);
+        }
+        const active =
+            this.activeRefresh ??
+            this.startRefresh([...EDITOR_CATALOG_PROVIDER_IDS], true);
+        await active.promise;
+    }
+
+    /**
+     * Starts one coordinated catalogue request and releases it on completion.
+     *
+     * @param providerIds - Providers to fetch.
+     * @param rebuild - Whether to fetch and replace the complete catalogue.
+     * @returns The active request shared by other callers.
+     */
+    private startRefresh(
+        providerIds: EditorCatalogProviderId[],
+        rebuild = false,
+    ): ActiveRefresh {
+        const active: ActiveRefresh = {
+            providerIds: new Set(providerIds),
+            rebuild,
+            promise: this.runRefresh(providerIds, rebuild),
+        };
+        active.promise = active.promise.finally(() => {
+            if (this.activeRefresh === active) this.activeRefresh = null;
+        });
+        this.activeRefresh = active;
+        return active;
+    }
+
+    /**
      * Shares one active refresh between callers.
      *
      * @param providerIds - The providers to refresh.
@@ -120,24 +159,24 @@ export class EditorCatalogService {
     private async refreshProviders(
         providerIds: EditorCatalogProviderId[],
     ): Promise<RefreshOutcome> {
-        if (!this.activeRefresh) {
-            const activeRefresh: ActiveRefresh = {
-                providerIds: new Set(providerIds),
-                promise: this.runRefresh(providerIds),
-            };
-            activeRefresh.promise = activeRefresh.promise.finally(() => {
-                if (this.activeRefresh === activeRefresh) {
-                    this.activeRefresh = null;
-                }
-            });
-            this.activeRefresh = activeRefresh;
-        }
-
-        const activeRefresh = this.activeRefresh;
+        const activeRefresh =
+            this.activeRefresh ?? this.startRefresh(providerIds);
         const missingProviderIds = providerIds.filter(
             (providerId) => !activeRefresh.providerIds.has(providerId),
         );
-        const outcome = await activeRefresh.promise;
+        let outcome: RefreshOutcome;
+        try {
+            outcome = await activeRefresh.promise;
+        } catch (error) {
+            if (!activeRefresh.rebuild) throw error;
+            // A normal refresh still returns cached data when a shared rebuild fails.
+            outcome = {
+                catalog: await this.store.read(),
+                errors: new Map(
+                    providerIds.map((id) => [id, getErrorMessage(error)]),
+                ),
+            };
+        }
         const errors = new Map<EditorCatalogProviderId, string>();
         for (const providerId of providerIds) {
             const message = outcome.errors.get(providerId);
@@ -165,19 +204,25 @@ export class EditorCatalogService {
      * Fetches provider updates and stores successful results.
      *
      * @param providerIds - The providers to fetch.
+     * @param rebuild - Whether every provider must succeed before full replacement.
      * @returns The updated catalog and any provider errors.
      */
     private async runRefresh(
         providerIds: EditorCatalogProviderId[],
+        rebuild = false,
     ): Promise<RefreshOutcome> {
-        let catalog: EditorCatalogFile;
-        let catalogReadable = true;
-        try {
-            catalog = await this.store.read();
-        } catch (error) {
-            catalogReadable = false;
-            catalog = createEmptyEditorCatalog();
-            logger.error('Failed to read editor catalog before refresh', error);
+        let catalog = createEmptyEditorCatalog();
+        let catalogReadable = false;
+        if (!rebuild) {
+            try {
+                catalog = await this.store.read();
+                catalogReadable = true;
+            } catch (error) {
+                logger.error(
+                    'Failed to read editor catalog before refresh',
+                    error,
+                );
+            }
         }
 
         const integrityRefreshProviderIds = new Set(
@@ -213,6 +258,17 @@ export class EditorCatalogService {
                 result.reason,
             );
         });
+
+        if (rebuild) {
+            if (errors.size > 0) {
+                throw new Error([...errors.values()].join('; '));
+            }
+            if (updates.some((update) => update.releases.length === 0)) {
+                throw new Error(
+                    'Cannot rebuild editor catalog: a provider returned no supported releases',
+                );
+            }
+        }
 
         if (updates.length > 0) {
             const applyUpdates = (current: EditorCatalogFile) =>
@@ -345,6 +401,7 @@ type RefreshOutcome = {
 /** One active provider refresh shared by concurrent callers. */
 type ActiveRefresh = {
     providerIds: Set<EditorCatalogProviderId>;
+    rebuild: boolean;
     promise: Promise<RefreshOutcome>;
 };
 

@@ -1,5 +1,6 @@
 import type {
     EditorCatalogRelease,
+    EditorCatalogResult,
     EditorInstallOrigin,
     EditorRemovalSelection,
     InstalledRelease,
@@ -105,6 +106,18 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     const [initialized, setInitialized] = React.useState<boolean>(false);
 
     /**
+     * Applies one catalogue result without clearing the current list first.
+     * @param result - Catalogue and provider status returned by main.
+     */
+    const applyCatalogueResult = (result: EditorCatalogResult): void => {
+        const catalog = mapEditorCatalogResult(result);
+        setCatalogueReleases(result.releases);
+        setAvailableReleases(catalog.availableReleases);
+        setAvailablePrereleases(catalog.availablePrereleases);
+        setHasError(catalog.refreshError);
+    };
+
+    /**
      * Loads the catalog and installed editors together.
      *
      * @param forceCatalogRefresh - Whether to fetch catalog updates now.
@@ -120,12 +133,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
                 forceCatalogRefresh ? refreshCatalog() : getCatalog(),
                 editorInstallsBridge.getInstalledEditors(),
             ]);
-            const catalog = mapEditorCatalogResult(catalogResult);
-
-            setCatalogueReleases(catalogResult.releases);
-            setAvailableReleases(catalog.availableReleases);
-            setAvailablePrereleases(catalog.availablePrereleases);
-            setHasError(catalog.refreshError);
+            applyCatalogueResult(catalogResult);
             setInstalledReleases(installed);
         } catch (error) {
             setHasError(error instanceof Error ? error.message : String(error));
@@ -195,15 +203,18 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     };
 
     /**
-     * Clears the legacy cache and refreshes the active catalog.
+     * Rebuilds the active catalogue and loads it once without another fetch.
      *
-     * @returns A promise that ends when both cache paths are current.
+     * @returns A promise that rejects if rebuilding or reloading fails.
      */
     const clearReleaseCache = async (): Promise<void> => {
         setLoading(true);
         try {
             await appBridge.clearReleaseCache();
-            await updateAllReleases(true);
+            applyCatalogueResult(await getCatalog({ refreshIfStale: false }));
+        } catch (error) {
+            setHasError(error instanceof Error ? error.message : String(error));
+            throw error;
         } finally {
             setLoading(false);
         }

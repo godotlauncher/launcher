@@ -650,14 +650,14 @@ suite('Releases Utils', () => {
     });
 
     describe('Available releases storage', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             vi.mocked(fs.existsSync).mockReset();
             vi.mocked(fs.promises.readFile).mockReset();
             vi.mocked(fs.promises.writeFile).mockReset();
-            __resetReleaseCachesForTesting();
+            await __resetReleaseCachesForTesting();
         });
-        afterEach(() => {
-            __resetReleaseCachesForTesting();
+        afterEach(async () => {
+            await __resetReleaseCachesForTesting();
         });
 
         test('should store available releases correctly', async () => {
@@ -742,3 +742,16 @@ suite('Releases Utils', () => {
         });
     });
 });
+
+vi.mock('../json-store/atomic-json-file.adapter.js', () => ({
+    AtomicJsonFileAdapter: class {
+        async read(filePath: string): Promise<string | undefined> {
+            return fs.existsSync(filePath)
+                ? fs.promises.readFile(filePath, 'utf-8')
+                : undefined;
+        }
+        async write(filePath: string, contents: string): Promise<void> {
+            await fs.promises.writeFile(filePath, contents, 'utf-8');
+        }
+    },
+}));

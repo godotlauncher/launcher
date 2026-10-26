@@ -202,6 +202,29 @@ describe('GithubEditorCatalogAdapter', () => {
         expect(fetchMock).toHaveBeenCalledTimes(100);
     });
 
+    it.each([403, 429])(
+        'rejects partial data if page two is rate limited with %s',
+        async (status) => {
+            const fetchMock = vi
+                .fn()
+                .mockResolvedValueOnce(
+                    Response.json(createGithubReleasePage(1, 100)),
+                )
+                .mockResolvedValueOnce(
+                    new Response('rate limited', { status }),
+                );
+            vi.stubGlobal('fetch', fetchMock);
+
+            await expect(
+                new GithubEditorCatalogAdapter().fetchProvider(
+                    'official-stable',
+                    null,
+                ),
+            ).rejects.toThrow(`${status}; rate limited`);
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+        },
+    );
+
     it('throws a useful response error', async () => {
         vi.stubGlobal(
             'fetch',

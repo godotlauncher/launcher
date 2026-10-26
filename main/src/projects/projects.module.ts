@@ -22,6 +22,7 @@ import { ProjectRemoteImportService } from './project-remote-import.service.js';
 import { ProjectRemoteImportProgressService } from './project-remote-import-progress.service.js';
 import { ProjectRemoteSourceService } from './project-remote-source.service.js';
 import { ProjectRepositoryOriginIndexService } from './project-repository-origin-index.service.js';
+import { ProjectRunService } from './project-run.service.js';
 import { ProjectsController } from './projects.controller.js';
 import { ProjectsService } from './projects.service.js';
 import { ProjectsStoreModule } from './projects-store.module.js';
@@ -55,6 +56,7 @@ import { ProjectsStoreModule } from './projects-store.module.js';
         ProjectEditorService,
         ProjectGitService,
         ProjectLaunchService,
+        ProjectRunService,
         ProjectsService,
         ProjectsController,
     ],
