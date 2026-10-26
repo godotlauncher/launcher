@@ -4,6 +4,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AtomicJsonFileAdapter } from '../json-store/atomic-json-file.adapter.js';
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
+import { createEmptyEditorCatalog } from './editor-catalog.schema.js';
 import { EditorCatalogStore } from './editor-catalog.store.js';
 
 const temporaryDirectories: string[] = [];
@@ -44,6 +45,22 @@ describe('EditorCatalogStore', () => {
         await expect(fs.readFile(catalogPath, 'utf-8')).resolves.toContain(
             '"schemaVersion": 1',
         );
+    });
+
+    it('keeps the saved catalogue when replacement validation fails', async () => {
+        const directory = await createTemporaryDirectory();
+        const catalogPath = path.join(directory, 'editor-catalog.json');
+        const store = createStore(catalogPath);
+        const original = createEmptyEditorCatalog();
+        await store.replace(original);
+        const contents = await fs.readFile(catalogPath, 'utf-8');
+
+        await expect(
+            store.replace({ ...original, schemaVersion: 2 } as never),
+        ).rejects.toThrow();
+
+        expect(await fs.readFile(catalogPath, 'utf-8')).toBe(contents);
+        expect(await store.read()).toEqual(original);
     });
 
     it('rejects malformed new catalog data', async () => {

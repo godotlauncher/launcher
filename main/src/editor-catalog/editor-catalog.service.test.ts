@@ -53,6 +53,201 @@ describe('EditorCatalogService', () => {
         vi.useRealTimers();
     });
 
+    describe('rebuildCatalog', () => {
+        it('fully fetches both providers and replaces obsolete cached releases once', async () => {
+            const catalog = createCatalogWithRelease(
+                createRelease('official-stable', '4.4-stable'),
+            );
+            const { service, githubAdapter, store } = createService(catalog);
+
+            await service.rebuildCatalog();
+
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2);
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledWith(
+                'official-stable',
+                null,
+            );
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledWith(
+                'official-prerelease',
+                null,
+            );
+            expect(store.update).not.toHaveBeenCalled();
+            expect(store.replace).toHaveBeenCalledOnce();
+            const saved = await store.read();
+            expect(
+                saved.providers['official-stable'].releases.map(
+                    ({ version }) => version,
+                ),
+            ).toEqual(['4.5-stable']);
+            for (const provider of Object.values(saved.providers)) {
+                expect(provider).toMatchObject({
+                    lastFetchedAt: Date.now(),
+                    integrityMetadataRefreshed: true,
+                    templateMetadataRefreshed: true,
+                });
+            }
+        });
+
+        it.each([
+            '403; rate limited',
+            '429; too many requests',
+            'network failure',
+            'invalid release response',
+        ])(
+            'keeps the entire cache when one provider fails with %s',
+            async (message) => {
+                const catalog = createCatalogWithRelease(
+                    createRelease('official-stable', '4.4-stable'),
+                );
+                const { service, githubAdapter, store } =
+                    createService(catalog);
+                githubAdapter.fetchProvider.mockRejectedValueOnce(
+                    new Error(message),
+                );
+
+                await expect(service.rebuildCatalog()).rejects.toThrow(message);
+
+                expect(store.replace).not.toHaveBeenCalled();
+                expect(store.update).not.toHaveBeenCalled();
+                expect(await store.read()).toEqual(catalog);
+            },
+        );
+
+        it('rejects unexpectedly empty results without replacing the cache', async () => {
+            const catalog = createCatalogWithRelease(
+                createRelease('official-stable', '4.4-stable'),
+            );
+            const { service, githubAdapter, store } = createService(catalog);
+            githubAdapter.fetchProvider.mockResolvedValueOnce({
+                providerId: 'official-stable',
+                lastPublishedAt: null,
+                releases: [],
+            });
+
+            await expect(service.rebuildCatalog()).rejects.toThrow(
+                'no supported releases',
+            );
+
+            expect(store.replace).not.toHaveBeenCalled();
+            expect(await store.read()).toEqual(catalog);
+        });
+
+        it('keeps cached data after a failed write and allows a later retry', async () => {
+            const catalog = createCatalogWithRelease(
+                createRelease('official-stable', '4.4-stable'),
+            );
+            const { service, store } = createService(catalog);
+            store.replace.mockRejectedValueOnce(new Error('write failed'));
+
+            await expect(service.rebuildCatalog()).rejects.toThrow(
+                'write failed',
+            );
+            expect(await store.read()).toEqual(catalog);
+            await service.rebuildCatalog();
+            expect(store.replace).toHaveBeenCalledTimes(2);
+            expect(
+                (await store.read()).providers['official-stable'].releases[0]
+                    .version,
+            ).toBe('4.5-stable');
+        });
+
+        it('shares an active rebuild with repeated rebuilds and normal refreshes', async () => {
+            const catalog = createCatalogWithRelease(
+                createRelease('official-stable', '4.4-stable'),
+            );
+            const { service, githubAdapter, store } = createService(catalog);
+            let finish!: (value: FetchedEditorCatalogProvider) => void;
+            githubAdapter.fetchProvider.mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        finish = resolve;
+                    }),
+            );
+            const first = service.rebuildCatalog();
+            const second = service.rebuildCatalog();
+            const refresh = service.refreshCatalog();
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2);
+            expect(store.replace).not.toHaveBeenCalled();
+            expect(await store.read()).toEqual(catalog);
+            finish({
+                providerId: 'official-stable',
+                lastPublishedAt: null,
+                releases: [createRelease('official-stable', '4.5-stable')],
+            });
+
+            const [, , result] = await Promise.all([first, second, refresh]);
+
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2);
+            expect(store.replace).toHaveBeenCalledOnce();
+            expect(result.releases).toHaveLength(2);
+        });
+
+        it('returns cached data to a normal refresh joining a failed rebuild', async () => {
+            const cached = createRelease('official-stable', '4.4-stable');
+            const catalog = createCatalogWithRelease(cached);
+            const { service, githubAdapter, store } = createService(catalog);
+            let fail!: (error: Error) => void;
+            githubAdapter.fetchProvider.mockImplementationOnce(
+                () =>
+                    new Promise((_resolve, reject) => {
+                        fail = reject;
+                    }),
+            );
+            const rebuild = expect(service.rebuildCatalog()).rejects.toThrow(
+                '429; rate limited',
+            );
+            const refresh = service.refreshCatalog();
+            fail(new Error('429; rate limited'));
+
+            await rebuild;
+            const result = await refresh;
+
+            expect(result.releases).toEqual([cached]);
+            expect(
+                result.providers.every(
+                    ({ refreshError }) => refreshError === '429; rate limited',
+                ),
+            ).toBe(true);
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2);
+            expect(store.replace).not.toHaveBeenCalled();
+            expect(await store.read()).toEqual(catalog);
+        });
+
+        it('waits for an earlier incremental refresh before replacing its result', async () => {
+            const { service, githubAdapter, store } = createService(
+                createEmptyEditorCatalog(),
+            );
+            let finish!: (value: FetchedEditorCatalogProvider) => void;
+            githubAdapter.fetchProvider.mockImplementationOnce(
+                () =>
+                    new Promise((resolve) => {
+                        finish = resolve;
+                    }),
+            );
+            const refresh = service.refreshCatalog();
+            await vi.waitFor(() =>
+                expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2),
+            );
+            const rebuild = service.rebuildCatalog();
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(2);
+            finish({
+                providerId: 'official-stable',
+                lastPublishedAt: null,
+                releases: [createRelease('official-stable', '4.4-stable')],
+            });
+
+            await Promise.all([refresh, rebuild]);
+
+            expect(githubAdapter.fetchProvider).toHaveBeenCalledTimes(4);
+            expect(store.replace).toHaveBeenCalledOnce();
+            expect(
+                (await store.read()).providers['official-stable'].releases.map(
+                    ({ version }) => version,
+                ),
+            ).toEqual(['4.5-stable']);
+        });
+    });
+
     it('queries a fresh catalog without fetching', async () => {
         const catalog = createCatalogWithRelease(
             createRelease('official-stable', '4.5-stable'),
@@ -76,6 +271,7 @@ describe('EditorCatalogService', () => {
 
         await service.getCatalog();
         await service.refreshCatalog();
+        await service.rebuildCatalog();
 
         expect(githubAdapter.fetchProvider).not.toHaveBeenCalled();
     });
