@@ -2,6 +2,18 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useGitLfs } from './git-lfs.hook.ts';
 
+/** Captures a hook value through a stable server-rendered test component.
+ * @param props - Callback receiving the current hook value.
+ */
+function Capture({
+    capture,
+}: {
+    capture: (value: ReturnType<typeof useGitLfs>) => void;
+}) {
+    capture(useGitLfs());
+    return null;
+}
+
 describe('useGitLfs', () => {
     const policy = {
         id: 'godot-documentation-defaults',
@@ -25,12 +37,13 @@ describe('useGitLfs', () => {
     function renderHook(): ReturnType<typeof useGitLfs> {
         let captured: ReturnType<typeof useGitLfs> | undefined;
 
-        const Capture = () => {
-            captured = useGitLfs();
-            return null;
-        };
-
-        renderToStaticMarkup(<Capture />);
+        renderToStaticMarkup(
+            <Capture
+                capture={(value) => {
+                    captured = value;
+                }}
+            />,
+        );
 
         if (!captured) {
             throw new Error('Hook was not rendered');

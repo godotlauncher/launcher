@@ -115,7 +115,7 @@ describe(' Godot Utils ', () => {
             expect(projectDefinition).toBeNull();
         });
 
-        it('should get the closest project definition for version if not exist ', () => {
+        it('gets the available project definition for Godot 4.4', () => {
             const projectDefinition = getProjectDefinition(4.4);
             expect(projectDefinition).toBeDefined();
             expect(projectDefinition?.configVersion).toBe(5);
@@ -129,7 +129,7 @@ describe(' Godot Utils ', () => {
             expect(projectDefinition?.projectFilename).toBe('project.godot');
         });
 
-        it('should get the closest project definition for version if not exist ', () => {
+        it('gets the available project definition for Godot 4.0', () => {
             const projectDefinition = getProjectDefinition(4.0);
             expect(projectDefinition).toBeDefined();
             expect(projectDefinition?.configVersion).toBe(5);

@@ -85,7 +85,7 @@ const { mockTrayInstance, trayInstance, MockTray } = vi.hoisted(() => {
         popUpContextMenu: vi.fn(),
     };
 
-    const TrayMock = vi.fn(function TrayMock() {
+    const TrayMock = vi.fn(function createTrayMock() {
         return instance;
     });
 

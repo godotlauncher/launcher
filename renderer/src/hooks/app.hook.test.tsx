@@ -2,6 +2,18 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppProvider, useApp } from './app.hook';
 
+/** Captures a hook value through a stable server-rendered test component.
+ * @param props - Callback receiving the current hook value.
+ */
+function Capture({
+    capture,
+}: {
+    capture: (value: ReturnType<typeof useApp>) => void;
+}) {
+    capture(useApp());
+    return null;
+}
+
 describe('useApp', () => {
     const checkForUpdatesMock = vi.fn();
     const installUpdateAndRestartMock = vi.fn();
@@ -31,14 +43,13 @@ describe('useApp', () => {
     it('manual check ignores skipped updates', async () => {
         let captured: ReturnType<typeof useApp> | undefined;
 
-        const Capture = () => {
-            captured = useApp();
-            return null;
-        };
-
         renderToStaticMarkup(
             <AppProvider>
-                <Capture />
+                <Capture
+                    capture={(value) => {
+                        captured = value;
+                    }}
+                />
             </AppProvider>,
         );
 
@@ -52,14 +63,13 @@ describe('useApp', () => {
     it('exposes explicit download and skip/unskip actions', async () => {
         let captured: ReturnType<typeof useApp> | undefined;
 
-        const Capture = () => {
-            captured = useApp();
-            return null;
-        };
-
         renderToStaticMarkup(
             <AppProvider>
-                <Capture />
+                <Capture
+                    capture={(value) => {
+                        captured = value;
+                    }}
+                />
             </AppProvider>,
         );
 
