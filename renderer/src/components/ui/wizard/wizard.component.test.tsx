@@ -19,6 +19,11 @@ const steps: WizardStep[] = [
 ];
 const action = { label: 'Next', onClick: () => {} };
 
+/** Fails if a dormant step is mounted before it is active. */
+function Inactive(): never {
+    throw new Error('Inactive content was mounted');
+}
+
 describe('Wizard', () => {
     it('renders a labelled step list and only the active content without creating a modal', () => {
         const html = renderToStaticMarkup(
@@ -39,10 +44,6 @@ describe('Wizard', () => {
     });
 
     it('does not mount inactive feature components', () => {
-        /** Fails if a dormant step is mounted before it is active. */
-        function Inactive(): never {
-            throw new Error('Inactive content was mounted');
-        }
         const html = renderToStaticMarkup(
             <Wizard
                 steps={[

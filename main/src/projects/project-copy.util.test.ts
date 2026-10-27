@@ -360,10 +360,10 @@ describe('trimmed project copies', () => {
     it('decodes names containing equals signs and escapes for save data and C# identity', async () => {
         await fs.writeFile(
             path.join(sourcePath, 'project.godot'),
-            original.replace(
+            `${original.replace(
                 'config/name="Original"',
-                'config/name=' + JSON.stringify('Game=One"Test'),
-            ) + '\n[dotnet]\nproject/assembly_name=""\n',
+                `config/name=${JSON.stringify('Game=One"Test')}`,
+            )}\n[dotnet]\nproject/assembly_name=""\n`,
         );
         await attempt.prepare(destination, editorRoot, 'Copy');
         expect(attempt.saveSource).toBe(
@@ -377,7 +377,7 @@ describe('trimmed project copies', () => {
             ),
         );
         expect(attempt.projectFile).toContain(
-            'project/assembly_name=' + JSON.stringify('Game=One"Test'),
+            `project/assembly_name=${JSON.stringify('Game=One"Test')}`,
         );
         await attempt.cleanup();
     });

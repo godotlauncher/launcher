@@ -2,6 +2,18 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useGit } from './git.hook.ts';
 
+/** Captures a hook value through a stable server-rendered test component.
+ * @param props - Callback receiving the current hook value.
+ */
+function Capture({
+    capture,
+}: {
+    capture: (value: ReturnType<typeof useGit>) => void;
+}) {
+    capture(useGit());
+    return null;
+}
+
 describe('useGit', () => {
     const identity = {
         name: 'Mario',
@@ -41,12 +53,13 @@ describe('useGit', () => {
     function renderHook(): ReturnType<typeof useGit> {
         let captured: ReturnType<typeof useGit> | undefined;
 
-        const Capture = () => {
-            captured = useGit();
-            return null;
-        };
-
-        renderToStaticMarkup(<Capture />);
+        renderToStaticMarkup(
+            <Capture
+                capture={(value) => {
+                    captured = value;
+                }}
+            />,
+        );
 
         if (!captured) {
             throw new Error('Hook was not rendered');

@@ -38,6 +38,18 @@ const github: AppIntegrationSummary = {
     connectionOptions: [],
 };
 
+/** Captures a hook value through a stable server-rendered test component.
+ * @param props - Callback receiving the current hook value.
+ */
+function Capture({
+    capture,
+}: {
+    capture: (value: ReturnType<typeof useAppIntegrations>) => void;
+}) {
+    capture(useAppIntegrations());
+    return null;
+}
+
 describe('useAppIntegrations', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -52,12 +64,13 @@ describe('useAppIntegrations', () => {
     function renderHook(): ReturnType<typeof useAppIntegrations> {
         let captured: ReturnType<typeof useAppIntegrations> | undefined;
 
-        const Capture = () => {
-            captured = useAppIntegrations();
-            return null;
-        };
-
-        renderToStaticMarkup(<Capture />);
+        renderToStaticMarkup(
+            <Capture
+                capture={(value) => {
+                    captured = value;
+                }}
+            />,
+        );
 
         if (!captured) {
             throw new Error('Hook was not rendered');

@@ -170,7 +170,7 @@ export function useRemoteProjectGitIdentity({
     };
 
     /** Opens the editable form instead of using the suggested preset. */
-    const useDifferentIdentity = () => {
+    const chooseDifferentIdentity = () => {
         setName(globalIdentity.name);
         setEmail(globalIdentity.email);
         setScope('repository');
@@ -274,7 +274,7 @@ export function useRemoteProjectGitIdentity({
         prepare,
         continueAfterIdentity,
         addIdentity,
-        useDifferentIdentity,
+        chooseDifferentIdentity,
         applyPreset,
         saveAndContinue,
         returnFromForm,

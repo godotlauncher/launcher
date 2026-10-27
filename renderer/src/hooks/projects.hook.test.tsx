@@ -49,6 +49,18 @@ vi.mock('./release.hook', () => ({
     useRelease: () => ({ installRelease: mocks.installRelease }),
 }));
 
+/** Captures a hook value through a stable server-rendered test component.
+ * @param props - Callback receiving the current hook value.
+ */
+function Capture({
+    capture,
+}: {
+    capture: (value: ReturnType<typeof useProjects>) => void;
+}) {
+    capture(useProjects());
+    return null;
+}
+
 describe('useProjects', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -63,14 +75,13 @@ describe('useProjects', () => {
     function renderHook(): ReturnType<typeof useProjects> {
         let captured: ReturnType<typeof useProjects> | undefined;
 
-        const Capture = () => {
-            captured = useProjects();
-            return null;
-        };
-
         renderToStaticMarkup(
             <ProjectsProvider>
-                <Capture />
+                <Capture
+                    capture={(value) => {
+                        captured = value;
+                    }}
+                />
             </ProjectsProvider>,
         );
 

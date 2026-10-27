@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => {
         once: vi.fn(),
         show: vi.fn(),
     };
-    const BrowserWindow = vi.fn(function BrowserWindow() {
+    const BrowserWindow = vi.fn(function createBrowserWindowMock() {
         return window;
     });
 

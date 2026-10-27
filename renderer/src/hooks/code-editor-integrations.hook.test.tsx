@@ -30,6 +30,18 @@ const settings: CodeEditorIntegrationSettings = {
     resolvedGodotExecPath: installation.path,
 };
 
+/** Captures a hook value through a stable server-rendered test component.
+ * @param props - Callback receiving the current hook value.
+ */
+function Capture({
+    capture,
+}: {
+    capture: (value: ReturnType<typeof useCodeEditorIntegrations>) => void;
+}) {
+    capture(useCodeEditorIntegrations());
+    return null;
+}
+
 describe('useCodeEditorIntegrations', () => {
     const listIntegrationSettings = vi.fn(async () => [settings]);
     const rescanIntegration = vi.fn(async () => settings);
@@ -68,12 +80,13 @@ describe('useCodeEditorIntegrations', () => {
     function renderHook(): ReturnType<typeof useCodeEditorIntegrations> {
         let captured: ReturnType<typeof useCodeEditorIntegrations> | undefined;
 
-        const Capture = () => {
-            captured = useCodeEditorIntegrations();
-            return null;
-        };
-
-        renderToStaticMarkup(<Capture />);
+        renderToStaticMarkup(
+            <Capture
+                capture={(value) => {
+                    captured = value;
+                }}
+            />,
+        );
 
         if (!captured) {
             throw new Error('Hook was not rendered');

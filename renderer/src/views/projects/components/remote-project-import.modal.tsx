@@ -1157,7 +1157,7 @@ export const RemoteProjectImportModal: React.FC<
                 onContinueWithoutIdentity={gitIdentity.continueAfterIdentity}
                 onAddIdentity={gitIdentity.addIdentity}
                 onUseGlobal={gitIdentity.continueAfterIdentity}
-                onUseDifferentIdentity={gitIdentity.useDifferentIdentity}
+                onUseDifferentIdentity={gitIdentity.chooseDifferentIdentity}
                 onUsePreset={() => void gitIdentity.applyPreset()}
                 onBack={gitIdentity.returnFromForm}
                 onSave={() => void gitIdentity.saveAndContinue()}
@@ -1173,7 +1173,7 @@ export const RemoteProjectImportModal: React.FC<
                 t={t}
                 onContinueWithoutIdentity={gitIdentity.continueAfterIdentity}
                 onUseGlobal={gitIdentity.continueAfterIdentity}
-                onUseDifferentIdentity={gitIdentity.useDifferentIdentity}
+                onUseDifferentIdentity={gitIdentity.chooseDifferentIdentity}
                 onUsePreset={() => void gitIdentity.applyPreset()}
                 onBack={gitIdentity.returnFromForm}
                 onSave={() => void gitIdentity.saveAndContinue()}

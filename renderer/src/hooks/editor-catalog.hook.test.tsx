@@ -13,6 +13,18 @@ type TestElectronApi = {
     'editorCatalog.refreshCatalog': () => Promise<EditorCatalogResult>;
 };
 
+/** Captures a hook value through a stable server-rendered test component.
+ * @param props - Callback receiving the current hook value.
+ */
+function Capture({
+    capture,
+}: {
+    capture: (value: ReturnType<typeof useEditorCatalog>) => void;
+}) {
+    capture(useEditorCatalog());
+    return null;
+}
+
 describe('useEditorCatalog', () => {
     const getCatalog = vi.fn(async () => emptyCatalog);
     const refreshCatalog = vi.fn(async () => emptyCatalog);
@@ -39,13 +51,13 @@ describe('useEditorCatalog', () => {
     function renderHook(): ReturnType<typeof useEditorCatalog> {
         let captured: ReturnType<typeof useEditorCatalog> | undefined;
 
-        /** Captures the hook value during server rendering. */
-        const Capture = () => {
-            captured = useEditorCatalog();
-            return null;
-        };
-
-        renderToStaticMarkup(<Capture />);
+        renderToStaticMarkup(
+            <Capture
+                capture={(value) => {
+                    captured = value;
+                }}
+            />,
+        );
 
         if (!captured) {
             throw new Error('Hook was not rendered');
