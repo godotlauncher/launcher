@@ -130,6 +130,11 @@ export class AppLifecycleService implements OnModuleInit, OnModuleDestroy {
         logger.debug('App ready, checking projects and releases');
         await this.projectsService.checkAllProjectsValid();
         await this.installedEditorService.revalidateInstalledEditors();
+        try {
+            await this.installedEditorService.getCommandLineAliases();
+        } catch (error) {
+            logger.warn('Could not recover named terminal commands', error);
+        }
     }
 
     /** Binds window resources and handles launches requested from the tray. */

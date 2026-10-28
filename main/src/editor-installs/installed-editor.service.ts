@@ -109,6 +109,61 @@ export class InstalledEditorService {
         }
     }
 
+    /** Gets verified aliases and any reserved unfinished operations. */
+    async getCommandLineAliases() {
+        return this.commandLine.getAliases(() => this.store.list());
+    }
+
+    /**
+     * Checks a name against the authoritative installation and command registry.
+     * @param identity - Registered editor identity.
+     * @param name - Literal draft name.
+     */
+    async checkCommandLineAlias(
+        identity: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string,
+    ) {
+        const release = (await this.store.list()).find((candidate) =>
+            hasSameInstalledEditorIdentity(candidate, identity),
+        );
+        if (!release)
+            throw new Error('The selected editor is no longer registered.');
+        return this.commandLine.checkAlias(release, name);
+    }
+
+    /**
+     * Reserves an installation before applying its alias operation.
+     * @param identity - Registered editor identity.
+     * @param name - Literal new command or null for removal.
+     */
+    async setCommandLineAlias(
+        identity: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string | null,
+    ) {
+        const key = getInstalledEditorIdentity(identity);
+        if (
+            this.activeRemovals.has(key) ||
+            this.activeOfficialInstalls.has(key) ||
+            this.activeCustomRegistrations.has(key) ||
+            this.activeCommandLineSelections.has(key)
+        )
+            throw new Error(t('installs:selection.errors.busy'));
+        this.activeCommandLineSelections.add(key);
+        try {
+            const installed = await this.store.list();
+            const release = installed.find((candidate) =>
+                hasSameInstalledEditorIdentity(candidate, identity),
+            );
+            if (!release)
+                throw new Error('The selected editor is no longer registered.');
+            return await this.commandLine.setAlias(release, name, () =>
+                this.store.list(),
+            );
+        } finally {
+            this.activeCommandLineSelections.delete(key);
+        }
+    }
+
     /** Gets every registered installed editor. */
     getInstalledEditors(): Promise<InstalledRelease[]> {
         return this.store.list();
@@ -252,19 +307,22 @@ export class InstalledEditorService {
         try {
             logger.info(`Removing release '${release.version}'`);
 
-            await this.commandLine.withEditorRemoval(release, async () => {
-                if (
-                    release.source !== 'custom' &&
-                    release.managed_by_launcher !== false &&
-                    fs.existsSync(release.install_path)
-                ) {
-                    await fs.promises.rm(release.install_path, {
-                        recursive: true,
-                        force: true,
-                    });
-                }
-            });
-            const releases = await this.store.remove(release);
+            const releases = await this.commandLine.withEditorRemoval(
+                release,
+                async () => {
+                    if (
+                        release.source !== 'custom' &&
+                        release.managed_by_launcher !== false &&
+                        fs.existsSync(release.install_path)
+                    ) {
+                        await fs.promises.rm(release.install_path, {
+                            recursive: true,
+                            force: true,
+                        });
+                    }
+                    return this.store.remove(release);
+                },
+            );
             try {
                 await this.projectRepair.removeEditorFromProjects(release);
             } catch (error) {

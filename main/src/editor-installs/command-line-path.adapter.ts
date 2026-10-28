@@ -57,11 +57,16 @@ export class CommandLinePathAdapter {
         );
     }
 
-    /** Reports actual PATH setup changes and any existing command taking precedence. */
-    async register(): Promise<PathRegistrationResult> {
-        if (this.options.platform === 'win32') return this.registerWindows();
+    /**
+     * Reports PATH setup changes and existing command precedence.
+     * @param command - Portable command name, defaulting to godot.
+     */
+    async register(command = 'godot'): Promise<PathRegistrationResult> {
+        this.validateCommand(command);
+        if (this.options.platform === 'win32')
+            return this.registerWindows(command);
         const shell = path.basename(this.options.shell);
-        const conflict = await this.findShellConflict(shell);
+        const conflict = await this.findShellConflict(shell, command);
         let pathChanged = false;
         if (shell === 'zsh') {
             const directory = await this.resolveZshDirectory();
@@ -122,6 +127,72 @@ export class CommandLinePathAdapter {
             }
         }
         return { conflict, pathChanged };
+    }
+
+    /**
+     * Resolves a validated command in the shared per-user bin directory.
+     * @param command - Literal portable command name.
+     */
+    pathForCommand(command: string): string {
+        this.validateCommand(command);
+        const paths =
+            this.options.platform === 'win32' ? path.win32 : path.posix;
+        return paths.join(
+            this.binDirectory,
+            this.options.platform === 'win32' ? `${command}.cmd` : command,
+        );
+    }
+
+    /**
+     * Checks command resolution without changing PATH or executing the editor.
+     * @param command - Literal portable command name.
+     */
+    async findConflict(command: string): Promise<string | null> {
+        this.validateCommand(command);
+        if (this.options.platform !== 'win32')
+            return this.findShellConflict(
+                path.basename(this.options.shell),
+                command,
+            );
+        const script = `$ErrorActionPreference = 'Stop'; $paths = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'); foreach ($entry in ([Environment]::ExpandEnvironmentVariables($paths) -split ';')) { if ([string]::IsNullOrWhiteSpace($entry)) { continue }; foreach ($ext in @('.com','.exe','.bat','.cmd')) { $candidate = Join-Path $entry ('${command}' + $ext); if (Test-Path -LiteralPath $candidate -PathType Leaf) { Write-Output $candidate; return } } }`;
+        const executable = path.win32.join(
+            this.options.env.SystemRoot || 'C:\\Windows',
+            'System32',
+            'WindowsPowerShell',
+            'v1.0',
+            'powershell.exe',
+        );
+        const { stdout } = await this.execute(
+            executable,
+            [
+                '-NoLogo',
+                '-NoProfile',
+                '-NonInteractive',
+                '-EncodedCommand',
+                Buffer.from(script, 'utf16le').toString('base64'),
+            ],
+            {
+                env: this.options.env,
+                timeout: 10000,
+                windowsHide: true,
+                maxBuffer: 64 * 1024,
+            },
+        );
+        const resolved = stdout.trim();
+        return resolved &&
+            resolved.toLowerCase() !==
+                this.pathForCommand(command).toLowerCase()
+            ? resolved
+            : null;
+    }
+
+    /**
+     * Rejects names before they enter platform lookup scripts or filenames.
+     * @param command - Untrusted requested command name.
+     */
+    private validateCommand(command: string): void {
+        if (!/^[a-z][a-z0-9-]{0,47}$/.test(command))
+            throw new Error('Invalid command name.');
     }
 
     /** Resolves Zsh's startup directory after it reads the user's .zshenv. */
@@ -190,16 +261,22 @@ export class CommandLinePathAdapter {
     /**
      * Checks the user's interactive shell without executing any Godot command.
      * @param shell - Shell filename used to select lookup syntax.
+     * @param requestedCommand - Portable name being checked.
      */
-    private async findShellConflict(shell: string): Promise<string | null> {
+    private async findShellConflict(
+        shell: string,
+        requestedCommand = 'godot',
+    ): Promise<string | null> {
+        const command = requestedCommand;
         if (!['bash', 'zsh', 'sh', 'fish'].includes(shell)) {
             for (const directory of (this.options.env.PATH || '').split(
                 path.delimiter,
             )) {
-                const candidate = path.resolve(directory || '.', 'godot');
+                const candidate = path.resolve(directory || '.', command);
                 try {
                     await fs.access(candidate, fs.constants.X_OK);
-                    if (candidate !== this.wrapperPath) return candidate;
+                    if (candidate !== this.pathForCommand(command))
+                        return candidate;
                     return null;
                 } catch (error) {
                     if (
@@ -219,8 +296,8 @@ export class CommandLinePathAdapter {
                     [
                         mode,
                         shell === 'fish'
-                            ? "if type -t godot | string match -q function; printf '%s\\n' 'godot (Fish function or alias)'; else; command -s godot; end"
-                            : 'command -v godot',
+                            ? `if type -t ${command} | string match -q function; printf '%s\\n' '${command} (Fish function or alias)'; else; command -s ${command}; end`
+                            : `command -v ${command}`,
                     ],
                     {
                         env: this.options.env,
@@ -228,8 +305,16 @@ export class CommandLinePathAdapter {
                         maxBuffer: 64 * 1024,
                     },
                 );
-                const command = result.stdout.trim().split('\n').at(-1)?.trim();
-                if (command && command !== this.wrapperPath) return command;
+                const resolved = result.stdout
+                    .trim()
+                    .split('\n')
+                    .at(-1)
+                    ?.trim();
+                if (
+                    resolved &&
+                    resolved !== this.pathForCommand(requestedCommand)
+                )
+                    return resolved;
             } catch (error) {
                 // Fish uses 127 for an absent external command; other shells use 1.
                 const code = (error as { code?: number }).code;
@@ -272,8 +357,13 @@ export class CommandLinePathAdapter {
         });
     }
 
-    /** Preserves the raw user registry PATH and broadcasts changes without elevation. */
-    private async registerWindows(): Promise<PathRegistrationResult> {
+    /**
+     * Preserves the raw registry PATH and broadcasts changes without elevation.
+     * @param command - Portable name to check for precedence.
+     */
+    private async registerWindows(
+        command = 'godot',
+    ): Promise<PathRegistrationResult> {
         if (this.options.fixture) {
             const file = path.join(this.binDirectory, '.fixture-user-path');
             const pathChanged =
@@ -306,9 +396,9 @@ try {
   foreach ($entry in ($effective -split ';')) {
     if ([string]::IsNullOrWhiteSpace($entry)) { continue }
     foreach ($extension in @('.com', '.exe', '.bat', '.cmd')) {
-      $candidate = Join-Path $entry ('godot' + $extension)
+      $candidate = Join-Path $entry ('${command}' + $extension)
       if (Test-Path -LiteralPath $candidate -PathType Leaf) {
-        if ($candidate -ine (Join-Path $bin 'godot.cmd')) { Write-Output $candidate }
+        if ($candidate -ine (Join-Path $bin '${command}.cmd')) { Write-Output $candidate }
         return
       }
     }

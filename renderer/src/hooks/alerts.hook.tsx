@@ -30,6 +30,7 @@ interface IConfirm {
 }
 
 type AlertContext = {
+    hasOpenDialog: boolean;
     clearAlerts: () => void;
     addAlert: (
         title: string,
@@ -58,6 +59,10 @@ const AlertsContext = React.createContext<AlertContext>({} as AlertContext);
 
 export const useAlerts = () => useContext(AlertsContext);
 
+/**
+ * Shares application dialogs and whether they cover an underlying drawer.
+ * @param props - Application content beneath the alert and confirmation surfaces.
+ */
 export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const { t } = useTranslation('common');
     const [alerts, setAlerts] = useState<IAlert[]>([]);
@@ -175,6 +180,7 @@ export const AlertsProvider: React.FC<PropsWithChildren> = ({ children }) => {
     return (
         <AlertsContext.Provider
             value={{
+                hasOpenDialog: confirm !== null || alerts.length > 0,
                 clearAlerts,
                 addAlert,
                 closeAlert,

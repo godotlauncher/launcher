@@ -16,6 +16,7 @@ import type { AppConfig } from '../config/index.js';
 import { JsonFileStore } from '../json-store/json-file.store.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
+import { CommandLineAliasService } from './command-line-alias.service.js';
 import {
     COMMAND_LINE_GODOT_MARKER,
     createGodotWrapper,
@@ -32,6 +33,7 @@ const selectionSchema = z
 export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelection | null> {
     private readonly adapter: CommandLinePathAdapter;
     private readonly platform = os.platform();
+    private readonly aliases: CommandLineAliasService;
     private operations: Promise<unknown> = Promise.resolve();
 
     /**
@@ -72,6 +74,47 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
                 ? '/bin/bash'
                 : process.env.SHELL || os.userInfo().shell || '/bin/sh',
         });
+        this.aliases = new CommandLineAliasService(
+            coordinator,
+            configDirectory,
+            this.adapter,
+            this.platform,
+        );
+    }
+
+    /**
+     * Recovers alias intents under the shared command transaction queue.
+     * @param installed - Authoritative registered editors.
+     */
+    getAliases(installed: () => Promise<InstalledRelease[]>) {
+        return this.serialise(async () =>
+            this.aliases.getState(await installed()),
+        );
+    }
+
+    /**
+     * Checks a proposed alias without changing registrations.
+     * @param release - Authoritative target editor.
+     * @param name - Literal draft name.
+     */
+    checkAlias(release: InstalledRelease, name: string) {
+        return this.serialise(() => this.aliases.check(release, name));
+    }
+
+    /**
+     * Applies an alias creation or removal within the shared queue.
+     * @param release - Authoritative target editor.
+     * @param name - New command or null for removal.
+     * @param installed - Authoritative registered editors for recovery.
+     */
+    setAlias(
+        release: InstalledRelease,
+        name: string | null,
+        installed: () => Promise<InstalledRelease[]>,
+    ) {
+        return this.serialise(async () =>
+            this.aliases.apply(release, name, await installed()),
+        );
     }
 
     /** Gets the persisted selection even when its executable is unavailable. */
@@ -101,23 +144,25 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
         release: InstalledRelease,
         persist: () => Promise<T>,
     ): Promise<T> {
-        return this.serialise(async () => {
-            const previous = (await this.readValue()).value;
-            if (
-                previous?.version !== release.version ||
-                previous.mono !== release.mono
-            )
-                return persist();
-            const wrapper = await this.readManagedWrapper();
-            await this.changeDefault(release);
-            try {
-                return await persist();
-            } catch (error) {
-                await this.writeWrapper(wrapper);
-                await this.replaceValue(previous);
-                throw error;
-            }
-        });
+        return this.serialise(() =>
+            this.aliases.withReplacement(release, async () => {
+                const previous = (await this.readValue()).value;
+                if (
+                    previous?.version !== release.version ||
+                    previous.mono !== release.mono
+                )
+                    return persist();
+                const wrapper = await this.readManagedWrapper();
+                await this.changeDefault(release);
+                try {
+                    return await persist();
+                } catch (error) {
+                    await this.writeWrapper(wrapper);
+                    await this.replaceValue(previous);
+                    throw error;
+                }
+            }),
+        );
     }
 
     /**
@@ -125,35 +170,37 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
      * @param release - Editor being removed under its lifecycle reservation.
      * @param removeFiles - Deletes editor files after command cleanup succeeds.
      */
-    withEditorRemoval(
+    withEditorRemoval<T>(
         release: InstalledRelease,
-        removeFiles: () => Promise<void>,
-    ): Promise<void> {
-        return this.serialise(async () => {
-            const selection = (await this.readValue()).value;
-            if (
-                selection?.version !== release.version ||
-                selection.mono !== release.mono
-            ) {
-                return removeFiles();
-            }
-            const wrapper = await this.readManagedWrapper();
-            await this.changeDefault(null);
-            try {
-                await removeFiles();
-            } catch (error) {
-                try {
-                    await this.writeWrapper(wrapper);
-                    await this.replaceValue(selection);
-                } catch (restoreError) {
-                    throw new AggregateError(
-                        [error, restoreError],
-                        'Editor removal failed and the command-line default could not be restored. Select a default again after resolving the filesystem error.',
-                    );
+        removeFiles: () => Promise<T>,
+    ): Promise<T> {
+        return this.serialise(() =>
+            this.aliases.withRemoval(release, async () => {
+                const selection = (await this.readValue()).value;
+                if (
+                    selection?.version !== release.version ||
+                    selection.mono !== release.mono
+                ) {
+                    return removeFiles();
                 }
-                throw error;
-            }
-        });
+                const wrapper = await this.readManagedWrapper();
+                await this.changeDefault(null);
+                try {
+                    return await removeFiles();
+                } catch (error) {
+                    try {
+                        await this.writeWrapper(wrapper);
+                        await this.replaceValue(selection);
+                    } catch (restoreError) {
+                        throw new AggregateError(
+                            [error, restoreError],
+                            'Editor removal failed and the command-line default could not be restored. Select a default again after resolving the filesystem error.',
+                        );
+                    }
+                    throw error;
+                }
+            }),
+        );
     }
 
     /**

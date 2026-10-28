@@ -198,6 +198,7 @@ describe('AppLifecycleService', () => {
     };
     const installedEditorService = {
         revalidateInstalledEditors: vi.fn(),
+        getCommandLineAliases: vi.fn(async () => ({ aliases: [] })),
         refreshInstalledEditorHealth: vi.fn(),
     };
     const toolIntegrationService = {
@@ -314,6 +315,9 @@ describe('AppLifecycleService', () => {
         await service.beforeWindowReady();
         expect(mocks.recoverTemplateStorageOnStartup).toHaveBeenCalledOnce();
         expect(projectsService.checkAllProjectsValid).toHaveBeenCalledOnce();
+        expect(
+            installedEditorService.getCommandLineAliases,
+        ).toHaveBeenCalledOnce();
     });
 
     it('logs a recovery failure without blocking the project checks or logging paths', async () => {
@@ -332,6 +336,9 @@ describe('AppLifecycleService', () => {
             expect.stringContaining('/private/template-location'),
         );
         expect(projectsService.checkAllProjectsValid).toHaveBeenCalledOnce();
+        expect(
+            installedEditorService.getCommandLineAliases,
+        ).toHaveBeenCalledOnce();
     });
 
     it('applies the Electron system locale before startup checks', async () => {
@@ -342,6 +349,9 @@ describe('AppLifecycleService', () => {
         expect(mocks.ensurePreferencesStorage).toHaveBeenCalledOnce();
         expect(i18nService.setLocale).toHaveBeenCalledWith('de-DE');
         expect(projectsService.checkAllProjectsValid).toHaveBeenCalledOnce();
+        expect(
+            installedEditorService.getCommandLineAliases,
+        ).toHaveBeenCalledOnce();
         expect(
             installedEditorService.revalidateInstalledEditors,
         ).toHaveBeenCalledOnce();

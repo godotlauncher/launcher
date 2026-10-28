@@ -1,4 +1,5 @@
 import type {
+    CommandLineAlias,
     InstalledRelease,
     ReleaseInstallProgress,
 } from '@shared/contracts';
@@ -7,6 +8,7 @@ import {
     FlaskConical,
     FolderOpen,
     RefreshCw,
+    Settings,
     Terminal,
     Trash2,
     TriangleAlert,
@@ -44,10 +46,12 @@ type InstalledReleaseListProps = {
     selectedKeys?: Set<string>;
     selectableKeys?: Set<string>;
     onToggleEditor?: (release: InstalledRelease) => void;
+    commandLineAliases?: CommandLineAlias[];
     commandLineDefaultKey?: string | null;
     commandLinePendingKey?: string | null;
     commandLineBusy?: boolean;
     onCommandLineSelect?: (release: InstalledRelease) => void;
+    onSettings?: (release: InstalledRelease) => void;
 };
 
 /**
@@ -69,10 +73,12 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     selectedKeys,
     selectableKeys,
     onToggleEditor,
+    commandLineAliases = [],
     commandLineDefaultKey,
     commandLinePendingKey,
     commandLineBusy,
     onCommandLineSelect,
+    onSettings,
 }) => {
     const { cancelInstall, getReleaseInstallProgress } = useRelease();
     const groups = groupEditorsByBaseVersion(rows);
@@ -118,10 +124,17 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
                                 ) ?? false
                             }
                             onToggleEditor={onToggleEditor}
+                            commandLineAlias={commandLineAliases.find(
+                                (alias) =>
+                                    alias.state === 'active' &&
+                                    alias.version === release.version &&
+                                    alias.mono === release.mono,
+                            )}
                             commandLineDefaultKey={commandLineDefaultKey}
                             commandLinePendingKey={commandLinePendingKey}
                             commandLineBusy={commandLineBusy}
                             onCommandLineSelect={onCommandLineSelect}
+                            onSettings={onSettings}
                         />
                     ))}
                 </EditorVersionGroup>
@@ -149,10 +162,12 @@ type InstalledReleaseRowProps = {
     selected: boolean;
     selectable: boolean;
     onToggleEditor?: (release: InstalledRelease) => void;
+    commandLineAlias?: CommandLineAlias;
     commandLineDefaultKey?: string | null;
     commandLinePendingKey?: string | null;
     commandLineBusy?: boolean;
     onCommandLineSelect?: (release: InstalledRelease) => void;
+    onSettings?: (release: InstalledRelease) => void;
 };
 
 /**
@@ -177,10 +192,12 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
     selected,
     selectable,
     onToggleEditor,
+    commandLineAlias,
     commandLineDefaultKey,
     commandLinePendingKey,
     commandLineBusy,
     onCommandLineSelect,
+    onSettings,
 }) => (
     <article
         className={`flex min-h-14 items-start gap-3 rounded-md ${selected ? 'bg-primary/10' : 'bg-base-content/2 hover:bg-base-content/5'} px-3 py-3 text-base motion-reduce:transition-none ${removing ? 'pointer-events-none opacity-60' : ''}`}
@@ -258,6 +275,28 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                         >
                             <Terminal size={14} aria-hidden="true" />
                             godot
+                        </span>
+                    </Tooltip>
+                )}
+                {commandLineAlias && (
+                    <Tooltip
+                        placement="top"
+                        tip={commandLineAlias.name}
+                        className="min-w-0 max-w-full"
+                    >
+                        <span
+                            className="badge badge-sm badge-outline max-w-full gap-1"
+                            role="img"
+                            aria-label={`${t('aliases.title')}: ${commandLineAlias.name}`}
+                        >
+                            <Terminal
+                                size={14}
+                                className="shrink-0"
+                                aria-hidden="true"
+                            />
+                            <span className="min-w-0 truncate">
+                                {commandLineAlias.name}
+                            </span>
                         </span>
                     </Tooltip>
                 )}
@@ -352,7 +391,10 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                             ns: 'common',
                         })}
                         onClick={() => onRetry(release)}
-                        disabled={isReleaseActionBusy(release)}
+                        disabled={
+                            isReleaseActionBusy(release) ||
+                            commandLinePendingKey != null
+                        }
                     >
                         {isReleaseActionBusy(release, 'retry') ? (
                             <span
@@ -376,7 +418,10 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                             data-testid={`btnReinstallRelease_${release.version}_${release.mono ? 'mono' : 'standard'}`}
                             className="btn btn-sm btn-ghost btn-square text-primary"
                             onClick={() => onReinstall(release)}
-                            disabled={isReleaseActionBusy(release)}
+                            disabled={
+                                isReleaseActionBusy(release) ||
+                                commandLinePendingKey != null
+                            }
                             aria-label={t('buttons.reinstall', {
                                 ns: 'common',
                             })}
@@ -404,7 +449,10 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                             ns: 'common',
                         })}
                         onClick={() => onRemove(release)}
-                        disabled={isReleaseActionBusy(release)}
+                        disabled={
+                            isReleaseActionBusy(release) ||
+                            commandLinePendingKey != null
+                        }
                     >
                         {isReleaseActionBusy(release, 'remove') ? (
                             <span
@@ -469,6 +517,10 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                         <button
                             type="button"
                             data-testid={`btnRemoveRelease_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+                            disabled={
+                                commandLinePendingKey != null ||
+                                isReleaseActionBusy(release)
+                            }
                             onClick={() => onRemove(release)}
                             className="btn btn-sm btn-ghost btn-square text-error/80 hover:text-error hover:bg-error/20 hover:border-transparent"
                             aria-label={
@@ -485,6 +537,28 @@ const InstalledReleaseRow: React.FC<InstalledReleaseRowProps> = ({
                         </button>
                     </Tooltip>
                 </div>
+            )}
+        {release.install_path &&
+            !selectionEnabled &&
+            !removing &&
+            onSettings && (
+                <Tooltip
+                    placement="top"
+                    tip={t('app.navigation.settings', { ns: 'common' })}
+                >
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-ghost btn-square shrink-0"
+                        aria-label={t('app.navigation.settings', {
+                            ns: 'common',
+                        })}
+                        data-testid={`btnInstallSettings_${release.version}_${release.mono ? 'mono' : 'standard'}`}
+                        disabled={isReleaseActionBusy(release)}
+                        onClick={() => onSettings(release)}
+                    >
+                        <Settings size={16} aria-hidden="true" />
+                    </button>
+                </Tooltip>
             )}
         {release.install_path &&
             !selectionEnabled &&

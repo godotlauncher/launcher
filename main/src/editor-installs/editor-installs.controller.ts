@@ -47,6 +47,38 @@ export class EditorInstallsController implements EditorInstallsBridge {
         return this.installedEditors.setCommandLineGodot(release);
     }
 
+    /** Gets all named command registrations. */
+    @EditorInstallsHandler('getCommandLineAliases')
+    getCommandLineAliases() {
+        return this.installedEditors.getCommandLineAliases();
+    }
+
+    /**
+     * Checks a draft command without writing it.
+     * @param release - Registered version and flavour.
+     * @param name - Literal draft command.
+     */
+    @EditorInstallsHandler('checkCommandLineAlias')
+    checkCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string,
+    ) {
+        return this.installedEditors.checkCommandLineAlias(release, name);
+    }
+
+    /**
+     * Applies creation or removal of one named command.
+     * @param release - Registered version and flavour.
+     * @param name - New command or null for removal.
+     */
+    @EditorInstallsHandler('setCommandLineAlias')
+    setCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string | null,
+    ) {
+        return this.installedEditors.setCommandLineAlias(release, name);
+    }
+
     /** Gets every registered editor. */
     @EditorInstallsHandler('getInstalledEditors')
     getInstalledEditors() {

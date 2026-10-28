@@ -1,0 +1,630 @@
+import * as path from 'node:path';
+import type { InstalledRelease } from '@shared/contracts';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { CommandLineAliasService } from './command-line-alias.service.js';
+import type { AliasEntry } from './command-line-alias.store.js';
+import { getAliasNameError } from './command-line-alias.util.js';
+
+const io = vi.hoisted(() => ({
+    lstat: vi.fn(),
+    stat: vi.fn(),
+    access: vi.fn(),
+    mkdir: vi.fn(),
+    open: vi.fn(),
+    link: vi.fn(),
+    unlink: vi.fn(),
+    constants: { F_OK: 0, X_OK: 1, O_RDONLY: 0, O_NOFOLLOW: 131072 },
+}));
+vi.mock('node:fs/promises', () => io);
+vi.mock('../i18n/index.js', () => ({
+    t: (key: string, values?: { previous?: string; name?: string }) =>
+        key.endsWith('renameRecovery')
+            ? `${key}: ${values?.previous} -> ${values?.name}`
+            : key,
+}));
+
+/**
+ * Supplies an authoritative installation for a portable mocked filesystem.
+ * @param version - Installation identity.
+ */
+function editor(version = '4.8-stable'): InstalledRelease {
+    return {
+        version,
+        mono: false,
+        editor_path: path.resolve('editors', version),
+        valid: true,
+    } as InstalledRelease;
+}
+
+describe('alias naming', () => {
+    it.each(['godot48', 'g', 'a'.repeat(48), 'studio-48'])(
+        'accepts %s',
+        (name) => expect(getAliasNameError(name)).toBeNull(),
+    );
+    it.each([
+        '',
+        'Godot48',
+        '4godot',
+        '-godot',
+        'godot_48',
+        'a'.repeat(49),
+        'godot 48',
+        '../godot',
+        'godot\n',
+        'gódot',
+    ])('rejects literal invalid name %j', (name) =>
+        expect(getAliasNameError(name)).toBe('invalid'),
+    );
+    it.each([
+        'godot',
+        'con',
+        'prn',
+        'aux',
+        'nul',
+        'com1',
+        'com9',
+        'lpt1',
+        'lpt9',
+    ])('reserves %s', (name) =>
+        expect(getAliasNameError(name)).toBe('reserved'),
+    );
+});
+
+describe('exclusive alias transactions', () => {
+    let entries: AliasEntry[];
+    let files: Map<string, { ino: bigint; content: string; symlink?: boolean }>;
+    let nextInode: bigint;
+    let service: CommandLineAliasService;
+    let coordinator: {
+        read: ReturnType<typeof vi.fn>;
+        write: ReturnType<typeof vi.fn>;
+    };
+    const bin = path.resolve('profile', 'bin');
+    const destination = (name: string) => path.join(bin, name);
+    const adapter = {
+        binDirectory: bin,
+        pathForCommand: destination,
+        findConflict: vi.fn(),
+        register: vi.fn(),
+    };
+    const missing = () =>
+        Object.assign(new Error('Missing'), { code: 'ENOENT' });
+    const info = (node: { ino: bigint; symlink?: boolean }) => ({
+        dev: 1n,
+        ino: node.ino,
+        isFile: () => !node.symlink,
+        isSymbolicLink: () => !!node.symlink,
+    });
+    beforeEach(() => {
+        vi.resetAllMocks();
+        entries = [];
+        files = new Map();
+        nextInode = 1n;
+        coordinator = {
+            read: vi.fn(async () => ({
+                value: structuredClone(entries),
+                version: '1',
+            })),
+            write: vi.fn(async (definition, value) => {
+                entries = structuredClone(definition.normalize(value));
+                return { value: entries, version: '2' };
+            }),
+        };
+        adapter.findConflict.mockResolvedValue(null);
+        adapter.register.mockResolvedValue({
+            pathChanged: false,
+            conflict: null,
+        });
+        io.stat.mockResolvedValue({ isFile: () => true });
+        io.lstat.mockImplementation(async (file) => {
+            const node = files.get(file);
+            if (!node) throw missing();
+            return info(node);
+        });
+        io.open.mockImplementation(async (file, flags) => {
+            if (flags === 'wx') {
+                if (files.has(file))
+                    throw Object.assign(new Error('Exists'), {
+                        code: 'EEXIST',
+                    });
+                files.set(file, { ino: nextInode++, content: '' });
+            }
+            const node = files.get(file);
+            if (!node) throw missing();
+            return {
+                writeFile: vi.fn(async (content) => {
+                    node.content = content;
+                }),
+                sync: vi.fn(),
+                stat: vi.fn(async () => info(node)),
+                close: vi.fn(),
+                readFile: vi.fn(async () => node.content),
+            };
+        });
+        io.link.mockImplementation(async (source, target) => {
+            if (files.has(target))
+                throw Object.assign(new Error('Exists'), { code: 'EEXIST' });
+            const node = files.get(source);
+            if (!node) throw missing();
+            files.set(target, node);
+        });
+        io.unlink.mockImplementation(async (file) => {
+            if (!files.delete(file)) throw missing();
+        });
+        service = new CommandLineAliasService(
+            coordinator as never,
+            path.resolve('profile'),
+            adapter as never,
+            'linux',
+        );
+    });
+
+    it('checks names without writing files, PATH or registrations', async () => {
+        expect(await service.check(editor(), 'godot48')).toEqual({
+            available: true,
+        });
+        expect(coordinator.write).not.toHaveBeenCalled();
+        expect(io.open).not.toHaveBeenCalled();
+        expect(adapter.register).not.toHaveBeenCalled();
+    });
+    it('creates a complete exclusive wrapper and reserves the name and installation', async () => {
+        const result = await service.apply(editor(), 'godot48', [editor()]);
+        expect(result.aliases).toEqual([
+            {
+                name: 'godot48',
+                version: editor().version,
+                mono: false,
+                state: 'active',
+            },
+        ]);
+        expect(files.get(destination('godot48'))?.content).toContain('exec ');
+        expect(files.get(destination('godot48'))?.content).toContain('"$@"');
+        expect(
+            (await service.check(editor('other'), 'godot48')).available,
+        ).toBe(false);
+        expect((await service.check(editor(), 'another')).available).toBe(true);
+        expect(files.has(destination('godot'))).toBe(false);
+    });
+    it('blocks unmanaged files and symlinks without touching them', async () => {
+        const foreign = { ino: 99n, content: 'foreign', symlink: true };
+        files.set(destination('godot48'), foreign);
+        expect((await service.check(editor(), 'godot48')).available).toBe(
+            false,
+        );
+        await expect(
+            service.apply(editor(), 'godot48', [editor()]),
+        ).rejects.toThrow();
+        expect(files.get(destination('godot48'))).toBe(foreign);
+        expect(io.unlink).not.toHaveBeenCalled();
+    });
+    it('fails closed on lookup failures and external commands', async () => {
+        adapter.findConflict.mockRejectedValueOnce(new Error('Shell failed'));
+        await expect(service.check(editor(), 'godot48')).rejects.toThrow(
+            'Shell failed',
+        );
+        adapter.findConflict.mockResolvedValue('/external/godot48');
+        await expect(
+            service.apply(editor(), 'godot48', [editor()]),
+        ).rejects.toThrow('external');
+        expect(io.link).not.toHaveBeenCalled();
+    });
+    it('rechecks at commit and never overwrites a file created during publication', async () => {
+        const foreign = { ino: 99n, content: 'foreign' };
+        io.link.mockImplementationOnce(async (_source, target) => {
+            files.set(target, foreign);
+            throw Object.assign(new Error('Exists'), { code: 'EEXIST' });
+        });
+        await expect(
+            service.apply(editor(), 'godot48', [editor()]),
+        ).rejects.toThrow('Exists');
+        expect(files.get(destination('godot48'))).toBe(foreign);
+        const state = await service.getState([editor()]);
+        expect(state.aliases[0].state).toBe('unresolved');
+        expect(entries[0].operation?.kind).toBe('remove');
+        expect(io.link).toHaveBeenCalledOnce();
+    });
+    it('does not retry a returned creation failure as a later creation', async () => {
+        adapter.register.mockRejectedValueOnce(new Error('PATH write failed'));
+        await expect(
+            service.apply(editor(), 'godot48', [editor()]),
+        ).rejects.toThrow('PATH write failed');
+        expect((await service.getState([editor()])).aliases).toEqual([]);
+        expect(files.size).toBe(0);
+    });
+    it('finishes interrupted owned publication on restart', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        entries[0].operation = { kind: 'create' };
+        files.delete(destination('godot48'));
+        const restarted = new CommandLineAliasService(
+            coordinator as never,
+            path.resolve('profile'),
+            adapter as never,
+            'linux',
+        );
+        expect((await restarted.getState([editor()])).aliases[0].state).toBe(
+            'active',
+        );
+        expect(files.has(destination('godot48'))).toBe(true);
+    });
+    it('retains ambiguous witness reservations instead of adopting a matching script', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        entries[0].operation = { kind: 'create' };
+        delete entries[0].binding.ino;
+        expect((await service.getState([editor()])).aliases[0].state).toBe(
+            'unresolved',
+        );
+        expect(entries).toHaveLength(1);
+        expect(io.unlink).not.toHaveBeenCalled();
+    });
+    it('removes only its own command and witness', async () => {
+        const godot = { ino: 99n, content: 'default' };
+        files.set(destination('godot'), godot);
+        await service.apply(editor(), 'godot48', [editor()]);
+        await service.apply(editor(), null, [editor()]);
+        expect(entries).toEqual([]);
+        expect(files.size).toBe(1);
+        expect(files.get(destination('godot'))).toBe(godot);
+    });
+    it('refuses to remove a replaced foreign destination even if its marker matches', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const foreign = { ino: 900n, content: entries[0].binding.content };
+        files.set(destination('godot48'), foreign);
+        await expect(service.apply(editor(), null, [editor()])).rejects.toThrow(
+            'recovery',
+        );
+        expect(files.get(destination('godot48'))).toBe(foreign);
+    });
+    it('cleans before uninstall and restores on a failed deletion', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        await expect(
+            service.withRemoval(editor(), async () => {
+                expect(files.has(destination('godot48'))).toBe(false);
+                throw new Error('Removal failed');
+            }),
+        ).rejects.toThrow('Removal failed');
+        expect((await service.getState([editor()])).aliases[0].state).toBe(
+            'active',
+        );
+        await service.withRemoval(editor(), async () => undefined);
+        expect(entries).toEqual([]);
+        expect(files.size).toBe(0);
+    });
+    it('recovers a committed replacement after the final registry write fails', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const replacement = {
+            ...editor(),
+            editor_path: path.resolve('replacement'),
+        };
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing coordinator fixture');
+        let committed = false;
+        coordinator.write.mockImplementation(async (definition, value) => {
+            if (committed && value[0] && !value[0].operation) {
+                committed = false;
+                throw new Error('Final registry write failed');
+            }
+            return write(definition, value);
+        });
+        await expect(
+            service.withReplacement(replacement, async () => {
+                committed = true;
+            }),
+        ).rejects.toThrow('Final registry write failed');
+        expect(entries[0].operation?.kind).toBe('rebind');
+        expect((await service.getState([replacement])).aliases[0].state).toBe(
+            'active',
+        );
+        expect(entries[0].binding.editorPath).toBe(replacement.editor_path);
+        expect(files.get(destination('godot48'))?.content).toContain(
+            'replacement',
+        );
+    });
+
+    it('recovers a changed Windows console target even when the editor path is unchanged', async () => {
+        const windows = new CommandLineAliasService(
+            coordinator as never,
+            path.resolve('profile'),
+            adapter as never,
+            'win32',
+        );
+        const original = {
+            ...editor(),
+            source: 'custom' as const,
+            console_path: path.resolve('original-console.exe'),
+        };
+        await windows.apply(original, 'godot48', [original]);
+        const replacement = {
+            ...original,
+            console_path: path.resolve('replacement-console.exe'),
+        };
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing coordinator fixture');
+        let committed = false;
+        coordinator.write.mockImplementation(async (definition, value) => {
+            if (committed && value[0] && !value[0].operation) {
+                committed = false;
+                throw new Error('Final registry write failed');
+            }
+            return write(definition, value);
+        });
+        await expect(
+            windows.withReplacement(replacement, async () => {
+                committed = true;
+            }),
+        ).rejects.toThrow();
+        expect((await windows.getState([replacement])).aliases[0].state).toBe(
+            'active',
+        );
+        expect(entries[0].binding.executable).toBe(replacement.console_path);
+    });
+
+    it('preserves the name across explicit replacement and rolls back failed registration', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const replacement = {
+            ...editor(),
+            editor_path: path.resolve('new-editor'),
+        };
+        await expect(
+            service.withReplacement(replacement, async () => {
+                throw new Error('Registration failed');
+            }),
+        ).rejects.toThrow('Registration failed');
+        expect(entries[0].binding.editorPath).toBe(editor().editor_path);
+        await service.withReplacement(replacement, async () => undefined);
+        expect(entries[0].binding.name).toBe('godot48');
+        expect(entries[0].binding.editorPath).toBe(replacement.editor_path);
+        expect(files.size).toBe(2);
+    });
+    it('publishes the new command before retiring old and keeps other registrations independent', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        await service.apply(editor('other'), 'godot-other', [
+            editor(),
+            editor('other'),
+        ]);
+        const original = files.get(destination('godot48'));
+        const link = io.link.getMockImplementation();
+        if (!link) throw new Error('Missing link fixture');
+        io.link.mockImplementation(async (source, target) => {
+            if (target === destination('godot-studio'))
+                expect(files.get(destination('godot48'))).toBe(original);
+            return link(source, target);
+        });
+        const unlink = io.unlink.getMockImplementation();
+        if (!unlink) throw new Error('Missing unlink fixture');
+        io.unlink.mockImplementation(async (file) => {
+            if (file === destination('godot48')) {
+                expect(files.has(destination('godot-studio'))).toBe(true);
+                expect(
+                    entries.find(
+                        (entry) => entry.binding.name === 'godot-studio',
+                    )?.operation?.phase,
+                ).toBe('commit');
+            }
+            return unlink(file);
+        });
+        const state = await service.apply(editor(), 'godot-studio', [
+            editor(),
+            editor('other'),
+        ]);
+        expect(
+            state.aliases.find((alias) => alias.version === editor().version),
+        ).toMatchObject({ name: 'godot-studio', state: 'active' });
+        expect(files.has(destination('godot48'))).toBe(false);
+        expect(files.has(destination('godot-other'))).toBe(true);
+        expect(files.has(destination('godot'))).toBe(false);
+        expect(entries).toHaveLength(2);
+    });
+
+    it('keeps the old alias and never resumes a returned precommit failure as a rename', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const old = files.get(destination('godot48'));
+        adapter.register.mockRejectedValueOnce(new Error('PATH failed'));
+        await expect(
+            service.apply(editor(), 'godot-studio', [editor()]),
+        ).rejects.toThrow('PATH failed');
+        expect((await service.getState([editor()])).aliases).toEqual([
+            {
+                name: 'godot48',
+                version: editor().version,
+                mono: false,
+                state: 'active',
+            },
+        ]);
+        expect(files.get(destination('godot48'))).toBe(old);
+        expect(files.has(destination('godot-studio'))).toBe(false);
+        expect(files.size).toBe(2);
+    });
+
+    it('reserves both names and refuses removal or lifecycle overwrite of unresolved prepare work', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const foreign = { ino: 900n, content: 'foreign' };
+        io.link.mockImplementationOnce(async (_source, target) => {
+            files.set(target, foreign);
+            throw new Error('Collision');
+        });
+        await expect(
+            service.apply(editor(), 'godot-studio', [editor()]),
+        ).rejects.toThrow('renameRecovery');
+        expect(entries[0].operation).toMatchObject({
+            kind: 'rename',
+            phase: 'prepare',
+            previous: { name: 'godot48' },
+        });
+        expect(
+            (await service.check(editor('other'), 'godot48')).available,
+        ).toBe(false);
+        expect(
+            (await service.check(editor('other'), 'godot-studio')).available,
+        ).toBe(false);
+        await expect(service.apply(editor(), null, [editor()])).rejects.toThrow(
+            'renameRecovery',
+        );
+        const remove = vi.fn();
+        const replace = vi.fn();
+        await expect(service.withRemoval(editor(), remove)).rejects.toThrow(
+            'recovery',
+        );
+        await expect(
+            service.withReplacement(editor(), replace),
+        ).rejects.toThrow('recovery');
+        expect(remove).not.toHaveBeenCalled();
+        expect(replace).not.toHaveBeenCalled();
+        expect(files.get(destination('godot-studio'))).toBe(foreign);
+        expect(files.has(destination('godot48'))).toBe(true);
+    });
+
+    it('retains committed context after old-file replacement and completes forward after manual resolution', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const foreign = { ino: 900n, content: 'foreign old command' };
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing store fixture');
+        coordinator.write.mockImplementation(async (definition, value) => {
+            const result = await write(definition, value);
+            if (value[0]?.operation?.phase === 'commit')
+                files.set(destination('godot48'), foreign);
+            return result;
+        });
+        await expect(
+            service.apply(editor(), 'godot-studio', [editor()]),
+        ).rejects.toThrow('renameRecovery');
+        expect((await service.getState([editor()])).aliases[0]).toMatchObject({
+            name: 'godot-studio',
+            state: 'unresolved',
+        });
+        const problem = (await service.getState([editor()])).aliases[0].problem;
+        expect(problem).toContain('godot48');
+        expect(problem).toContain('godot-studio');
+        expect(entries[0].operation?.phase).toBe('commit');
+        expect(files.get(destination('godot48'))).toBe(foreign);
+        expect(
+            (await service.check(editor('other'), 'godot48')).available,
+        ).toBe(false);
+        files.delete(destination('godot48'));
+        expect((await service.getState([editor()])).aliases[0]).toMatchObject({
+            name: 'godot-studio',
+            state: 'active',
+        });
+        expect(entries[0].operation).toBeUndefined();
+    });
+
+    it('finishes a committed rename after final persistence fails without restoring the retired name', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing store fixture');
+        let fail = true;
+        coordinator.write.mockImplementation(async (definition, value) => {
+            if (
+                fail &&
+                value[0]?.binding.name === 'godot-studio' &&
+                !value[0].operation
+            ) {
+                fail = false;
+                throw new Error('Final write failed');
+            }
+            return write(definition, value);
+        });
+        await expect(
+            service.apply(editor(), 'godot-studio', [editor()]),
+        ).rejects.toThrow('renameRecovery');
+        expect(entries[0].operation?.phase).toBe('commit');
+        expect(files.has(destination('godot48'))).toBe(false);
+        expect((await service.getState([editor()])).aliases[0]).toMatchObject({
+            name: 'godot-studio',
+            state: 'active',
+        });
+        expect(files.has(destination('godot48'))).toBe(false);
+    });
+
+    it('reconciles every persisted or filesystem interruption boundary without adopting an ambiguous witness', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const snapshots: { entries: AliasEntry[]; files: typeof files }[] = [];
+        let recording = true;
+        const capture = () => {
+            if (recording && entries[0]?.operation?.kind === 'rename')
+                snapshots.push({
+                    entries: structuredClone(entries),
+                    files: structuredClone(files),
+                });
+        };
+        const write = coordinator.write.getMockImplementation();
+        const link = io.link.getMockImplementation();
+        const unlink = io.unlink.getMockImplementation();
+        const open = io.open.getMockImplementation();
+        if (!write || !link || !unlink || !open)
+            throw new Error('Missing boundary fixture');
+        coordinator.write.mockImplementation(async (...args) => {
+            const result = await write(...args);
+            capture();
+            return result;
+        });
+        io.link.mockImplementation(async (...args) => {
+            const result = await link(...args);
+            capture();
+            return result;
+        });
+        io.unlink.mockImplementation(async (...args) => {
+            const result = await unlink(...args);
+            capture();
+            return result;
+        });
+        io.open.mockImplementation(async (...args) => {
+            const handle = await open(...args);
+            if (args[1] === 'wx') {
+                const writeFile = handle.writeFile.getMockImplementation();
+                handle.writeFile.mockImplementation(
+                    async (...values: unknown[]) => {
+                        await writeFile?.(...values);
+                        capture();
+                    },
+                );
+            }
+            return handle;
+        });
+        await service.apply(editor(), 'godot-studio', [editor()]);
+        recording = false;
+        expect(snapshots.length).toBeGreaterThanOrEqual(7);
+        for (const snapshot of snapshots) {
+            entries = structuredClone(snapshot.entries);
+            files = structuredClone(snapshot.files);
+            const intent = entries[0];
+            const ambiguous =
+                intent.operation?.phase === 'prepare' &&
+                !intent.binding.ino &&
+                [...files.keys()].some((file) =>
+                    file.endsWith(intent.binding.id),
+                );
+            const restarted = new CommandLineAliasService(
+                coordinator as never,
+                path.resolve('profile'),
+                adapter as never,
+                'linux',
+            );
+            const result = await restarted.getState([editor()]);
+            if (ambiguous) {
+                expect(result.aliases[0]).toMatchObject({
+                    name: 'godot48',
+                    state: 'unresolved',
+                });
+                expect(files.has(destination('godot48'))).toBe(true);
+            } else {
+                const name =
+                    intent.operation?.phase === 'commit'
+                        ? 'godot-studio'
+                        : 'godot48';
+                expect(result.aliases[0]).toMatchObject({
+                    name,
+                    state: 'active',
+                });
+                expect(files.has(destination(name))).toBe(true);
+                expect(
+                    files.has(
+                        destination(
+                            name === 'godot48' ? 'godot-studio' : 'godot48',
+                        ),
+                    ),
+                ).toBe(false);
+                expect(files.size).toBe(2);
+            }
+        }
+    });
+});

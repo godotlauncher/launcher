@@ -192,6 +192,27 @@ describe('InstalledEditorService', () => {
         expect(projectRepair.removeEditorFromProjects).toHaveBeenCalledTimes(2);
     });
 
+    it('keeps unregister persistence inside the protected command-removal transaction', async () => {
+        const custom = createRelease('studio-build', {
+            source: 'custom',
+            managed_by_launcher: false,
+        });
+        store.list.mockResolvedValue([custom]);
+        store.remove.mockRejectedValueOnce(
+            new Error('Registration write failed'),
+        );
+        const result = await createService().removeEditor(custom);
+        expect(result).toMatchObject({
+            success: false,
+            error: 'Registration write failed',
+        });
+        await expect(
+            commandLine.withEditorRemoval.mock.results[0].value,
+        ).rejects.toThrow('Registration write failed');
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(projectRepair.removeEditorFromProjects).not.toHaveBeenCalled();
+    });
+
     it('opens the platform-specific project manager executable', () => {
         osMocks.platform.mockReturnValue('darwin');
         const editorPath = path.resolve('Applications', 'Godot.app');

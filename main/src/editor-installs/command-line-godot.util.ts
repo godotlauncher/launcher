@@ -43,11 +43,19 @@ export function getCommandLineExecutable(
  * Builds a wrapper that preserves the caller's directory, arguments and status.
  * @param executable - Absolute target executable.
  * @param platform - Platform whose script syntax is required.
+ * @param commandName - Portable command used in unavailable-target guidance.
  */
 export function createGodotWrapper(
     executable: string,
     platform: NodeJS.Platform,
+    commandName = 'godot',
 ): string {
+    if (!/^[a-z][a-z0-9-]{0,47}$/.test(commandName))
+        throw new Error('Invalid command name.');
+    const unavailable =
+        commandName === 'godot'
+            ? 'The selected Godot editor is unavailable. Choose a default command-line editor in Godot Launcher.'
+            : `The Godot editor for ${commandName} is unavailable. Check this command in Godot Launcher.`;
     if (platform === 'win32') {
         if (/["\0\r\n]/.test(executable))
             throw new Error('Invalid command-line editor path.');
@@ -61,7 +69,7 @@ export function createGodotWrapper(
             'chcp 65001 >nul',
             'if errorlevel 1 exit /b 1',
             `if not exist "${target}" (`,
-            '  >&2 echo The selected Godot editor is unavailable. Choose a default command-line editor in Godot Launcher.',
+            `  >&2 echo ${unavailable}`,
             '  set "GODOT_LAUNCHER_EXIT=127"',
             '  goto godot_launcher_exit',
             ')',
@@ -78,7 +86,7 @@ export function createGodotWrapper(
         '#!/bin/sh',
         `# ${COMMAND_LINE_GODOT_MARKER}`,
         `if [ ! -x ${target} ]; then`,
-        "  printf '%s\\n' 'The selected Godot editor is unavailable. Choose a default command-line editor in Godot Launcher.' >&2",
+        `  printf '%s\\n' '${unavailable}' >&2`,
         '  exit 127',
         'fi',
         `exec ${target} "$@"`,

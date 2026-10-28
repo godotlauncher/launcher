@@ -49,7 +49,14 @@ describe('command-line Godot ownership and selection', () => {
         files = new Map();
         selection = null;
         coordinator = {
-            read: vi.fn(async () => ({ value: selection, version: '1' })),
+            read: vi.fn(async (definition) => ({
+                value: definition
+                    .pathProvider()
+                    .endsWith('command-line-aliases.json')
+                    ? []
+                    : selection,
+                version: '1',
+            })),
             write: vi.fn(async (_definition, value) => {
                 selection = value;
                 return { value, version: '2' };

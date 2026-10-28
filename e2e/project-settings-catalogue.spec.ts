@@ -127,6 +127,10 @@ test('saves the console switch independently of an existing windowed choice', as
     const consoleSwitch = drawer.getByRole('checkbox', { name: /Launch in terminal/ });
     await expect(windowed).toBeChecked();
     await expect(consoleSwitch).not.toBeChecked();
+    if (process.env.GODOT_LAUNCHER_PREVIEW_DIR) {
+        await fs.mkdir(process.env.GODOT_LAUNCHER_PREVIEW_DIR, { recursive: true });
+        await page.screenshot({ path: path.join(process.env.GODOT_LAUNCHER_PREVIEW_DIR, 'project-launch-settings.png') });
+    }
 
     await consoleSwitch.check();
     await drawer.getByRole('button', { name: 'Update', exact: true }).click();

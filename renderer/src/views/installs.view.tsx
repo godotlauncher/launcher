@@ -1,4 +1,7 @@
-import type { EditorRemovalSelection } from '@shared/contracts';
+import type {
+    EditorRemovalSelection,
+    InstalledRelease,
+} from '@shared/contracts';
 import {
     CheckSquare,
     EyeOff,
@@ -29,6 +32,7 @@ import { InstalledReleaseList } from './installs/components/installed-release-li
 import { InstallsHeader } from './installs/components/installs-header.component';
 import { InstallsSearchEmptyState } from './installs/components/installs-search-empty-state.component';
 import { RemoveEditorsConfirm } from './installs/components/remove-editors-confirm.component';
+import { useCommandLineAliases } from './installs/hooks/command-line-aliases.hook';
 import { useCommandLineGodot } from './installs/hooks/command-line-godot.hook';
 import { useCustomEditorManifestDrop } from './installs/hooks/custom-editor-manifest-drop.hook';
 import { useCustomEditorManifestWorkflow } from './installs/hooks/custom-editor-manifest-workflow.hook';
@@ -45,6 +49,7 @@ import {
 } from './installs/installs-view.model';
 import { CustomEditorManifestDrawer } from './sub-views/custom-editor-manifest-drawer.subview';
 import { InstallEditorDrawer } from './sub-views/install-editor-drawer.subview.tsx';
+import { InstallSettingsDrawer } from './sub-views/install-settings-drawer.subview';
 
 export { createReleaseActions };
 
@@ -75,6 +80,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         'dialogs',
         'installEditor',
     ]);
+    const [settingsEditor, setSettingsEditor] =
+        useState<InstalledRelease | null>(null);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localInstallOpen, setLocalInstallOpen] = useState<boolean>(false);
     const installOpen = controlledInstallOpen ?? localInstallOpen;
@@ -103,7 +110,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         useState<ActionMenuAnchorRect | null>(null);
     const [removingKeys, setRemovingKeys] = useState(new Set<string>());
 
-    const { addAlert, addCustomConfirm } = useAlerts();
+    const { addAlert, addCustomConfirm, hasOpenDialog } = useAlerts();
     const { preferences } = usePreferences();
     const { projects } = useProjects();
     const {
@@ -118,6 +125,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         hasError,
     } = useRelease();
     const commandLine = useCommandLineGodot(installedReleases);
+    const aliasState = useCommandLineAliases(installedReleases);
     const {
         isReleaseActionBusy,
         runReleaseAction,
@@ -139,7 +147,10 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         installed: installedReleases,
         downloading: downloadingReleases,
         projects,
-        isBusy: isReleaseActionBusy,
+        isBusy: (release) =>
+            commandLine.pendingKey !== null ||
+            aliasState.pending ||
+            isReleaseActionBusy(release),
     });
 
     /**
@@ -336,10 +347,19 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         ) : (
                             <InstalledReleaseList
                                 rows={filteredRows}
+                                commandLineAliases={
+                                    aliasState.loaded ? aliasState.aliases : []
+                                }
                                 commandLineDefaultKey={commandLine.defaultKey}
-                                commandLinePendingKey={commandLine.pendingKey}
-                                commandLineBusy={commandLine.busy}
+                                commandLinePendingKey={
+                                    commandLine.pendingKey ??
+                                    aliasState.pendingKey
+                                }
+                                commandLineBusy={
+                                    commandLine.busy || aliasState.pending
+                                }
                                 onCommandLineSelect={commandLine.select}
+                                onSettings={setSettingsEditor}
                                 t={t}
                                 isReleaseActionBusy={(release, action) =>
                                     removingKeys.has(
@@ -449,6 +469,20 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     },
                 ]}
                 onClose={() => setCustomEditorMenu(null)}
+            />
+            <InstallSettingsDrawer
+                release={settingsEditor}
+                installed={installedReleases}
+                commandLine={commandLine}
+                aliasState={aliasState}
+                covered={hasOpenDialog}
+                isBusy={(release) =>
+                    removingKeys.has(getReleaseActionKey(release)) ||
+                    isReleaseActionBusy(release)
+                }
+                onOpenChange={(open) => {
+                    if (!open) setSettingsEditor(null);
+                }}
             />
             <InstallEditorDrawer
                 open={installOpen}

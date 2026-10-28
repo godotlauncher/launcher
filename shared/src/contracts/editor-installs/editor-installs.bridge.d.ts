@@ -6,6 +6,11 @@ import type {
     RemovedReleaseResult,
 } from '../releases/index.js';
 import type {
+    CommandLineAliasAvailability,
+    CommandLineAliasesState,
+    CommandLineAliasResult,
+} from './command-line-alias.types.js';
+import type {
     CommandLineGodotResult,
     CommandLineGodotState,
 } from './command-line-godot.types.js';
@@ -25,6 +30,19 @@ export type CancelEditorInstallResult = {
 
 /** Defines installed-editor requests available to the renderer. */
 export type EditorInstallsBridge = {
+    /** Gets registrations after reconciling interrupted command operations. */
+    getCommandLineAliases(): Promise<CommandLineAliasesState>;
+    /** Checks a candidate without reserving it or changing PATH. */
+    checkCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string,
+    ): Promise<CommandLineAliasAvailability>;
+    /** Creates one command or removes only this editor's owned alias. */
+    setCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string | null,
+    ): Promise<CommandLineAliasResult>;
+
     /** Gets the current command-line editor selection. */
     getCommandLineGodot(): Promise<CommandLineGodotState>;
 

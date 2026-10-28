@@ -4,6 +4,7 @@ import type {
 } from '@shared/contracts';
 import { CircleCheck, GitBranch } from 'lucide-react';
 import type React from 'react';
+import { SettingsPanel } from '../../../../components/settings/settings-panel.component';
 import { ContentDivider } from '../../../../components/ui/content-divider.component';
 import { CopyButton } from '../../../../components/ui/copy-button.component';
 import { TextField } from '../../../../components/ui/text-field.component';
@@ -79,62 +80,64 @@ export const ProjectSettingsSourceControlSection: React.FC<
                 {t('editProject.sourceControl.help')}
             </p>
         </div>
-        <div className="flex items-start justify-between gap-4 rounded-md bg-base-200/40 p-4">
-            <div className="flex min-w-0 items-start gap-3">
-                <GitBranch className="size-5 shrink-0" aria-hidden="true" />
-                <div className="flex min-w-0 flex-col gap-1">
-                    <span className="font-semibold">Git</span>
-                    <span className="text-base-content/75">
-                        {t(
-                            withGit
-                                ? gitUnavailable
-                                    ? 'editProject.sourceControl.enabledUnavailable'
-                                    : 'editProject.sourceControl.enabled'
-                                : 'editProject.sourceControl.notConfigured',
-                        )}
-                    </span>
+        <SettingsPanel
+            icon={GitBranch}
+            title="Git"
+            description={
+                <>
+                    {t(
+                        withGit
+                            ? gitUnavailable
+                                ? 'editProject.sourceControl.enabledUnavailable'
+                                : 'editProject.sourceControl.enabled'
+                            : 'editProject.sourceControl.notConfigured',
+                    )}
                     {!withGit && !loadingGitAvailability && !gitAvailable && (
-                        <span className="text-warning">
+                        <span className="block text-warning">
                             {t('createProject:otherSettings.gitNotInstalled')}
                         </span>
                     )}
-                </div>
-            </div>
-            {gitUnavailable ? (
-                <span
-                    className="badge badge-sm badge-soft badge-warning text-warning-content dark:text-warning"
-                    data-testid="projectGitUnavailable"
-                >
-                    {t('editProject.sourceControl.identityUnavailable')}
-                </span>
-            ) : withGit ? (
-                <span
-                    className="badge badge-sm badge-soft badge-success text-success-content dark:text-success gap-1.5"
-                    data-testid="projectGitActive"
-                >
-                    <CircleCheck className="h-4 w-4" aria-hidden="true" />
-                    {t('editProject.sourceControl.active')}
-                </span>
-            ) : loadingGitAvailability ? (
-                <span className="loading loading-spinner loading-sm" />
-            ) : gitAvailable ? (
-                <button
-                    type="button"
-                    className="btn btn-primary shrink-0 text-base"
-                    disabled={!project.valid || disabled || isInitializingGit}
-                    onClick={onInitializeGit}
-                >
-                    {isInitializingGit && (
-                        <span className="loading loading-spinner loading-xs" />
-                    )}
-                    {t(
-                        isInitializingGit
-                            ? 'editProject.sourceControl.initializing'
-                            : 'editProject.sourceControl.initialize',
-                    )}
-                </button>
-            ) : null}
-        </div>
+                </>
+            }
+            action={
+                gitUnavailable ? (
+                    <span
+                        className="badge badge-sm badge-soft badge-warning text-warning-content dark:text-warning"
+                        data-testid="projectGitUnavailable"
+                    >
+                        {t('editProject.sourceControl.identityUnavailable')}
+                    </span>
+                ) : withGit ? (
+                    <span
+                        className="badge badge-sm badge-soft badge-success text-success-content dark:text-success gap-1.5"
+                        data-testid="projectGitActive"
+                    >
+                        <CircleCheck className="h-4 w-4" aria-hidden="true" />
+                        {t('editProject.sourceControl.active')}
+                    </span>
+                ) : loadingGitAvailability ? (
+                    <span className="loading loading-spinner loading-sm" />
+                ) : gitAvailable ? (
+                    <button
+                        type="button"
+                        className="btn btn-primary shrink-0 text-base"
+                        disabled={
+                            !project.valid || disabled || isInitializingGit
+                        }
+                        onClick={onInitializeGit}
+                    >
+                        {isInitializingGit && (
+                            <span className="loading loading-spinner loading-xs" />
+                        )}
+                        {t(
+                            isInitializingGit
+                                ? 'editProject.sourceControl.initializing'
+                                : 'editProject.sourceControl.initialize',
+                        )}
+                    </button>
+                ) : null
+            }
+        />
         {withGit && <ContentDivider />}
         {withGit && loadingGitIdentity && (
             <div className="flex justify-center py-4">
