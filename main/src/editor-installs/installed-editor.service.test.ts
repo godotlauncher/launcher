@@ -180,6 +180,7 @@ describe('InstalledEditorService', () => {
         const service = createService();
         const managed = createRelease('4.3-stable');
         const custom = createRelease('studio-build', { source: 'custom' });
+        store.list.mockResolvedValue([managed, custom]);
 
         await service.removeEditor(managed);
         await service.removeEditor(custom);
@@ -471,6 +472,7 @@ describe('InstalledEditorService', () => {
 
     it('reports successful deletion even when project revalidation fails afterwards', async () => {
         const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
         projectRepair.revalidateProjects.mockRejectedValueOnce(
             new Error('Project unavailable'),
         );
@@ -483,6 +485,7 @@ describe('InstalledEditorService', () => {
 
     it('keeps a completed removal successful when project editor cleanup fails', async () => {
         const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
         projectRepair.removeEditorFromProjects.mockRejectedValueOnce(
             new Error('Project unavailable'),
         );
@@ -496,6 +499,7 @@ describe('InstalledEditorService', () => {
 
     it('keeps editor files and registration when command cleanup refuses removal', async () => {
         const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
         commandLine.withEditorRemoval.mockRejectedValueOnce(
             new Error('Wrapper changed'),
         );
@@ -506,6 +510,50 @@ describe('InstalledEditorService', () => {
         });
         expect(fsMocks.promises.rm).not.toHaveBeenCalled();
         expect(store.remove).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        'editor_path',
+        'install_path',
+        'source',
+        'managed_by_launcher',
+        'console_path',
+    ] as const)(
+        'rejects a stale single-removal snapshot with changed %s before touching commands',
+        async (field) => {
+            const release = createRelease('studio-build');
+            const replacement = {
+                ...release,
+                [field]:
+                    field === 'managed_by_launcher'
+                        ? false
+                        : field === 'source'
+                          ? 'custom'
+                          : path.resolve('replacement'),
+            };
+            store.list.mockResolvedValue([replacement]);
+            const result = await createService().removeEditor(release);
+            expect(result).toMatchObject({
+                success: false,
+                error: 'installs:selection.errors.changed',
+                releases: [replacement],
+            });
+            expect(commandLine.withEditorRemoval).not.toHaveBeenCalled();
+            expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+            expect(store.remove).not.toHaveBeenCalled();
+        },
+    );
+
+    it('rejects single removal after the registration disappears', async () => {
+        const result = await createService().removeEditor(
+            createRelease('missing'),
+        );
+        expect(result).toMatchObject({
+            success: false,
+            error: 'installs:selection.errors.changed',
+        });
+        expect(commandLine.withEditorRemoval).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
     });
 
     /** Creates a service with isolated dependency mocks. */

@@ -252,6 +252,7 @@
         "unavailable": "Mhux disponibbli",
         "rename": "Ibdel isem l-alias",
         "current": "Kmand salvat: <code>{{command}}</code>",
+        "removalWarning": "It-tneħħija ta' dan l-editur tneħħi wkoll il-kmand tiegħu <code>{{command}}</code>.",
         "renamed": "L-isem tal-kmand {{previous}} inbidel għal {{command}}."
     }
 }

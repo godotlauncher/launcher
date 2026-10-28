@@ -289,6 +289,166 @@ describe('exclusive alias transactions', () => {
         expect(entries).toEqual([]);
         expect(files.size).toBe(0);
     });
+    it('keeps deletion blocked and a foreign alias untouched when cleanup fails', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const foreign = { ino: 999n, content: 'foreign' };
+        files.set(destination('godot48'), foreign);
+        const remove = vi.fn();
+        await expect(service.withRemoval(editor(), remove)).rejects.toThrow(
+            'recovery',
+        );
+        expect(remove).not.toHaveBeenCalled();
+        expect(files.get(destination('godot48'))).toBe(foreign);
+        expect(entries[0].operation?.kind).toBe('uninstall');
+        expect((await service.getState([editor()])).aliases[0].state).toBe(
+            'unresolved',
+        );
+    });
+
+    it.each(['foreign', 'unreadable'])(
+        'blocks editor deletion when its recovery witness is %s',
+        async (state) => {
+            await service.apply(editor(), 'godot48', [editor()]);
+            const witness = path.join(
+                bin,
+                `.godot-launcher-alias-${entries[0].binding.id}`,
+            );
+            const original = files.get(destination('godot48'));
+            if (state === 'foreign')
+                files.set(witness, { ino: 999n, content: 'foreign witness' });
+            else {
+                const lstat = io.lstat.getMockImplementation();
+                if (!lstat) throw new Error('Missing stat fixture');
+                io.lstat.mockImplementation(async (file) => {
+                    if (file === witness)
+                        throw Object.assign(new Error('Access denied'), {
+                            code: 'EACCES',
+                        });
+                    return lstat(file);
+                });
+            }
+            const remove = vi.fn();
+            await expect(
+                service.withRemoval(editor(), remove),
+            ).rejects.toThrow();
+            expect(remove).not.toHaveBeenCalled();
+            expect(files.get(destination('godot48'))).toBe(original);
+            expect(entries[0].operation).toBeUndefined();
+            expect(files.has(witness)).toBe(true);
+        },
+    );
+
+    it('does not republish an alias after partial deletion removes its executable', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        await expect(
+            service.withRemoval(editor(), async () => {
+                io.stat.mockRejectedValue(missing());
+                throw new Error('Partial deletion');
+            }),
+        ).rejects.toThrow('recovery');
+        expect(files.has(destination('godot48'))).toBe(false);
+        expect(entries[0].operation?.kind).toBe('uninstall');
+        expect((await service.getState([editor()])).aliases).toEqual([]);
+        expect(files.size).toBe(0);
+    });
+
+    it('retains uninstall reservations when target verification is uncertain and recovers after access returns', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        await expect(
+            service.withRemoval(editor(), async () => {
+                io.stat.mockRejectedValue(
+                    Object.assign(new Error('Access denied'), {
+                        code: 'EACCES',
+                    }),
+                );
+                throw new Error('Deletion failed');
+            }),
+        ).rejects.toThrow('recovery');
+        expect((await service.getState([editor()])).aliases[0].state).toBe(
+            'unresolved',
+        );
+        expect(entries[0].operation?.kind).toBe('uninstall');
+        expect(files.has(destination('godot48'))).toBe(false);
+        io.stat.mockResolvedValue({ isFile: () => true });
+        expect((await service.getState([editor()])).aliases[0].state).toBe(
+            'active',
+        );
+    });
+
+    it('does not restore an interrupted uninstall to an old path after the identity is replaced', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        entries[0].operation = { kind: 'uninstall' };
+        files.delete(destination('godot48'));
+        const replacement = {
+            ...editor(),
+            editor_path: path.resolve('new-editor'),
+        };
+        expect((await service.getState([replacement])).aliases[0].state).toBe(
+            'unresolved',
+        );
+        expect(files.has(destination('godot48'))).toBe(false);
+        expect(entries[0].operation?.kind).toBe('uninstall');
+    });
+
+    it('retains replacement intent when original-target restoration fails and safely retries later', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const replacement = {
+            ...editor(),
+            editor_path: path.resolve('replacement'),
+        };
+        await expect(
+            service.withReplacement(replacement, async () => {
+                io.stat.mockRejectedValue(
+                    Object.assign(new Error('Access denied'), {
+                        code: 'EACCES',
+                    }),
+                );
+                throw new Error('Registration failed');
+            }),
+        ).rejects.toThrow('recovery');
+        expect(entries[0].operation?.kind).toBe('rebind');
+        expect((await service.getState([editor()])).aliases[0].state).toBe(
+            'unresolved',
+        );
+        io.stat.mockResolvedValue({ isFile: () => true });
+        expect((await service.getState([editor()])).aliases[0].state).toBe(
+            'active',
+        );
+        expect(entries[0].binding.editorPath).toBe(editor().editor_path);
+    });
+
+    it('keeps replacement recovery context until obsolete witness cleanup succeeds', async () => {
+        await service.apply(editor(), 'godot48', [editor()]);
+        const previous = structuredClone(entries[0].binding);
+        const replacement = {
+            ...editor(),
+            editor_path: path.resolve('replacement'),
+        };
+        const unlink = io.unlink.getMockImplementation();
+        if (!unlink) throw new Error('Missing unlink fixture');
+        const oldWitness = path.join(
+            bin,
+            `.godot-launcher-alias-${previous.id}`,
+        );
+        io.unlink.mockImplementation(async (file) => {
+            if (file === oldWitness) throw new Error('Witness locked');
+            return unlink(file);
+        });
+        await expect(
+            service.withReplacement(replacement, async () => undefined),
+        ).rejects.toThrow('Witness locked');
+        expect((await service.getState([replacement])).aliases[0].state).toBe(
+            'unresolved',
+        );
+        expect(entries[0].operation?.kind).toBe('rebind');
+        io.unlink.mockImplementation(unlink);
+        expect((await service.getState([replacement])).aliases[0].state).toBe(
+            'active',
+        );
+        expect(files.has(oldWitness)).toBe(false);
+        expect(files.size).toBe(2);
+    });
+
     it('recovers a committed replacement after the final registry write fails', async () => {
         await service.apply(editor(), 'godot48', [editor()]);
         const replacement = {

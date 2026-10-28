@@ -252,6 +252,7 @@
         "unavailable": "使用不可",
         "rename": "エイリアス名を変更",
         "current": "保存済みコマンド: <code>{{command}}</code>",
+        "removalWarning": "このエディターを削除すると、名前付きコマンド <code>{{command}}</code> も削除されます。",
         "renamed": "コマンド {{previous}} を {{command}} に変更しました。"
     }
 }

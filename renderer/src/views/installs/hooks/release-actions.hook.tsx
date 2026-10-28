@@ -1,4 +1,5 @@
 import type {
+    CommandLineAlias,
     InstalledRelease,
     InstallReleaseResult,
     RemovedReleaseResult,
@@ -6,6 +7,7 @@ import type {
 import logger from 'electron-log';
 import { TriangleAlertIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 import { CopyButton } from '../../../components/ui/copy-button.component';
 import type { useAlerts } from '../../../hooks/alerts.hook';
 import { RemoveEditorConfirm } from '../components/remove-editor-confirm.component';
@@ -35,6 +37,7 @@ type UseReleaseActionsArgs = {
     removeRelease: (release: InstalledRelease) => Promise<RemovedReleaseResult>;
     getProjectUsageCount: (release: InstalledRelease) => number;
     commandLineDefaultKey?: string | null;
+    commandLineAliases?: CommandLineAlias[];
 };
 
 export const createReleaseActions = (
@@ -49,6 +52,10 @@ export const createReleaseActions = (
     },
 });
 
+/**
+ * Shares editor actions and their command-removal consequences.
+ * @param args - Install operations, command registrations and confirmation helpers.
+ */
 export function useReleaseActions({
     t,
     addAlert,
@@ -58,6 +65,7 @@ export function useReleaseActions({
     removeRelease,
     getProjectUsageCount,
     commandLineDefaultKey,
+    commandLineAliases = [],
 }: UseReleaseActionsArgs) {
     const [busyAction, setBusyAction] = useState<{
         releaseKey: string;
@@ -131,6 +139,10 @@ export function useReleaseActions({
     const handleRemoveReleaseFromMenu = (release: InstalledRelease) => {
         const projectUsageCount = getProjectUsageCount(release);
         const custom = release.source === 'custom';
+        const alias = commandLineAliases.find(
+            (candidate) =>
+                getReleaseActionKey(candidate) === getReleaseActionKey(release),
+        );
         addCustomConfirm(
             t(
                 custom
@@ -154,6 +166,20 @@ export function useReleaseActions({
                         commandLineDefaultKey === getReleaseActionKey(release)
                             ? t('installs:commandLine.removalWarning')
                             : undefined
+                    }
+                    aliasWarning={
+                        alias ? (
+                            <Trans
+                                ns="installs"
+                                i18nKey="aliases.removalWarning"
+                                values={{ command: alias.name }}
+                                components={{
+                                    code: (
+                                        <code className="rounded bg-base-300 px-1 font-mono" />
+                                    ),
+                                }}
+                            />
+                        ) : undefined
                     }
                     detail={t(
                         custom

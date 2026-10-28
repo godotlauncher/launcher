@@ -387,6 +387,8 @@ export class CommandLineAliasService {
         if (entry.operation)
             throw new Error(t('installs:aliases.errors.recovery'));
         const { binding } = entry;
+        if (!(await this.owned(this.witness(binding), binding)))
+            throw new Error(t('installs:aliases.errors.recovery'));
         await this.put({ binding, operation: { kind: 'uninstall' } });
         await this.unlinkOwned(this.destination(binding), binding);
         let result: T;
@@ -444,8 +446,8 @@ export class CommandLineAliasService {
             try {
                 await this.requireExecutable(previous.executable);
                 await this.publish(previous, binding);
-                await this.put({ binding: previous });
                 await this.unlinkOwned(this.witness(binding), binding);
+                await this.put({ binding: previous });
             } catch {
                 throw new Error(t('installs:aliases.errors.recovery'), {
                     cause: error,
@@ -483,6 +485,13 @@ export class CommandLineAliasService {
             return;
         }
         if (operation.kind === 'uninstall') {
+            if (
+                release &&
+                (release.editor_path !== binding.editorPath ||
+                    getCommandLineExecutable(release, this.platform) !==
+                        binding.executable)
+            )
+                throw new Error(t('installs:aliases.errors.recovery'));
             const available =
                 release && (await this.executableAvailable(binding.executable));
             if (available) {
@@ -527,8 +536,8 @@ export class CommandLineAliasService {
             await this.adapter.register(binding.name);
         }
         await this.publish(desired, other);
-        await this.put({ binding: desired });
         if (other) await this.unlinkOwned(this.witness(other), other);
+        await this.put({ binding: desired });
     }
 
     /**
@@ -663,8 +672,14 @@ export class CommandLineAliasService {
         try {
             await this.requireExecutable(file);
             return true;
-        } catch {
-            return false;
+        } catch (error) {
+            if (
+                ['ENOENT', 'ENOTDIR'].includes(
+                    (error as NodeJS.ErrnoException).code || '',
+                )
+            )
+                return false;
+            throw error;
         }
     }
     /**

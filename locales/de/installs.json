@@ -252,6 +252,7 @@
         "unavailable": "Nicht verfügbar",
         "rename": "Alias umbenennen",
         "current": "Gespeicherter Befehl: <code>{{command}}</code>",
+        "removalWarning": "Beim Entfernen dieses Editors wird auch sein benannter Befehl <code>{{command}}</code> entfernt.",
         "renamed": "Befehl {{previous}} in {{command}} umbenannt."
     }
 }

@@ -252,6 +252,7 @@
         "unavailable": "Niedostępna",
         "rename": "Zmień nazwę aliasu",
         "current": "Zapisane polecenie: <code>{{command}}</code>",
+        "removalWarning": "Usunięcie tego edytora usunie również jego polecenie <code>{{command}}</code>.",
         "renamed": "Zmieniono nazwę polecenia {{previous}} na {{command}}."
     }
 }

@@ -252,6 +252,7 @@
         "unavailable": "Недоступно",
         "rename": "Переименовать псевдоним",
         "current": "Сохранённая команда: <code>{{command}}</code>",
+        "removalWarning": "При удалении этого редактора также будет удалена его команда <code>{{command}}</code>.",
         "renamed": "Команда {{previous}} переименована в {{command}}."
     }
 }

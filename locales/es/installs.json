@@ -252,6 +252,7 @@
         "unavailable": "No disponible",
         "rename": "Renombrar alias",
         "current": "Comando guardado: <code>{{command}}</code>",
+        "removalWarning": "Al eliminar este editor, también se eliminará su comando <code>{{command}}</code>.",
         "renamed": "Comando {{previous}} renombrado a {{command}}."
     }
 }

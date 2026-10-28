@@ -219,6 +219,58 @@ describe('command-line Godot ownership and selection', () => {
         expect((await service.getState()).selection?.version).toBe('first');
     });
 
+    it.each(['ENOENT', 'EACCES'])(
+        'does not restore a default after deletion makes the target unavailable (%s)',
+        async (code) => {
+            await service.setDefault(editor('first'));
+            await expect(
+                service.withEditorRemoval(editor('first'), async () => {
+                    io.stat.mockRejectedValue(
+                        Object.assign(new Error('Target unavailable'), {
+                            code,
+                        }),
+                    );
+                    throw new Error('Partial deletion');
+                }),
+            ).rejects.toThrow('could not be restored');
+            expect(files.has(platform.wrapperPath)).toBe(false);
+            expect((await service.getState()).selection).toBeNull();
+        },
+    );
+
+    it('preserves a foreign command introduced during failed removal', async () => {
+        await service.setDefault(editor('first'));
+        const foreign = '#!/bin/sh\necho foreign\n';
+        await expect(
+            service.withEditorRemoval(editor('first'), async () => {
+                files.set(platform.wrapperPath, foreign);
+                throw new Error('Deletion failed');
+            }),
+        ).rejects.toThrow('could not be restored');
+        expect(files.get(platform.wrapperPath)).toBe(foreign);
+        expect((await service.getState()).selection).toBeNull();
+    });
+
+    it('clears a replacement command rather than restoring a missing original after registration fails', async () => {
+        await service.setDefault(editor('first'));
+        await expect(
+            service.updateRegisteredEditor(
+                { ...editor('first'), editor_path: '/new-editor' },
+                async () => {
+                    io.stat.mockRejectedValue(
+                        Object.assign(new Error('Original missing'), {
+                            code: 'ENOENT',
+                        }),
+                    );
+                    throw new Error('Registration failed');
+                },
+                editor('first'),
+            ),
+        ).rejects.toThrow('could not be restored');
+        expect(files.has(platform.wrapperPath)).toBe(false);
+        expect((await service.getState()).selection).toBeNull();
+    });
+
     it('retargets a selected custom registration and rolls back a failed replacement', async () => {
         await service.setDefault(editor('first'));
         const replacement = {

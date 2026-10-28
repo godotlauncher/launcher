@@ -1,11 +1,12 @@
 import type { RemovedReleaseResult } from '@shared/contracts';
-import { useRef, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import type { ConfirmLayout } from '../../../components/confirm.component';
 import { StatusBadge } from '../../../components/ui/status-badge.component';
 
 type RemoveEditorConfirmProps = {
     message: string;
     commandLineWarning?: string;
+    aliasWarning?: ReactNode;
     detail: string;
     usage: string;
     usageCount: number;
@@ -24,6 +25,7 @@ type RemoveEditorConfirmProps = {
 export function RemoveEditorConfirm({
     message,
     commandLineWarning,
+    aliasWarning,
     detail,
     usage,
     usageCount,
@@ -67,6 +69,7 @@ export function RemoveEditorConfirm({
             {commandLineWarning && (
                 <p className="text-warning">{commandLineWarning}</p>
             )}
+            {aliasWarning && <p className="text-warning">{aliasWarning}</p>}
             <div>
                 <StatusBadge
                     tone={usageCount > 0 ? 'warning' : 'neutral'}

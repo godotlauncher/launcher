@@ -16,6 +16,8 @@ let home: string;
 
 let appClosed = false;
 let wrapper: string;
+let firstRowId: string;
+let secondRowId: string;
 let firstRow: ReturnType<Page['getByTestId']>;
 let secondRow: ReturnType<Page['getByTestId']>;
 test.describe.configure({ mode: 'serial' });
@@ -36,14 +38,16 @@ test.beforeAll(async () => {
     }
     await writeJson(path.join(home, '.gd-launcher', 'installed-releases.json'), releases);
     await writeJson(path.join(home, '.gd-launcher', 'projects.json'), []);
-    const env: Record<string, string> = { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')), GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
+    const env: Record<string, string> = { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')), PATH: '/usr/bin:/bin', GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
     delete env.ELECTRON_RUN_AS_NODE;
     app = await _electron.launch({ args: ['.', `--user-data-dir=${path.join(home, 'electron-user-data')}`], env });
     page = await getMainWindow(app);
     await setAppLanguage(page, 'English');
     await page.getByTestId('btnInstalls').click();
-    firstRow = page.getByTestId(`installedReleaseRow_${releases[0].version}_${releases[0].mono ? 'mono' : 'standard'}`);
-    secondRow = page.getByTestId(`installedReleaseRow_${releases[1].version}_${releases[1].mono ? 'mono' : 'standard'}`);
+    firstRowId = `installedReleaseRow_${releases[0].version}_${releases[0].mono ? 'mono' : 'standard'}`;
+    secondRowId = `installedReleaseRow_${releases[1].version}_${releases[1].mono ? 'mono' : 'standard'}`;
+    firstRow = page.getByTestId(firstRowId);
+    secondRow = page.getByTestId(secondRowId);
     wrapper = os.platform() === 'darwin' ? path.join(home, 'Library', 'Application Support', 'GodotLauncher', 'bin', 'godot') : path.join(home, '.local', 'share', 'godot-launcher', 'bin', 'godot');
 });
 
@@ -233,11 +237,11 @@ test('preserves a saved alias across restart and blocks the same name on another
     registry[0].operation = { kind: 'create' };
     await fs.unlink(aliasFile('godot-studio'));
     await writeJson(registryPath, registry);
-    const env: Record<string, string> = { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')), GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
+    const env: Record<string, string> = { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')), PATH: '/usr/bin:/bin', GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
     delete env.ELECTRON_RUN_AS_NODE;
     app = await _electron.launch({ args: ['.', `--user-data-dir=${path.join(home, 'electron-user-data')}`], env }); appClosed = false;
     page = await getMainWindow(app); await page.getByTestId('btnInstalls').click();
-    firstRow = page.getByTestId(/^installedReleaseRow_/).nth(0); secondRow = page.getByTestId(/^installedReleaseRow_/).nth(1);
+    firstRow = page.getByTestId(firstRowId); secondRow = page.getByTestId(secondRowId);
     await expect(firstRow.getByRole('img', { name: 'Named alias: godot-studio', exact: true })).toBeVisible();
     if (process.env.GODOT_LAUNCHER_PREVIEW_DIR) await page.screenshot({ path: path.join(process.env.GODOT_LAUNCHER_PREVIEW_DIR, 'install-alias-badge.png'), animations: 'disabled' });
     await firstRow.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -328,11 +332,11 @@ test('retains a failed pending rename draft through close and reopen, then appli
 
 /** Restarts the fixture app after deliberately persisted interruption states. */
 async function launchAfterInterruption() {
-    const env: Record<string, string> = { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')), GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
+    const env: Record<string, string> = { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => typeof entry[1] === 'string')), PATH: '/usr/bin:/bin', GODOT_LAUNCHER_E2E_FIXTURES: '1', GODOT_LAUNCHER_E2E_HOME_DIR: home };
     delete env.ELECTRON_RUN_AS_NODE;
     app = await _electron.launch({ args: ['.', `--user-data-dir=${path.join(home, 'electron-user-data')}`], env }); appClosed = false;
     page = await getMainWindow(app); await page.getByTestId('btnInstalls').click();
-    firstRow = page.getByTestId(/^installedReleaseRow_/).nth(0); secondRow = page.getByTestId(/^installedReleaseRow_/).nth(1);
+    firstRow = page.getByTestId(firstRowId); secondRow = page.getByTestId(secondRowId);
 }
 
 test('rolls back prepared renames and completes committed renames through real startup recovery', async () => {
@@ -429,4 +433,144 @@ test('confirms switch-off removal, preserves cancellation and failure, and remov
     expect(await fs.readFile(aliasFile('foreign-alias'), 'utf8')).toBe('foreign');
     expect(await fs.readFile(path.join(home, '.bashrc'), 'utf8')).toContain('# >>> Godot Launcher PATH >>>');
     await expect(drawer().getByRole('checkbox', { name: 'Default terminal editor', exact: true })).not.toBeChecked();
+});
+
+test('names both commands in removal confirmations and refuses foreign alias cleanup before deleting files', async () => {
+    await drawer().getByRole('checkbox', { name: 'Default terminal editor', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Set as terminal default?', exact: true }).getByRole('button', { name: 'Set as default', exact: true }).click();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    await toggle().click();
+    await field().fill('godot-lifecycle');
+    await expect(apply()).toBeEnabled();
+    await apply().click();
+    await expect(firstRow.getByRole('img', { name: 'Named alias: godot-lifecycle', exact: true })).toBeVisible();
+    await drawer().getByRole('button', { name: 'Close', exact: true }).last().click();
+    await firstRow.getByRole('button', { name: /Remove|Delete/ }).click();
+    const single = page.getByRole('dialog', { name: 'Remove Release', exact: true });
+    await expect(single).toContainText('This editor is your default command-line Godot.');
+    await expect(single).toContainText('Removing this editor will also remove its named command godot-lifecycle.');
+    await expect(single.locator('code')).toHaveText('godot-lifecycle');
+    await single.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.getByRole('button', { name: 'Enable multi-select' }).click();
+    await firstRow.getByRole('checkbox').check();
+    await page.getByRole('button', { name: 'Actions', exact: true }).click();
+    await page.getByRole('button', { name: 'Remove selected (1)', exact: true }).click();
+    const bulk = page.getByRole('dialog', { name: 'Remove selected editors', exact: true });
+    await expect(bulk).toContainText('godot-lifecycle');
+    await expect(bulk).toContainText('This editor is your default command-line Godot.');
+    await bulk.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.getByRole('button', { name: 'Disable multi-select' }).click();
+
+    const registry = JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'installed-releases.json'), 'utf8'));
+    const original = await fs.readFile(aliasFile('godot-lifecycle'), 'utf8');
+    const backup = aliasFile('owned-backup');
+    await fs.rename(aliasFile('godot-lifecycle'), backup);
+    await fs.writeFile(aliasFile('godot-lifecycle'), 'foreign replacement');
+    await firstRow.getByRole('button', { name: /Remove|Delete/ }).click();
+    await single.getByRole('button', { name: 'Remove', exact: true }).click();
+    await expect(single.getByRole('alert')).toContainText('needs recovery');
+    expect(await fs.readFile(aliasFile('godot-lifecycle'), 'utf8')).toBe('foreign replacement');
+    expect(JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'installed-releases.json'), 'utf8'))).toEqual(registry);
+    await expect(fs.access(wrapper)).resolves.toBeUndefined();
+    await single.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await fs.unlink(aliasFile('godot-lifecycle'));
+    await fs.rename(backup, aliasFile('godot-lifecycle'));
+    expect(await fs.readFile(aliasFile('godot-lifecycle'), 'utf8')).toBe(original);
+});
+
+test('keeps both commands cleared after partial deletion and permits a safe removal retry', async () => {
+    const registry = JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'installed-releases.json'), 'utf8'));
+    const target = registry.find((release: { source: string }) => release.source !== 'custom');
+    const executable = os.platform() === 'darwin' ? path.join(target.editor_path, 'Contents', 'MacOS', 'Godot') : target.editor_path;
+    const script = await fs.readFile(executable, 'utf8');
+    await firstRow.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(toggle()).toBeChecked();
+    await drawer().getByRole('button', { name: 'Close', exact: true }).last().click();
+    await app.evaluate((_, fault) => {
+        const target = globalThis as typeof globalThis & { __name: (fn: unknown) => unknown; restoreRemovalFault: () => void };
+        target.__name = fn => fn;
+        const fixtureFs = process.getBuiltinModule('node:fs') as typeof import('node:fs');
+        const original = fixtureFs.promises.rm;
+        fixtureFs.promises.rm = async (...args: Parameters<typeof original>) => {
+            if (String(args[0]) === fault.install) {
+                await original(fault.executable, { force: true });
+                throw new Error('Simulated partial editor deletion');
+            }
+            return original(...args);
+        };
+        target.restoreRemovalFault = () => { fixtureFs.promises.rm = original; };
+    }, { install: target.install_path, executable });
+    const dialog = page.getByRole('dialog', { name: 'Remove Release', exact: true });
+    try {
+        await firstRow.getByRole('button', { name: /Remove|Delete/ }).click();
+        await dialog.getByRole('button', { name: 'Remove', exact: true }).click();
+        await expect(dialog.getByRole('alert')).toBeVisible();
+        await expect(fs.access(wrapper)).rejects.toThrow();
+        await expect(fs.access(aliasFile('godot-lifecycle'))).rejects.toThrow();
+        expect(JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'command-line-godot.json'), 'utf8'))).toBeNull();
+        expect(JSON.parse(await fs.readFile(path.join(home, '.gd-launcher', 'installed-releases.json'), 'utf8'))).toHaveLength(2);
+    } finally {
+        await app.evaluate(() => (globalThis as typeof globalThis & { restoreRemovalFault: () => void }).restoreRemovalFault());
+    }
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await firstRow.getByRole('button', { name: 'Settings', exact: true }).click();
+    await expect(toggle()).not.toBeChecked();
+    await expect(drawer().getByRole('checkbox', { name: 'Default terminal editor', exact: true })).not.toBeChecked();
+    await fs.writeFile(executable, script, { mode: 0o755 });
+    await drawer().getByRole('button', { name: 'Close', exact: true }).last().click();
+    await firstRow.getByRole('button', { name: /Remove|Delete/ }).click();
+    await dialog.getByRole('button', { name: 'Remove', exact: true }).click();
+    await expect(dialog).toBeHidden();
+    await expect(firstRow).toHaveCount(0);
+    await expect(secondRow).toBeVisible();
+    expect(await fs.readFile(aliasFile('foreign-alias'), 'utf8')).toBe('foreign');
+    expect(await fs.readFile(path.join(home, '.bashrc'), 'utf8')).toContain('# >>> Godot Launcher PATH >>>');
+});
+
+test('preserves both command bindings across custom replacement, rejects stale removal and unregisters without deleting custom files', async () => {
+    await secondRow.getByRole('button', { name: 'Settings', exact: true }).click();
+    await drawer().getByRole('checkbox', { name: 'Default terminal editor', exact: true }).click();
+    await page.getByRole('dialog', { name: 'Set as terminal default?', exact: true }).getByRole('button', { name: 'Set as default', exact: true }).click();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    await toggle().click();
+    await field().fill('godot-custom-life');
+    await expect(apply()).toBeEnabled();
+    await apply().click();
+    await expect(secondRow.getByRole('img', { name: 'Named alias: godot-custom-life', exact: true })).toBeVisible();
+    await drawer().getByRole('button', { name: 'Close', exact: true }).last().click();
+    const registryPath = path.join(home, '.gd-launcher', 'installed-releases.json');
+    const original = JSON.parse(await fs.readFile(registryPath, 'utf8'))[0];
+    const replacementPath = path.join(home, os.platform() === 'darwin' ? 'custom-replacement.app' : 'custom-replacement');
+    const executable = os.platform() === 'darwin' ? path.join(replacementPath, 'Contents', 'MacOS', 'Godot') : replacementPath;
+    await fs.mkdir(path.dirname(executable), { recursive: true });
+    await fs.writeFile(executable, '#!/bin/sh\nprintf "replacement\\n"\n', { mode: 0o755 });
+    const manifest = path.join(home, 'replacement-manifest.json');
+    await writeJson(manifest, { schema_version: 1, version: original.version, name: 'Replaced Custom Editor', base_version: '4.5', flavor: original.mono ? 'dotnet' : 'standard', config_version: 5, platforms: [{ platform: os.platform() === 'darwin' ? 'macos' : 'linux', arch: os.arch(), paths: { editor: replacementPath } }] });
+    const outcomes = await app.evaluate(async ({ ipcMain, BrowserWindow }, data) => {
+        const ipc = ipcMain as typeof ipcMain & { _invokeHandlers: Map<string, (...args: unknown[]) => unknown> };
+        const sender = BrowserWindow.getAllWindows().find(window => window.webContents.getURL().startsWith('http://localhost:5123'))!.webContents;
+        const event = { sender, senderFrame: sender.mainFrame };
+        const replacement = await ipc._invokeHandlers.get('editorInstalls.registerCustomEditor')!(event, data.manifest, { replaceExisting: true });
+        const staleRemoval = await ipc._invokeHandlers.get('editorInstalls.removeEditor')!(event, data.original);
+        return { replacement, staleRemoval };
+    }, { manifest, original });
+    expect(outcomes.replacement).toMatchObject({ success: true, data: { success: true } });
+    expect(outcomes.staleRemoval).toMatchObject({ success: true, data: { success: false } });
+    expect(await fs.readFile(wrapper, 'utf8')).toContain(replacementPath);
+    expect(await fs.readFile(aliasFile('godot-custom-life'), 'utf8')).toContain(replacementPath);
+    await page.reload();
+    await page.getByTestId('btnInstalls').click();
+    await secondRow.getByRole('button', { name: /Remove|Delete/ }).click();
+    const confirmation = page.getByRole('dialog', { name: 'Remove Custom Editor', exact: true });
+    await expect(confirmation).toContainText('godot-custom-life');
+    await expect(confirmation).toContainText('This editor is your default command-line Godot.');
+    await confirmation.getByRole('button', { name: 'Remove', exact: true }).click();
+    await expect(confirmation).toBeHidden();
+    await expect(secondRow).toHaveCount(0);
+    await expect(fs.access(wrapper)).rejects.toThrow();
+    await expect(fs.access(aliasFile('godot-custom-life'))).rejects.toThrow();
+    await expect(fs.access(executable)).resolves.toBeUndefined();
+    await expect(fs.access(original.editor_path)).resolves.toBeUndefined();
+    expect(JSON.parse(await fs.readFile(registryPath, 'utf8'))).toEqual([]);
+    expect(await fs.readFile(aliasFile('foreign-alias'), 'utf8')).toBe('foreign');
 });

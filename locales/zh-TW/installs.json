@@ -252,6 +252,7 @@
         "unavailable": "無法使用",
         "rename": "重新命名別名",
         "current": "已儲存的指令：<code>{{command}}</code>",
+        "removalWarning": "移除此編輯器也會移除其命名命令 <code>{{command}}</code>。",
         "renamed": "已將指令 {{previous}} 重新命名為 {{command}}。"
     }
 }

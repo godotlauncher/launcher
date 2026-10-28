@@ -252,6 +252,7 @@
         "unavailable": "Indisponible",
         "rename": "Renommer l’alias",
         "current": "Commande enregistrée : <code>{{command}}</code>",
+        "removalWarning": "La suppression de cet éditeur supprimera aussi sa commande nommée <code>{{command}}</code>.",
         "renamed": "Commande {{previous}} renommée en {{command}}."
     }
 }

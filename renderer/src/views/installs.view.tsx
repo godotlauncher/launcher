@@ -140,6 +140,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         reinstallRelease,
         removeRelease,
         commandLineDefaultKey: commandLine.defaultKey,
+        commandLineAliases: aliasState.aliases,
         getProjectUsageCount: (release) =>
             getEditorProjectUsageCount(release, projects),
     });
@@ -184,6 +185,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                 <RemoveEditorsConfirm
                     selections={selections}
                     commandLineDefaultKey={commandLine.defaultKey}
+                    commandLineAliases={aliasState.aliases}
                     projects={projects}
                     t={t}
                     onRemove={handleRemoveSelected}

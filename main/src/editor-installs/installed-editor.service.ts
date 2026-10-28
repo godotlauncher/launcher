@@ -174,9 +174,16 @@ export class InstalledEditorService {
      *
      * @param release - Installed editor to persist.
      */
-    addInstalledEditor(release: InstalledRelease): Promise<InstalledRelease[]> {
-        return this.commandLine.updateRegisteredEditor(release, () =>
-            this.store.put(release),
+    async addInstalledEditor(
+        release: InstalledRelease,
+    ): Promise<InstalledRelease[]> {
+        const previous = (await this.store.list()).find((candidate) =>
+            hasSameInstalledEditorIdentity(candidate, release),
+        );
+        return this.commandLine.updateRegisteredEditor(
+            release,
+            () => this.store.put(release),
+            previous,
         );
     }
 
@@ -249,6 +256,7 @@ export class InstalledEditorService {
             const releases = await this.commandLine.updateRegisteredEditor(
                 release,
                 () => this.store.put(release),
+                duplicate,
             );
             await this.projectRepair.revalidateProjects();
             return { success: true, release, releases };
@@ -289,7 +297,27 @@ export class InstalledEditorService {
         }
         this.activeRemovals.add(identity);
         try {
-            return await this.removeReservedEditor(release);
+            const releases = await this.store.list();
+            const registered = releases.find((candidate) =>
+                hasSameInstalledEditorIdentity(candidate, release),
+            );
+            if (
+                !registered ||
+                registered.editor_path !== release.editor_path ||
+                registered.install_path !== release.install_path ||
+                registered.source !== release.source ||
+                registered.managed_by_launcher !==
+                    release.managed_by_launcher ||
+                registered.console_path !== release.console_path
+            )
+                return {
+                    success: false,
+                    error: t('installs:selection.errors.changed'),
+                    version: release.version,
+                    mono: release.mono,
+                    releases,
+                };
+            return await this.removeReservedEditor(registered);
         } finally {
             this.activeRemovals.delete(identity);
         }
@@ -400,6 +428,8 @@ export class InstalledEditorService {
                     registered.editor_path !== selection.release.editor_path ||
                     registered.install_path !==
                         selection.release.install_path ||
+                    registered.console_path !==
+                        selection.release.console_path ||
                     registered.source !== selection.release.source ||
                     registered.managed_by_launcher !==
                         selection.release.managed_by_launcher

@@ -252,6 +252,7 @@
         "unavailable": "Kullanılamıyor",
         "rename": "Takma adı yeniden adlandır",
         "current": "Kayıtlı komut: <code>{{command}}</code>",
+        "removalWarning": "Bu düzenleyici kaldırıldığında adlandırılmış <code>{{command}}</code> komutu da kaldırılır.",
         "renamed": "{{previous}} komutunun adı {{command}} olarak değiştirildi."
     }
 }

@@ -1,10 +1,12 @@
 import type {
+    CommandLineAlias,
     EditorRemovalOutcome,
     EditorRemovalSelection,
     ProjectDetails,
     RemoveEditorsResult,
 } from '@shared/contracts';
 import { useRef, useState } from 'react';
+import { Trans } from 'react-i18next';
 import type { ConfirmLayout } from '../../../components/confirm.component';
 import {
     getEditorProjectUsageCount,
@@ -14,6 +16,7 @@ import {
 type RemoveEditorsConfirmProps = {
     selections: EditorRemovalSelection[];
     commandLineDefaultKey?: string | null;
+    commandLineAliases?: CommandLineAlias[];
     projects: ProjectDetails[];
     t: (key: string, options?: Record<string, unknown>) => string;
     onRemove: (
@@ -32,6 +35,7 @@ type RemoveEditorsConfirmProps = {
 export function RemoveEditorsConfirm({
     selections,
     commandLineDefaultKey,
+    commandLineAliases = [],
     projects,
     t,
     onRemove,
@@ -118,6 +122,9 @@ export function RemoveEditorsConfirm({
                 {selections.map(({ release }) => {
                     const key = getReleaseActionKey(release);
                     const outcome = outcomeByKey.get(key);
+                    const alias = commandLineAliases.find(
+                        (candidate) => getReleaseActionKey(candidate) === key,
+                    );
                     const usageCount = getEditorProjectUsageCount(
                         release,
                         projects,
@@ -157,6 +164,20 @@ export function RemoveEditorsConfirm({
                             {commandLineDefaultKey === key && !outcome && (
                                 <p className="mt-1 text-warning">
                                     {t('commandLine.removalWarning')}
+                                </p>
+                            )}
+                            {alias && !outcome && (
+                                <p className="mt-1 text-warning">
+                                    <Trans
+                                        ns="installs"
+                                        i18nKey="aliases.removalWarning"
+                                        values={{ command: alias.name }}
+                                        components={{
+                                            code: (
+                                                <code className="rounded bg-base-300 px-1 font-mono" />
+                                            ),
+                                        }}
+                                    />
                                 </p>
                             )}
                             {usageCount > 0 && !outcome && (

@@ -139,10 +139,12 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
      * Keeps a selected custom editor aligned with an explicitly replaced registration.
      * @param release - New authoritative editor registration.
      * @param persist - Writes the registration while the command transaction is reserved.
+     * @param previousRelease - Previous authoritative record, including any Windows console target.
      */
     updateRegisteredEditor<T>(
         release: InstalledRelease,
         persist: () => Promise<T>,
+        previousRelease?: InstalledRelease,
     ): Promise<T> {
         return this.serialise(() =>
             this.aliases.withReplacement(release, async () => {
@@ -157,8 +159,25 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
                 try {
                     return await persist();
                 } catch (error) {
-                    await this.writeWrapper(wrapper);
-                    await this.replaceValue(previous);
+                    try {
+                        await this.changeDefault(null);
+                        await this.requireExecutable(
+                            getCommandLineExecutable(
+                                previousRelease ?? {
+                                    ...release,
+                                    editor_path: previous.editorPath,
+                                },
+                                this.platform,
+                            ),
+                        );
+                        await this.writeWrapper(wrapper);
+                        await this.replaceValue(previous);
+                    } catch (restoreError) {
+                        throw new AggregateError(
+                            [error, restoreError],
+                            'Editor replacement failed and the command-line default could not be restored. Select a default again after resolving the filesystem error.',
+                        );
+                    }
                     throw error;
                 }
             }),
@@ -166,7 +185,7 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
     }
 
     /**
-     * Clears the command before destructive removal and restores it if removal fails.
+     * Clears the command before removal and restores only a verified surviving target.
      * @param release - Editor being removed under its lifecycle reservation.
      * @param removeFiles - Deletes editor files after command cleanup succeeds.
      */
@@ -189,6 +208,15 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
                     return await removeFiles();
                 } catch (error) {
                     try {
+                        const executable = getCommandLineExecutable(
+                            release,
+                            this.platform,
+                        );
+                        if (selection.editorPath !== release.editor_path)
+                            throw new Error(
+                                'The previous Godot editor is unavailable.',
+                            );
+                        await this.requireExecutable(executable);
                         await this.writeWrapper(wrapper);
                         await this.replaceValue(selection);
                     } catch (restoreError) {
@@ -211,6 +239,19 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
         const result = this.operations.then(operation);
         this.operations = result.catch(() => undefined);
         return result;
+    }
+
+    /**
+     * Verifies that a captured command target can still be invoked before restoration.
+     * @param executable - Authoritative platform-specific executable path.
+     */
+    private async requireExecutable(executable: string): Promise<void> {
+        if (!(await fs.stat(executable)).isFile())
+            throw new Error('The previous Godot editor is unavailable.');
+        await fs.access(
+            executable,
+            this.platform === 'win32' ? fs.constants.F_OK : fs.constants.X_OK,
+        );
     }
 
     /**
