@@ -43,6 +43,8 @@ export type UserPreferences = {
     post_launch_action: 'none' | 'minimize' | 'close_to_tray';
     /** Opens the associated code editor after an edit launch; defaults to true. */
     auto_open_code_editor?: boolean;
+    /** Attempts a named command for each new editor; defaults to false. */
+    auto_create_editor_aliases?: boolean;
     auto_check_updates: boolean;
     receive_beta_updates: boolean;
     auto_start: boolean;

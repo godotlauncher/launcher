@@ -197,13 +197,48 @@ export class CommandLineAliasService {
                 };
             return this.rename(release, name, existing, installed);
         }
+        const { pathChanged } = await this.create(release, name);
+        return { ...(await this.getState(installed)), pathChanged };
+    }
+
+    /**
+     * Creates only an unbound editor's command without recovering unrelated intents.
+     * @param release - Newly registered authoritative editor.
+     * @param name - Suggested literal alias name.
+     */
+    async createAutomatically(release: InstalledRelease, name: string) {
+        if (
+            (await this.store.read()).some(({ binding }) =>
+                this.sameEditor(binding, release),
+            )
+        )
+            return undefined;
+        return this.create(release, name, true);
+    }
+
+    /**
+     * Publishes one exclusive command and retains failure-cleanup reservations.
+     * @param release - Authoritative editor being configured.
+     * @param name - Proposed literal alias name.
+     * @param rollbackOnInterruption - Keeps provisional automatic setup cleanup-only until committed.
+     */
+    private async create(
+        release: InstalledRelease,
+        name: string,
+        rollbackOnInterruption = false,
+    ): Promise<{ pathChanged: boolean }> {
         const availability = await this.check(release, name);
         if (!availability.available) throw new Error(availability.reason);
         const binding = this.binding(release, name);
-        await this.put({ binding, operation: { kind: 'create' } });
+        const operation = {
+            kind: rollbackOnInterruption
+                ? ('remove' as const)
+                : ('create' as const),
+        };
+        await this.put({ binding, operation });
         let pathChanged = false;
         try {
-            await this.stage(binding, { kind: 'create' });
+            await this.stage(binding, operation);
             const registration = await this.adapter.register(name);
             pathChanged = registration.pathChanged;
             if (
@@ -215,7 +250,11 @@ export class CommandLineAliasService {
             await this.put({ binding });
         } catch (error) {
             // A returned failure must never become a delayed creation on refresh.
-            await this.put({ binding, operation: { kind: 'remove' } });
+            try {
+                await this.put({ binding, operation: { kind: 'remove' } });
+            } catch {
+                /* Still attempt owned-file cleanup if the registry is unavailable. */
+            }
             try {
                 await this.erase(binding);
                 await this.forget(binding);
@@ -224,7 +263,7 @@ export class CommandLineAliasService {
             }
             throw error;
         }
-        return { ...(await this.getState(installed)), pathChanged };
+        return { pathChanged };
     }
 
     /**

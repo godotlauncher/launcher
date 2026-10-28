@@ -220,6 +220,13 @@
         "close": "關閉"
     },
     "aliases": {
+        "automatic": {
+            "title": "自動建立命名別名",
+            "description": "為每個新編輯器建立終端機命令。例如，Godot 4.7.2 對應 <code>godot472</code>。",
+            "failed": "無法完成 {{command}} 的設定",
+            "created": "已建立命令 {{command}}",
+            "restart": "請重新啟動終端機以使用新命令。"
+        },
         "title": "具名別名",
         "description": "使用專屬終端機指令執行此版本。",
         "name": "指令名稱",
@@ -254,5 +261,10 @@
         "current": "已儲存的指令：<code>{{command}}</code>",
         "removalWarning": "移除此編輯器也會移除其命名命令 <code>{{command}}</code>。",
         "renamed": "已將指令 {{previous}} 重新命名為 {{command}}。"
+    },
+    "launcherCli": {
+        "title": "Godot Launcher CLI",
+        "description": "從終端機使用 Godot Launcher。",
+        "comingSoon": "即將推出"
     }
 }

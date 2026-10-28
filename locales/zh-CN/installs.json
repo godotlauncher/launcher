@@ -220,6 +220,13 @@
         "close": "关闭"
     },
     "aliases": {
+        "automatic": {
+            "title": "自动创建命名别名",
+            "description": "为每个新编辑器创建终端命令。例如，Godot 4.7.2 对应 <code>godot472</code>。",
+            "failed": "无法完成 {{command}} 的设置",
+            "created": "已创建命令 {{command}}",
+            "restart": "请重启终端以使用新命令。"
+        },
         "title": "命名别名",
         "description": "使用专属终端命令运行此版本。",
         "name": "命令名称",
@@ -254,5 +261,10 @@
         "current": "已保存的命令：<code>{{command}}</code>",
         "removalWarning": "移除此编辑器也会移除其命名命令 <code>{{command}}</code>。",
         "renamed": "已将命令 {{previous}} 重命名为 {{command}}。"
+    },
+    "launcherCli": {
+        "title": "Godot Launcher CLI",
+        "description": "从终端使用 Godot Launcher。",
+        "comingSoon": "即将推出"
     }
 }

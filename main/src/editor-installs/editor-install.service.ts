@@ -329,6 +329,7 @@ export class EditorInstallService {
             this.publish(job, 'complete', {
                 percent: 100,
                 release: result.release,
+                commandLineAlias: result.commandLineAlias,
             });
         } else {
             this.publish(job, 'error', { error: result.error });
@@ -506,8 +507,17 @@ export class EditorInstallService {
             });
             this.publish(job, 'validating', { percent: 98 });
             await this.projectRepair.revalidateProjects();
+            const existingRegistration = registeredEditors.some((candidate) =>
+                hasSameInstalledEditorIdentity(candidate, installedRelease),
+            );
+            const commandLineAlias = !existingRegistration
+                ? await this.installedEditors.tryAutomaticAlias(
+                      installedRelease,
+                  )
+                : undefined;
             return {
                 success: true,
+                commandLineAlias,
                 release: installedRelease,
                 version: release.version,
             };

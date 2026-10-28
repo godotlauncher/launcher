@@ -17,3 +17,10 @@ export type CommandLineAliasAvailability = {
 export type CommandLineAliasResult = CommandLineAliasesState & {
     pathChanged: boolean;
 };
+
+/** Reports a non-fatal automatic command setup outcome after a successful install. */
+export type AutomaticCommandLineAliasResult = {
+    name: string;
+    pathChanged: boolean;
+    error?: string;
+};

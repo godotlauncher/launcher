@@ -220,6 +220,13 @@
         "close": "Kapat"
     },
     "aliases": {
+        "automatic": {
+            "title": "Adlandırılmış takma adları otomatik oluştur",
+            "description": "Her yeni düzenleyici için bir terminal komutu oluşturun. Örneğin Godot 4.7.2, <code>godot472</code> olur.",
+            "failed": "{{command}} kurulumu tamamlanamadı",
+            "created": "{{command}} komutu oluşturuldu",
+            "restart": "Yeni komutu kullanmak için terminalinizi yeniden başlatın."
+        },
         "title": "Adlandırılmış takma ad",
         "description": "Bu sürümü kendi terminal komutuyla çalıştırın.",
         "name": "Komut adı",
@@ -254,5 +261,10 @@
         "current": "Kayıtlı komut: <code>{{command}}</code>",
         "removalWarning": "Bu düzenleyici kaldırıldığında adlandırılmış <code>{{command}}</code> komutu da kaldırılır.",
         "renamed": "{{previous}} komutunun adı {{command}} olarak değiştirildi."
+    },
+    "launcherCli": {
+        "title": "Godot Launcher CLI",
+        "description": "Godot Launcher uygulamasını terminalinizden kullanın.",
+        "comingSoon": "Yakında"
     }
 }

@@ -6,6 +6,7 @@ import { Injectable } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ConfigService } from '@mariodebono/di-config';
 import type {
+    AutomaticCommandLineAliasResult,
     EditorRemovalOutcome,
     EditorRemovalSelection,
     InstalledRelease,
@@ -14,9 +15,11 @@ import type {
     RemoveEditorsResult,
 } from '@shared/contracts';
 import logger from 'electron-log';
+import { getUserPreferences } from '../commands/userPreferences.js';
 import type { AppConfig } from '../config/index.js';
 import { t } from '../i18n/index.js';
 import { parseCustomEngineManifest } from '../utils/customEngineManifest.utils.js';
+import { suggestAutomaticAlias } from './command-line-alias.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CommandLineGodotService } from './command-line-godot.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -164,6 +167,35 @@ export class InstalledEditorService {
         }
     }
 
+    /**
+     * Attempts an opted-in command without failing a completed editor registration.
+     * @param release - Newly registered editor held by the caller's lifecycle reservation.
+     */
+    async tryAutomaticAlias(
+        release: InstalledRelease,
+    ): Promise<AutomaticCommandLineAliasResult | undefined> {
+        const name = suggestAutomaticAlias(release.version);
+        try {
+            if (
+                (await getUserPreferences()).auto_create_editor_aliases !== true
+            )
+                return undefined;
+            const result = await this.commandLine.createAutomaticAlias(
+                release,
+                name,
+            );
+            return result
+                ? { name, pathChanged: result.pathChanged }
+                : undefined;
+        } catch (error) {
+            return {
+                name,
+                pathChanged: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
     /** Gets every registered installed editor. */
     getInstalledEditors(): Promise<InstalledRelease[]> {
         return this.store.list();
@@ -259,7 +291,10 @@ export class InstalledEditorService {
                 duplicate,
             );
             await this.projectRepair.revalidateProjects();
-            return { success: true, release, releases };
+            const commandLineAlias = !duplicate
+                ? await this.tryAutomaticAlias(release)
+                : undefined;
+            return { success: true, release, releases, commandLineAlias };
         } catch (error) {
             return {
                 success: false,

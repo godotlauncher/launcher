@@ -11,3 +11,14 @@ export function getAliasNameError(
         return 'reserved';
     return null;
 }
+
+/**
+ * Uses the same numeric suggestion as the manual alias field without resolving collisions.
+ * @param version - Registered version, including custom identifiers.
+ */
+export function suggestAutomaticAlias(version: string): string {
+    const match = /^(\d+)\.(\d+)(?:\.(\d+))?/.exec(version);
+    return match
+        ? `godot${match[1]}${match[2]}${match[3] && Number(match[3]) !== 0 ? match[3] : ''}`
+        : 'godot-custom';
+}

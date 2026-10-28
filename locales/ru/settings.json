@@ -3,6 +3,7 @@
     "tabs": {
         "projects": "Проекты",
         "installs": "Установки",
+        "commandLine": "Командная строка",
         "appearance": "Внешний вид",
         "behavior": "Поведение",
         "tools": "Инструменты",

@@ -117,6 +117,17 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
         );
     }
 
+    /**
+     * Attempts creation within the existing lifecycle reservation and shared command queue.
+     * @param release - Newly registered editor.
+     * @param name - Suggested alias to create without changing an existing binding.
+     */
+    createAutomaticAlias(release: InstalledRelease, name: string) {
+        return this.serialise(() =>
+            this.aliases.createAutomatically(release, name),
+        );
+    }
+
     /** Gets the persisted selection even when its executable is unavailable. */
     getState(): Promise<CommandLineGodotState> {
         return this.serialise(async () => ({

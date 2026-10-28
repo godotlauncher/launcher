@@ -220,6 +220,13 @@
         "close": "Zamknij"
     },
     "aliases": {
+        "automatic": {
+            "title": "Automatycznie twórz nazwane aliasy",
+            "description": "Utwórz polecenie terminala dla każdego nowego edytora. Na przykład Godot 4.7.2 otrzyma polecenie <code>godot472</code>.",
+            "failed": "Nie udało się ukończyć konfiguracji {{command}}",
+            "created": "Utworzono polecenie {{command}}",
+            "restart": "Uruchom terminal ponownie, aby użyć nowego polecenia."
+        },
         "title": "Nazwany alias",
         "description": "Uruchamiaj tę wersję osobnym poleceniem terminala.",
         "name": "Nazwa polecenia",
@@ -254,5 +261,10 @@
         "current": "Zapisane polecenie: <code>{{command}}</code>",
         "removalWarning": "Usunięcie tego edytora usunie również jego polecenie <code>{{command}}</code>.",
         "renamed": "Zmieniono nazwę polecenia {{previous}} na {{command}}."
+    },
+    "launcherCli": {
+        "title": "Godot Launcher CLI",
+        "description": "Korzystaj z Godot Launcher w terminalu.",
+        "comingSoon": "Wkrótce"
     }
 }

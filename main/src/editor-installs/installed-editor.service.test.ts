@@ -46,6 +46,9 @@ const manifestMocks = vi.hoisted(() => ({
     parseCustomEngineManifest: vi.fn(),
 }));
 vi.mock('../utils/customEngineManifest.utils.js', () => manifestMocks);
+const preferenceMocks = vi.hoisted(() => ({ getUserPreferences: vi.fn() }));
+vi.mock('../commands/userPreferences.js', () => preferenceMocks);
+
 vi.mock('../i18n/index.js', () => ({ t: (key: string) => key }));
 
 describe('InstalledEditorService', () => {
@@ -64,10 +67,17 @@ describe('InstalledEditorService', () => {
     const commandLine = {
         withEditorRemoval: vi.fn(),
         updateRegisteredEditor: vi.fn(),
+        createAutomaticAlias: vi.fn(),
     };
 
     beforeEach(() => {
         vi.clearAllMocks();
+        preferenceMocks.getUserPreferences.mockResolvedValue({
+            auto_create_editor_aliases: false,
+        });
+        commandLine.createAutomaticAlias.mockResolvedValue({
+            pathChanged: false,
+        });
         configService.get.mockReturnValue(false);
         store.list.mockResolvedValue([]);
         store.put.mockResolvedValue([]);
@@ -554,6 +564,63 @@ describe('InstalledEditorService', () => {
         });
         expect(commandLine.withEditorRemoval).not.toHaveBeenCalled();
         expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+    });
+
+    it.each([false, undefined, 'true'])(
+        'does not attempt an automatic alias without an explicit true preference (%s)',
+        async (value) => {
+            preferenceMocks.getUserPreferences.mockResolvedValue({
+                auto_create_editor_aliases: value,
+            });
+            expect(
+                await createService().tryAutomaticAlias(
+                    createRelease('4.8-stable'),
+                ),
+            ).toBeUndefined();
+            expect(commandLine.createAutomaticAlias).not.toHaveBeenCalled();
+        },
+    );
+
+    it('reports automatic alias failure separately from a successful custom registration', async () => {
+        const release = createRelease('4.8-stable', { source: 'custom' });
+        manifestMocks.parseCustomEngineManifest.mockResolvedValue(release);
+        preferenceMocks.getUserPreferences.mockResolvedValue({
+            auto_create_editor_aliases: true,
+        });
+        commandLine.createAutomaticAlias.mockRejectedValueOnce(
+            new Error('Command already taken'),
+        );
+        const result = await createService().registerCustomEditor(
+            '/editor/manifest.json',
+        );
+        expect(result).toMatchObject({
+            success: true,
+            commandLineAlias: {
+                name: 'godot48',
+                error: 'Command already taken',
+            },
+        });
+        expect(commandLine.createAutomaticAlias).toHaveBeenCalledWith(
+            release,
+            'godot48',
+        );
+        expect(store.put).toHaveBeenCalledWith(release);
+    });
+
+    it('preserves existing custom bindings instead of attempting automatic creation on replacement', async () => {
+        const release = createRelease('studio-build', { source: 'custom' });
+        store.list.mockResolvedValue([release]);
+        manifestMocks.parseCustomEngineManifest.mockResolvedValue(release);
+        preferenceMocks.getUserPreferences.mockResolvedValue({
+            auto_create_editor_aliases: true,
+        });
+        expect(
+            await createService().registerCustomEditor(
+                '/editor/manifest.json',
+                { replaceExisting: true },
+            ),
+        ).toMatchObject({ success: true });
+        expect(commandLine.createAutomaticAlias).not.toHaveBeenCalled();
     });
 
     /** Creates a service with isolated dependency mocks. */

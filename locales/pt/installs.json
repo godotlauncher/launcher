@@ -220,6 +220,13 @@
         "close": "Fechar"
     },
     "aliases": {
+        "automatic": {
+            "title": "Criar aliases automaticamente",
+            "description": "Crie um comando de terminal para cada novo editor. Por exemplo, Godot 4.7.2 passa a ser <code>godot472</code>.",
+            "failed": "Não foi possível concluir a configuração de {{command}}",
+            "created": "Comando {{command}} criado",
+            "restart": "Reinicie o terminal para usar o novo comando."
+        },
         "title": "Alias nomeado",
         "description": "Execute esta versão com o seu próprio comando de terminal.",
         "name": "Nome do comando",
@@ -254,5 +261,10 @@
         "current": "Comando guardado: <code>{{command}}</code>",
         "removalWarning": "Remover este editor também remove o seu comando <code>{{command}}</code>.",
         "renamed": "Comando {{previous}} renomeado para {{command}}."
+    },
+    "launcherCli": {
+        "title": "Godot Launcher CLI",
+        "description": "Use o Godot Launcher a partir do terminal.",
+        "comingSoon": "Em breve"
     }
 }

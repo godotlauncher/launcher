@@ -72,6 +72,28 @@ describe('userPreferences migration', () => {
     });
 
     it.each([true, false])(
+        'persists the automatic alias choice %s',
+        async (auto_create_editor_aliases) => {
+            await setUserPreferences(
+                createPrefs({ auto_create_editor_aliases }),
+            );
+            expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+                '/tmp/prefs.json',
+                expect.objectContaining({ auto_create_editor_aliases }),
+            );
+        },
+    );
+
+    it('rejects a non-boolean automatic alias choice before writing', async () => {
+        await expect(
+            setUserPreferences(
+                createPrefs({ auto_create_editor_aliases: 'true' as never }),
+            ),
+        ).rejects.toThrow('Invalid automatic editor alias preference');
+        expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
+    });
+
+    it.each([true, false])(
         'persists the automatic editor preference %s',
         async (auto_open_code_editor) => {
             await setUserPreferences(createPrefs({ auto_open_code_editor }));

@@ -3,6 +3,7 @@
     "tabs": {
         "projects": "Projeler",
         "installs": "Kurulumlar",
+        "commandLine": "Komut satırı",
         "appearance": "Görünüm",
         "behavior": "Davranış",
         "tools": "Araçlar",

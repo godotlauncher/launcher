@@ -7,10 +7,11 @@ import {
 } from './app.routes';
 
 describe('settings routes', () => {
-    it('registers Export Templates after Installs', () => {
+    it('registers Command line beside Installs', () => {
         expect(settingsTabs).toEqual([
             'projects',
             'installs',
+            'commandLine',
             'exportTemplates',
             'appearance',
             'behavior',
@@ -20,6 +21,10 @@ describe('settings routes', () => {
             'updates',
         ]);
         expect(isSettingsTab('connections')).toBe(true);
+        expect(isSettingsTab('commandLine')).toBe(true);
+        expect(appRoutePaths.settingsTab('commandLine')).toBe(
+            '/settings/commandLine',
+        );
     });
 
     it('activates the Connections shortcut only for its canonical route', () => {

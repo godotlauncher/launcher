@@ -3,6 +3,7 @@
     "tabs": {
         "projects": "プロジェクト",
         "installs": "インストール",
+        "commandLine": "コマンドライン",
         "appearance": "外観",
         "behavior": "動作",
         "tools": "ツール",

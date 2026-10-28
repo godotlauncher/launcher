@@ -220,6 +220,13 @@
         "close": "Agħlaq"
     },
     "aliases": {
+        "automatic": {
+            "title": "Oħloq aliases bl-isem awtomatikament",
+            "description": "Oħloq kmand tat-terminal għal kull editur ġdid. Pereżempju, Godot 4.7.2 isir <code>godot472</code>.",
+            "failed": "Ma setax jitlesta s-setup ta’ {{command}}",
+            "created": "Il-kmand {{command}} inħoloq",
+            "restart": "Erġa’ ibda t-terminal biex tuża l-kmand il-ġdid."
+        },
         "title": "Alias imsemmi",
         "description": "Ħaddem din il-verżjoni bil-kmand tagħha fit-terminal.",
         "name": "Isem tal-kmand",
@@ -254,5 +261,10 @@
         "current": "Kmand salvat: <code>{{command}}</code>",
         "removalWarning": "It-tneħħija ta' dan l-editur tneħħi wkoll il-kmand tiegħu <code>{{command}}</code>.",
         "renamed": "L-isem tal-kmand {{previous}} inbidel għal {{command}}."
+    },
+    "launcherCli": {
+        "title": "Godot Launcher CLI",
+        "description": "Uża Godot Launcher mit-terminal tiegħek.",
+        "comingSoon": "Dalwaqt"
     }
 }

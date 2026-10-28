@@ -3,6 +3,7 @@
     "tabs": {
         "projects": "Progetti",
         "installs": "Installazioni",
+        "commandLine": "Riga di comando",
         "appearance": "Aspetto",
         "behavior": "Comportamento",
         "tools": "Strumenti",

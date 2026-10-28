@@ -220,6 +220,13 @@
         "close": "閉じる"
     },
     "aliases": {
+        "automatic": {
+            "title": "名前付きエイリアスを自動作成",
+            "description": "新しいエディターごとにターミナルコマンドを作成します。例えば、Godot 4.7.2 は <code>godot472</code> になります。",
+            "failed": "{{command}} の設定を完了できませんでした",
+            "created": "コマンド {{command}} を作成しました",
+            "restart": "新しいコマンドを使うにはターミナルを再起動してください。"
+        },
         "title": "名前付きエイリアス",
         "description": "このバージョン専用のターミナルコマンドを使用します。",
         "name": "コマンド名",
@@ -254,5 +261,10 @@
         "current": "保存済みコマンド: <code>{{command}}</code>",
         "removalWarning": "このエディターを削除すると、名前付きコマンド <code>{{command}}</code> も削除されます。",
         "renamed": "コマンド {{previous}} を {{command}} に変更しました。"
+    },
+    "launcherCli": {
+        "title": "Godot Launcher CLI",
+        "description": "ターミナルから Godot Launcher を使用します。",
+        "comingSoon": "近日公開"
     }
 }

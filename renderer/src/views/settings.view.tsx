@@ -25,6 +25,7 @@ import { AppIntegrationDisconnectConfirm } from './settings/components/app-integ
 import { AppearanceSettingsPanel } from './settings/components/appearance-settings-panel.component';
 import { BehaviorSettingsPanel } from './settings/components/behavior-settings-panel.component';
 import { CodeEditorSettingsPanel } from './settings/components/code-editor-settings-panel.component';
+import { CommandLineSettingsPanel } from './settings/components/command-line-settings-panel.component';
 import { ConnectionsSettingsPanel } from './settings/components/connections-settings-panel.component';
 import { InstallsSettingsPanel } from './settings/components/installs-settings-panel.component';
 import { ProjectsSettingsPanel } from './settings/components/projects-settings-panel.component';
@@ -760,6 +761,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         />
                         <InstallsSettingsPanel
                             active={activeTab === 'installs'}
+                        />
+                        <CommandLineSettingsPanel
+                            active={activeTab === 'commandLine'}
                         />
                         <TemplateStorageSettingsPanel
                             active={activeTab === 'exportTemplates'}

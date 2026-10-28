@@ -81,6 +81,8 @@ function mergeWithDefaults(
     return {
         ...clonePrefs(defaultPrefs),
         ...runtimePrefs,
+        auto_create_editor_aliases:
+            runtimePrefs.auto_create_editor_aliases === true,
         projects_view_mode:
             runtimePrefs.projects_view_mode === 'list' ||
             runtimePrefs.projects_view_mode === 'dense'
@@ -179,6 +181,7 @@ export async function getDefaultPrefs(): Promise<UserPreferences> {
         projects_location: pathModule.resolve(defaultPrefs.projectDir),
         post_launch_action: 'close_to_tray',
         auto_open_code_editor: true,
+        auto_create_editor_aliases: false,
         auto_check_updates: true,
         receive_beta_updates: false,
         skipped_app_update_version: undefined,

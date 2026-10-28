@@ -91,6 +91,11 @@ export async function setUserPreferences(
     prefs: UserPreferences,
 ): Promise<UserPreferences> {
     if (
+        prefs.auto_create_editor_aliases !== undefined &&
+        typeof prefs.auto_create_editor_aliases !== 'boolean'
+    )
+        throw new Error('Invalid automatic editor alias preference');
+    if (
         prefs.auto_open_code_editor !== undefined &&
         typeof prefs.auto_open_code_editor !== 'boolean'
     ) {

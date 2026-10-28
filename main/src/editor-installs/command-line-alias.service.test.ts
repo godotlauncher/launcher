@@ -3,7 +3,10 @@ import type { InstalledRelease } from '@shared/contracts';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommandLineAliasService } from './command-line-alias.service.js';
 import type { AliasEntry } from './command-line-alias.store.js';
-import { getAliasNameError } from './command-line-alias.util.js';
+import {
+    getAliasNameError,
+    suggestAutomaticAlias,
+} from './command-line-alias.util.js';
 
 const io = vi.hoisted(() => ({
     lstat: vi.fn(),
@@ -157,6 +160,109 @@ describe('exclusive alias transactions', () => {
             adapter as never,
             'linux',
         );
+    });
+
+    it.each([
+        ['4.8-stable', 'godot48'],
+        ['4.8.0-beta1', 'godot48'],
+        ['4.7.2-stable', 'godot472'],
+        ['studio-build', 'godot-custom'],
+    ])('suggests automatic command %s as %s', (version, expected) =>
+        expect(suggestAutomaticAlias(version)).toBe(expected),
+    );
+
+    it('does not recover unrelated pending work or replace a saved binding during automatic creation', async () => {
+        await service.apply(editor('other'), 'godot-other', [editor('other')]);
+        entries[0].operation = { kind: 'remove' };
+        const unrelated = structuredClone(entries[0]);
+        await service.createAutomatically(editor(), 'godot48');
+        expect(
+            entries.find((entry) => entry.binding.name === 'godot-other'),
+        ).toEqual(unrelated);
+        const saved = structuredClone(
+            entries.find((entry) => entry.binding.name === 'godot48'),
+        );
+        expect(
+            await service.createAutomatically(editor(), 'godot-new'),
+        ).toBeUndefined();
+        expect(
+            entries.find((entry) => entry.binding.name === 'godot48'),
+        ).toEqual(saved);
+        expect(files.has(destination('godot-new'))).toBe(false);
+    });
+
+    it('preserves the default and skips a binding with pending work during automatic creation', async () => {
+        const defaultCommand = { ino: 998n, content: 'default' };
+        files.set(destination('godot'), defaultCommand);
+        await service.createAutomatically(editor(), 'godot48');
+        expect(files.get(destination('godot'))).toBe(defaultCommand);
+        entries[0].operation = { kind: 'remove' };
+        const pending = structuredClone(entries[0]);
+        expect(
+            await service.createAutomatically(editor(), 'godot-new'),
+        ).toBeUndefined();
+        expect(entries[0]).toEqual(pending);
+        expect(files.has(destination('godot-new'))).toBe(false);
+    });
+
+    it('never completes failed automatic creation when both failure persistence and cleanup were blocked', async () => {
+        const write = coordinator.write.getMockImplementation();
+        const unlink = io.unlink.getMockImplementation();
+        if (!write || !unlink) throw new Error('Missing filesystem fixture');
+        let blocked = false;
+        coordinator.write.mockImplementation(async (...args) => {
+            if (blocked) throw new Error('Registry unavailable');
+            return write(...args);
+        });
+        io.unlink.mockImplementation(async (...args) => {
+            if (blocked) throw new Error('Cleanup unavailable');
+            return unlink(...args);
+        });
+        adapter.register.mockImplementationOnce(async () => {
+            blocked = true;
+            throw new Error('PATH setup failed');
+        });
+        await expect(
+            service.createAutomatically(editor(), 'godot48'),
+        ).rejects.toThrow('PATH setup failed');
+        expect(entries[0].operation?.kind).toBe('remove');
+        blocked = false;
+        expect((await service.getState([editor()])).aliases).toEqual([]);
+        expect(io.link).not.toHaveBeenCalled();
+        expect(files.size).toBe(0);
+    });
+
+    it('attempts owned-file cleanup even when a failed manual creation cannot persist its removal intent', async () => {
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing persistence fixture');
+        let blocked = false;
+        coordinator.write.mockImplementation(async (...args) => {
+            if (blocked) throw new Error('Registry unavailable');
+            return write(...args);
+        });
+        adapter.register.mockImplementationOnce(async () => {
+            blocked = true;
+            throw new Error('PATH setup failed');
+        });
+        await expect(
+            service.apply(editor(), 'godot48', [editor()]),
+        ).rejects.toThrow('PATH setup failed');
+        expect(files.size).toBe(0);
+        blocked = false;
+        await service.getState([editor()]);
+        expect(files.has(destination('godot48'))).toBe(false);
+        expect(io.link).not.toHaveBeenCalled();
+    });
+
+    it('does not suffix or overwrite an unavailable automatic name', async () => {
+        const foreign = { ino: 999n, content: 'foreign' };
+        files.set(destination('godot48'), foreign);
+        await expect(
+            service.createAutomatically(editor(), 'godot48'),
+        ).rejects.toThrow('external');
+        expect(files.get(destination('godot48'))).toBe(foreign);
+        expect(entries).toEqual([]);
+        expect(adapter.register).not.toHaveBeenCalled();
     });
 
     it('checks names without writing files, PATH or registrations', async () => {

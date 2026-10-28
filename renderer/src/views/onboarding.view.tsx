@@ -16,6 +16,7 @@ import { useTrayAvailability } from '../hooks/tray-availability.hook';
 import { appBridge, exportTemplatesBridge } from '../renderer.bridge';
 import { formatTemplateBytes } from './export-templates/template-format.util';
 import { AppearanceStep } from './onboarding/appearance-step.component';
+import { CommandLineStep } from './onboarding/command-line-step.component';
 import {
     applyOnboardingRecommendedLocations,
     areOnboardingPathsEqual,
@@ -63,6 +64,7 @@ function readStoredStep(): OnboardingStepId {
 export const OnboardingView: React.FC = () => {
     const { t, i18n } = useTranslation([
         'welcome',
+        'installs',
         'common',
         'exportTemplates',
     ]);
@@ -270,6 +272,7 @@ export const OnboardingView: React.FC = () => {
         appearance: t('welcome:onboarding.steps.appearance'),
         setup: t('welcome:onboarding.steps.setup'),
         preferences: t('welcome:onboarding.steps.preferences'),
+        'command-line': t('installs:settings.commandLine'),
     };
 
     const setDraftPreferences = (updates: Partial<UserPreferences>) => {
@@ -564,7 +567,7 @@ export const OnboardingView: React.FC = () => {
             setStep(getNextOnboardingStep(step));
             return;
         }
-        if (step === 'appearance') {
+        if (step === 'appearance' || step === 'preferences') {
             setStep(getNextOnboardingStep(step));
             return;
         }
@@ -576,11 +579,9 @@ export const OnboardingView: React.FC = () => {
     };
 
     const actionLabel =
-        step === 'welcome' || step === 'appearance'
-            ? t('common:buttons.continue')
-            : step === 'setup'
-              ? t('common:buttons.continue')
-              : t('welcome:onboarding.navigation.finishProjects');
+        step === 'command-line'
+            ? t('welcome:onboarding.navigation.finishProjects')
+            : t('common:buttons.continue');
 
     return (
         <div className="flex h-full min-h-0 w-full bg-base-100 text-base">
@@ -681,6 +682,19 @@ export const OnboardingView: React.FC = () => {
                             onWindowsSymlinksChange={(enabled) =>
                                 setDraftPreferences({
                                     windows_enable_symlinks: enabled,
+                                })
+                            }
+                        />
+                    )}
+                    {step === 'command-line' && (
+                        <CommandLineStep
+                            automaticAliases={
+                                draft.auto_create_editor_aliases === true
+                            }
+                            pending={pending || storageRecovering}
+                            onAutomaticAliasesChange={(enabled) =>
+                                setDraftPreferences({
+                                    auto_create_editor_aliases: enabled,
                                 })
                             }
                         />
@@ -820,9 +834,11 @@ export const OnboardingView: React.FC = () => {
                         disabled={
                             pending ||
                             storageRecovering ||
-                            ((step === 'setup' || step === 'preferences') &&
+                            ((step === 'setup' ||
+                                step === 'preferences' ||
+                                step === 'command-line') &&
                                 !importedTemplateStorage) ||
-                            (step === 'preferences' && storageRecoveryRequired)
+                            (step === 'command-line' && storageRecoveryRequired)
                         }
                     >
                         {pending && (

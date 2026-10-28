@@ -571,6 +571,8 @@ test('chooses imported template storage during first-run setup', async () => {
     const target = path.join(fixtureHome, 'custom-first-run-imported');
     await field.fill(target);
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page.getByTestId('onboarding-step-heading')).toHaveText('Choose your preferences');
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await expect(
         page.getByRole('button', { name: 'Finish and view projects' }),
     ).toBeVisible();
@@ -590,6 +592,8 @@ test('retries a first-run move that rolled back cleanly', async () => {
     await prepareOnboardingFixture(page, app, 'linux', 'setup');
     const destination = path.join(fixtureHome, 'retry-first-run-imported');
     await page.getByTestId('onboarding-imported-templates-location').fill(destination);
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page.getByTestId('onboarding-step-heading')).toHaveText('Choose your preferences');
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await app.evaluate(({}, canonical) => {
         const fixtureFs = process.getBuiltinModule('node:fs');
@@ -618,6 +622,8 @@ test('recovers an interrupted first-run move before retrying setup', async () =>
     await prepareOnboardingFixture(page, app, 'linux', 'setup');
     const destination = path.join(fixtureHome, 'interrupted-first-run-imported');
     await page.getByTestId('onboarding-imported-templates-location').fill(destination);
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page.getByTestId('onboarding-step-heading')).toHaveText('Choose your preferences');
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await app.evaluate(({}, canonical) => {
         const fixtureFs = process.getBuiltinModule('node:fs');
@@ -665,6 +671,8 @@ test('recovers an interrupted first-run move before retrying setup', async () =>
     ).toHaveValue(destination);
     await expect(finish).toBeHidden();
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page.getByTestId('onboarding-step-heading')).toHaveText('Choose your preferences');
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await finish.click();
     await expect(page).toHaveURL(/#\/projects$/);
     expect(await fs.realpath(importedRoot)).toBe(await fs.realpath(destination));
@@ -674,6 +682,8 @@ test('finishes first-run setup when recovery completes the storage move', async 
     await prepareOnboardingFixture(page, app, 'linux', 'setup');
     const destination = path.join(fixtureHome, 'completed-first-run-imported');
     await page.getByTestId('onboarding-imported-templates-location').fill(destination);
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    await expect(page.getByTestId('onboarding-step-heading')).toHaveText('Choose your preferences');
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await app.evaluate(({}, canonical) => {
         const fixtureFs = process.getBuiltinModule('node:fs');
