@@ -88,6 +88,7 @@ describe('exclusive alias transactions', () => {
         binDirectory: bin,
         pathForCommand: destination,
         findConflict: vi.fn(),
+        findConflicts: vi.fn(),
         register: vi.fn(),
     };
     const missing = () =>
@@ -114,6 +115,10 @@ describe('exclusive alias transactions', () => {
             }),
         };
         adapter.findConflict.mockResolvedValue(null);
+        adapter.findConflicts.mockImplementation(
+            async (names: string[]) =>
+                new Map(names.map((name) => [name, null])),
+        );
         adapter.register.mockResolvedValue({
             pathChanged: false,
             conflict: null,
@@ -273,6 +278,432 @@ describe('exclusive alias transactions', () => {
         expect(io.open).not.toHaveBeenCalled();
         expect(adapter.register).not.toHaveBeenCalled();
     });
+    it('previews missing commands without recovery, persistence, files or PATH changes', async () => {
+        await service.apply(editor('other'), 'other-command', [
+            editor('other'),
+        ]);
+        entries[0].operation = { kind: 'remove' };
+        const before = structuredClone(entries);
+        vi.clearAllMocks();
+        const result = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor(), editor('other')],
+        );
+        expect(result.items.map(({ action }) => action)).toEqual(['create']);
+        expect(entries).toEqual(before);
+        expect(coordinator.write).not.toHaveBeenCalled();
+        expect(io.link).not.toHaveBeenCalled();
+        expect(io.unlink).not.toHaveBeenCalled();
+        expect(adapter.register).not.toHaveBeenCalled();
+    });
+
+    it('shares terminal lookups within one preview and refreshes the next request', async () => {
+        const releases = [editor(), editor('4.9.0')];
+        await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        expect(adapter.findConflicts).toHaveBeenCalledTimes(1);
+        expect(adapter.findConflict).not.toHaveBeenCalled();
+        adapter.findConflicts.mockImplementationOnce(
+            async (names: string[]) =>
+                new Map(names.map((name) => [name, '/external/command'])),
+        );
+        const next = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        expect(next.items.every(({ action }) => action === 'skip')).toBe(true);
+        expect(adapter.findConflicts).toHaveBeenCalledTimes(2);
+    });
+
+    it('skips invalid suggested names before terminal lookup', async () => {
+        const result = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor(`${'1'.repeat(60)}.0`)],
+        );
+        expect(result.items[0].action).toBe('skip');
+        expect(adapter.findConflicts).not.toHaveBeenCalled();
+    });
+
+    it('does not start terminal lookups for a local file conflict', async () => {
+        files.set(destination('godot48'), { ino: 999n, content: 'external' });
+        const result = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor()],
+        );
+        expect(result.items[0].action).toBe('skip');
+        expect(adapter.findConflicts).not.toHaveBeenCalled();
+    });
+
+    it('fails closed when the preview batch fails and checks freshly when applying', async () => {
+        adapter.findConflicts.mockRejectedValueOnce(new Error('Shell failed'));
+        const failed = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor()],
+        );
+        expect(failed.items[0]).toMatchObject({
+            action: 'skip',
+            reason: 'Shell failed',
+        });
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor()],
+        );
+        adapter.findConflict.mockResolvedValueOnce('/new/external/command');
+        await expect(
+            service.applyChangeItem(plan.items[0], [editor()]),
+        ).rejects.toThrow();
+        expect(files.has(destination('godot48'))).toBe(false);
+    });
+
+    it('reserves colliding suggested names within a preview', async () => {
+        const mono = { ...editor(), mono: true };
+        const result = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor(), mono],
+        );
+        expect(result.items.map(({ action }) => action)).toEqual([
+            'create',
+            'skip',
+        ]);
+        expect(result.items[1].reason).toBeDefined();
+    });
+
+    it('creates reviewed missing commands automatically without touching PATH or the default', async () => {
+        const original = { ino: 99n, content: 'default' };
+        files.set(destination('godot'), original);
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor()],
+        );
+        await service.applyChangeItem(plan.items[0], [editor()]);
+        expect(entries[0].binding.management).toBe('automatic');
+        expect(files.has(destination('godot48'))).toBe(true);
+        expect(files.get(destination('godot'))).toBe(original);
+        expect(adapter.register).not.toHaveBeenCalled();
+    });
+
+    it('stages every bulk command before one fresh terminal lookup and publishes sequentially', async () => {
+        const releases = [editor(), editor('4.9.0')];
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        vi.clearAllMocks();
+        adapter.findConflicts.mockImplementationOnce(
+            async (names: string[]) => {
+                expect(entries).toHaveLength(2);
+                expect(
+                    entries.every(
+                        ({ operation }) => operation?.kind === 'remove',
+                    ),
+                ).toBe(true);
+                expect(files.size).toBe(2);
+                expect(io.link).not.toHaveBeenCalled();
+                return new Map(names.map((name) => [name, null]));
+            },
+        );
+        const outcomes = await service.applyChangeItems(plan.items, releases);
+        expect(outcomes.map(({ status }) => status)).toEqual([
+            'created',
+            'created',
+        ]);
+        expect(adapter.findConflicts).toHaveBeenCalledExactlyOnceWith([
+            'godot48',
+            'godot49',
+        ]);
+        expect(adapter.findConflict).not.toHaveBeenCalled();
+        expect(adapter.register).not.toHaveBeenCalled();
+        expect(
+            entries.every(
+                ({ operation, binding }) =>
+                    !operation && binding.management === 'automatic',
+            ),
+        ).toBe(true);
+    });
+
+    it('preserves an external command arriving after staging and reports actual partial outcomes', async () => {
+        const releases = [editor(), editor('4.9.0')];
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        const foreign = { ino: 999n, content: 'external' };
+        adapter.findConflicts.mockImplementationOnce(
+            async (names: string[]) => {
+                files.set(destination(names[0]), foreign);
+                return new Map(names.map((name) => [name, null]));
+            },
+        );
+        const outcomes = await service.applyChangeItems(plan.items, releases);
+        expect(outcomes.map(({ status }) => status)).toEqual([
+            'failed',
+            'created',
+        ]);
+        expect(files.get(destination('godot48'))).toBe(foreign);
+        expect(files.has(destination('godot49'))).toBe(true);
+        expect(
+            entries.find(({ binding }) => binding.name === 'godot48')?.operation
+                ?.kind,
+        ).toBe('remove');
+    });
+
+    it('cleans a failed stage and excludes it from the fresh batch while completing other commands', async () => {
+        const releases = [editor(), editor('4.9.0')];
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        vi.clearAllMocks();
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing persistence fixture');
+        let failStage = true;
+        coordinator.write.mockImplementation(async (definition, value) => {
+            if (
+                failStage &&
+                value.some((entry: AliasEntry) => entry.binding.ino)
+            ) {
+                failStage = false;
+                throw new Error('Stage failed');
+            }
+            return write(definition, value);
+        });
+        const outcomes = await service.applyChangeItems(plan.items, releases);
+        expect(outcomes.map(({ status }) => status)).toEqual([
+            'failed',
+            'created',
+        ]);
+        expect(outcomes[0].error).toBe('Stage failed');
+        expect(adapter.findConflicts).toHaveBeenCalledExactlyOnceWith([
+            'godot49',
+        ]);
+        expect(entries).toHaveLength(1);
+        expect(files.size).toBe(2);
+    });
+
+    it('fails all staged commands closed when the fresh terminal batch fails', async () => {
+        const releases = [editor(), editor('4.9.0')];
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        adapter.findConflicts.mockRejectedValueOnce(new Error('Shell failed'));
+        const outcomes = await service.applyChangeItems(plan.items, releases);
+        expect(
+            outcomes.map(({ status, error }) => ({ status, error })),
+        ).toEqual([
+            { status: 'failed', error: 'Shell failed' },
+            { status: 'failed', error: 'Shell failed' },
+        ]);
+        expect(io.link).not.toHaveBeenCalled();
+        expect(entries).toEqual([]);
+        expect(files.size).toBe(0);
+    });
+
+    it.each(['collision', 'missing result'])(
+        'fails closed on a fresh terminal %s',
+        async (failure) => {
+            const plan = await service.previewChange(
+                { enabled: true, mode: 'create-missing' },
+                [editor()],
+            );
+            adapter.findConflicts.mockResolvedValueOnce(
+                failure === 'collision'
+                    ? new Map([['godot48', '/external/command']])
+                    : new Map(),
+            );
+            expect(
+                (await service.applyChangeItems(plan.items, [editor()]))[0]
+                    .status,
+            ).toBe('failed');
+            expect(entries).toEqual([]);
+            expect(files.size).toBe(0);
+            expect(io.link).not.toHaveBeenCalled();
+        },
+    );
+
+    it('rechecks executable availability after the staged terminal lookup', async () => {
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor()],
+        );
+        adapter.findConflicts.mockImplementationOnce(
+            async (names: string[]) => {
+                io.access.mockRejectedValueOnce(
+                    new Error('Executable missing'),
+                );
+                return new Map(names.map((name) => [name, null]));
+            },
+        );
+        expect(
+            (await service.applyChangeItems(plan.items, [editor()]))[0].status,
+        ).toBe('failed');
+        expect(entries).toEqual([]);
+        expect(files.size).toBe(0);
+        expect(io.link).not.toHaveBeenCalled();
+    });
+
+    it('removes a published bulk command when the final active registry write fails', async () => {
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor()],
+        );
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing persistence fixture');
+        coordinator.write.mockImplementation(async (definition, value) => {
+            if (value.some((entry: AliasEntry) => !entry.operation))
+                throw new Error('Final write failed');
+            return write(definition, value);
+        });
+        const outcomes = await service.applyChangeItems(plan.items, [editor()]);
+        expect(outcomes[0]).toMatchObject({
+            status: 'failed',
+            error: 'Final write failed',
+        });
+        expect(io.link).toHaveBeenCalledOnce();
+        expect(entries).toEqual([]);
+        expect(files.size).toBe(0);
+    });
+
+    it('retains cleanup-only reservations after batch failure when owned witnesses cannot be removed', async () => {
+        const releases = [editor(), editor('4.9.0')];
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        adapter.findConflicts.mockRejectedValueOnce(new Error('Shell failed'));
+        io.unlink.mockRejectedValue(new Error('Locked'));
+        await service.applyChangeItems(plan.items, releases);
+        expect(entries).toHaveLength(2);
+        expect(
+            entries.every(({ operation }) => operation?.kind === 'remove'),
+        ).toBe(true);
+        expect(io.link).not.toHaveBeenCalled();
+        expect(
+            (await service.getState(releases)).aliases.every(
+                ({ state }) => state === 'unresolved',
+            ),
+        ).toBe(true);
+    });
+
+    it('recovers an interrupted staged batch solely by removing provisional witnesses', async () => {
+        const releases = [editor(), editor('4.9.0')];
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            releases,
+        );
+        let snapshot:
+            | { entries: AliasEntry[]; files: typeof files }
+            | undefined;
+        adapter.findConflicts.mockImplementationOnce(
+            async (names: string[]) => {
+                snapshot = {
+                    entries: structuredClone(entries),
+                    files: structuredClone(files),
+                };
+                return new Map(names.map((name) => [name, null]));
+            },
+        );
+        await service.applyChangeItems(plan.items, releases);
+        if (!snapshot) throw new Error('Missing interruption snapshot');
+        entries = snapshot.entries;
+        files = snapshot.files;
+        vi.clearAllMocks();
+        expect((await service.getState(releases)).aliases).toEqual([]);
+        expect(io.link).not.toHaveBeenCalled();
+        expect(files.size).toBe(0);
+    });
+
+    it('keeps manual and legacy unknown registrations when removing automatic commands', async () => {
+        await service.createAutomatically(editor(), 'automatic');
+        await service.apply(editor('manual'), 'manual-command', [
+            editor(),
+            editor('manual'),
+        ]);
+        await service.apply(editor('legacy'), 'legacy-command', [
+            editor(),
+            editor('manual'),
+            editor('legacy'),
+        ]);
+        delete entries.find(({ binding }) => binding.name === 'legacy-command')
+            ?.binding.management;
+        const plan = await service.previewChange(
+            { enabled: false, mode: 'remove-automatic' },
+            [],
+        );
+        expect(
+            plan.items.map(({ name, action, management }) => ({
+                name,
+                action,
+                management,
+            })),
+        ).toEqual([
+            { name: 'automatic', action: 'remove', management: 'automatic' },
+        ]);
+        await service.applyChangeItem(plan.items[0], []);
+        expect(files.has(destination('automatic'))).toBe(false);
+        expect(files.has(destination('manual-command'))).toBe(true);
+        expect(files.has(destination('legacy-command'))).toBe(true);
+    });
+
+    it('includes legacy unknown commands only in the explicit remove-all choice', async () => {
+        await service.apply(editor(), 'legacy-command', [editor()]);
+        delete entries[0].binding.management;
+        const plan = await service.previewChange(
+            { enabled: false, mode: 'remove-all' },
+            [editor()],
+        );
+        expect(plan.items[0]).toMatchObject({
+            management: 'unknown',
+            action: 'remove',
+        });
+        await service.applyChangeItem(plan.items[0], [editor()]);
+        expect(entries).toEqual([]);
+        expect(files.has(destination('legacy-command'))).toBe(false);
+    });
+
+    it('reports busy commands as skipped without acquiring reservations', async () => {
+        const busy = vi.fn(() => 'Editor is busy');
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [editor()],
+            busy,
+        );
+        expect(plan.items[0]).toMatchObject({
+            action: 'skip',
+            reason: 'Editor is busy',
+        });
+        expect(coordinator.write).not.toHaveBeenCalled();
+    });
+
+    it('does not offer changed external files for bulk removal', async () => {
+        await service.createAutomatically(editor(), 'godot48');
+        files.set(destination('godot48'), { ino: 999n, content: 'external' });
+        const plan = await service.previewChange(
+            { enabled: false, mode: 'remove-all' },
+            [editor()],
+        );
+        expect(plan.items[0].action).toBe('skip');
+        expect(plan.items[0].reason).toBeDefined();
+        expect(files.get(destination('godot48'))?.content).toBe('external');
+    });
+
+    it('makes a successfully renamed automatic command manual and preserves replacement classification', async () => {
+        await service.createAutomatically(editor(), 'godot48');
+        await service.withReplacement(
+            { ...editor(), editor_path: path.resolve('replacement') },
+            async () => undefined,
+        );
+        expect(entries[0].binding.management).toBe('automatic');
+        const replaced = {
+            ...editor(),
+            editor_path: path.resolve('replacement'),
+        };
+        await service.apply(replaced, 'studio-command', [replaced]);
+        expect(entries[0].binding.management).toBe('manual');
+    });
+
     it('creates a complete exclusive wrapper and reserves the name and installation', async () => {
         const result = await service.apply(editor(), 'godot48', [editor()]);
         expect(result.aliases).toEqual([
@@ -280,6 +711,7 @@ describe('exclusive alias transactions', () => {
                 name: 'godot48',
                 version: editor().version,
                 mono: false,
+                management: 'manual',
                 state: 'active',
             },
         ]);
@@ -682,7 +1114,7 @@ describe('exclusive alias transactions', () => {
     });
 
     it('keeps the old alias and never resumes a returned precommit failure as a rename', async () => {
-        await service.apply(editor(), 'godot48', [editor()]);
+        await service.createAutomatically(editor(), 'godot48');
         const old = files.get(destination('godot48'));
         adapter.register.mockRejectedValueOnce(new Error('PATH failed'));
         await expect(
@@ -693,6 +1125,7 @@ describe('exclusive alias transactions', () => {
                 name: 'godot48',
                 version: editor().version,
                 mono: false,
+                management: 'automatic',
                 state: 'active',
             },
         ]);
@@ -740,7 +1173,7 @@ describe('exclusive alias transactions', () => {
     });
 
     it('retains committed context after old-file replacement and completes forward after manual resolution', async () => {
-        await service.apply(editor(), 'godot48', [editor()]);
+        await service.createAutomatically(editor(), 'godot48');
         const foreign = { ino: 900n, content: 'foreign old command' };
         const write = coordinator.write.getMockImplementation();
         if (!write) throw new Error('Missing store fixture');
@@ -750,9 +1183,14 @@ describe('exclusive alias transactions', () => {
                 files.set(destination('godot48'), foreign);
             return result;
         });
-        await expect(
-            service.apply(editor(), 'godot-studio', [editor()]),
-        ).rejects.toThrow('renameRecovery');
+        const result = await service.apply(editor(), 'godot-studio', [
+            editor(),
+        ]);
+        expect(result.aliases[0]).toMatchObject({
+            name: 'godot-studio',
+            management: 'manual',
+            state: 'unresolved',
+        });
         expect((await service.getState([editor()])).aliases[0]).toMatchObject({
             name: 'godot-studio',
             state: 'unresolved',
@@ -768,6 +1206,7 @@ describe('exclusive alias transactions', () => {
         files.delete(destination('godot48'));
         expect((await service.getState([editor()])).aliases[0]).toMatchObject({
             name: 'godot-studio',
+            management: 'manual',
             state: 'active',
         });
         expect(entries[0].operation).toBeUndefined();
@@ -789,16 +1228,42 @@ describe('exclusive alias transactions', () => {
             }
             return write(definition, value);
         });
-        await expect(
-            service.apply(editor(), 'godot-studio', [editor()]),
-        ).rejects.toThrow('renameRecovery');
-        expect(entries[0].operation?.phase).toBe('commit');
+        const result = await service.apply(editor(), 'godot-studio', [
+            editor(),
+        ]);
+        expect(result.aliases[0]).toMatchObject({
+            name: 'godot-studio',
+            state: 'active',
+        });
+        expect(entries[0].operation).toBeUndefined();
         expect(files.has(destination('godot48'))).toBe(false);
         expect((await service.getState([editor()])).aliases[0]).toMatchObject({
             name: 'godot-studio',
             state: 'active',
         });
         expect(files.has(destination('godot48'))).toBe(false);
+    });
+
+    it('reports a committed rename explicitly when its registry can no longer be read', async () => {
+        await service.createAutomatically(editor(), 'godot48');
+        const write = coordinator.write.getMockImplementation();
+        if (!write) throw new Error('Missing store fixture');
+        coordinator.write.mockImplementation(async (definition, value) => {
+            const result = await write(definition, value);
+            if (value[0]?.operation?.phase === 'commit')
+                coordinator.read.mockRejectedValue(
+                    new Error('Registry unavailable'),
+                );
+            return result;
+        });
+        await expect(
+            service.apply(editor(), 'godot-studio', [editor()]),
+        ).rejects.toThrow(
+            'Command godot-studio was renamed, but its recovery state could not be read.',
+        );
+        expect(entries[0].binding.management).toBe('manual');
+        expect(entries[0].operation?.phase).toBe('commit');
+        expect(files.has(destination('godot-studio'))).toBe(true);
     });
 
     it('reconciles every persisted or filesystem interruption boundary without adopting an ambiguous witness', async () => {
@@ -879,6 +1344,7 @@ describe('exclusive alias transactions', () => {
                         : 'godot48';
                 expect(result.aliases[0]).toMatchObject({
                     name,
+                    management: 'manual',
                     state: 'active',
                 });
                 expect(files.has(destination(name))).toBe(true);

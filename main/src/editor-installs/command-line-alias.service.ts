@@ -2,6 +2,9 @@ import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import type {
+    AutomaticAliasChangeItem,
+    AutomaticAliasChangeRequest,
+    AutomaticAliasChangeResult,
     CommandLineAliasAvailability,
     CommandLineAliasesState,
     CommandLineAliasResult,
@@ -14,7 +17,10 @@ import {
     type AliasEntry,
     CommandLineAliasStore,
 } from './command-line-alias.store.js';
-import { getAliasNameError } from './command-line-alias.util.js';
+import {
+    getAliasNameError,
+    suggestAutomaticAlias,
+} from './command-line-alias.util.js';
 import {
     createGodotWrapper,
     getCommandLineExecutable,
@@ -81,6 +87,7 @@ export class CommandLineAliasService {
                 name: binding.name,
                 version: binding.version,
                 mono: binding.mono,
+                management: binding.management ?? 'unknown',
                 state: problem ? 'unresolved' : 'active',
                 ...(problem ? { problem } : {}),
             });
@@ -92,10 +99,13 @@ export class CommandLineAliasService {
      * Checks a draft without writing files, PATH or reservations.
      * @param release - Authoritative editor being configured.
      * @param name - Literal draft command name.
+     * @param findConflict - Request-local preview lookup; mutations use fresh checks.
      */
     async check(
         release: InstalledRelease,
         name: string,
+        findConflict: (name: string) => Promise<string | null> = (command) =>
+            this.adapter.findConflict(command),
     ): Promise<CommandLineAliasAvailability> {
         const error = getAliasNameError(name);
         if (error)
@@ -142,12 +152,276 @@ export class CommandLineAliasService {
                 available: false,
                 reason: t('installs:aliases.errors.external'),
             };
-        if (await this.adapter.findConflict(name))
+        if (await findConflict(name))
             return {
                 available: false,
                 reason: t('installs:aliases.errors.external'),
             };
         return { available: true };
+    }
+
+    /**
+     * Builds a read-only plan and a private snapshot of its registry and editors.
+     * @param request - Requested preference and treatment of existing commands.
+     * @param installed - Current authoritative editor registrations.
+     * @param unavailable - Reports active lifecycle reservations without acquiring them.
+     */
+    async previewChange(
+        request: AutomaticAliasChangeRequest,
+        installed: InstalledRelease[],
+        unavailable: (
+            item: AutomaticAliasChangeItem,
+        ) => string | undefined = () => undefined,
+    ) {
+        const entries = await this.store.read();
+        const items: AutomaticAliasChangeItem[] = [];
+        const names = new Set(
+            entries.flatMap((entry) => this.reservedNames(entry)),
+        );
+        let lookups: Promise<Map<string, string | null>> | undefined;
+        /**
+         * Shares only this preview's terminal lookup process results.
+         * @param name - Locally validated candidate command.
+         */
+        const findConflict = async (name: string): Promise<string | null> => {
+            lookups ??= this.adapter.findConflicts(
+                installed
+                    .filter(
+                        (release) =>
+                            !entries.some(({ binding }) =>
+                                this.sameEditor(binding, release),
+                            ),
+                    )
+                    .map((release) => suggestAutomaticAlias(release.version))
+                    .filter(
+                        (command) =>
+                            !getAliasNameError(command) && !names.has(command),
+                    ),
+            );
+            const results = await lookups;
+            if (!results.has(name))
+                throw new Error(t('installs:aliases.errors.unavailable'));
+            return results.get(name) ?? null;
+        };
+        if (request.mode === 'create-missing') {
+            for (const release of installed) {
+                const existing = entries.find(({ binding }) =>
+                    this.sameEditor(binding, release),
+                );
+                if (existing) continue;
+                const name = suggestAutomaticAlias(release.version);
+                const item: AutomaticAliasChangeItem = {
+                    name,
+                    version: release.version,
+                    mono: release.mono,
+                    management: 'automatic',
+                    action: 'skip',
+                };
+                if (names.has(name))
+                    item.reason = t('installs:aliases.errors.taken', { name });
+                else {
+                    try {
+                        const availability = await this.check(
+                            release,
+                            name,
+                            findConflict,
+                        );
+                        if (availability.available) {
+                            item.action = 'create';
+                            names.add(name);
+                        } else item.reason = availability.reason;
+                    } catch (error) {
+                        item.reason = this.message(error);
+                    }
+                }
+                items.push(item);
+            }
+        } else if (request.mode !== 'keep') {
+            for (const entry of entries) {
+                const { binding } = entry;
+                const item: AutomaticAliasChangeItem = {
+                    name: binding.name,
+                    version: binding.version,
+                    mono: binding.mono,
+                    management: binding.management ?? 'unknown',
+                    action: 'skip',
+                };
+                if (
+                    request.mode === 'remove-automatic' &&
+                    binding.management !== 'automatic'
+                ) {
+                    continue;
+                }
+                try {
+                    if (
+                        entry.operation ||
+                        !(await this.owned(
+                            this.destination(binding),
+                            binding,
+                        )) ||
+                        !(await this.owned(this.witness(binding), binding))
+                    )
+                        item.reason = this.recoveryMessage(entry);
+                    else item.action = 'remove';
+                } catch (error) {
+                    item.reason = this.message(error);
+                }
+                items.push(item);
+            }
+        }
+        for (const item of items) {
+            const reason =
+                item.action !== 'skip' ? unavailable(item) : undefined;
+            if (reason) {
+                item.action = 'skip';
+                item.reason = reason;
+            }
+        }
+        return { items, snapshot: JSON.stringify({ entries, installed }) };
+    }
+
+    /**
+     * Stages reviewed automatic creations before one fresh terminal lookup.
+     * Called inside the shared command queue; registry transitions remain sequential.
+     * @param items - Reviewed actions in their original order.
+     * @param installed - Authoritative registrations held by the facade.
+     */
+    async applyChangeItems(
+        items: AutomaticAliasChangeItem[],
+        installed: InstalledRelease[],
+    ): Promise<AutomaticAliasChangeResult['outcomes']> {
+        const outcomes: AutomaticAliasChangeResult['outcomes'] = items.map(
+            (item) => ({ ...item, status: 'skipped' }),
+        );
+        const staged: { index: number; binding: AliasBinding }[] = [];
+        /**
+         * Records a failed item without aborting independent commands.
+         * @param index - Original reviewed item position.
+         * @param error - Failure exposed to the caller.
+         */
+        const fail = (index: number, error: unknown) => {
+            outcomes[index] = {
+                ...items[index],
+                status: 'failed',
+                error: this.message(error),
+            };
+        };
+        for (const [index, item] of items.entries()) {
+            if (item.action !== 'create') continue;
+            let binding: AliasBinding | undefined;
+            try {
+                const release = installed.find((candidate) =>
+                    this.sameEditor(item, candidate),
+                );
+                if (!release)
+                    throw new Error(t('installs:aliases.errors.unavailable'));
+                if (
+                    (await this.store.read()).some(({ binding }) =>
+                        this.sameEditor(binding, release),
+                    )
+                )
+                    throw new Error(t('installs:aliases.errors.recovery'));
+                const availability = await this.check(
+                    release,
+                    item.name,
+                    async () => null,
+                );
+                if (!availability.available)
+                    throw new Error(availability.reason);
+                binding = this.binding(release, item.name);
+                binding.management = 'automatic';
+                const operation = { kind: 'remove' as const };
+                await this.put({ binding, operation });
+                await this.stage(binding, operation);
+                staged.push({ index, binding });
+            } catch (error) {
+                if (binding) await this.cleanupFailedCreation(binding);
+                fail(index, error);
+            }
+        }
+        let conflicts: Map<string, string | null>;
+        try {
+            conflicts = staged.length
+                ? await this.adapter.findConflicts(
+                      staged.map(({ binding }) => binding.name),
+                  )
+                : new Map();
+        } catch (error) {
+            for (const { index, binding } of staged) {
+                await this.cleanupFailedCreation(binding);
+                fail(index, error);
+            }
+            staged.length = 0;
+            conflicts = new Map();
+        }
+        for (const { index, binding } of staged) {
+            try {
+                if (!conflicts.has(binding.name) || conflicts.get(binding.name))
+                    throw new Error(t('installs:aliases.errors.external'));
+                const current = (await this.store.read()).find(
+                    ({ binding: candidate }) => candidate.id === binding.id,
+                );
+                if (
+                    current?.operation?.kind !== 'remove' ||
+                    JSON.stringify(current.binding) !== JSON.stringify(binding)
+                )
+                    throw new Error(t('installs:aliases.errors.recovery'));
+                await this.requireExecutable(binding.executable);
+                await this.publish(binding);
+                await this.put({ binding });
+                outcomes[index] = { ...items[index], status: 'created' };
+            } catch (error) {
+                await this.cleanupFailedCreation(binding);
+                fail(index, error);
+            }
+        }
+        for (const [index, item] of items.entries()) {
+            if (item.action !== 'remove') continue;
+            try {
+                await this.applyChangeItem(item, installed);
+                outcomes[index] = { ...item, status: 'removed' };
+            } catch (error) {
+                fail(index, error);
+            }
+        }
+        return outcomes;
+    }
+
+    /**
+     * Applies a reviewed item without recovering unrelated operations or changing PATH.
+     * @param item - Exact reviewed command and requested action.
+     * @param installed - Authoritative registrations rechecked by the facade.
+     */
+    async applyChangeItem(
+        item: AutomaticAliasChangeItem,
+        installed: InstalledRelease[],
+    ): Promise<void> {
+        if (item.action === 'create') {
+            const release = installed.find((candidate) =>
+                this.sameEditor(item, candidate),
+            );
+            if (!release)
+                throw new Error(t('installs:aliases.errors.unavailable'));
+            if (
+                (await this.store.read()).some(({ binding }) =>
+                    this.sameEditor(binding, release),
+                )
+            )
+                throw new Error(t('installs:aliases.errors.recovery'));
+            await this.create(release, item.name, true, false);
+        } else if (item.action === 'remove') {
+            const entry = (await this.store.read()).find(({ binding }) =>
+                this.sameEditor(binding, item),
+            );
+            if (!entry || entry.binding.name !== item.name || entry.operation)
+                throw new Error(t('installs:aliases.errors.recovery'));
+            await this.put({
+                binding: entry.binding,
+                operation: { kind: 'remove' },
+            });
+            await this.erase(entry.binding);
+            await this.forget(entry.binding);
+        }
     }
 
     /**
@@ -221,15 +495,18 @@ export class CommandLineAliasService {
      * @param release - Authoritative editor being configured.
      * @param name - Proposed literal alias name.
      * @param rollbackOnInterruption - Keeps provisional automatic setup cleanup-only until committed.
+     * @param registerPath - Whether normal single-editor setup may register the bin directory.
      */
     private async create(
         release: InstalledRelease,
         name: string,
         rollbackOnInterruption = false,
+        registerPath = true,
     ): Promise<{ pathChanged: boolean }> {
         const availability = await this.check(release, name);
         if (!availability.available) throw new Error(availability.reason);
         const binding = this.binding(release, name);
+        binding.management = rollbackOnInterruption ? 'automatic' : 'manual';
         const operation = {
             kind: rollbackOnInterruption
                 ? ('remove' as const)
@@ -239,7 +516,9 @@ export class CommandLineAliasService {
         let pathChanged = false;
         try {
             await this.stage(binding, operation);
-            const registration = await this.adapter.register(name);
+            const registration = registerPath
+                ? await this.adapter.register(name)
+                : { pathChanged: false, conflict: null };
             pathChanged = registration.pathChanged;
             if (
                 registration.conflict ||
@@ -249,25 +528,33 @@ export class CommandLineAliasService {
             await fs.link(this.witness(binding), this.destination(binding));
             await this.put({ binding });
         } catch (error) {
-            // A returned failure must never become a delayed creation on refresh.
-            try {
-                await this.put({ binding, operation: { kind: 'remove' } });
-            } catch {
-                /* Still attempt owned-file cleanup if the registry is unavailable. */
-            }
-            try {
-                await this.erase(binding);
-                await this.forget(binding);
-            } catch {
-                /* Retain the removal reservation for safe recovery. */
-            }
+            await this.cleanupFailedCreation(binding);
             throw error;
         }
         return { pathChanged };
     }
 
     /**
+     * Prevents failed creation from becoming delayed publication during recovery.
+     * @param binding - Provisional file identity to clean without adopting other files.
+     */
+    private async cleanupFailedCreation(binding: AliasBinding): Promise<void> {
+        try {
+            await this.put({ binding, operation: { kind: 'remove' } });
+        } catch {
+            /* Still attempt owned-file cleanup if the registry is unavailable. */
+        }
+        try {
+            await this.erase(binding);
+            await this.forget(binding);
+        } catch {
+            /* Retain the removal reservation for safe recovery. */
+        }
+    }
+
+    /**
      * Prepares the replacement before committing retirement of the working command.
+     * Returns the committed name with its recovery state if retirement needs another attempt.
      * @param release - Authoritative installation whose name changes.
      * @param name - Proposed replacement command.
      * @param existing - Active saved binding.
@@ -331,10 +618,17 @@ export class CommandLineAliasService {
         };
         try {
             await this.finishRename(committed, installed);
-        } catch (error) {
-            throw new Error(this.recoveryMessage(committed), { cause: error });
+        } catch {
+            // The committed replacement stays authoritative while recovery retries cleanup.
         }
-        return { ...(await this.getState(installed)), pathChanged };
+        try {
+            return { ...(await this.getState(installed)), pathChanged };
+        } catch (error) {
+            throw new Error(
+                `Command ${name} was renamed, but its recovery state could not be read. ${this.recoveryMessage(committed)}`,
+                { cause: error },
+            );
+        }
     }
 
     /**
@@ -473,6 +767,7 @@ export class CommandLineAliasService {
             return persist();
         const previous = entry.binding;
         const binding = this.binding(release, previous.name);
+        binding.management = previous.management;
         await this.requireExecutable(binding.executable);
         const operation = { kind: 'rebind' as const, previous };
         await this.put({ binding, operation });
@@ -730,6 +1025,7 @@ export class CommandLineAliasService {
         const executable = getCommandLineExecutable(release, this.platform);
         return {
             id: randomUUID(),
+            management: 'manual',
             name,
             version: release.version,
             mono: release.mono,

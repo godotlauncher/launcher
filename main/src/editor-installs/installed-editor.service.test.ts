@@ -68,6 +68,8 @@ describe('InstalledEditorService', () => {
         withEditorRemoval: vi.fn(),
         updateRegisteredEditor: vi.fn(),
         createAutomaticAlias: vi.fn(),
+        previewAutomaticAliasChange: vi.fn(),
+        commitAutomaticAliasChange: vi.fn(),
     };
 
     beforeEach(() => {
@@ -114,6 +116,49 @@ describe('InstalledEditorService', () => {
             expect.objectContaining({ version: '4.4-stable', valid: false }),
         ]);
         expect(store.replace).toHaveBeenCalledWith(releases);
+    });
+
+    it('reserves reviewed batch identities and releases them after completion', async () => {
+        const release = createRelease('4.3-stable');
+        const service = createService();
+        commandLine.commitAutomaticAliasChange.mockImplementationOnce(
+            async (_token, _installed, reserve) => {
+                const unlock = reserve([
+                    {
+                        ...release,
+                        name: 'godot43',
+                        action: 'create',
+                        management: 'automatic',
+                    },
+                ]);
+                expect(() => service.reserveOfficialInstall(release)).toThrow(
+                    'installs:selection.errors.busy',
+                );
+                unlock();
+                return { preferences: {}, outcomes: [] };
+            },
+        );
+        await service.commitAutomaticAliasChange('reviewed-token');
+        expect(() => service.reserveOfficialInstall(release)).not.toThrow();
+    });
+
+    it('reports a lifecycle reservation to preview without changing it', async () => {
+        const release = createRelease('4.3-stable');
+        const service = createService();
+        const unlock = service.reserveOfficialInstall(release);
+        commandLine.previewAutomaticAliasChange.mockImplementationOnce(
+            async (_request, _installed, unavailable) => {
+                expect(unavailable(release)).toBe(
+                    'installs:selection.errors.busy',
+                );
+                return { items: [] };
+            },
+        );
+        await service.previewAutomaticAliasChange({
+            enabled: true,
+            mode: 'create-missing',
+        });
+        unlock();
     });
 
     it('publishes quick health only when editor validity changes', async () => {

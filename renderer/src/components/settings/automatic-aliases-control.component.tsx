@@ -1,7 +1,9 @@
 import { Terminal } from 'lucide-react';
 import { useId, useRef, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
+import { useAutomaticAliasChange } from '../../hooks/automatic-alias-change.hook';
 import { usePreferences } from '../../hooks/preferences.hook';
+import { editorInstallsBridge } from '../../renderer.bridge';
 import { Switch } from '../ui/switch.component';
 import { SettingsPanel } from './settings-panel.component';
 
@@ -52,12 +54,13 @@ export function AutomaticAliasesChoice({
 
 /** Persists the global choice while retaining the last confirmed value on failure. */
 export function AutomaticAliasesControl() {
-    const { preferences, updatePreferences } = usePreferences();
+    const { preferences, loadPreferences } = usePreferences();
+    const { choose, report } = useAutomaticAliasChange();
     const [pending, setPending] = useState(false);
     const [error, setError] = useState<string>();
     const writing = useRef(false);
     /**
-     * Saves one explicit choice without changing existing commands.
+     * Reviews and applies one explicit preference and existing-command choice.
      * @param enabled - Requested automatic-creation preference.
      */
     const change = async (enabled: boolean) => {
@@ -66,7 +69,14 @@ export function AutomaticAliasesControl() {
         setPending(true);
         setError(undefined);
         try {
-            await updatePreferences({ auto_create_editor_aliases: enabled });
+            await choose(enabled, async (preview) => {
+                const result =
+                    await editorInstallsBridge.commitAutomaticAliasChange(
+                        preview.token,
+                    );
+                await loadPreferences();
+                report(result);
+            });
         } catch (cause) {
             setError(cause instanceof Error ? cause.message : String(cause));
         } finally {

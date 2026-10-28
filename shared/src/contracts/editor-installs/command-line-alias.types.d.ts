@@ -1,8 +1,11 @@
+import type { UserPreferences } from '../preferences/index.js';
+
 /** Reports an alias without exposing its private recovery representation. */
 export type CommandLineAlias = {
     name: string;
     version: string;
     mono: boolean;
+    management?: 'automatic' | 'manual' | 'unknown';
     state: 'active' | 'unresolved';
     problem?: string;
 };
@@ -23,4 +26,32 @@ export type AutomaticCommandLineAliasResult = {
     name: string;
     pathChanged: boolean;
     error?: string;
+};
+
+/** Chooses how a preference change treats existing named commands. */
+export type AutomaticAliasChangeRequest = {
+    enabled: boolean;
+    mode: 'keep' | 'create-missing' | 'remove-automatic' | 'remove-all';
+};
+/** Describes one reviewed existing command or suggested command. */
+export type AutomaticAliasChangeItem = {
+    name: string;
+    version: string;
+    mono: boolean;
+    management: 'automatic' | 'manual' | 'unknown';
+    action: 'create' | 'remove' | 'skip';
+    reason?: string;
+};
+/** Contains an opaque snapshot and the complete proposed effects. */
+export type AutomaticAliasChangePreview = AutomaticAliasChangeRequest & {
+    token: string;
+    items: AutomaticAliasChangeItem[];
+};
+/** Reports the exact outcome of every reviewed command. */
+export type AutomaticAliasChangeResult = {
+    preferences: UserPreferences;
+    outcomes: (AutomaticAliasChangeItem & {
+        status: 'created' | 'removed' | 'skipped' | 'failed';
+        error?: string;
+    })[];
 };

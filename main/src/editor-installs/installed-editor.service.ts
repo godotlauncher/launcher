@@ -6,6 +6,8 @@ import { Injectable } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ConfigService } from '@mariodebono/di-config';
 import type {
+    AutomaticAliasChangeItem,
+    AutomaticAliasChangeRequest,
     AutomaticCommandLineAliasResult,
     EditorRemovalOutcome,
     EditorRemovalSelection,
@@ -110,6 +112,76 @@ export class InstalledEditorService {
         } finally {
             this.activeCommandLineSelections.delete(key);
         }
+    }
+
+    /**
+     * Previews changes against authoritative editors without reserving or changing them.
+     * @param request - Requested automation preference and existing-command choice.
+     */
+    previewAutomaticAliasChange(request: AutomaticAliasChangeRequest) {
+        return this.commandLine.previewAutomaticAliasChange(
+            request,
+            () => this.store.list(),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+
+    /**
+     * Applies a reviewed batch while reserving every affected editor identity.
+     * @param token - Opaque preview issued by the command service.
+     */
+    commitAutomaticAliasChange(token: string) {
+        return this.commandLine.commitAutomaticAliasChange(
+            token,
+            () => this.store.list(),
+            (items) => this.reserveAliasChange(items),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+
+    /**
+     * Explains a lifecycle reservation while leaving it untouched.
+     * @param item - Editor identity proposed for a command change.
+     */
+    private aliasChangeUnavailable(
+        item: AutomaticAliasChangeItem,
+    ): string | undefined {
+        const key = getInstalledEditorIdentity(item);
+        return this.activeRemovals.has(key) ||
+            this.activeOfficialInstalls.has(key) ||
+            this.activeCustomRegistrations.has(key) ||
+            this.activeCommandLineSelections.has(key)
+            ? t('installs:selection.errors.busy')
+            : undefined;
+    }
+
+    /**
+     * Acquires all batch identities before its preference or files change.
+     * @param items - Reviewed actions, including skipped commands.
+     */
+    private reserveAliasChange(items: AutomaticAliasChangeItem[]): () => void {
+        const keys = [
+            ...new Set(
+                items
+                    .filter((item) => item.action !== 'skip')
+                    .map(getInstalledEditorIdentity),
+            ),
+        ];
+        if (
+            keys.some(
+                (key) =>
+                    this.activeRemovals.has(key) ||
+                    this.activeOfficialInstalls.has(key) ||
+                    this.activeCustomRegistrations.has(key) ||
+                    this.activeCommandLineSelections.has(key),
+            )
+        )
+            throw new Error(t('installs:selection.errors.busy'));
+        for (const key of keys) this.activeCommandLineSelections.add(key);
+        return () => {
+            for (const key of keys)
+                this.activeCommandLineSelections.delete(key);
+        };
     }
 
     /** Gets verified aliases and any reserved unfinished operations. */

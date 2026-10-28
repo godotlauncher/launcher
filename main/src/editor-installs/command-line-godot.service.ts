@@ -6,12 +6,21 @@ import { Injectable } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ConfigService } from '@mariodebono/di-config';
 import type {
+    AutomaticAliasChangeItem,
+    AutomaticAliasChangePreview,
+    AutomaticAliasChangeRequest,
+    AutomaticAliasChangeResult,
     CommandLineGodotResult,
     CommandLineGodotSelection,
     CommandLineGodotState,
     InstalledRelease,
 } from '@shared/contracts';
 import { z } from 'zod';
+import {
+    getUserPreferences,
+    readUserPreferencesSnapshot,
+    setUserPreferences,
+} from '../commands/userPreferences.js';
 import type { AppConfig } from '../config/index.js';
 import { JsonFileStore } from '../json-store/json-file.store.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -34,6 +43,15 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
     private readonly adapter: CommandLinePathAdapter;
     private readonly platform = os.platform();
     private readonly aliases: CommandLineAliasService;
+    private readonly changePreviews = new Map<
+        string,
+        {
+            request: AutomaticAliasChangeRequest;
+            snapshot: string;
+            preference: boolean;
+            items: AutomaticAliasChangeItem[];
+        }
+    >();
     private operations: Promise<unknown> = Promise.resolve();
 
     /**
@@ -83,6 +101,107 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
     }
 
     /**
+     * Captures an opaque, read-only plan for an explicit preference change.
+     * @param request - Requested preference and treatment of existing commands.
+     * @param installed - Reads authoritative registered editors inside the queue.
+     * @param unavailable - Reports lifecycle reservations for preview counts.
+     */
+    previewAutomaticAliasChange(
+        request: AutomaticAliasChangeRequest,
+        installed: () => Promise<InstalledRelease[]>,
+        unavailable: (
+            item: AutomaticAliasChangeItem,
+        ) => string | undefined = () => undefined,
+    ): Promise<AutomaticAliasChangePreview> {
+        return this.serialise(async () => {
+            if (
+                !request ||
+                typeof request.enabled !== 'boolean' ||
+                !(
+                    request.enabled
+                        ? ['keep', 'create-missing']
+                        : ['keep', 'remove-automatic', 'remove-all']
+                ).includes(request.mode)
+            )
+                throw new Error('Invalid automatic command change.');
+            const plan = await this.aliases.previewChange(
+                request,
+                await installed(),
+                unavailable,
+            );
+            const token = randomUUID();
+            if (this.changePreviews.size >= 20) {
+                const oldest = this.changePreviews.keys().next().value;
+                if (oldest) this.changePreviews.delete(oldest);
+            }
+            this.changePreviews.set(token, {
+                request: { ...request },
+                ...plan,
+                preference:
+                    (await readUserPreferencesSnapshot())
+                        .auto_create_editor_aliases === true,
+            });
+            return { ...request, token, items: plan.items };
+        });
+    }
+
+    /**
+     * Saves the current preference before applying a reviewed batch independently.
+     * @param token - Opaque preview identity, consumed after successful validation.
+     * @param installed - Reads current editor registrations inside the command queue.
+     * @param reserve - Holds affected editor identities until all outcomes are recorded.
+     * @param unavailable - Rechecks lifecycle reservations before committing.
+     */
+    commitAutomaticAliasChange(
+        token: string,
+        installed: () => Promise<InstalledRelease[]>,
+        reserve: (items: AutomaticAliasChangeItem[]) => () => void,
+        unavailable: (
+            item: AutomaticAliasChangeItem,
+        ) => string | undefined = () => undefined,
+    ): Promise<AutomaticAliasChangeResult> {
+        return this.serialise(async () => {
+            const preview = this.changePreviews.get(token);
+            if (!preview)
+                throw new Error(
+                    'The command preview has changed. Review the choices again.',
+                );
+            const releases = await installed();
+            const current = await this.aliases.previewChange(
+                preview.request,
+                releases,
+                unavailable,
+            );
+            const preferences = await readUserPreferencesSnapshot();
+            if (
+                current.snapshot !== preview.snapshot ||
+                JSON.stringify(current.items) !==
+                    JSON.stringify(preview.items) ||
+                (preferences.auto_create_editor_aliases === true) !==
+                    preview.preference
+            )
+                throw new Error(
+                    'The command preview has changed. Review the choices again.',
+                );
+            const release = reserve(preview.items);
+            try {
+                const saved = await setUserPreferences({
+                    ...preferences,
+                    auto_create_editor_aliases: preview.request.enabled,
+                });
+                this.changePreviews.delete(token);
+                const outcomes = await this.aliases.applyChangeItems(
+                    preview.items,
+                    releases,
+                );
+                return { preferences: saved, outcomes };
+            } finally {
+                release();
+            }
+        });
+    }
+
+    /**
      * Recovers alias intents under the shared command transaction queue.
      * @param installed - Authoritative registered editors.
      */
@@ -123,9 +242,13 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
      * @param name - Suggested alias to create without changing an existing binding.
      */
     createAutomaticAlias(release: InstalledRelease, name: string) {
-        return this.serialise(() =>
-            this.aliases.createAutomatically(release, name),
-        );
+        return this.serialise(async () => {
+            if (
+                (await getUserPreferences()).auto_create_editor_aliases !== true
+            )
+                return undefined;
+            return this.aliases.createAutomatically(release, name);
+        });
     }
 
     /** Gets the persisted selection even when its executable is unavailable. */

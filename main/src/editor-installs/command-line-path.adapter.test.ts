@@ -336,3 +336,194 @@ describe('per-user command PATH registration', () => {
         });
     });
 });
+
+describe('request-scoped command lookup batches', () => {
+    /**
+     * Builds framed process output with startup and shutdown noise.
+     * @param script - Generated shell or PowerShell script.
+     * @param records - Command names, output and numeric lookup statuses.
+     */
+    function output(
+        script: string,
+        records: [string, string, number][],
+    ): string {
+        const marker = script.match(/GODOT_LOOKUP_[a-f0-9]+/)?.[0];
+        if (!marker) throw new Error('Missing test marker');
+        return `startup banner\n${records.map(([name, resolved, status]) => `${marker}\0${name}\0${resolved}\0${status}\0${marker}\0`).join('')}shutdown banner\n`;
+    }
+
+    beforeEach(() => vi.resetAllMocks());
+
+    it.each(['bash', 'zsh', 'sh', 'fish'])(
+        'checks many commands in two %s processes, preserving login lookup and multiline aliases',
+        async (shell) => {
+            const adapter = new CommandLinePathAdapter({
+                platform: 'linux',
+                home,
+                env: {},
+                shell: `/bin/${shell}`,
+            });
+            execution.execFile.mockImplementation(
+                (_file, args, _options, callback) => {
+                    const records: [string, string, number][] =
+                        args[0] === '-ic'
+                            ? [
+                                  [
+                                      'godot48',
+                                      "alias godot48='first\nsecond'\n",
+                                      0,
+                                  ],
+                                  ['godot49', '', shell === 'fish' ? 127 : 1],
+                                  [
+                                      'godot50',
+                                      adapter.pathForCommand('godot50'),
+                                      0,
+                                  ],
+                              ]
+                            : [
+                                  ['godot49', '/login/godot49\n', 0],
+                                  ['godot50', '', 1],
+                              ];
+                    callback(null, output(args[1], records), '');
+                },
+            );
+            expect(
+                await adapter.findConflicts([
+                    'godot48',
+                    'godot49',
+                    'godot50',
+                    'godot48',
+                ]),
+            ).toEqual(
+                new Map([
+                    ['godot48', "alias godot48='first\nsecond'"],
+                    ['godot49', '/login/godot49'],
+                    ['godot50', null],
+                ]),
+            );
+            expect(execution.execFile).toHaveBeenCalledTimes(2);
+            expect(execution.execFile.mock.calls[1][1][1]).not.toContain(
+                'command -v godot48',
+            );
+            if (shell === 'fish')
+                expect(execution.execFile.mock.calls[0][1][1]).toContain(
+                    'type -t godot48',
+                );
+            else
+                expect(execution.execFile.mock.calls[0][1][1]).toContain(
+                    'command -v godot48',
+                );
+        },
+    );
+
+    it('returns Fish functions as conflicts without a login shell when every name conflicts', async () => {
+        const adapter = new CommandLinePathAdapter({
+            platform: 'linux',
+            home,
+            env: {},
+            shell: '/bin/fish',
+        });
+        execution.execFile.mockImplementation(
+            (_file, args, _options, callback) =>
+                callback(
+                    null,
+                    output(args[1], [
+                        ['godot48', 'godot48 (Fish function or alias)', 0],
+                    ]),
+                    '',
+                ),
+        );
+        expect((await adapter.findConflicts(['godot48'])).get('godot48')).toBe(
+            'godot48 (Fish function or alias)',
+        );
+        expect(execution.execFile).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+        'missing',
+        'truncated',
+        'duplicate',
+        'failed-status',
+        'process-error',
+    ])('fails closed for %s batch results', async (failure) => {
+        const adapter = new CommandLinePathAdapter({
+            platform: 'linux',
+            home,
+            env: {},
+            shell: '/bin/bash',
+        });
+        execution.execFile.mockImplementation(
+            (_file, args, _options, callback) => {
+                const valid = output(args[1], [
+                    ['godot48', '', failure === 'failed-status' ? 2 : 1],
+                ]);
+                callback(
+                    failure === 'process-error'
+                        ? Object.assign(new Error('failed'), { code: 1 })
+                        : null,
+                    failure === 'missing'
+                        ? 'banner'
+                        : failure === 'truncated'
+                          ? valid.slice(0, valid.indexOf('\0') + 1)
+                          : failure === 'duplicate'
+                            ? valid + valid
+                            : valid,
+                    '',
+                );
+            },
+        );
+        await expect(adapter.findConflicts(['godot48'])).rejects.toThrow(
+            'Could not check the terminal PATH',
+        );
+    });
+
+    it('validates every command before lookup and skips empty requests', async () => {
+        const adapter = new CommandLinePathAdapter({
+            platform: 'linux',
+            home,
+            env: {},
+            shell: '/bin/bash',
+        });
+        await expect(
+            adapter.findConflicts(['godot48', 'bad;name']),
+        ).rejects.toThrow('Invalid command name');
+        expect(await adapter.findConflicts([])).toEqual(new Map());
+        expect(execution.execFile).not.toHaveBeenCalled();
+    });
+
+    it('checks Windows commands in one process and compares managed paths without case sensitivity', async () => {
+        const adapter = new CommandLinePathAdapter({
+            platform: 'win32',
+            home: 'C:\\Users\\Test',
+            env: {},
+            shell: 'cmd.exe',
+        });
+        execution.execFile.mockImplementation(
+            (_file, args, _options, callback) => {
+                const script = Buffer.from(args.at(-1), 'base64').toString(
+                    'utf16le',
+                );
+                expect(script).toContain("@('.com','.exe','.bat','.cmd')");
+                callback(
+                    null,
+                    output(script, [
+                        ['godot48', 'C:\\External Path\\godot48.exe', 0],
+                        [
+                            'godot49',
+                            adapter.pathForCommand('godot49').toUpperCase(),
+                            0,
+                        ],
+                    ]),
+                    '',
+                );
+            },
+        );
+        expect(await adapter.findConflicts(['godot48', 'godot49'])).toEqual(
+            new Map([
+                ['godot48', 'C:\\External Path\\godot48.exe'],
+                ['godot49', null],
+            ]),
+        );
+        expect(execution.execFile).toHaveBeenCalledTimes(1);
+    });
+});

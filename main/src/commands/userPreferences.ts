@@ -63,6 +63,13 @@ function migrateUserPreferences(
     return { updated, value: nextPrefs };
 }
 
+/** Reads merged preferences without persisting migration or default values. */
+export async function readUserPreferencesSnapshot(): Promise<UserPreferences> {
+    const { prefsPath } = getDefaultDirs();
+    const defaults = await getDefaultPrefs();
+    return (await readPrefsSnapshotFromDisk(prefsPath, defaults)).merged;
+}
+
 export async function getUserPreferences(): Promise<UserPreferences> {
     const { prefsPath } = getDefaultDirs();
 

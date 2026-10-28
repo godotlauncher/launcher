@@ -3,6 +3,7 @@ import {
     createIpcHandleTyped,
 } from '@mariodebono/di-electron';
 import type {
+    AutomaticAliasChangeRequest,
     EditorInstallOrigin,
     EditorInstallsBridge,
     EditorRemovalSelection,
@@ -45,6 +46,24 @@ export class EditorInstallsController implements EditorInstallsBridge {
         release: Pick<InstalledRelease, 'version' | 'mono'> | null,
     ) {
         return this.installedEditors.setCommandLineGodot(release);
+    }
+
+    /**
+     * Previews automatic-command choices without persisting them.
+     * @param request - Requested preference and treatment of existing commands.
+     */
+    @EditorInstallsHandler('previewAutomaticAliasChange')
+    previewAutomaticAliasChange(request: AutomaticAliasChangeRequest) {
+        return this.installedEditors.previewAutomaticAliasChange(request);
+    }
+
+    /**
+     * Commits the exact reviewed command snapshot.
+     * @param token - Opaque preview identity.
+     */
+    @EditorInstallsHandler('commitAutomaticAliasChange')
+    commitAutomaticAliasChange(token: string) {
+        return this.installedEditors.commitAutomaticAliasChange(token);
     }
 
     /** Gets all named command registrations. */

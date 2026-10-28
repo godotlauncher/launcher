@@ -6,6 +6,9 @@ import type {
     RemovedReleaseResult,
 } from '../releases/index.js';
 import type {
+    AutomaticAliasChangePreview,
+    AutomaticAliasChangeRequest,
+    AutomaticAliasChangeResult,
     CommandLineAliasAvailability,
     CommandLineAliasesState,
     CommandLineAliasResult,
@@ -30,6 +33,14 @@ export type CancelEditorInstallResult = {
 
 /** Defines installed-editor requests available to the renderer. */
 export type EditorInstallsBridge = {
+    /** Previews a preference change without changing commands or preferences. */
+    previewAutomaticAliasChange(
+        request: AutomaticAliasChangeRequest,
+    ): Promise<AutomaticAliasChangePreview>;
+    /** Applies the exact reviewed snapshot after checking it is still current. */
+    commitAutomaticAliasChange(
+        token: string,
+    ): Promise<AutomaticAliasChangeResult>;
     /** Gets registrations after reconciling interrupted command operations. */
     getCommandLineAliases(): Promise<CommandLineAliasesState>;
     /** Checks a candidate without reserving it or changing PATH. */

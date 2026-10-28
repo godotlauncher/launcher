@@ -7,6 +7,7 @@ import { getAliasNameError } from './command-line-alias.util.js';
 const bindingSchema = z
     .object({
         id: z.uuid(),
+        management: z.enum(['automatic', 'manual']).optional(),
         name: z.string().refine((name) => getAliasNameError(name) === null),
         version: z.string(),
         mono: z.boolean(),

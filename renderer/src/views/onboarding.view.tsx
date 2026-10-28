@@ -1,4 +1,5 @@
 import type {
+    AutomaticAliasChangePreview,
     CodeEditorId,
     CodeEditorIntegrationSettings,
     TemplateStorageSettings,
@@ -9,11 +10,16 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+import { useAutomaticAliasChange } from '../hooks/automatic-alias-change.hook';
 import { useCodeEditorIntegrations } from '../hooks/code-editor-integrations.hook';
 import { usePreferences } from '../hooks/preferences.hook';
 import { useTheme } from '../hooks/theme.hook';
 import { useTrayAvailability } from '../hooks/tray-availability.hook';
-import { appBridge, exportTemplatesBridge } from '../renderer.bridge';
+import {
+    appBridge,
+    editorInstallsBridge,
+    exportTemplatesBridge,
+} from '../renderer.bridge';
 import { formatTemplateBytes } from './export-templates/template-format.util';
 import { AppearanceStep } from './onboarding/appearance-step.component';
 import { CommandLineStep } from './onboarding/command-line-step.component';
@@ -82,6 +88,10 @@ export const OnboardingView: React.FC = () => {
         useCodeEditorIntegrations();
     const [step, setStep] = useState<OnboardingStepId>(readStoredStep);
     const [draft, setDraft] = useState<UserPreferences | null>(null);
+    const [aliasChange, setAliasChange] =
+        useState<AutomaticAliasChangePreview | null>(null);
+    const { choose: chooseAliasChange, report: reportAliasChange } =
+        useAutomaticAliasChange();
     const [recommendedLocations, setRecommendedLocations] = useState<{
         projectsLocation: string;
         editorLocation: string;
@@ -278,6 +288,28 @@ export const OnboardingView: React.FC = () => {
     const setDraftPreferences = (updates: Partial<UserPreferences>) => {
         setDraft((current) => (current ? { ...current, ...updates } : current));
         setOperationError(undefined);
+    };
+
+    /**
+     * Reviews an alias change and retains it until onboarding finishes.
+     * @param enabled - Requested automatic-alias preference.
+     */
+    const chooseAutomaticAliases = async (enabled: boolean): Promise<void> => {
+        if (pending || storageRecovering) return;
+        setPending(true);
+        setOperationError(undefined);
+        try {
+            const preview = await chooseAliasChange(enabled);
+            if (!preview) return;
+            setAliasChange(preview);
+            setDraftPreferences({
+                auto_create_editor_aliases: preview.enabled,
+            });
+        } catch {
+            setOperationError(t('welcome:onboarding.errors.finish'));
+        } finally {
+            setPending(false);
+        }
     };
 
     const selectDirectory = async (
@@ -489,6 +521,9 @@ export const OnboardingView: React.FC = () => {
         try {
             let persistedDraft = await savePreferences({
                 ...draft,
+                auto_create_editor_aliases: aliasChange
+                    ? preferences?.auto_create_editor_aliases === true
+                    : draft.auto_create_editor_aliases,
                 first_run: true,
             });
             if (selectedCodeEditorId !== storedCodeEditorId.current) {
@@ -496,7 +531,12 @@ export const OnboardingView: React.FC = () => {
                 storedCodeEditorId.current = selectedCodeEditorId;
                 persistedDraft = await loadPreferences();
             }
-            setDraft(persistedDraft);
+            setDraft({
+                ...persistedDraft,
+                auto_create_editor_aliases:
+                    aliasChange?.enabled ??
+                    persistedDraft.auto_create_editor_aliases,
+            });
             setStep('preferences');
         } catch {
             setOperationError(t('welcome:onboarding.errors.saveSetup'));
@@ -517,7 +557,36 @@ export const OnboardingView: React.FC = () => {
         setOperationError(undefined);
         let movingTemplates = false;
         try {
-            await savePreferences({ ...draft, first_run: true });
+            let reviewedAliasChange = aliasChange;
+            if (reviewedAliasChange) {
+                const freshPreview =
+                    await editorInstallsBridge.previewAutomaticAliasChange({
+                        enabled: reviewedAliasChange.enabled,
+                        mode: reviewedAliasChange.mode,
+                    });
+                if (
+                    JSON.stringify(freshPreview.items) !==
+                    JSON.stringify(reviewedAliasChange.items)
+                ) {
+                    reviewedAliasChange = await chooseAliasChange(
+                        reviewedAliasChange.enabled,
+                    );
+                    if (!reviewedAliasChange) return;
+                    setAliasChange(reviewedAliasChange);
+                    setDraftPreferences({
+                        auto_create_editor_aliases: reviewedAliasChange.enabled,
+                    });
+                } else {
+                    reviewedAliasChange = freshPreview;
+                }
+            }
+            const persistedDraft = await savePreferences({
+                ...draft,
+                auto_create_editor_aliases: aliasChange
+                    ? preferences?.auto_create_editor_aliases === true
+                    : draft.auto_create_editor_aliases,
+                first_run: true,
+            });
             if (platform !== 'linux') {
                 const autoStartResult = await setAutoStart(
                     draft.auto_start,
@@ -529,8 +598,20 @@ export const OnboardingView: React.FC = () => {
             }
             movingTemplates = true;
             await moveImportedTemplates();
+            movingTemplates = false;
+            let completedPreferences = persistedDraft;
+            if (reviewedAliasChange) {
+                const result =
+                    await editorInstallsBridge.commitAutomaticAliasChange(
+                        reviewedAliasChange.token,
+                    );
+                reportAliasChange(result);
+                completedPreferences = result.preferences;
+                setAliasChange(null);
+                setDraft(result.preferences);
+            }
             await savePreferences({
-                ...draft,
+                ...completedPreferences,
                 first_run: false,
             });
             localStorage.removeItem(ONBOARDING_STEP_STORAGE_KEY);
@@ -693,9 +774,7 @@ export const OnboardingView: React.FC = () => {
                             }
                             pending={pending || storageRecovering}
                             onAutomaticAliasesChange={(enabled) =>
-                                setDraftPreferences({
-                                    auto_create_editor_aliases: enabled,
-                                })
+                                void chooseAutomaticAliases(enabled)
                             }
                         />
                     )}
