@@ -14,6 +14,9 @@ import type {
     CommandLineGodotSelection,
     CommandLineGodotState,
     InstalledRelease,
+    SelectedAliasChangePreview,
+    SelectedAliasChangeRequest,
+    SelectedAliasChangeResult,
 } from '@shared/contracts';
 import { z } from 'zod';
 import {
@@ -49,6 +52,14 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
             request: AutomaticAliasChangeRequest;
             snapshot: string;
             preference: boolean;
+            items: AutomaticAliasChangeItem[];
+        }
+    >();
+    private readonly selectedPreviews = new Map<
+        string,
+        {
+            request: SelectedAliasChangeRequest;
+            snapshot: string;
             items: AutomaticAliasChangeItem[];
         }
     >();
@@ -199,6 +210,140 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
                 release();
             }
         });
+    }
+
+    /** Captures selected effects without touching preferences or commands.
+     * @param request - Explicit selected editor snapshots and command mode.
+     * @param installed - Reads authoritative editors inside the shared queue.
+     * @param unavailable - Reports active lifecycle reservations.
+     */
+    previewSelectedAliasChange(
+        request: SelectedAliasChangeRequest,
+        installed: () => Promise<InstalledRelease[]>,
+        unavailable: (item: AutomaticAliasChangeItem) => string | undefined,
+    ): Promise<SelectedAliasChangePreview> {
+        return this.serialise(async () => {
+            const plan = await this.selectedAliasPlan(
+                request,
+                await installed(),
+                unavailable,
+            );
+            const token = randomUUID();
+            if (this.selectedPreviews.size >= 20) {
+                const oldest = this.selectedPreviews.keys().next().value;
+                if (oldest) this.selectedPreviews.delete(oldest);
+            }
+            this.selectedPreviews.set(token, {
+                request: structuredClone(request),
+                ...plan,
+            });
+            return { token, mode: request.mode, items: plan.items };
+        });
+    }
+
+    /** Applies a reviewed selection while preserving default and preference.
+     * @param token - Single-use preview identity.
+     * @param installed - Reads authoritative editor registrations.
+     * @param reserve - Holds affected editor identities until completion.
+     * @param unavailable - Rechecks active lifecycle reservations.
+     */
+    commitSelectedAliasChange(
+        token: string,
+        installed: () => Promise<InstalledRelease[]>,
+        reserve: (items: AutomaticAliasChangeItem[]) => () => void,
+        unavailable: (item: AutomaticAliasChangeItem) => string | undefined,
+    ): Promise<SelectedAliasChangeResult> {
+        return this.serialise(async () => {
+            const preview = this.selectedPreviews.get(token);
+            if (!preview)
+                throw new Error(
+                    'The command preview has changed. Review the choices again.',
+                );
+            const releases = await installed();
+            const current = await this.selectedAliasPlan(
+                preview.request,
+                releases,
+                unavailable,
+            );
+            if (
+                current.snapshot !== preview.snapshot ||
+                JSON.stringify(current.items) !== JSON.stringify(preview.items)
+            )
+                throw new Error(
+                    'The command preview has changed. Review the choices again.',
+                );
+            const release = reserve(preview.items);
+            this.selectedPreviews.delete(token);
+            try {
+                const setup = preview.items.some(
+                    (item) => item.action === 'create',
+                )
+                    ? await this.adapter.register()
+                    : undefined;
+                const outcomes = await this.aliases.applyChangeItems(
+                    preview.items,
+                    releases,
+                );
+                return { outcomes, pathChanged: setup?.pathChanged ?? false };
+            } finally {
+                release();
+            }
+        });
+    }
+
+    /** Validates explicit snapshots before deriving selected command effects.
+     * @param request - Selected editor snapshots and command mode.
+     * @param installed - Current authoritative editor registrations.
+     * @param unavailable - Reports active lifecycle reservations.
+     */
+    private async selectedAliasPlan(
+        request: SelectedAliasChangeRequest,
+        installed: InstalledRelease[],
+        unavailable: (item: AutomaticAliasChangeItem) => string | undefined,
+    ) {
+        if (
+            !request ||
+            !['create-missing', 'remove'].includes(request.mode) ||
+            !Array.isArray(request.editors) ||
+            request.editors.length === 0
+        )
+            throw new Error('Invalid selected command change.');
+        const editors: InstalledRelease[] = [];
+        for (const snapshot of request.editors) {
+            const current = installed.find(
+                (candidate) =>
+                    candidate.version === snapshot?.version &&
+                    candidate.mono === snapshot?.mono,
+            );
+            if (
+                !current ||
+                [
+                    'editor_path',
+                    'install_path',
+                    'console_path',
+                    'source',
+                    'managed_by_launcher',
+                ].some(
+                    (key) =>
+                        current[key as keyof InstalledRelease] !==
+                        snapshot[key as keyof InstalledRelease],
+                )
+            )
+                throw new Error(
+                    'The selected editor has changed. Select it again.',
+                );
+            if (!editors.includes(current)) editors.push(current);
+        }
+        return this.aliases.previewChange(
+            {
+                enabled: request.mode === 'create-missing',
+                mode:
+                    request.mode === 'remove' ? 'remove-all' : 'create-missing',
+            },
+            installed,
+            unavailable,
+            { editors, management: 'manual' },
+        );
     }
 
     /**

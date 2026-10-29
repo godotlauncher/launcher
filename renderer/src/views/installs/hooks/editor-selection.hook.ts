@@ -12,6 +12,8 @@ import {
 
 type EditorSelectionArgs = {
     installed: InstalledRelease[];
+    shown: InstalledRelease[];
+    filterKey: string;
     downloading: Pick<InstalledRelease, 'version' | 'mono'>[];
     projects: ProjectDetails[];
     isBusy: (release: InstalledRelease) => boolean;
@@ -25,25 +27,59 @@ type EditorSelectionArgs = {
  */
 export function useEditorSelection({
     installed,
+    shown,
+    filterKey,
     downloading,
     projects,
     isBusy,
 }: EditorSelectionArgs) {
     const [enabled, setEnabled] = useState(false);
-    const [selected, setSelected] = useState(new Map<string, boolean>());
+    const [state, setState] = useState({
+        filterKey,
+        selected: new Map<string, boolean>(),
+    });
+    const selected =
+        state.filterKey === filterKey
+            ? state.selected
+            : new Map<string, boolean>();
+    /** Updates selection within the current search scope.
+     * @param update - Replacement selection or update of the current selection.
+     */
+    const setSelected = (
+        update:
+            | Map<string, boolean>
+            | ((current: Map<string, boolean>) => Map<string, boolean>),
+    ) =>
+        setState((current) => {
+            const next =
+                typeof update === 'function'
+                    ? update(
+                          current.filterKey === filterKey
+                              ? current.selected
+                              : new Map(),
+                      )
+                    : update;
+            return current.filterKey === filterKey && current.selected === next
+                ? current
+                : { filterKey, selected: next };
+        });
     const selectable = getSelectableInstalledEditors(
         installed,
         downloading,
         isBusy,
     );
-    const selectableKeys = new Set(selectable.map(getReleaseActionKey));
-    const selections: EditorRemovalSelection[] = selectable
+    const shownKeys = new Set(shown.map(getReleaseActionKey));
+    const available = selectable.filter((release) =>
+        shownKeys.has(getReleaseActionKey(release)),
+    );
+    const selectableKeys = new Set(available.map(getReleaseActionKey));
+    const selections: EditorRemovalSelection[] = available
         .filter((release) => selected.has(getReleaseActionKey(release)))
         .map((release) => ({
             release,
             onlyUnused: selected.get(getReleaseActionKey(release)) === true,
         }));
-    const unused = selectable.filter(
+    const unused = available.filter(
         (release) =>
             release.source !== 'custom' &&
             release.managed_by_launcher !== false &&
@@ -51,15 +87,25 @@ export function useEditorSelection({
     );
 
     useEffect(() => {
-        setSelected((current) => {
-            if ([...current.keys()].every((key) => selectableKeys.has(key))) {
+        setState((current) => {
+            if (current.filterKey !== filterKey)
+                return { filterKey, selected: new Map() };
+            if (
+                [...current.selected.keys()].every((key) =>
+                    selectableKeys.has(key),
+                )
+            )
                 return current;
-            }
-            return new Map(
-                [...current].filter(([key]) => selectableKeys.has(key)),
-            );
+            return {
+                filterKey,
+                selected: new Map(
+                    [...current.selected].filter(([key]) =>
+                        selectableKeys.has(key),
+                    ),
+                ),
+            };
         });
-    }, [selectableKeys]);
+    }, [selectableKeys, filterKey]);
 
     /** Toggles selection mode, clearing any previous selection. */
     const toggleEnabled = () => {
@@ -83,11 +129,11 @@ export function useEditorSelection({
         });
     };
 
-    /** Selects every available editor, including manually registered builds. */
+    /** Selects every eligible search result, including rows outside the scroll area. */
     const selectAll = () =>
         setSelected(
             new Map(
-                selectable.map((release) => [
+                available.map((release) => [
                     getReleaseActionKey(release),
                     false,
                 ]),
@@ -102,6 +148,28 @@ export function useEditorSelection({
             ),
         );
 
+    /** Toggles eligible visible members of one version group.
+     * @param releases - Current search results belonging to the group.
+     */
+    const toggleGroup = (releases: InstalledRelease[]) => {
+        if (!enabled) return;
+        const targets = releases.filter((release) =>
+            selectableKeys.has(getReleaseActionKey(release)),
+        );
+        const all = targets.every((release) =>
+            selected.has(getReleaseActionKey(release)),
+        );
+        setSelected((current) => {
+            const next = new Map(current);
+            for (const release of targets) {
+                const key = getReleaseActionKey(release);
+                if (all) next.delete(key);
+                else if (!next.has(key)) next.set(key, false);
+            }
+            return next;
+        });
+    };
+
     /** Clears selected editors while keeping selection mode enabled. */
     const clear = () => setSelected(new Map());
 
@@ -115,6 +183,7 @@ export function useEditorSelection({
         unusedCount: unused.length,
         toggleEnabled,
         toggleEditor,
+        toggleGroup,
         selectAll,
         selectUnused,
         clear,

@@ -46,6 +46,7 @@ type InstalledReleaseListProps = {
     selectedKeys?: Set<string>;
     selectableKeys?: Set<string>;
     onToggleEditor?: (release: InstalledRelease) => void;
+    onToggleGroup?: (releases: InstalledRelease[]) => void;
     commandLineAliases?: CommandLineAlias[];
     commandLineDefaultKey?: string | null;
     commandLinePendingKey?: string | null;
@@ -73,6 +74,7 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
     selectedKeys,
     selectableKeys,
     onToggleEditor,
+    onToggleGroup,
     commandLineAliases = [],
     commandLineDefaultKey,
     commandLinePendingKey,
@@ -94,6 +96,44 @@ export const InstalledReleaseList: React.FC<InstalledReleaseListProps> = ({
                     title={group.baseVersion ?? t('groups.other')}
                     count={group.items.length}
                     headingLevel="h2"
+                    leadingControl={
+                        selectionEnabled &&
+                        (() => {
+                            const eligible = group.items.filter((release) =>
+                                selectableKeys?.has(
+                                    getReleaseActionKey(release),
+                                ),
+                            );
+                            const count = eligible.filter((release) =>
+                                selectedKeys?.has(getReleaseActionKey(release)),
+                            ).length;
+                            const mixed = count > 0 && count < eligible.length;
+                            return (
+                                <input
+                                    type="checkbox"
+                                    className="checkbox checkbox-sm checkbox-primary shrink-0"
+                                    aria-label={t('selection.selectGroup', {
+                                        name:
+                                            group.baseVersion ??
+                                            t('groups.other'),
+                                    })}
+                                    aria-checked={mixed ? 'mixed' : count > 0}
+                                    ref={(element) => {
+                                        if (element)
+                                            element.indeterminate = mixed;
+                                    }}
+                                    checked={
+                                        eligible.length > 0 &&
+                                        count === eligible.length
+                                    }
+                                    disabled={eligible.length === 0}
+                                    onChange={() =>
+                                        onToggleGroup?.(group.items)
+                                    }
+                                />
+                            );
+                        })()
+                    }
                 >
                     {group.items.map((release) => (
                         <InstalledReleaseRow

@@ -278,6 +278,93 @@ describe('exclusive alias transactions', () => {
         expect(io.open).not.toHaveBeenCalled();
         expect(adapter.register).not.toHaveBeenCalled();
     });
+    it('creates only missing selected aliases as manual and preserves existing origins', async () => {
+        const existing = editor('4.7-stable');
+        const selected = editor();
+        const unselected = editor('4.9-stable');
+        await service.createAutomatically(existing, 'custom-saved-name');
+        const before = structuredClone(entries);
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [existing, selected, unselected],
+            () => undefined,
+            { editors: [existing, selected], management: 'manual' },
+        );
+        expect(plan.items).toMatchObject([
+            {
+                version: selected.version,
+                name: 'godot48',
+                action: 'create',
+                management: 'manual',
+            },
+        ]);
+        await service.applyChangeItems(plan.items, [
+            existing,
+            selected,
+            unselected,
+        ]);
+        expect(
+            entries.find(({ binding }) => binding.version === existing.version),
+        ).toEqual(before[0]);
+        expect(
+            entries.find(({ binding }) => binding.version === selected.version)
+                ?.binding.management,
+        ).toBe('manual');
+        expect(
+            entries.some(
+                ({ binding }) => binding.version === unselected.version,
+            ),
+        ).toBe(false);
+    });
+
+    it('removes only selected named commands regardless of origin without PATH changes', async () => {
+        const first = editor();
+        const second = editor('4.9-stable');
+        await service.apply(first, 'manual-command', [first, second]);
+        await service.createAutomatically(second, 'automatic-command');
+        const before = structuredClone(
+            entries.find(({ binding }) => binding.version === second.version),
+        );
+        vi.clearAllMocks();
+        const plan = await service.previewChange(
+            { enabled: false, mode: 'remove-all' },
+            [first, second],
+            () => undefined,
+            { editors: [first], management: 'manual' },
+        );
+        expect(plan.items).toMatchObject([
+            { name: 'manual-command', action: 'remove' },
+        ]);
+        await service.applyChangeItems(plan.items, [first, second]);
+        expect(entries).toEqual([before]);
+        expect(files.has(destination('automatic-command'))).toBe(true);
+        expect(adapter.register).not.toHaveBeenCalled();
+    });
+
+    it('skips duplicate suggestions and busy selected targets without overwriting', async () => {
+        const first = editor();
+        const mono = { ...first, mono: true };
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [first, mono],
+            () => undefined,
+            { editors: [first, mono], management: 'manual' },
+        );
+        expect(plan.items.map((item) => item.action)).toEqual([
+            'create',
+            'skip',
+        ]);
+        const busy = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [first],
+            () => 'Busy',
+            { editors: [first], management: 'manual' },
+        );
+        expect(busy.items[0]).toMatchObject({ action: 'skip', reason: 'Busy' });
+        expect(entries).toEqual([]);
+        expect(io.link).not.toHaveBeenCalled();
+    });
+
     it('previews missing commands without recovery, persistence, files or PATH changes', async () => {
         await service.apply(editor('other'), 'other-command', [
             editor('other'),
@@ -350,10 +437,12 @@ describe('exclusive alias transactions', () => {
             { enabled: true, mode: 'create-missing' },
             [editor()],
         );
-        adapter.findConflict.mockResolvedValueOnce('/new/external/command');
-        await expect(
-            service.applyChangeItem(plan.items[0], [editor()]),
-        ).rejects.toThrow();
+        adapter.findConflicts.mockResolvedValueOnce(
+            new Map([['godot48', '/new/external/command']]),
+        );
+        expect(
+            (await service.applyChangeItems(plan.items, [editor()]))[0].status,
+        ).toBe('failed');
         expect(files.has(destination('godot48'))).toBe(false);
     });
 
@@ -377,7 +466,9 @@ describe('exclusive alias transactions', () => {
             { enabled: true, mode: 'create-missing' },
             [editor()],
         );
-        await service.applyChangeItem(plan.items[0], [editor()]);
+        expect(
+            (await service.applyChangeItems(plan.items, [editor()]))[0].status,
+        ).toBe('created');
         expect(entries[0].binding.management).toBe('automatic');
         expect(files.has(destination('godot48'))).toBe(true);
         expect(files.get(destination('godot'))).toBe(original);
@@ -641,7 +732,9 @@ describe('exclusive alias transactions', () => {
         ).toEqual([
             { name: 'automatic', action: 'remove', management: 'automatic' },
         ]);
-        await service.applyChangeItem(plan.items[0], []);
+        expect((await service.applyChangeItems(plan.items, []))[0].status).toBe(
+            'removed',
+        );
         expect(files.has(destination('automatic'))).toBe(false);
         expect(files.has(destination('manual-command'))).toBe(true);
         expect(files.has(destination('legacy-command'))).toBe(true);
@@ -658,7 +751,9 @@ describe('exclusive alias transactions', () => {
             management: 'unknown',
             action: 'remove',
         });
-        await service.applyChangeItem(plan.items[0], [editor()]);
+        expect(
+            (await service.applyChangeItems(plan.items, [editor()]))[0].status,
+        ).toBe('removed');
         expect(entries).toEqual([]);
         expect(files.has(destination('legacy-command'))).toBe(false);
     });

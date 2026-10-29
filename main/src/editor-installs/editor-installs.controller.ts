@@ -9,6 +9,7 @@ import type {
     EditorRemovalSelection,
     InstalledRelease,
     ReleaseSummary,
+    SelectedAliasChangeRequest,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { EditorInstallService } from './editor-install.service.js';
@@ -64,6 +65,21 @@ export class EditorInstallsController implements EditorInstallsBridge {
     @EditorInstallsHandler('commitAutomaticAliasChange')
     commitAutomaticAliasChange(token: string) {
         return this.installedEditors.commitAutomaticAliasChange(token);
+    }
+
+    /** Reviews only the explicitly selected editors.
+     * @param request - Selected editor snapshots and command action.
+     */
+    @EditorInstallsHandler('previewSelectedAliasChange')
+    previewSelectedAliasChange(request: SelectedAliasChangeRequest) {
+        return this.installedEditors.previewSelectedAliasChange(request);
+    }
+    /** Applies selected command changes without changing preferences.
+     * @param token - Single-use reviewed snapshot identity.
+     */
+    @EditorInstallsHandler('commitSelectedAliasChange')
+    commitSelectedAliasChange(token: string) {
+        return this.installedEditors.commitSelectedAliasChange(token);
     }
 
     /** Gets all named command registrations. */

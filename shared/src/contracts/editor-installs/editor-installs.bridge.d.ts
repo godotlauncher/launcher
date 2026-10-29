@@ -12,6 +12,9 @@ import type {
     CommandLineAliasAvailability,
     CommandLineAliasesState,
     CommandLineAliasResult,
+    SelectedAliasChangePreview,
+    SelectedAliasChangeRequest,
+    SelectedAliasChangeResult,
 } from './command-line-alias.types.js';
 import type {
     CommandLineGodotResult,
@@ -33,6 +36,18 @@ export type CancelEditorInstallResult = {
 
 /** Defines installed-editor requests available to the renderer. */
 export type EditorInstallsBridge = {
+    /** Reviews commands belonging only to selected registrations.
+     * @param request - Mode and editor snapshots selected by the user.
+     */
+    previewSelectedAliasChange(
+        request: SelectedAliasChangeRequest,
+    ): Promise<SelectedAliasChangePreview>;
+    /** Applies a reviewed selection without changing the global preference.
+     * @param token - Single-use reviewed snapshot identity.
+     */
+    commitSelectedAliasChange(
+        token: string,
+    ): Promise<SelectedAliasChangeResult>;
     /** Previews a preference change without changing commands or preferences. */
     previewAutomaticAliasChange(
         request: AutomaticAliasChangeRequest,

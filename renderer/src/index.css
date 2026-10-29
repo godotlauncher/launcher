@@ -218,22 +218,26 @@ body,
     @apply select-none;
 }
 
-/* Keep import list overflow visible even when the OS uses overlay scrollbars. */
-.project-import-scroll {
+/* Keep scrollbars visible even when the OS uses overlay scrollbars. */
+.project-import-scroll,
+.visible-scrollbar {
     scrollbar-width: auto;
     scrollbar-color: auto;
     overflow-y: scroll;
     scrollbar-gutter: stable;
 }
-.project-import-scroll::-webkit-scrollbar {
+.project-import-scroll::-webkit-scrollbar,
+.visible-scrollbar::-webkit-scrollbar {
     display: block;
     width: 12px;
     background: transparent;
 }
-.project-import-scroll::-webkit-scrollbar-track {
+.project-import-scroll::-webkit-scrollbar-track,
+.visible-scrollbar::-webkit-scrollbar-track {
     background: transparent;
 }
-.project-import-scroll::-webkit-scrollbar-thumb {
+.project-import-scroll::-webkit-scrollbar-thumb,
+.visible-scrollbar::-webkit-scrollbar-thumb {
     background: color-mix(
         in srgb,
         var(--color-base-content) 55%,

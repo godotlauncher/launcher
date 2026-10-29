@@ -15,6 +15,7 @@ import type {
     RegisterCustomEngineResult,
     RemovedReleaseResult,
     RemoveEditorsResult,
+    SelectedAliasChangeRequest,
 } from '@shared/contracts';
 import logger from 'electron-log';
 import { getUserPreferences } from '../commands/userPreferences.js';
@@ -132,6 +133,28 @@ export class InstalledEditorService {
      */
     commitAutomaticAliasChange(token: string) {
         return this.commandLine.commitAutomaticAliasChange(
+            token,
+            () => this.store.list(),
+            (items) => this.reserveAliasChange(items),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+
+    /** Reviews commands for selected editor snapshots only.
+     * @param request - Explicit selection and command action.
+     */
+    previewSelectedAliasChange(request: SelectedAliasChangeRequest) {
+        return this.commandLine.previewSelectedAliasChange(
+            request,
+            () => this.store.list(),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+    /** Reserves selected editors throughout the reviewed command operation.
+     * @param token - Single-use reviewed snapshot identity.
+     */
+    commitSelectedAliasChange(token: string) {
+        return this.commandLine.commitSelectedAliasChange(
             token,
             () => this.store.list(),
             (items) => this.reserveAliasChange(items),

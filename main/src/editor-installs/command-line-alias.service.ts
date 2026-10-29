@@ -165,6 +165,7 @@ export class CommandLineAliasService {
      * @param request - Requested preference and treatment of existing commands.
      * @param installed - Current authoritative editor registrations.
      * @param unavailable - Reports active lifecycle reservations without acquiring them.
+     * @param scope - Optional explicit editor scope and creation origin.
      */
     async previewChange(
         request: AutomaticAliasChangeRequest,
@@ -172,8 +173,13 @@ export class CommandLineAliasService {
         unavailable: (
             item: AutomaticAliasChangeItem,
         ) => string | undefined = () => undefined,
+        scope?: {
+            editors: InstalledRelease[];
+            management: 'manual' | 'automatic';
+        },
     ) {
         const entries = await this.store.read();
+        const targets = scope?.editors ?? installed;
         const items: AutomaticAliasChangeItem[] = [];
         const names = new Set(
             entries.flatMap((entry) => this.reservedNames(entry)),
@@ -185,7 +191,7 @@ export class CommandLineAliasService {
          */
         const findConflict = async (name: string): Promise<string | null> => {
             lookups ??= this.adapter.findConflicts(
-                installed
+                targets
                     .filter(
                         (release) =>
                             !entries.some(({ binding }) =>
@@ -204,7 +210,7 @@ export class CommandLineAliasService {
             return results.get(name) ?? null;
         };
         if (request.mode === 'create-missing') {
-            for (const release of installed) {
+            for (const release of targets) {
                 const existing = entries.find(({ binding }) =>
                     this.sameEditor(binding, release),
                 );
@@ -214,7 +220,7 @@ export class CommandLineAliasService {
                     name,
                     version: release.version,
                     mono: release.mono,
-                    management: 'automatic',
+                    management: scope?.management ?? 'automatic',
                     action: 'skip',
                 };
                 if (names.has(name))
@@ -239,6 +245,13 @@ export class CommandLineAliasService {
         } else if (request.mode !== 'keep') {
             for (const entry of entries) {
                 const { binding } = entry;
+                if (
+                    scope &&
+                    !targets.some((release) =>
+                        this.sameEditor(binding, release),
+                    )
+                )
+                    continue;
                 const item: AutomaticAliasChangeItem = {
                     name: binding.name,
                     version: binding.version,
@@ -329,7 +342,8 @@ export class CommandLineAliasService {
                 if (!availability.available)
                     throw new Error(availability.reason);
                 binding = this.binding(release, item.name);
-                binding.management = 'automatic';
+                binding.management =
+                    item.management === 'manual' ? 'manual' : 'automatic';
                 const operation = { kind: 'remove' as const };
                 await this.put({ binding, operation });
                 await this.stage(binding, operation);
@@ -378,7 +392,7 @@ export class CommandLineAliasService {
         for (const [index, item] of items.entries()) {
             if (item.action !== 'remove') continue;
             try {
-                await this.applyChangeItem(item, installed);
+                await this.removeChangeItem(item);
                 outcomes[index] = { ...item, status: 'removed' };
             } catch (error) {
                 fail(index, error);
@@ -388,40 +402,23 @@ export class CommandLineAliasService {
     }
 
     /**
-     * Applies a reviewed item without recovering unrelated operations or changing PATH.
-     * @param item - Exact reviewed command and requested action.
-     * @param installed - Authoritative registrations rechecked by the facade.
+     * Removes one reviewed binding without recovering unrelated operations.
+     * @param item - Exact reviewed command to remove.
      */
-    async applyChangeItem(
+    private async removeChangeItem(
         item: AutomaticAliasChangeItem,
-        installed: InstalledRelease[],
     ): Promise<void> {
-        if (item.action === 'create') {
-            const release = installed.find((candidate) =>
-                this.sameEditor(item, candidate),
-            );
-            if (!release)
-                throw new Error(t('installs:aliases.errors.unavailable'));
-            if (
-                (await this.store.read()).some(({ binding }) =>
-                    this.sameEditor(binding, release),
-                )
-            )
-                throw new Error(t('installs:aliases.errors.recovery'));
-            await this.create(release, item.name, true, false);
-        } else if (item.action === 'remove') {
-            const entry = (await this.store.read()).find(({ binding }) =>
-                this.sameEditor(binding, item),
-            );
-            if (!entry || entry.binding.name !== item.name || entry.operation)
-                throw new Error(t('installs:aliases.errors.recovery'));
-            await this.put({
-                binding: entry.binding,
-                operation: { kind: 'remove' },
-            });
-            await this.erase(entry.binding);
-            await this.forget(entry.binding);
-        }
+        const entry = (await this.store.read()).find(({ binding }) =>
+            this.sameEditor(binding, item),
+        );
+        if (!entry || entry.binding.name !== item.name || entry.operation)
+            throw new Error(t('installs:aliases.errors.recovery'));
+        await this.put({
+            binding: entry.binding,
+            operation: { kind: 'remove' },
+        });
+        await this.erase(entry.binding);
+        await this.forget(entry.binding);
     }
 
     /**
@@ -495,13 +492,11 @@ export class CommandLineAliasService {
      * @param release - Authoritative editor being configured.
      * @param name - Proposed literal alias name.
      * @param rollbackOnInterruption - Keeps provisional automatic setup cleanup-only until committed.
-     * @param registerPath - Whether normal single-editor setup may register the bin directory.
      */
     private async create(
         release: InstalledRelease,
         name: string,
         rollbackOnInterruption = false,
-        registerPath = true,
     ): Promise<{ pathChanged: boolean }> {
         const availability = await this.check(release, name);
         if (!availability.available) throw new Error(availability.reason);
@@ -516,9 +511,7 @@ export class CommandLineAliasService {
         let pathChanged = false;
         try {
             await this.stage(binding, operation);
-            const registration = registerPath
-                ? await this.adapter.register(name)
-                : { pathChanged: false, conflict: null };
+            const registration = await this.adapter.register(name);
             pathChanged = registration.pathChanged;
             if (
                 registration.conflict ||

@@ -9,6 +9,11 @@ import { editorInstallsBridge } from '../renderer.bridge';
 import { useAlerts } from './alerts.hook';
 import { useNotifications } from './notifications.hook';
 
+const automaticAliasModes = {
+    enabled: ['keep', 'create-missing'],
+    disabled: ['keep', 'remove-automatic', 'remove-all'],
+} as const;
+
 /**
  * Presents counted command choices in a layout that stays steady when selection changes.
  * @param props - Requested preference, dialog layout and explicit selection callbacks.
@@ -73,17 +78,12 @@ function AutomaticAliasChangeConfirm({
     };
     confirmRef.current = confirm;
     const group = useId();
-    const modes = enabled
-        ? (['keep', 'create-missing'] as const)
-        : (['keep', 'remove-automatic', 'remove-all'] as const);
+    const modes = automaticAliasModes[enabled ? 'enabled' : 'disabled'];
     useEffect(() => {
         let active = true;
         setPreviews(null);
         setError(false);
         setOperationError(undefined);
-        const requestedModes = enabled
-            ? (['keep', 'create-missing'] as const)
-            : (['keep', 'remove-automatic', 'remove-all'] as const);
         if (
             previewRequest.current?.enabled !== enabled ||
             previewRequest.current.attempt !== attempt
@@ -92,7 +92,7 @@ function AutomaticAliasChangeConfirm({
                 enabled,
                 attempt,
                 promise: Promise.all(
-                    requestedModes.map((mode) =>
+                    modes.map((mode) =>
                         editorInstallsBridge.previewAutomaticAliasChange({
                             enabled,
                             mode,
@@ -116,8 +116,25 @@ function AutomaticAliasChangeConfirm({
         return () => {
             active = false;
         };
-    }, [enabled, attempt]);
-    const current = previews?.find((preview) => preview.mode === selected);
+    }, [enabled, attempt, modes]);
+    const choices = modes.map((mode) => {
+        const preview = previews?.find((candidate) => candidate.mode === mode);
+        return {
+            mode,
+            preview,
+            count:
+                preview?.items.filter((item) => item.action !== 'skip')
+                    .length ?? 0,
+            skipped:
+                preview?.items.filter((item) => item.action === 'skip')
+                    .length ?? 0,
+        };
+    });
+    const selectedChoice =
+        choices.find((choice) => choice.mode === selected) ?? choices[0];
+    const current = selectedChoice.preview;
+    const count = selectedChoice.count;
+    const skipped = selectedChoice.skipped;
     const loading = previews === null && !error && !operationError;
     const summaryKeys = {
         keep: 'unchanged',
@@ -125,10 +142,6 @@ function AutomaticAliasChangeConfirm({
         'remove-automatic': 'automaticSummary',
         'remove-all': 'allSummary',
     } as const;
-    const count =
-        current?.items.filter((item) => item.action !== 'skip').length ?? 0;
-    const skipped =
-        current?.items.filter((item) => item.action === 'skip').length ?? 0;
     const labelKeys = {
         keep: enabled ? 'future' : 'keep',
         'create-missing': 'create',
@@ -146,7 +159,7 @@ function AutomaticAliasChangeConfirm({
                         `aliases.automatic.bulk.${enabled ? 'enableTitle' : 'disableTitle'}`,
                     )}
                 </legend>
-                {modes.map((mode) => (
+                {choices.map(({ mode, preview, count }) => (
                     <label
                         key={mode}
                         className="flex items-center gap-3 cursor-pointer"
@@ -161,21 +174,14 @@ function AutomaticAliasChangeConfirm({
                         />
                         <span>
                             {t(`aliases.automatic.bulk.${labelKeys[mode]}`, {
-                                total:
-                                    previews
-                                        ?.find(
-                                            (preview) => preview.mode === mode,
-                                        )
-                                        ?.items.filter(
-                                            (item) => item.action !== 'skip',
-                                        ).length ?? '...',
+                                total: preview ? count : '...',
                             })}
                         </span>
                     </label>
                 ))}
             </fieldset>
             <div className="grid text-base-content/75">
-                {modes.map((mode) => (
+                {choices.map(({ mode, count }) => (
                     <div
                         key={mode}
                         aria-hidden="true"
@@ -183,14 +189,7 @@ function AutomaticAliasChangeConfirm({
                     >
                         <p>
                             {t(`aliases.automatic.bulk.${summaryKeys[mode]}`, {
-                                count:
-                                    previews
-                                        ?.find(
-                                            (preview) => preview.mode === mode,
-                                        )
-                                        ?.items.filter(
-                                            (item) => item.action !== 'skip',
-                                        ).length ?? 0,
+                                count,
                             })}
                         </p>
                         <p className="text-sm">

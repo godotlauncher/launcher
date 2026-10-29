@@ -109,6 +109,148 @@ describe('command-line Godot ownership and selection', () => {
         );
     });
 
+    it('applies selected creation as manual without reading or changing the global preference or default', async () => {
+        const target = editor('4.8-stable');
+        const item = {
+            version: target.version,
+            mono: false,
+            name: 'godot48',
+            management: 'manual' as const,
+            action: 'create' as const,
+        };
+        const plan = vi
+            .spyOn(CommandLineAliasService.prototype, 'previewChange')
+            .mockResolvedValue({ items: [item], snapshot: 'same' });
+        const apply = vi
+            .spyOn(CommandLineAliasService.prototype, 'applyChangeItems')
+            .mockResolvedValue([{ ...item, status: 'created' }]);
+        platform.register.mockResolvedValue({ pathChanged: true });
+        const reserve = vi.fn(() => unlock);
+        const unlock = vi.fn();
+        const preview = await service.previewSelectedAliasChange(
+            { mode: 'create-missing', editors: [target, target] },
+            async () => [target],
+            () => undefined,
+        );
+        expect(plan).toHaveBeenCalledWith(
+            { enabled: true, mode: 'create-missing' },
+            [target],
+            expect.any(Function),
+            { editors: [target], management: 'manual' },
+        );
+        const result = await service.commitSelectedAliasChange(
+            preview.token,
+            async () => [target],
+            reserve,
+            () => undefined,
+        );
+        expect(result).toEqual({
+            pathChanged: true,
+            outcomes: [{ ...item, status: 'created' }],
+        });
+        expect(apply).toHaveBeenCalledWith([item], [target]);
+        expect(reserve).toHaveBeenCalledWith([item]);
+        expect(unlock).toHaveBeenCalledOnce();
+        expect(preferences.readUserPreferencesSnapshot).not.toHaveBeenCalled();
+        expect(preferences.setUserPreferences).not.toHaveBeenCalled();
+        expect(selection).toBeNull();
+        await expect(
+            service.commitSelectedAliasChange(
+                preview.token,
+                async () => [target],
+                reserve,
+                () => undefined,
+            ),
+        ).rejects.toThrow('preview has changed');
+        plan.mockRestore();
+        apply.mockRestore();
+    });
+
+    it('rejects changed selected registrations and changed registry previews before writes', async () => {
+        const target = editor('4.8-stable');
+        const plan = vi
+            .spyOn(CommandLineAliasService.prototype, 'previewChange')
+            .mockResolvedValue({ items: [], snapshot: 'same' });
+        const reserve = vi.fn(() => () => undefined);
+        const preview = await service.previewSelectedAliasChange(
+            { mode: 'remove', editors: [target] },
+            async () => [target],
+            () => undefined,
+        );
+        await expect(
+            service.commitSelectedAliasChange(
+                preview.token,
+                async () => [{ ...target, editor_path: 'replacement' }],
+                reserve,
+                () => undefined,
+            ),
+        ).rejects.toThrow('editor has changed');
+        plan.mockResolvedValue({ items: [], snapshot: 'changed' });
+        await expect(
+            service.commitSelectedAliasChange(
+                preview.token,
+                async () => [target],
+                reserve,
+                () => undefined,
+            ),
+        ).rejects.toThrow('preview has changed');
+        expect(reserve).not.toHaveBeenCalled();
+        expect(platform.register).not.toHaveBeenCalled();
+        expect(coordinator.write).not.toHaveBeenCalled();
+        plan.mockRestore();
+    });
+
+    it('keeps selected removal independent and releases reservations when execution fails', async () => {
+        const target = editor('4.8-stable');
+        const item = {
+            version: target.version,
+            mono: false,
+            name: 'godot48',
+            management: 'manual' as const,
+            action: 'remove' as const,
+        };
+        const plan = vi
+            .spyOn(CommandLineAliasService.prototype, 'previewChange')
+            .mockResolvedValue({ items: [item], snapshot: 'same' });
+        const apply = vi
+            .spyOn(CommandLineAliasService.prototype, 'applyChangeItems')
+            .mockRejectedValueOnce(new Error('Registry unavailable'))
+            .mockResolvedValue([{ ...item, status: 'removed' }]);
+        const unlock = vi.fn();
+        const reserve = () => unlock;
+        const preview = await service.previewSelectedAliasChange(
+            { mode: 'remove', editors: [target] },
+            async () => [target],
+            () => undefined,
+        );
+        await expect(
+            service.commitSelectedAliasChange(
+                preview.token,
+                async () => [target],
+                reserve,
+                () => undefined,
+            ),
+        ).rejects.toThrow('Registry unavailable');
+        expect(unlock).toHaveBeenCalledOnce();
+        const retry = await service.previewSelectedAliasChange(
+            { mode: 'remove', editors: [target] },
+            async () => [target],
+            () => undefined,
+        );
+        await expect(
+            service.commitSelectedAliasChange(
+                retry.token,
+                async () => [target],
+                reserve,
+                () => undefined,
+            ),
+        ).resolves.toMatchObject({ pathChanged: false });
+        expect(platform.register).not.toHaveBeenCalled();
+        expect(preferences.setUserPreferences).not.toHaveBeenCalled();
+        plan.mockRestore();
+        apply.mockRestore();
+    });
+
     it('retains a newly opened choice when later options cross the preview capacity', async () => {
         const lookup = vi
             .spyOn(CommandLineAliasService.prototype, 'previewChange')
@@ -146,7 +288,7 @@ describe('command-line Godot ownership and selection', () => {
         lookup.mockRestore();
     });
 
-    it('saves the current preference before applying reviewed commands and reports partial outcomes', async () => {
+    it('saves the current preference before executing the reviewed batch and returns its outcomes', async () => {
         const items = [
             {
                 name: 'first',
@@ -167,13 +309,22 @@ describe('command-line Godot ownership and selection', () => {
             .spyOn(CommandLineAliasService.prototype, 'previewChange')
             .mockResolvedValue({ items, snapshot: 'same' });
         const apply = vi
-            .spyOn(CommandLineAliasService.prototype, 'applyChangeItem')
-            .mockImplementation(async (item) => {
+            .spyOn(CommandLineAliasService.prototype, 'applyChangeItems')
+            .mockImplementation(async (reviewed) => {
                 expect(preferences.setUserPreferences).toHaveBeenCalledWith({
                     auto_create_editor_aliases: false,
                     theme: 'dark',
                 });
-                if (item.name === 'first') throw new Error('Permission denied');
+                return reviewed.map((item) => ({
+                    ...item,
+                    status:
+                        item.name === 'first'
+                            ? ('failed' as const)
+                            : ('removed' as const),
+                    ...(item.name === 'first'
+                        ? { error: 'Permission denied' }
+                        : {}),
+                }));
             });
         const unlock = vi.fn();
         const reserve = vi.fn(() => unlock);
@@ -192,6 +343,7 @@ describe('command-line Godot ownership and selection', () => {
             'removed',
         ]);
         expect(result.outcomes[0].error).toBe('Permission denied');
+        expect(apply).toHaveBeenCalledExactlyOnceWith(items, []);
         expect(result.preferences.auto_create_editor_aliases).toBe(false);
         expect(unlock).toHaveBeenCalledOnce();
         expect(platform.register).not.toHaveBeenCalled();

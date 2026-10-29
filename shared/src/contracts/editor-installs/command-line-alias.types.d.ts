@@ -1,4 +1,5 @@
 import type { UserPreferences } from '../preferences/index.js';
+import type { InstalledRelease } from '../releases/index.js';
 
 /** Reports an alias without exposing its private recovery representation. */
 export type CommandLineAlias = {
@@ -54,4 +55,21 @@ export type AutomaticAliasChangeResult = {
         status: 'created' | 'removed' | 'skipped' | 'failed';
         error?: string;
     })[];
+};
+
+/** Reviews command changes for an explicit installed-editor selection. */
+export type SelectedAliasChangeRequest = {
+    mode: 'create-missing' | 'remove';
+    editors: InstalledRelease[];
+};
+/** Binds counted effects to the reviewed registrations and alias registry. */
+export type SelectedAliasChangePreview = {
+    token: string;
+    mode: SelectedAliasChangeRequest['mode'];
+    items: AutomaticAliasChangeItem[];
+};
+/** Reports selected operations without modifying preferences or the default. */
+export type SelectedAliasChangeResult = {
+    outcomes: AutomaticAliasChangeResult['outcomes'];
+    pathChanged: boolean;
 };
