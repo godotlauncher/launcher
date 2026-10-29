@@ -40,6 +40,10 @@ vi.mock('../hooks/projects.hook', () => ({
     useProjects: () => ({ projects: [] }),
 }));
 
+vi.mock('../hooks/notifications.hook', () => ({
+    useNotifications: () => ({ showNotification: vi.fn() }),
+}));
+
 vi.mock('../hooks/release.hook', () => {
     return {
         useRelease: () => ({

@@ -70,17 +70,22 @@ test('selection follows the existing toolbar, preserves search and offers unused
 
     await standard.check();
     await page.getByTestId('inputInstallSearch').fill('4.5');
-    await expect(page.getByRole('checkbox')).toHaveCount(1);
-    await expect(page.getByText('2 selected', { exact: true })).toBeVisible();
+    await expect(page.getByRole('checkbox')).toHaveCount(2);
+    await expect(page.getByText('0 selected', { exact: true })).toBeVisible();
     await page.getByTestId('inputInstallSearch').fill('');
+    await standard.check();
+    await dotnet.check();
     await expect(page.getByRole('button', { name: 'Start the Project Manager' })).toHaveCount(0);
     await openActions();
     await screenshot('editors-selection-menu-dark.png');
     await page.getByRole('button', { name: 'Remove selected (2)', exact: true }).click();
-    const confirm = page.getByRole('dialog', { name: 'Remove selected editors', exact: true });
+    const confirm = page.getByRole('dialog', { name: /Remove \d+ editors?\?/ });
     await expect(confirm).toBeVisible();
-    await expect(confirm.getByText(/Projects using this editor:/)).toBeVisible();
+    await expect(confirm.getByText('1 project will need another editor. Its project files will be kept.', { exact: true })).toBeVisible();
+    await expect(confirm.getByRole('heading', { name: 'Affected items', exact: true })).toBeVisible();
+    await expect(confirm.locator('details, summary')).toHaveCount(0);
     await expect(confirm.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+    await expect(confirm.getByText(/Projects: My Awesome Game/)).toBeVisible();
     await screenshot('editors-removal-confirm-dark.png');
     await confirm.getByRole('button', { name: 'Cancel', exact: true }).click();
     await page.getByRole('button', { name: 'Disable multi-select' }).click();
@@ -102,13 +107,103 @@ test('select all includes custom registrations and matches the light theme', asy
     await openActions();
     await screenshot('editors-selection-menu-light.png');
     await page.getByRole('button', { name: 'Remove selected (3)', exact: true }).click();
-    const confirm = page.getByRole('dialog', { name: 'Remove selected editors', exact: true });
-    await expect(confirm.getByText('Custom editors will be removed from Godot Launcher. Their files will be kept.', { exact: true })).toBeVisible();
+    const confirm = page.getByRole('dialog', { name: /Remove \d+ editors?\?/ });
+    await expect(confirm.getByText('1 custom editor will be unregistered. Its original files will be kept.', { exact: true })).toBeVisible();
     await confirm.getByRole('button', { name: 'Cancel', exact: true }).click();
     await openActions();
     await page.getByRole('button', { name: 'Clear selection', exact: true }).click();
     await expect(page.getByText('0 selected', { exact: true })).toBeVisible();
     await expect(page.getByRole('checkbox').first()).not.toBeChecked();
+});
+
+test('selects all filtered results including off-screen rows and supports mixed version groups', async () => {
+    const installed = Array.from({ length: 18 }, (_, index) => ({ ...SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM[0], version: `4.7.${index + 1}-stable`, version_number: index + 1 }));
+    installed.push({ ...installed[0], version: '4.8-stable' });
+    await prepareAppWithStubbedData(page, electronApp, { installedReleases: installed, projects: [] });
+    await openInstalls();
+    await page.getByRole('button', { name: 'Enable multi-select' }).click();
+    await page.getByTestId('inputInstallSearch').fill('4.7');
+    const group = page.getByRole('checkbox', { name: 'Select group 4.7', exact: true });
+    await page.getByRole('checkbox', { name: 'Select 4.7.1-stable (Standard)', exact: true }).check();
+    await expect(group).toHaveJSProperty('indeterminate', true);
+    await group.check();
+    await expect(page.getByText('18 selected', { exact: true })).toBeVisible();
+    await group.uncheck();
+    await expect(page.getByText('0 selected', { exact: true })).toBeVisible();
+    await openActions();
+    await page.getByRole('button', { name: 'Select all', exact: true }).click();
+    await expect(page.getByText('18 selected', { exact: true })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: 'Select 4.7.1-stable (Standard)', exact: true })).toBeChecked();
+    await page.getByTestId('inputInstallSearch').fill('4.8');
+    await expect(page.getByText('0 selected', { exact: true })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: 'Select 4.8-stable (Standard)', exact: true })).not.toBeChecked();
+    await openActions();
+    await page.getByRole('button', { name: 'Select unused editors', exact: true }).click();
+    await expect(page.getByText('1 selected', { exact: true })).toBeVisible();
+});
+
+test('summarises named commands once and uses one scroll area for a long editor list', async () => {
+    const installed = Array.from({ length: 18 }, (_, index) => ({ ...SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM[0], version: `4.7.${index + 1}-stable`, version_number: index + 1 }));
+    await prepareAppWithStubbedData(page, electronApp, { installedReleases: installed, projects: [SAMPLE_PROJECTS[0]] });
+    await electronApp.evaluate(({ ipcMain }, editors) => {
+        ipcMain.removeHandler('editorInstalls.getCommandLineAliases');
+        ipcMain.handle('editorInstalls.getCommandLineAliases', async () => ({ success: true, data: { aliases: editors.map((editor, index) => ({ version: editor.version, mono: editor.mono, name: `godot47-${index + 1}`, management: 'manual', state: 'active' })) } }));
+        ipcMain.removeHandler('editorInstalls.getCommandLineGodot');
+        ipcMain.handle('editorInstalls.getCommandLineGodot', async () => ({ success: true, data: { selection: { version: editors[0].version, mono: editors[0].mono, editorPath: editors[0].editor_path }, binDirectory: '/fixture/bin' } }));
+    }, installed);
+    const viewport = page.viewportSize();
+    try {
+        await page.setViewportSize({ width: 1024, height: 600 });
+        await page.evaluate(() => { document.documentElement.style.fontSize = '20px'; });
+        for (const theme of THEMES) {
+            await applyTheme(page, theme);
+            await openInstalls();
+            await page.getByRole('button', { name: 'Enable multi-select' }).click();
+            await openActions();
+            await page.getByRole('button', { name: 'Select all', exact: true }).click();
+            await openActions();
+            await page.getByRole('button', { name: 'Remove selected (18)', exact: true }).click();
+            const confirm = page.getByRole('dialog', { name: /Remove \d+ editors?\?/ });
+            const commands = confirm.getByText('18 named commands will be removed.', { exact: true });
+            await expect(commands).toHaveCount(1);
+            expect(await commands.evaluate((element) => element.previousElementSibling?.textContent)).toBe('1 project will need another editor. Its project files will be kept.');
+            await expect(confirm.getByRole('heading', { name: 'Affected items', exact: true })).toBeVisible();
+            await expect(confirm.locator('details, summary')).toHaveCount(0);
+            const before = await confirm.boundingBox();
+            const footerBefore = await confirm.getByRole('button', { name: 'Cancel', exact: true }).boundingBox();
+            const reviewRegion = confirm.getByRole('list', { name: 'Affected items', exact: true });
+            expect(await reviewRegion.evaluate((element) => ({ gutter: element.clientWidth < (element as HTMLElement).offsetWidth, overflow: getComputedStyle(element).overflowY, thumb: getComputedStyle(element, '::-webkit-scrollbar-thumb').backgroundColor }))).toMatchObject({ gutter: true, overflow: 'scroll' });
+            const summaryBefore = await commands.boundingBox();
+            const headingBefore = await confirm.getByRole('heading', { name: 'Affected items', exact: true }).boundingBox();
+            await reviewRegion.focus();
+            await expect(reviewRegion).toBeFocused();
+            await page.keyboard.press('End');
+            await expect.poll(() => reviewRegion.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+            await expect(confirm.getByText(/Removing this editor will also remove its named command/)).toHaveCount(0);
+            await expect(confirm.getByText(/This editor is your default command-line Godot/)).toHaveCount(0);
+            await expect(confirm.getByText(/No replacement will be selected/)).toHaveCount(1);
+            const list = confirm.getByRole('list');
+            expect(await list.evaluate((element) => {
+                let scrollAreas = 0;
+                for (let current: HTMLElement | null = element as HTMLElement; current && current.tagName !== 'DIALOG'; current = current.parentElement) {
+                    if (current.scrollHeight > current.clientHeight && ['auto', 'scroll'].includes(getComputedStyle(current).overflowY)) scrollAreas++;
+                }
+                return scrollAreas;
+            })).toBe(1);
+            await confirm.getByRole('heading', { name: '4.7.18-stable - Standard', exact: true }).scrollIntoViewIfNeeded();
+            await expect(confirm.getByRole('heading', { name: '4.7.18-stable - Standard', exact: true })).toBeInViewport();
+            expect(await confirm.boundingBox()).toEqual(before);
+            expect(await commands.boundingBox()).toEqual(summaryBefore);
+            expect(await confirm.getByRole('heading', { name: 'Affected items', exact: true }).boundingBox()).toEqual(headingBefore);
+            expect(await confirm.getByRole('button', { name: 'Cancel', exact: true }).boundingBox()).toEqual(footerBefore);
+            await expect(confirm.getByRole('button', { name: 'Cancel', exact: true })).toBeInViewport();
+            await expect(confirm.getByRole('button', { name: 'Remove selected (18)', exact: true })).toBeInViewport();
+            await confirm.getByRole('button', { name: 'Cancel', exact: true }).click();
+        }
+    } finally {
+        await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
+        if (viewport) await page.setViewportSize(viewport);
+    }
 });
 
 test('keeps partial failures visible and retries only failed removals through the preload bridge', async () => {
@@ -120,17 +215,41 @@ test('keeps partial failures visible and retries only failed removals through th
     await page.getByRole('checkbox', { name: 'Select 4.5.1-stable (.NET)', exact: true }).check();
     await openActions();
     await page.getByRole('button', { name: 'Remove selected (2)', exact: true }).click();
-    const confirm = page.getByRole('dialog', { name: 'Remove selected editors', exact: true });
+    const confirm = page.getByRole('dialog', { name: /Remove \d+ editors?\?/ });
     await confirm.getByRole('button', { name: 'Remove selected (2)', exact: true }).click();
-    await expect(confirm.getByText('Removed', { exact: true })).toBeVisible();
+    await expect(confirm.getByText('Removed: 1. Failed: 1. Skipped: 0.', { exact: true })).toBeVisible();
+    await expect(confirm.getByText('Removed', { exact: true })).toHaveCount(0);
     await expect(confirm.getByText('Failed', { exact: true })).toBeVisible();
     await expect(confirm.getByText('Access denied', { exact: true })).toBeVisible();
     await confirm.getByRole('button', { name: 'Retry failed removals', exact: true }).click();
     await expect(confirm).not.toBeVisible();
-    await expect(page.getByRole('checkbox')).toHaveCount(1);
+    await expect(page.getByRole('checkbox')).toHaveCount(2);
     await expect.poll(() => electronApp.evaluate(({ ipcMain }) =>
         (ipcMain as typeof ipcMain & { editorRemovalCalls: string[][] }).editorRemovalCalls,
     )).toEqual([['4.7-stable', '4.5.1-stable'], ['4.5.1-stable']]);
+});
+
+test('keeps skipped editors visible after failed-only retry without resizing the dialog', async () => {
+    await prepareAppWithStubbedData(page, electronApp, { projects: [] });
+    await stubPartialRemoval(true);
+    await openInstalls();
+    await page.getByRole('button', { name: 'Enable multi-select' }).click();
+    await openActions();
+    await page.getByRole('button', { name: 'Select all', exact: true }).click();
+    await openActions();
+    await page.getByRole('button', { name: 'Remove selected (3)', exact: true }).click();
+    const confirm = page.getByRole('dialog', { name: 'Remove 3 editors?', exact: true });
+    const before = await confirm.boundingBox();
+    await confirm.getByRole('button', { name: 'Remove selected (3)', exact: true }).click();
+    await expect(confirm.getByText('Removed: 1. Failed: 1. Skipped: 1.', { exact: true })).toBeVisible();
+    await expect(confirm.getByText(/editor installations will be deleted/)).toHaveCount(0);
+    expect(await confirm.boundingBox()).toEqual(before);
+    await confirm.getByRole('button', { name: 'Retry failed removals', exact: true }).click();
+    await expect(confirm.getByText('Removed: 2. Failed: 0. Skipped: 1.', { exact: true })).toBeVisible();
+    await expect(confirm.getByText('Editor changed; select it again.', { exact: true })).toBeVisible();
+    await expect(confirm.getByRole('button', { name: 'Retry failed removals', exact: true })).toHaveCount(0);
+    expect(await confirm.boundingBox()).toEqual(before);
+    await confirm.getByRole('button', { name: 'Close', exact: true }).click();
 });
 
 test('the actual batch handler deletes managed fixture files and preserves custom files', async () => {
@@ -189,9 +308,11 @@ async function screenshot(filename: string): Promise<void> {
     });
 }
 
-/** Replaces only batch removal with a deterministic partial-failure fixture. */
-async function stubPartialRemoval(): Promise<void> {
-    await electronApp.evaluate(({ ipcMain }, installed: InstalledRelease[]) => {
+/** Replaces only batch removal with a deterministic partial-failure fixture.
+ * @param includeSkip - Whether a custom registration stays skipped after retries.
+ */
+async function stubPartialRemoval(includeSkip = false): Promise<void> {
+    await electronApp.evaluate(({ ipcMain }, { installed, includeSkip }: { installed: InstalledRelease[]; includeSkip: boolean }) => {
         const handlers = ipcMain as typeof ipcMain & {
             _invokeHandlers: Map<string, (...args: unknown[]) => unknown>;
             realEditorRemovalHandler: (...args: unknown[]) => unknown;
@@ -207,10 +328,11 @@ async function stubPartialRemoval(): Promise<void> {
             handlers.editorRemovalCalls.push(selections.map(({ release }) => release.version));
             const outcomes = selections.map(({ release }) => {
                 const failed = handlers.editorRemovalCalls.length === 1 && release.mono;
-                if (!failed) remaining = remaining.filter((candidate) => candidate.version !== release.version || candidate.mono !== release.mono);
-                return { release, status: failed ? 'failed' : 'removed', ...(failed ? { error: 'Access denied' } : {}) };
+                const skipped = includeSkip && release.source === 'custom';
+                if (!failed && !skipped) remaining = remaining.filter((candidate) => candidate.version !== release.version || candidate.mono !== release.mono);
+                return { release, status: skipped ? 'skipped' : failed ? 'failed' : 'removed', ...(skipped ? { error: 'Editor changed; select it again.' } : failed ? { error: 'Access denied' } : {}) };
             });
             return { success: true, data: { outcomes, releases: remaining } };
         });
-    }, SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM);
+    }, { installed: SAMPLE_INSTALLED_RELEASES_WITH_CUSTOM, includeSkip });
 }

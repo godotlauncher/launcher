@@ -1619,7 +1619,7 @@ test('Onboarding without an editor finishes on the Projects welcome', async () =
         mainPage,
         electronApp,
         'linux',
-        'preferences',
+        'command-line',
     );
     await stubAppData(
         electronApp,

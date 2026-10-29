@@ -56,6 +56,7 @@ describe('EditorInstallService', () => {
         reserveOfficialInstall: vi.fn(),
         getInstalledEditors: vi.fn(),
         addInstalledEditor: vi.fn(),
+        tryAutomaticAlias: vi.fn(),
         revalidateInstalledEditors: vi.fn(),
     };
     const editorCatalog = { getCatalog: vi.fn() };
@@ -68,6 +69,7 @@ describe('EditorInstallService', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        installedEditors.tryAutomaticAlias.mockResolvedValue(undefined);
         installedEditors.reserveOfficialInstall.mockReturnValue(vi.fn());
         fsMocks.promises.mkdir.mockResolvedValue(undefined);
         fsMocks.promises.rm.mockResolvedValue(undefined);
@@ -84,6 +86,71 @@ describe('EditorInstallService', () => {
         installedEditors.getInstalledEditors.mockResolvedValue([]);
         installedEditors.addInstalledEditor.mockResolvedValue([]);
         projectRepair.revalidateProjects.mockResolvedValue(undefined);
+    });
+
+    it('shares one non-fatal automatic alias outcome between joined install callers', async () => {
+        const alias = deferred<{
+            name: string;
+            pathChanged: boolean;
+            error: string;
+        }>();
+        const releaseReservation = vi.fn();
+        installedEditors.reserveOfficialInstall.mockReturnValue(
+            releaseReservation,
+        );
+        installedEditors.tryAutomaticAlias.mockReturnValueOnce(alias.promise);
+        const service = createService();
+        const first = service.installEditor(
+            createRelease('4.8-stable'),
+            false,
+            'installs',
+        );
+        const joined = service.installEditor(
+            createRelease('4.8-stable'),
+            false,
+            'project',
+        );
+        await waitFor(
+            () => installedEditors.tryAutomaticAlias.mock.calls.length === 1,
+        );
+        expect(releaseReservation).not.toHaveBeenCalled();
+        expect(progressService.publish).not.toHaveBeenCalledWith(
+            expect.objectContaining({ stage: 'complete' }),
+        );
+        alias.resolve({
+            name: 'godot48',
+            pathChanged: false,
+            error: 'Name taken',
+        });
+        expect(await first).toMatchObject({
+            success: true,
+            commandLineAlias: { error: 'Name taken' },
+        });
+        expect(await joined).toMatchObject({
+            success: true,
+            commandLineAlias: { error: 'Name taken' },
+        });
+        expect(installedEditors.tryAutomaticAlias).toHaveBeenCalledOnce();
+        expect(releaseReservation).toHaveBeenCalledOnce();
+        expect(
+            progressService.publish.mock.calls.filter(
+                ([progress]) => progress.stage === 'complete',
+            ),
+        ).toHaveLength(1);
+    });
+
+    it('does not automatically alias a reinstallation with an existing invalid record', async () => {
+        installedEditors.getInstalledEditors.mockResolvedValue([
+            { version: '4.8-stable', mono: false, valid: false },
+        ]);
+        expect(
+            await createService().installEditor(
+                createRelease('4.8-stable'),
+                false,
+                'installs',
+            ),
+        ).toMatchObject({ success: true });
+        expect(installedEditors.tryAutomaticAlias).not.toHaveBeenCalled();
     });
 
     it('runs distinct installs serially and continues after failure', async () => {

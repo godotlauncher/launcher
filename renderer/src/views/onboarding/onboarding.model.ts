@@ -9,6 +9,7 @@ export const onboardingStepIds = [
     'appearance',
     'setup',
     'preferences',
+    'command-line',
 ] as const;
 
 export type OnboardingStepId = (typeof onboardingStepIds)[number];

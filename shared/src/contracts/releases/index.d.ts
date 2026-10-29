@@ -1,4 +1,5 @@
 import type { BackendResult } from '../app/index.js';
+import type { AutomaticCommandLineAliasResult } from '../editor-installs/command-line-alias.types.js';
 
 export type PublishedReleases = {
     releases: ReleaseSummary[];
@@ -78,6 +79,7 @@ export type InstalledRelease = {
 };
 
 export type InstallReleaseResult = BackendResult & {
+    commandLineAlias?: AutomaticCommandLineAliasResult;
     version: string;
     release?: InstalledRelease;
     cancelled?: true;
@@ -96,6 +98,7 @@ export type ReleaseInstallProgressStage =
     | 'error';
 
 export type ReleaseInstallProgress = {
+    commandLineAlias?: AutomaticCommandLineAliasResult;
     id: string;
     version: string;
     mono: boolean;
@@ -118,6 +121,7 @@ export type RemovedReleaseResult = BackendResult & {
 };
 
 export type RegisterCustomEngineResult = BackendResult & {
+    commandLineAlias?: AutomaticCommandLineAliasResult;
     release?: InstalledRelease;
     releases?: InstalledRelease[];
     duplicate?: InstalledRelease;

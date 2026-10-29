@@ -7,6 +7,7 @@ type EditorVersionGroupProps = {
     count: number;
     headingLevel: 'h2' | 'h3';
     children: React.ReactNode;
+    leadingControl?: React.ReactNode;
 };
 
 /**
@@ -20,6 +21,7 @@ export const EditorVersionGroup: React.FC<EditorVersionGroupProps> = ({
     count,
     headingLevel,
     children,
+    leadingControl,
 }) => {
     const headingId = useId();
 
@@ -30,6 +32,7 @@ export const EditorVersionGroup: React.FC<EditorVersionGroupProps> = ({
         >
             <ListGroupHeading
                 id={headingId}
+                leadingControl={leadingControl}
                 title={title}
                 count={count}
                 headingLevel={headingLevel}

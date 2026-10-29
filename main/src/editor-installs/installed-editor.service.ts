@@ -6,17 +6,23 @@ import { Injectable } from '@mariodebono/di';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ConfigService } from '@mariodebono/di-config';
 import type {
+    AutomaticAliasChangeItem,
+    AutomaticAliasChangeRequest,
+    AutomaticCommandLineAliasResult,
     EditorRemovalOutcome,
     EditorRemovalSelection,
     InstalledRelease,
     RegisterCustomEngineResult,
     RemovedReleaseResult,
     RemoveEditorsResult,
+    SelectedAliasChangeRequest,
 } from '@shared/contracts';
 import logger from 'electron-log';
+import { getUserPreferences } from '../commands/userPreferences.js';
 import type { AppConfig } from '../config/index.js';
 import { t } from '../i18n/index.js';
 import { parseCustomEngineManifest } from '../utils/customEngineManifest.utils.js';
+import { suggestAutomaticAlias } from './command-line-alias.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { CommandLineGodotService } from './command-line-godot.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -109,6 +115,182 @@ export class InstalledEditorService {
         }
     }
 
+    /**
+     * Previews changes against authoritative editors without reserving or changing them.
+     * @param request - Requested automation preference and existing-command choice.
+     */
+    previewAutomaticAliasChange(request: AutomaticAliasChangeRequest) {
+        return this.commandLine.previewAutomaticAliasChange(
+            request,
+            () => this.store.list(),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+
+    /**
+     * Applies a reviewed batch while reserving every affected editor identity.
+     * @param token - Opaque preview issued by the command service.
+     */
+    commitAutomaticAliasChange(token: string) {
+        return this.commandLine.commitAutomaticAliasChange(
+            token,
+            () => this.store.list(),
+            (items) => this.reserveAliasChange(items),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+
+    /** Reviews commands for selected editor snapshots only.
+     * @param request - Explicit selection and command action.
+     */
+    previewSelectedAliasChange(request: SelectedAliasChangeRequest) {
+        return this.commandLine.previewSelectedAliasChange(
+            request,
+            () => this.store.list(),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+    /** Reserves selected editors throughout the reviewed command operation.
+     * @param token - Single-use reviewed snapshot identity.
+     */
+    commitSelectedAliasChange(token: string) {
+        return this.commandLine.commitSelectedAliasChange(
+            token,
+            () => this.store.list(),
+            (items) => this.reserveAliasChange(items),
+            (item) => this.aliasChangeUnavailable(item),
+        );
+    }
+
+    /**
+     * Explains a lifecycle reservation while leaving it untouched.
+     * @param item - Editor identity proposed for a command change.
+     */
+    private aliasChangeUnavailable(
+        item: AutomaticAliasChangeItem,
+    ): string | undefined {
+        const key = getInstalledEditorIdentity(item);
+        return this.activeRemovals.has(key) ||
+            this.activeOfficialInstalls.has(key) ||
+            this.activeCustomRegistrations.has(key) ||
+            this.activeCommandLineSelections.has(key)
+            ? t('installs:selection.errors.busy')
+            : undefined;
+    }
+
+    /**
+     * Acquires all batch identities before its preference or files change.
+     * @param items - Reviewed actions, including skipped commands.
+     */
+    private reserveAliasChange(items: AutomaticAliasChangeItem[]): () => void {
+        const keys = [
+            ...new Set(
+                items
+                    .filter((item) => item.action !== 'skip')
+                    .map(getInstalledEditorIdentity),
+            ),
+        ];
+        if (
+            keys.some(
+                (key) =>
+                    this.activeRemovals.has(key) ||
+                    this.activeOfficialInstalls.has(key) ||
+                    this.activeCustomRegistrations.has(key) ||
+                    this.activeCommandLineSelections.has(key),
+            )
+        )
+            throw new Error(t('installs:selection.errors.busy'));
+        for (const key of keys) this.activeCommandLineSelections.add(key);
+        return () => {
+            for (const key of keys)
+                this.activeCommandLineSelections.delete(key);
+        };
+    }
+
+    /** Gets verified aliases and any reserved unfinished operations. */
+    async getCommandLineAliases() {
+        return this.commandLine.getAliases(() => this.store.list());
+    }
+
+    /**
+     * Checks a name against the authoritative installation and command registry.
+     * @param identity - Registered editor identity.
+     * @param name - Literal draft name.
+     */
+    async checkCommandLineAlias(
+        identity: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string,
+    ) {
+        const release = (await this.store.list()).find((candidate) =>
+            hasSameInstalledEditorIdentity(candidate, identity),
+        );
+        if (!release)
+            throw new Error('The selected editor is no longer registered.');
+        return this.commandLine.checkAlias(release, name);
+    }
+
+    /**
+     * Reserves an installation before applying its alias operation.
+     * @param identity - Registered editor identity.
+     * @param name - Literal new command or null for removal.
+     */
+    async setCommandLineAlias(
+        identity: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string | null,
+    ) {
+        const key = getInstalledEditorIdentity(identity);
+        if (
+            this.activeRemovals.has(key) ||
+            this.activeOfficialInstalls.has(key) ||
+            this.activeCustomRegistrations.has(key) ||
+            this.activeCommandLineSelections.has(key)
+        )
+            throw new Error(t('installs:selection.errors.busy'));
+        this.activeCommandLineSelections.add(key);
+        try {
+            const installed = await this.store.list();
+            const release = installed.find((candidate) =>
+                hasSameInstalledEditorIdentity(candidate, identity),
+            );
+            if (!release)
+                throw new Error('The selected editor is no longer registered.');
+            return await this.commandLine.setAlias(release, name, () =>
+                this.store.list(),
+            );
+        } finally {
+            this.activeCommandLineSelections.delete(key);
+        }
+    }
+
+    /**
+     * Attempts an opted-in command without failing a completed editor registration.
+     * @param release - Newly registered editor held by the caller's lifecycle reservation.
+     */
+    async tryAutomaticAlias(
+        release: InstalledRelease,
+    ): Promise<AutomaticCommandLineAliasResult | undefined> {
+        const name = suggestAutomaticAlias(release.version);
+        try {
+            if (
+                (await getUserPreferences()).auto_create_editor_aliases !== true
+            )
+                return undefined;
+            const result = await this.commandLine.createAutomaticAlias(
+                release,
+                name,
+            );
+            return result
+                ? { name, pathChanged: result.pathChanged }
+                : undefined;
+        } catch (error) {
+            return {
+                name,
+                pathChanged: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+
     /** Gets every registered installed editor. */
     getInstalledEditors(): Promise<InstalledRelease[]> {
         return this.store.list();
@@ -119,9 +301,16 @@ export class InstalledEditorService {
      *
      * @param release - Installed editor to persist.
      */
-    addInstalledEditor(release: InstalledRelease): Promise<InstalledRelease[]> {
-        return this.commandLine.updateRegisteredEditor(release, () =>
-            this.store.put(release),
+    async addInstalledEditor(
+        release: InstalledRelease,
+    ): Promise<InstalledRelease[]> {
+        const previous = (await this.store.list()).find((candidate) =>
+            hasSameInstalledEditorIdentity(candidate, release),
+        );
+        return this.commandLine.updateRegisteredEditor(
+            release,
+            () => this.store.put(release),
+            previous,
         );
     }
 
@@ -194,9 +383,13 @@ export class InstalledEditorService {
             const releases = await this.commandLine.updateRegisteredEditor(
                 release,
                 () => this.store.put(release),
+                duplicate,
             );
             await this.projectRepair.revalidateProjects();
-            return { success: true, release, releases };
+            const commandLineAlias = !duplicate
+                ? await this.tryAutomaticAlias(release)
+                : undefined;
+            return { success: true, release, releases, commandLineAlias };
         } catch (error) {
             return {
                 success: false,
@@ -234,7 +427,27 @@ export class InstalledEditorService {
         }
         this.activeRemovals.add(identity);
         try {
-            return await this.removeReservedEditor(release);
+            const releases = await this.store.list();
+            const registered = releases.find((candidate) =>
+                hasSameInstalledEditorIdentity(candidate, release),
+            );
+            if (
+                !registered ||
+                registered.editor_path !== release.editor_path ||
+                registered.install_path !== release.install_path ||
+                registered.source !== release.source ||
+                registered.managed_by_launcher !==
+                    release.managed_by_launcher ||
+                registered.console_path !== release.console_path
+            )
+                return {
+                    success: false,
+                    error: t('installs:selection.errors.changed'),
+                    version: release.version,
+                    mono: release.mono,
+                    releases,
+                };
+            return await this.removeReservedEditor(registered);
         } finally {
             this.activeRemovals.delete(identity);
         }
@@ -252,19 +465,22 @@ export class InstalledEditorService {
         try {
             logger.info(`Removing release '${release.version}'`);
 
-            await this.commandLine.withEditorRemoval(release, async () => {
-                if (
-                    release.source !== 'custom' &&
-                    release.managed_by_launcher !== false &&
-                    fs.existsSync(release.install_path)
-                ) {
-                    await fs.promises.rm(release.install_path, {
-                        recursive: true,
-                        force: true,
-                    });
-                }
-            });
-            const releases = await this.store.remove(release);
+            const releases = await this.commandLine.withEditorRemoval(
+                release,
+                async () => {
+                    if (
+                        release.source !== 'custom' &&
+                        release.managed_by_launcher !== false &&
+                        fs.existsSync(release.install_path)
+                    ) {
+                        await fs.promises.rm(release.install_path, {
+                            recursive: true,
+                            force: true,
+                        });
+                    }
+                    return this.store.remove(release);
+                },
+            );
             try {
                 await this.projectRepair.removeEditorFromProjects(release);
             } catch (error) {
@@ -342,6 +558,8 @@ export class InstalledEditorService {
                     registered.editor_path !== selection.release.editor_path ||
                     registered.install_path !==
                         selection.release.install_path ||
+                    registered.console_path !==
+                        selection.release.console_path ||
                     registered.source !== selection.release.source ||
                     registered.managed_by_launcher !==
                         selection.release.managed_by_launcher

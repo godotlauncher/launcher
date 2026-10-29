@@ -32,7 +32,11 @@ vi.mock('../utils/prefs.utils.js', () => ({
     writePrefsToDisk: mocks.writePrefsToDisk,
 }));
 
-import { getUserPreferences, setUserPreferences } from './userPreferences.js';
+import {
+    getUserPreferences,
+    readUserPreferencesSnapshot,
+    setUserPreferences,
+} from './userPreferences.js';
 
 function createPrefs(
     overrides: Partial<UserPreferences> = {},
@@ -69,6 +73,36 @@ describe('userPreferences migration', () => {
         vi.clearAllMocks();
         mocks.getDefaultDirs.mockReturnValue({ prefsPath: '/tmp/prefs.json' });
         mocks.getDefaultPrefs.mockResolvedValue(createPrefs());
+    });
+
+    it('reads legacy preferences for preview without persisting migrations', async () => {
+        mockStoredPrefs({ prefs_version: 1, auto_create_editor_aliases: true });
+        const value = await readUserPreferencesSnapshot();
+        expect(value.auto_create_editor_aliases).toBe(true);
+        expect(value.prefs_version).toBe(1);
+        expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
+    });
+
+    it.each([true, false])(
+        'persists the automatic alias choice %s',
+        async (auto_create_editor_aliases) => {
+            await setUserPreferences(
+                createPrefs({ auto_create_editor_aliases }),
+            );
+            expect(mocks.writePrefsToDisk).toHaveBeenCalledWith(
+                '/tmp/prefs.json',
+                expect.objectContaining({ auto_create_editor_aliases }),
+            );
+        },
+    );
+
+    it('rejects a non-boolean automatic alias choice before writing', async () => {
+        await expect(
+            setUserPreferences(
+                createPrefs({ auto_create_editor_aliases: 'true' as never }),
+            ),
+        ).rejects.toThrow('Invalid automatic editor alias preference');
+        expect(mocks.writePrefsToDisk).not.toHaveBeenCalled();
     });
 
     it.each([true, false])(

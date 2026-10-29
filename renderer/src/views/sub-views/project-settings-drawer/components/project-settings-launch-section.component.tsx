@@ -1,6 +1,6 @@
-import clsx from 'clsx';
 import type { TFunction } from 'i18next';
 import { PanelTop, Terminal } from 'lucide-react';
+import { SettingsPanel } from '../../../../components/settings/settings-panel.component';
 import { Switch } from '../../../../components/ui/switch.component';
 import { PendingChangesIndicator } from './pending-changes-indicator.component';
 
@@ -42,60 +42,56 @@ export function ProjectSettingsLaunchSection({
                 </p>
             </div>
             <div className="flex flex-col gap-2">
-                <label
+                <SettingsPanel
+                    icon={PanelTop}
                     htmlFor="project-windowed-switch"
-                    className={clsx(
-                        'flex items-center gap-3 rounded-md bg-base-content/5 p-3',
-                        disabled && 'opacity-50',
-                    )}
-                >
-                    <PanelTop className="size-5 shrink-0" aria-hidden="true" />
-                    <span className="flex flex-1 flex-col gap-1">
-                        <span className="flex items-center gap-2">
+                    dimmed={disabled}
+                    title={
+                        <>
                             {t('editProject.launch.windowed.label')}
                             {windowedChanged && <PendingChangesIndicator />}
-                        </span>
-                        <span className="text-base-content/75">
-                            {t('editProject.launch.windowed.help')}
-                        </span>
-                    </span>
-                    <Switch
-                        id="project-windowed-switch"
-                        checked={windowed}
-                        disabled={disabled}
-                        onChange={(event) =>
-                            onWindowedChange(event.currentTarget.checked)
-                        }
-                    />
-                </label>
-                <label
+                        </>
+                    }
+                    description={t('editProject.launch.windowed.help')}
+                    descriptionId="project-windowed-help"
+                    action={
+                        <Switch
+                            id="project-windowed-switch"
+                            aria-describedby="project-windowed-help"
+                            checked={windowed}
+                            disabled={disabled}
+                            onChange={(event) =>
+                                onWindowedChange(event.currentTarget.checked)
+                            }
+                        />
+                    }
+                />
+                <SettingsPanel
+                    icon={Terminal}
                     htmlFor="project-console-switch"
-                    className={clsx(
-                        'flex items-center gap-3 rounded-md bg-base-content/5 p-3',
-                        disabled && 'opacity-50',
-                    )}
-                >
-                    <Terminal className="size-5 shrink-0" aria-hidden="true" />
-                    <span className="flex flex-1 flex-col gap-1">
-                        <span className="flex items-center gap-2">
+                    dimmed={disabled}
+                    title={
+                        <>
                             {t('editProject.launch.console.label')}
                             {consoleChanged && <PendingChangesIndicator />}
-                        </span>
-                        <span className="text-base-content/75">
-                            {t('editProject.launch.console.help')}
-                        </span>
-                    </span>
-                    <Switch
-                        id="project-console-switch"
-                        checked={launchWithConsole}
-                        disabled={disabled}
-                        onChange={(event) =>
-                            onLaunchWithConsoleChange(
-                                event.currentTarget.checked,
-                            )
-                        }
-                    />
-                </label>
+                        </>
+                    }
+                    description={t('editProject.launch.console.help')}
+                    descriptionId="project-console-help"
+                    action={
+                        <Switch
+                            id="project-console-switch"
+                            aria-describedby="project-console-help"
+                            checked={launchWithConsole}
+                            disabled={disabled}
+                            onChange={(event) =>
+                                onLaunchWithConsoleChange(
+                                    event.currentTarget.checked,
+                                )
+                            }
+                        />
+                    }
+                />
             </div>
         </section>
     );

@@ -2,15 +2,15 @@ import type {
     CommandLineGodotSelection,
     InstalledRelease,
 } from '@shared/contracts';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useAlerts } from '../../../hooks/alerts.hook';
 import { editorInstallsBridge } from '../../../renderer.bridge';
 import { CommandLineGodotConfirm } from '../components/command-line-godot-confirm.component';
 import { getReleaseActionKey } from '../installs-view.model';
 
 /**
- * Keeps the terminal default in sync with installed-editor lifecycle changes.
+ * Shares confirmed terminal selection and recoverable operation state between install actions.
  * @param installed - Current authoritative installed-editor list.
  */
 export function useCommandLineGodot(installed: InstalledRelease[]) {
@@ -18,42 +18,57 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
     const { addAlert, addCustomConfirm } = useAlerts();
     const [selection, setSelection] =
         useState<CommandLineGodotSelection | null>(null);
-    const [busy, setBusy] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [loaded, setLoaded] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [status, setStatus] = useState('');
     const [pendingKey, setPendingKey] = useState<string | null>(null);
     const pending = useRef(false);
-    const reportLoadError = useEffectEvent((error: unknown) =>
-        addAlert(t('common:error'), String(error)),
-    );
-    // biome-ignore lint/correctness/useExhaustiveDependencies: Installed-editor changes trigger an authoritative selection refresh.
+    const confirming = useRef(false);
+    const generation = useRef(0);
+
+    /** Refreshes the shared selection without superseding an in-flight mutation. */
+    const refresh = useCallback(async () => {
+        if (pending.current) return;
+        const request = ++generation.current;
+        setLoading(true);
+        setError(null);
+        setStatus('');
+        try {
+            const state = await editorInstallsBridge.getCommandLineGodot();
+            if (request !== generation.current) return;
+            setSelection(state.selection);
+            setLoaded(true);
+        } catch (cause) {
+            if (request !== generation.current) return;
+            setLoaded(false);
+            setError(cause instanceof Error ? cause.message : String(cause));
+        } finally {
+            if (request === generation.current) setLoading(false);
+        }
+    }, []);
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: Installed-editor lifecycle changes require an authoritative refresh.
     useEffect(() => {
-        let cancelled = false;
-        setBusy(true);
-        editorInstallsBridge
-            .getCommandLineGodot()
-            .then((state) => {
-                if (!cancelled) {
-                    setSelection(state.selection);
-                    setBusy(false);
-                }
-            })
-            .catch((error: unknown) => {
-                if (!cancelled) reportLoadError(error);
-            });
+        void refresh();
         return () => {
-            cancelled = true;
+            generation.current++;
         };
-    }, [installed]);
+    }, [installed, refresh]);
 
     /**
-     * Changes the command after setup acknowledgement, reporting conflicts plainly.
-     * @param release - Editor to target, or null to remove the wrapper.
+     * Applies a terminal selection and keeps failures distinguishable from success.
+     * @param release - Editor to target, or null to remove the owned command.
      */
     const change = async (
         release: InstalledRelease | null,
     ): Promise<boolean> => {
         if (pending.current) return false;
         pending.current = true;
-        setBusy(true);
+        generation.current++;
+        setLoading(false);
+        setError(null);
+        setStatus('');
         setPendingKey(
             release
                 ? getReleaseActionKey(release)
@@ -68,6 +83,14 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
                     : null,
             );
             setSelection(result.selection);
+            setLoaded(true);
+            setStatus(
+                release
+                    ? t('settings.selected', {
+                          name: release.name ?? release.version,
+                      })
+                    : t('commandLine.cleared'),
+            );
             const message = release
                 ? result.pathChanged
                     ? t('commandLine.enabled', {
@@ -91,55 +114,98 @@ export function useCommandLineGodot(installed: InstalledRelease[]) {
                     undefined,
                     result.conflict ? 'warning' : undefined,
                 );
-        } catch (error) {
-            addAlert(
-                t('common:error'),
-                error instanceof Error ? error.message : String(error),
-                undefined,
-                'error',
-            );
+        } catch (cause) {
+            const message =
+                cause instanceof Error ? cause.message : String(cause);
+            try {
+                const state = await editorInstallsBridge.getCommandLineGodot();
+                setSelection(state.selection);
+                setLoaded(true);
+            } catch {
+                setLoaded(false);
+            }
+            setError(message);
+            addAlert(t('common:error'), message, undefined, 'error');
         } finally {
             pending.current = false;
             setPendingKey(null);
-            setBusy(false);
         }
         return true;
     };
 
     /**
-     * Shows the editor-preferences explanation for initial setup.
-     * @param release - Editor whose terminal button was selected.
+     * Selects or clears the editor, acknowledging normal preferences before initial setup.
+     * @param release - Editor selected from either terminal control.
      */
     const select = (release: InstalledRelease) => {
-        if (busy) return;
-        if (
+        if (loading || !loaded || pending.current || confirming.current) return;
+        const selected =
             selection?.version === release.version &&
-            selection.mono === release.mono
-        ) {
+            selection.mono === release.mono;
+        if (!selected && release.valid === false) return;
+        if (selected) {
             void change(null);
-        } else if (selection) {
-            void change(release);
-        } else {
-            addCustomConfirm(
-                t('commandLine.use'),
-                (renderLayout, close) => (
-                    <CommandLineGodotConfirm
-                        message={t('commandLine.explanation')}
-                        okLabel={t('common:buttons.ok')}
-                        cancelLabel={t('common:buttons.cancel')}
-                        onConfirm={() => change(release)}
-                        renderLayout={renderLayout}
-                        close={close}
-                    />
-                ),
-                [],
-            );
+            return;
         }
+        if (selection) {
+            void change(release);
+            return;
+        }
+        confirming.current = true;
+        const trigger =
+            document.activeElement instanceof HTMLElement
+                ? document.activeElement
+                : null;
+        addCustomConfirm(
+            t('commandLine.setupTitle'),
+            (renderLayout, close) => (
+                <CommandLineGodotConfirm
+                    message={
+                        <Trans
+                            t={t}
+                            i18nKey="commandLine.explanation"
+                            values={{
+                                name:
+                                    release.name ??
+                                    `Godot ${release.version}${release.mono ? ' .NET' : ''}`,
+                            }}
+                            components={{
+                                code: (
+                                    <code className="rounded bg-base-300 px-1 font-mono" />
+                                ),
+                            }}
+                        />
+                    }
+                    okLabel={t('commandLine.setupConfirm')}
+                    cancelLabel={t('common:buttons.cancel')}
+                    onConfirm={() => change(release)}
+                    renderLayout={renderLayout}
+                    close={() => {
+                        confirming.current = false;
+                        close();
+                        window.requestAnimationFrame(() => {
+                            if (
+                                trigger?.isConnected &&
+                                !trigger.matches(':disabled')
+                            )
+                                trigger.focus({ preventScroll: true });
+                        });
+                    }}
+                />
+            ),
+            [],
+        );
     };
     return {
+        selection,
         defaultKey: selection ? getReleaseActionKey(selection) : null,
         pendingKey,
-        busy: busy || pendingKey !== null,
+        busy: loading || !loaded || pendingKey !== null,
+        loading,
+        loaded,
+        error,
+        status,
+        refresh,
         select,
     };
 }

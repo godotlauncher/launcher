@@ -46,6 +46,9 @@ const manifestMocks = vi.hoisted(() => ({
     parseCustomEngineManifest: vi.fn(),
 }));
 vi.mock('../utils/customEngineManifest.utils.js', () => manifestMocks);
+const preferenceMocks = vi.hoisted(() => ({ getUserPreferences: vi.fn() }));
+vi.mock('../commands/userPreferences.js', () => preferenceMocks);
+
 vi.mock('../i18n/index.js', () => ({ t: (key: string) => key }));
 
 describe('InstalledEditorService', () => {
@@ -64,10 +67,19 @@ describe('InstalledEditorService', () => {
     const commandLine = {
         withEditorRemoval: vi.fn(),
         updateRegisteredEditor: vi.fn(),
+        createAutomaticAlias: vi.fn(),
+        previewAutomaticAliasChange: vi.fn(),
+        commitAutomaticAliasChange: vi.fn(),
     };
 
     beforeEach(() => {
         vi.clearAllMocks();
+        preferenceMocks.getUserPreferences.mockResolvedValue({
+            auto_create_editor_aliases: false,
+        });
+        commandLine.createAutomaticAlias.mockResolvedValue({
+            pathChanged: false,
+        });
         configService.get.mockReturnValue(false);
         store.list.mockResolvedValue([]);
         store.put.mockResolvedValue([]);
@@ -104,6 +116,49 @@ describe('InstalledEditorService', () => {
             expect.objectContaining({ version: '4.4-stable', valid: false }),
         ]);
         expect(store.replace).toHaveBeenCalledWith(releases);
+    });
+
+    it('reserves reviewed batch identities and releases them after completion', async () => {
+        const release = createRelease('4.3-stable');
+        const service = createService();
+        commandLine.commitAutomaticAliasChange.mockImplementationOnce(
+            async (_token, _installed, reserve) => {
+                const unlock = reserve([
+                    {
+                        ...release,
+                        name: 'godot43',
+                        action: 'create',
+                        management: 'automatic',
+                    },
+                ]);
+                expect(() => service.reserveOfficialInstall(release)).toThrow(
+                    'installs:selection.errors.busy',
+                );
+                unlock();
+                return { preferences: {}, outcomes: [] };
+            },
+        );
+        await service.commitAutomaticAliasChange('reviewed-token');
+        expect(() => service.reserveOfficialInstall(release)).not.toThrow();
+    });
+
+    it('reports a lifecycle reservation to preview without changing it', async () => {
+        const release = createRelease('4.3-stable');
+        const service = createService();
+        const unlock = service.reserveOfficialInstall(release);
+        commandLine.previewAutomaticAliasChange.mockImplementationOnce(
+            async (_request, _installed, unavailable) => {
+                expect(unavailable(release)).toBe(
+                    'installs:selection.errors.busy',
+                );
+                return { items: [] };
+            },
+        );
+        await service.previewAutomaticAliasChange({
+            enabled: true,
+            mode: 'create-missing',
+        });
+        unlock();
     });
 
     it('publishes quick health only when editor validity changes', async () => {
@@ -180,6 +235,7 @@ describe('InstalledEditorService', () => {
         const service = createService();
         const managed = createRelease('4.3-stable');
         const custom = createRelease('studio-build', { source: 'custom' });
+        store.list.mockResolvedValue([managed, custom]);
 
         await service.removeEditor(managed);
         await service.removeEditor(custom);
@@ -190,6 +246,27 @@ describe('InstalledEditorService', () => {
             force: true,
         });
         expect(projectRepair.removeEditorFromProjects).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps unregister persistence inside the protected command-removal transaction', async () => {
+        const custom = createRelease('studio-build', {
+            source: 'custom',
+            managed_by_launcher: false,
+        });
+        store.list.mockResolvedValue([custom]);
+        store.remove.mockRejectedValueOnce(
+            new Error('Registration write failed'),
+        );
+        const result = await createService().removeEditor(custom);
+        expect(result).toMatchObject({
+            success: false,
+            error: 'Registration write failed',
+        });
+        await expect(
+            commandLine.withEditorRemoval.mock.results[0].value,
+        ).rejects.toThrow('Registration write failed');
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+        expect(projectRepair.removeEditorFromProjects).not.toHaveBeenCalled();
     });
 
     it('opens the platform-specific project manager executable', () => {
@@ -450,6 +527,7 @@ describe('InstalledEditorService', () => {
 
     it('reports successful deletion even when project revalidation fails afterwards', async () => {
         const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
         projectRepair.revalidateProjects.mockRejectedValueOnce(
             new Error('Project unavailable'),
         );
@@ -462,6 +540,7 @@ describe('InstalledEditorService', () => {
 
     it('keeps a completed removal successful when project editor cleanup fails', async () => {
         const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
         projectRepair.removeEditorFromProjects.mockRejectedValueOnce(
             new Error('Project unavailable'),
         );
@@ -475,6 +554,7 @@ describe('InstalledEditorService', () => {
 
     it('keeps editor files and registration when command cleanup refuses removal', async () => {
         const release = createRelease('4.3-stable');
+        store.list.mockResolvedValue([release]);
         commandLine.withEditorRemoval.mockRejectedValueOnce(
             new Error('Wrapper changed'),
         );
@@ -485,6 +565,107 @@ describe('InstalledEditorService', () => {
         });
         expect(fsMocks.promises.rm).not.toHaveBeenCalled();
         expect(store.remove).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        'editor_path',
+        'install_path',
+        'source',
+        'managed_by_launcher',
+        'console_path',
+    ] as const)(
+        'rejects a stale single-removal snapshot with changed %s before touching commands',
+        async (field) => {
+            const release = createRelease('studio-build');
+            const replacement = {
+                ...release,
+                [field]:
+                    field === 'managed_by_launcher'
+                        ? false
+                        : field === 'source'
+                          ? 'custom'
+                          : path.resolve('replacement'),
+            };
+            store.list.mockResolvedValue([replacement]);
+            const result = await createService().removeEditor(release);
+            expect(result).toMatchObject({
+                success: false,
+                error: 'installs:selection.errors.changed',
+                releases: [replacement],
+            });
+            expect(commandLine.withEditorRemoval).not.toHaveBeenCalled();
+            expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+            expect(store.remove).not.toHaveBeenCalled();
+        },
+    );
+
+    it('rejects single removal after the registration disappears', async () => {
+        const result = await createService().removeEditor(
+            createRelease('missing'),
+        );
+        expect(result).toMatchObject({
+            success: false,
+            error: 'installs:selection.errors.changed',
+        });
+        expect(commandLine.withEditorRemoval).not.toHaveBeenCalled();
+        expect(fsMocks.promises.rm).not.toHaveBeenCalled();
+    });
+
+    it.each([false, undefined, 'true'])(
+        'does not attempt an automatic alias without an explicit true preference (%s)',
+        async (value) => {
+            preferenceMocks.getUserPreferences.mockResolvedValue({
+                auto_create_editor_aliases: value,
+            });
+            expect(
+                await createService().tryAutomaticAlias(
+                    createRelease('4.8-stable'),
+                ),
+            ).toBeUndefined();
+            expect(commandLine.createAutomaticAlias).not.toHaveBeenCalled();
+        },
+    );
+
+    it('reports automatic alias failure separately from a successful custom registration', async () => {
+        const release = createRelease('4.8-stable', { source: 'custom' });
+        manifestMocks.parseCustomEngineManifest.mockResolvedValue(release);
+        preferenceMocks.getUserPreferences.mockResolvedValue({
+            auto_create_editor_aliases: true,
+        });
+        commandLine.createAutomaticAlias.mockRejectedValueOnce(
+            new Error('Command already taken'),
+        );
+        const result = await createService().registerCustomEditor(
+            '/editor/manifest.json',
+        );
+        expect(result).toMatchObject({
+            success: true,
+            commandLineAlias: {
+                name: 'godot48',
+                error: 'Command already taken',
+            },
+        });
+        expect(commandLine.createAutomaticAlias).toHaveBeenCalledWith(
+            release,
+            'godot48',
+        );
+        expect(store.put).toHaveBeenCalledWith(release);
+    });
+
+    it('preserves existing custom bindings instead of attempting automatic creation on replacement', async () => {
+        const release = createRelease('studio-build', { source: 'custom' });
+        store.list.mockResolvedValue([release]);
+        manifestMocks.parseCustomEngineManifest.mockResolvedValue(release);
+        preferenceMocks.getUserPreferences.mockResolvedValue({
+            auto_create_editor_aliases: true,
+        });
+        expect(
+            await createService().registerCustomEditor(
+                '/editor/manifest.json',
+                { replaceExisting: true },
+            ),
+        ).toMatchObject({ success: true });
+        expect(commandLine.createAutomaticAlias).not.toHaveBeenCalled();
     });
 
     /** Creates a service with isolated dependency mocks. */

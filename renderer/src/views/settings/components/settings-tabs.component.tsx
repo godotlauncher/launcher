@@ -7,6 +7,7 @@ import {
     Plug,
     RefreshCw,
     SlidersHorizontal,
+    Terminal,
     Wrench,
 } from 'lucide-react';
 import type React from 'react';
@@ -18,6 +19,7 @@ type Translate = (key: string) => string;
 const settingsTabTestIds: Record<SettingsTab, string> = {
     projects: 'tabProjects',
     installs: 'tabInstalls',
+    commandLine: 'tabCommandLine',
     exportTemplates: 'tabExportTemplates',
     appearance: 'tabAppearance',
     behavior: 'tabBehavior',
@@ -30,6 +32,7 @@ const settingsTabTestIds: Record<SettingsTab, string> = {
 const settingsTabIcons = {
     projects: Folder,
     installs: Download,
+    commandLine: Terminal,
     exportTemplates: FolderArchive,
     appearance: Palette,
     behavior: SlidersHorizontal,

@@ -3,11 +3,13 @@ import {
     createIpcHandleTyped,
 } from '@mariodebono/di-electron';
 import type {
+    AutomaticAliasChangeRequest,
     EditorInstallOrigin,
     EditorInstallsBridge,
     EditorRemovalSelection,
     InstalledRelease,
     ReleaseSummary,
+    SelectedAliasChangeRequest,
 } from '@shared/contracts';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { EditorInstallService } from './editor-install.service.js';
@@ -45,6 +47,71 @@ export class EditorInstallsController implements EditorInstallsBridge {
         release: Pick<InstalledRelease, 'version' | 'mono'> | null,
     ) {
         return this.installedEditors.setCommandLineGodot(release);
+    }
+
+    /**
+     * Previews automatic-command choices without persisting them.
+     * @param request - Requested preference and treatment of existing commands.
+     */
+    @EditorInstallsHandler('previewAutomaticAliasChange')
+    previewAutomaticAliasChange(request: AutomaticAliasChangeRequest) {
+        return this.installedEditors.previewAutomaticAliasChange(request);
+    }
+
+    /**
+     * Commits the exact reviewed command snapshot.
+     * @param token - Opaque preview identity.
+     */
+    @EditorInstallsHandler('commitAutomaticAliasChange')
+    commitAutomaticAliasChange(token: string) {
+        return this.installedEditors.commitAutomaticAliasChange(token);
+    }
+
+    /** Reviews only the explicitly selected editors.
+     * @param request - Selected editor snapshots and command action.
+     */
+    @EditorInstallsHandler('previewSelectedAliasChange')
+    previewSelectedAliasChange(request: SelectedAliasChangeRequest) {
+        return this.installedEditors.previewSelectedAliasChange(request);
+    }
+    /** Applies selected command changes without changing preferences.
+     * @param token - Single-use reviewed snapshot identity.
+     */
+    @EditorInstallsHandler('commitSelectedAliasChange')
+    commitSelectedAliasChange(token: string) {
+        return this.installedEditors.commitSelectedAliasChange(token);
+    }
+
+    /** Gets all named command registrations. */
+    @EditorInstallsHandler('getCommandLineAliases')
+    getCommandLineAliases() {
+        return this.installedEditors.getCommandLineAliases();
+    }
+
+    /**
+     * Checks a draft command without writing it.
+     * @param release - Registered version and flavour.
+     * @param name - Literal draft command.
+     */
+    @EditorInstallsHandler('checkCommandLineAlias')
+    checkCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string,
+    ) {
+        return this.installedEditors.checkCommandLineAlias(release, name);
+    }
+
+    /**
+     * Applies creation or removal of one named command.
+     * @param release - Registered version and flavour.
+     * @param name - New command or null for removal.
+     */
+    @EditorInstallsHandler('setCommandLineAlias')
+    setCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string | null,
+    ) {
+        return this.installedEditors.setCommandLineAlias(release, name);
     }
 
     /** Gets every registered editor. */

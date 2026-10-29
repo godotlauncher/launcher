@@ -3,6 +3,7 @@
     "tabs": {
         "projects": "项目",
         "installs": "安装",
+        "commandLine": "命令行",
         "appearance": "外观",
         "behavior": "行为",
         "tools": "工具",

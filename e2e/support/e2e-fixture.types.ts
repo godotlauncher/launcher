@@ -27,7 +27,8 @@ export type OnboardingFixtureStep =
     | 'welcome'
     | 'appearance'
     | 'setup'
-    | 'preferences';
+    | 'preferences'
+    | 'command-line';
 
 export type StubbedAppDataOptions = {
     preferences?: UserPreferences;

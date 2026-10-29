@@ -1,4 +1,8 @@
-import type { EditorRemovalSelection } from '@shared/contracts';
+import type {
+    EditorRemovalSelection,
+    InstalledRelease,
+    SelectedAliasChangePreview,
+} from '@shared/contracts';
 import {
     CheckSquare,
     EyeOff,
@@ -6,9 +10,10 @@ import {
     FilePlus2,
     HardDriveDownload,
     SquareMinus,
+    Terminal,
     Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     ActionMenu,
@@ -20,6 +25,7 @@ import { EmptyState } from '../components/ui/empty-state.component.tsx';
 import { SelectionToolbar } from '../components/ui/selection-toolbar.component';
 import { WaitingForDialogOverlay } from '../components/waiting-for-dialog-overlay.component';
 import { useAlerts } from '../hooks/alerts.hook';
+import { useNotifications } from '../hooks/notifications.hook';
 import { usePreferences } from '../hooks/preferences.hook';
 import { useProjects } from '../hooks/projects.hook';
 import { useRelease } from '../hooks/release.hook';
@@ -29,6 +35,8 @@ import { InstalledReleaseList } from './installs/components/installed-release-li
 import { InstallsHeader } from './installs/components/installs-header.component';
 import { InstallsSearchEmptyState } from './installs/components/installs-search-empty-state.component';
 import { RemoveEditorsConfirm } from './installs/components/remove-editors-confirm.component';
+import { SelectedAliasChangeConfirm } from './installs/components/selected-alias-change-confirm.component';
+import { useCommandLineAliases } from './installs/hooks/command-line-aliases.hook';
 import { useCommandLineGodot } from './installs/hooks/command-line-godot.hook';
 import { useCustomEditorManifestDrop } from './installs/hooks/custom-editor-manifest-drop.hook';
 import { useCustomEditorManifestWorkflow } from './installs/hooks/custom-editor-manifest-workflow.hook';
@@ -45,6 +53,7 @@ import {
 } from './installs/installs-view.model';
 import { CustomEditorManifestDrawer } from './sub-views/custom-editor-manifest-drawer.subview';
 import { InstallEditorDrawer } from './sub-views/install-editor-drawer.subview.tsx';
+import { InstallSettingsDrawer } from './sub-views/install-settings-drawer.subview';
 
 export { createReleaseActions };
 
@@ -75,6 +84,8 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         'dialogs',
         'installEditor',
     ]);
+    const [settingsEditor, setSettingsEditor] =
+        useState<InstalledRelease | null>(null);
     const [textSearch, setTextSearch] = useState<string>('');
     const [localInstallOpen, setLocalInstallOpen] = useState<boolean>(false);
     const installOpen = controlledInstallOpen ?? localInstallOpen;
@@ -101,9 +112,11 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         useState<CustomEditorMenuState | null>(null);
     const [selectionMenu, setSelectionMenu] =
         useState<ActionMenuAnchorRect | null>(null);
+    const [bulkAliasPending, setBulkAliasPending] = useState(false);
+    const { showNotification } = useNotifications();
     const [removingKeys, setRemovingKeys] = useState(new Set<string>());
 
-    const { addAlert, addCustomConfirm } = useAlerts();
+    const { addAlert, addCustomConfirm, hasOpenDialog } = useAlerts();
     const { preferences } = usePreferences();
     const { projects } = useProjects();
     const {
@@ -118,6 +131,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         hasError,
     } = useRelease();
     const commandLine = useCommandLineGodot(installedReleases);
+    const aliasState = useCommandLineAliases(installedReleases);
     const {
         isReleaseActionBusy,
         runReleaseAction,
@@ -132,14 +146,26 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         reinstallRelease,
         removeRelease,
         commandLineDefaultKey: commandLine.defaultKey,
+        commandLineAliases: aliasState.aliases,
         getProjectUsageCount: (release) =>
             getEditorProjectUsageCount(release, projects),
     });
+    const filteredRows = getFilteredInstalledReleaseRows(
+        installedReleases,
+        downloadingReleases,
+        textSearch,
+    );
     const selection = useEditorSelection({
         installed: installedReleases,
+        shown: filteredRows,
+        filterKey: textSearch,
         downloading: downloadingReleases,
         projects,
-        isBusy: isReleaseActionBusy,
+        isBusy: (release) =>
+            commandLine.pendingKey !== null ||
+            aliasState.pending ||
+            bulkAliasPending ||
+            isReleaseActionBusy(release),
     });
 
     /**
@@ -168,11 +194,12 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         if (selection.selections.length === 0) return;
         const selections = selection.selections;
         addCustomConfirm(
-            t('selection.confirm.title'),
+            t('selection.confirm.countTitle', { count: selections.length }),
             (renderLayout, close) => (
                 <RemoveEditorsConfirm
                     selections={selections}
                     commandLineDefaultKey={commandLine.defaultKey}
+                    commandLineAliases={aliasState.aliases}
                     projects={projects}
                     t={t}
                     onRemove={handleRemoveSelected}
@@ -185,6 +212,121 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
             'warning',
         );
     };
+    /** Opens a compact review for selected named commands.
+     * @param mode - Create missing commands or remove existing commands.
+     */
+    const confirmSelectedAliases = (mode: 'create-missing' | 'remove') => {
+        const editors = selection.selections.map(({ release }) => release);
+        if (!editors.length) return;
+        addCustomConfirm(
+            t(
+                `selection.aliases.${mode === 'remove' ? 'removeTitle' : 'createTitle'}`,
+            ),
+            (renderLayout, close) => (
+                <SelectedAliasChangeConfirm
+                    editors={editors}
+                    mode={mode}
+                    renderLayout={renderLayout}
+                    close={close}
+                    initialPreview={
+                        selectionPreview?.key === aliasPreviewKey
+                            ? selectionPreview.previews?.find(
+                                  (preview) => preview.mode === mode,
+                              )
+                            : undefined
+                    }
+                    onRetry={aliasState.refresh}
+                    onBusy={setBulkAliasPending}
+                    onComplete={async (result) => {
+                        await aliasState.refresh();
+                        if (result.pathChanged)
+                            showNotification({
+                                title: t('selection.aliases.createTitle'),
+                                description: t('aliases.pathChanged'),
+                            });
+                    }}
+                />
+            ),
+            [],
+            undefined,
+            mode === 'remove' ? 'warning' : undefined,
+        );
+    };
+    const selectedEditors = selection.selections.map(({ release }) => release);
+    const aliasPreviewKey = JSON.stringify({
+        editors: selectedEditors,
+        aliases: aliasState.aliases,
+    });
+    const [selectionPreview, setSelectionPreview] = useState<{
+        key: string;
+        previews?: SelectedAliasChangePreview[];
+        error?: boolean;
+    }>();
+    const selectionRequest = useRef<
+        | { key: string; promise: Promise<SelectedAliasChangePreview[]> }
+        | undefined
+    >(undefined);
+    useEffect(() => {
+        if (
+            !selectionMenu ||
+            selectedEditors.length === 0 ||
+            !aliasState.loaded
+        )
+            return;
+        let active = true;
+        if (selectionRequest.current?.key !== aliasPreviewKey)
+            selectionRequest.current = {
+                key: aliasPreviewKey,
+                promise: Promise.all(
+                    (['create-missing', 'remove'] as const).map((mode) =>
+                        editorInstallsBridge.previewSelectedAliasChange({
+                            mode,
+                            editors: JSON.parse(aliasPreviewKey).editors,
+                        }),
+                    ),
+                ),
+            };
+        void selectionRequest.current.promise
+            .then((previews) => {
+                if (active)
+                    setSelectionPreview({ key: aliasPreviewKey, previews });
+            })
+            .catch(() => {
+                if (active)
+                    setSelectionPreview({ key: aliasPreviewKey, error: true });
+            });
+        return () => {
+            active = false;
+        };
+    }, [
+        selectionMenu,
+        aliasPreviewKey,
+        aliasState.loaded,
+        selectedEditors.length,
+    ]);
+    const reviewedSelection =
+        selectionPreview?.key === aliasPreviewKey
+            ? selectionPreview
+            : undefined;
+    const aliasCountsLoading = selectedEditors.length > 0 && !reviewedSelection;
+    const missingAliasCount =
+        reviewedSelection?.previews?.[0].items.filter(
+            (item) => item.action === 'create',
+        ).length ??
+        (selectedEditors.length === 0
+            ? 0
+            : reviewedSelection?.error
+              ? '?'
+              : '...');
+    const removableAliasCount =
+        reviewedSelection?.previews?.[1].items.filter(
+            (item) => item.action === 'remove',
+        ).length ??
+        (selectedEditors.length === 0
+            ? 0
+            : reviewedSelection?.error
+              ? '?'
+              : '...');
     const { registerManifest, handleAddCustomEngine } =
         useCustomEditorManifestWorkflow({
             t,
@@ -203,11 +345,6 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
         handleDrop,
     } = useCustomEditorManifestDrop({ registerManifest });
 
-    const filteredRows = getFilteredInstalledReleaseRows(
-        installedReleases,
-        downloadingReleases,
-        textSearch,
-    );
     const viewState = getInstallsViewState({
         installedReleaseCount: installedReleases.length,
         downloadingReleaseCount: downloadingReleases.length,
@@ -336,10 +473,19 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         ) : (
                             <InstalledReleaseList
                                 rows={filteredRows}
+                                commandLineAliases={
+                                    aliasState.loaded ? aliasState.aliases : []
+                                }
                                 commandLineDefaultKey={commandLine.defaultKey}
-                                commandLinePendingKey={commandLine.pendingKey}
-                                commandLineBusy={commandLine.busy}
+                                commandLinePendingKey={
+                                    commandLine.pendingKey ??
+                                    aliasState.pendingKey
+                                }
+                                commandLineBusy={
+                                    commandLine.busy || aliasState.pending
+                                }
                                 onCommandLineSelect={commandLine.select}
+                                onSettings={setSettingsEditor}
                                 t={t}
                                 isReleaseActionBusy={(release, action) =>
                                     removingKeys.has(
@@ -357,6 +503,7 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                                         : selection.selectableKeys
                                 }
                                 onToggleEditor={selection.toggleEditor}
+                                onToggleGroup={selection.toggleGroup}
                                 onRetry={(release) => void handleRetry(release)}
                                 onReinstall={(release) =>
                                     void handleReinstall(release)
@@ -408,6 +555,36 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         disabled: selection.selections.length === 0,
                         onSelect: selection.clear,
                     },
+                    { type: 'separator', key: 'selection-command-divider' },
+                    {
+                        key: 'create-aliases',
+                        icon: <Terminal size={16} aria-hidden="true" />,
+                        label: t('selection.aliases.create', {
+                            count: missingAliasCount,
+                        }),
+                        disabled:
+                            selectedEditors.length === 0 ||
+                            aliasCountsLoading ||
+                            missingAliasCount === 0 ||
+                            !aliasState.loaded ||
+                            bulkAliasPending,
+                        onSelect: () =>
+                            confirmSelectedAliases('create-missing'),
+                    },
+                    {
+                        key: 'remove-aliases',
+                        icon: <Terminal size={16} aria-hidden="true" />,
+                        label: t('selection.aliases.remove', {
+                            count: removableAliasCount,
+                        }),
+                        disabled:
+                            selectedEditors.length === 0 ||
+                            aliasCountsLoading ||
+                            removableAliasCount === 0 ||
+                            !aliasState.loaded ||
+                            bulkAliasPending,
+                        onSelect: () => confirmSelectedAliases('remove'),
+                    },
                     { type: 'separator', key: 'selection-remove-divider' },
                     {
                         key: 'remove-selected',
@@ -420,7 +597,11 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                         onSelect: confirmRemoveSelected,
                     },
                 ]}
-                onClose={() => setSelectionMenu(null)}
+                onClose={() => {
+                    setSelectionMenu(null);
+                    setSelectionPreview(undefined);
+                    selectionRequest.current = undefined;
+                }}
             />
             <ActionMenu
                 open={customEditorMenu !== null}
@@ -449,6 +630,20 @@ export const InstallsView: React.FC<InstallsViewProps> = ({
                     },
                 ]}
                 onClose={() => setCustomEditorMenu(null)}
+            />
+            <InstallSettingsDrawer
+                release={settingsEditor}
+                installed={installedReleases}
+                commandLine={commandLine}
+                aliasState={aliasState}
+                covered={hasOpenDialog}
+                isBusy={(release) =>
+                    removingKeys.has(getReleaseActionKey(release)) ||
+                    isReleaseActionBusy(release)
+                }
+                onOpenChange={(open) => {
+                    if (!open) setSettingsEditor(null);
+                }}
             />
             <InstallEditorDrawer
                 open={installOpen}

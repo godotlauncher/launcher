@@ -32,10 +32,12 @@ describe('onboarding model', () => {
         expect(parseOnboardingStepId(null)).toBe('welcome');
     });
 
-    it('moves within the four onboarding steps without overflowing', () => {
+    it('moves within the five onboarding steps without overflowing', () => {
         expect(getNextOnboardingStep('welcome')).toBe('appearance');
         expect(getNextOnboardingStep('appearance')).toBe('setup');
-        expect(getNextOnboardingStep('preferences')).toBe('preferences');
+        expect(getNextOnboardingStep('preferences')).toBe('command-line');
+        expect(getNextOnboardingStep('command-line')).toBe('command-line');
+        expect(getPreviousOnboardingStep('command-line')).toBe('preferences');
         expect(getPreviousOnboardingStep('preferences')).toBe('setup');
         expect(getPreviousOnboardingStep('setup')).toBe('appearance');
         expect(getPreviousOnboardingStep('welcome')).toBe('welcome');

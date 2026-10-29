@@ -63,6 +63,13 @@ function migrateUserPreferences(
     return { updated, value: nextPrefs };
 }
 
+/** Reads merged preferences without persisting migration or default values. */
+export async function readUserPreferencesSnapshot(): Promise<UserPreferences> {
+    const { prefsPath } = getDefaultDirs();
+    const defaults = await getDefaultPrefs();
+    return (await readPrefsSnapshotFromDisk(prefsPath, defaults)).merged;
+}
+
 export async function getUserPreferences(): Promise<UserPreferences> {
     const { prefsPath } = getDefaultDirs();
 
@@ -90,6 +97,11 @@ export async function getUserPreferences(): Promise<UserPreferences> {
 export async function setUserPreferences(
     prefs: UserPreferences,
 ): Promise<UserPreferences> {
+    if (
+        prefs.auto_create_editor_aliases !== undefined &&
+        typeof prefs.auto_create_editor_aliases !== 'boolean'
+    )
+        throw new Error('Invalid automatic editor alias preference');
     if (
         prefs.auto_open_code_editor !== undefined &&
         typeof prefs.auto_open_code_editor !== 'boolean'

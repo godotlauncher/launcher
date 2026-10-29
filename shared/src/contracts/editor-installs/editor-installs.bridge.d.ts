@@ -6,6 +6,17 @@ import type {
     RemovedReleaseResult,
 } from '../releases/index.js';
 import type {
+    AutomaticAliasChangePreview,
+    AutomaticAliasChangeRequest,
+    AutomaticAliasChangeResult,
+    CommandLineAliasAvailability,
+    CommandLineAliasesState,
+    CommandLineAliasResult,
+    SelectedAliasChangePreview,
+    SelectedAliasChangeRequest,
+    SelectedAliasChangeResult,
+} from './command-line-alias.types.js';
+import type {
     CommandLineGodotResult,
     CommandLineGodotState,
 } from './command-line-godot.types.js';
@@ -25,6 +36,39 @@ export type CancelEditorInstallResult = {
 
 /** Defines installed-editor requests available to the renderer. */
 export type EditorInstallsBridge = {
+    /** Reviews commands belonging only to selected registrations.
+     * @param request - Mode and editor snapshots selected by the user.
+     */
+    previewSelectedAliasChange(
+        request: SelectedAliasChangeRequest,
+    ): Promise<SelectedAliasChangePreview>;
+    /** Applies a reviewed selection without changing the global preference.
+     * @param token - Single-use reviewed snapshot identity.
+     */
+    commitSelectedAliasChange(
+        token: string,
+    ): Promise<SelectedAliasChangeResult>;
+    /** Previews a preference change without changing commands or preferences. */
+    previewAutomaticAliasChange(
+        request: AutomaticAliasChangeRequest,
+    ): Promise<AutomaticAliasChangePreview>;
+    /** Applies the exact reviewed snapshot after checking it is still current. */
+    commitAutomaticAliasChange(
+        token: string,
+    ): Promise<AutomaticAliasChangeResult>;
+    /** Gets registrations after reconciling interrupted command operations. */
+    getCommandLineAliases(): Promise<CommandLineAliasesState>;
+    /** Checks a candidate without reserving it or changing PATH. */
+    checkCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string,
+    ): Promise<CommandLineAliasAvailability>;
+    /** Creates one command or removes only this editor's owned alias. */
+    setCommandLineAlias(
+        release: Pick<InstalledRelease, 'version' | 'mono'>,
+        name: string | null,
+    ): Promise<CommandLineAliasResult>;
+
     /** Gets the current command-line editor selection. */
     getCommandLineGodot(): Promise<CommandLineGodotState>;
 

@@ -13,7 +13,13 @@ interface AlertProps {
 export type ConfirmLayout = (
     body: ReactNode,
     footer: ReactNode,
-    options?: Pick<DialogProps, 'initialFocusRef' | 'onRequestClose'>,
+    options?: Pick<
+        DialogProps,
+        | 'initialFocusRef'
+        | 'onRequestClose'
+        | 'panelClassName'
+        | 'bodyClassName'
+    >,
 ) => ReactNode;
 
 export type ConfirmContent =

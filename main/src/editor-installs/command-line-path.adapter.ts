@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import type { CommandLineGodotResult } from '@shared/contracts';
@@ -57,11 +58,16 @@ export class CommandLinePathAdapter {
         );
     }
 
-    /** Reports actual PATH setup changes and any existing command taking precedence. */
-    async register(): Promise<PathRegistrationResult> {
-        if (this.options.platform === 'win32') return this.registerWindows();
+    /**
+     * Reports PATH setup changes and existing command precedence.
+     * @param command - Portable command name, defaulting to godot.
+     */
+    async register(command = 'godot'): Promise<PathRegistrationResult> {
+        this.validateCommand(command);
+        if (this.options.platform === 'win32')
+            return this.registerWindows(command);
         const shell = path.basename(this.options.shell);
-        const conflict = await this.findShellConflict(shell);
+        const conflict = await this.findShellConflict(shell, command);
         let pathChanged = false;
         if (shell === 'zsh') {
             const directory = await this.resolveZshDirectory();
@@ -122,6 +128,215 @@ export class CommandLinePathAdapter {
             }
         }
         return { conflict, pathChanged };
+    }
+
+    /**
+     * Resolves a validated command in the shared per-user bin directory.
+     * @param command - Literal portable command name.
+     */
+    pathForCommand(command: string): string {
+        this.validateCommand(command);
+        const paths =
+            this.options.platform === 'win32' ? path.win32 : path.posix;
+        return paths.join(
+            this.binDirectory,
+            this.options.platform === 'win32' ? `${command}.cmd` : command,
+        );
+    }
+
+    /**
+     * Checks command resolution without changing PATH or executing the editor.
+     * @param command - Literal portable command name.
+     */
+    async findConflict(command: string): Promise<string | null> {
+        this.validateCommand(command);
+        if (this.options.platform !== 'win32')
+            return this.findShellConflict(
+                path.basename(this.options.shell),
+                command,
+            );
+        const script = `$ErrorActionPreference = 'Stop'; $paths = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'); foreach ($entry in ([Environment]::ExpandEnvironmentVariables($paths) -split ';')) { if ([string]::IsNullOrWhiteSpace($entry)) { continue }; foreach ($ext in @('.com','.exe','.bat','.cmd')) { $candidate = Join-Path $entry ('${command}' + $ext); if (Test-Path -LiteralPath $candidate -PathType Leaf) { Write-Output $candidate; return } } }`;
+        const executable = path.win32.join(
+            this.options.env.SystemRoot || 'C:\\Windows',
+            'System32',
+            'WindowsPowerShell',
+            'v1.0',
+            'powershell.exe',
+        );
+        const { stdout } = await this.execute(
+            executable,
+            [
+                '-NoLogo',
+                '-NoProfile',
+                '-NonInteractive',
+                '-EncodedCommand',
+                Buffer.from(script, 'utf16le').toString('base64'),
+            ],
+            {
+                env: this.options.env,
+                timeout: 10000,
+                windowsHide: true,
+                maxBuffer: 64 * 1024,
+            },
+        );
+        const resolved = stdout.trim();
+        return resolved &&
+            resolved.toLowerCase() !==
+                this.pathForCommand(command).toLowerCase()
+            ? resolved
+            : null;
+    }
+
+    /**
+     * Checks a request's commands with one process per shell startup mode.
+     * @param commands - Literal portable command names, validated before lookup.
+     */
+    async findConflicts(
+        commands: string[],
+    ): Promise<Map<string, string | null>> {
+        for (const command of commands) this.validateCommand(command);
+        const pending = [...new Set(commands)];
+        const conflicts = new Map<string, string | null>();
+        if (!pending.length) return conflicts;
+        const shell = path.basename(this.options.shell);
+        if (
+            this.options.platform !== 'win32' &&
+            !['bash', 'zsh', 'sh', 'fish'].includes(shell)
+        ) {
+            for (const command of pending)
+                conflicts.set(command, await this.findConflict(command));
+            return conflicts;
+        }
+        try {
+            for (const mode of this.options.platform === 'win32'
+                ? ['windows']
+                : ['-ic', '-lic']) {
+                const names = pending.filter(
+                    (command) => !conflicts.get(command),
+                );
+                if (!names.length) break;
+                const marker = `GODOT_LOOKUP_${randomUUID().replaceAll('-', '')}`;
+                let executable = this.options.shell;
+                let args: string[];
+                if (mode === 'windows') {
+                    executable = path.win32.join(
+                        this.options.env.SystemRoot || 'C:\\Windows',
+                        'System32',
+                        'WindowsPowerShell',
+                        'v1.0',
+                        'powershell.exe',
+                    );
+                    const script = `$ErrorActionPreference = 'Stop'; $paths = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User'); foreach ($name in @(${names.map((name) => `'${name}'`).join(',')})) { $resolved = ''; foreach ($entry in ([Environment]::ExpandEnvironmentVariables($paths) -split ';')) { if ([string]::IsNullOrWhiteSpace($entry)) { continue }; foreach ($ext in @('.com','.exe','.bat','.cmd')) { $candidate = Join-Path $entry ($name + $ext); if (Test-Path -LiteralPath $candidate -PathType Leaf) { $resolved = $candidate; break } }; if ($resolved) { break } }; [Console]::Write('${marker}' + [char]0 + $name + [char]0 + $resolved + [char]0 + '0' + [char]0 + '${marker}' + [char]0) }`;
+                    args = [
+                        '-NoLogo',
+                        '-NoProfile',
+                        '-NonInteractive',
+                        '-EncodedCommand',
+                        Buffer.from(script, 'utf16le').toString('base64'),
+                    ];
+                } else {
+                    const printf =
+                        shell === 'sh' ? 'command printf' : 'builtin printf';
+                    const script = names
+                        .map((command) => {
+                            const lookup =
+                                shell === 'fish'
+                                    ? `if type -t ${command} | string match -q function; builtin printf '%s\\n' '${command} (Fish function or alias)'; else; command -s ${command}; end`
+                                    : `command -v ${command}`;
+                            return `${printf} '${marker}\\0${command}\\0'; ${lookup}; ${printf} '\\0%s\\0${marker}\\0' "${shell === 'fish' ? '$status' : '$?'}"`;
+                        })
+                        .join('; ');
+                    args = [mode, script];
+                }
+                const { stdout } = await this.execute(executable, args, {
+                    env: this.options.env,
+                    timeout: mode === 'windows' ? 10000 : 5000,
+                    windowsHide: mode === 'windows',
+                    maxBuffer: 64 * 1024,
+                });
+                const results = this.parseLookupBatch(
+                    stdout,
+                    marker,
+                    names,
+                    shell,
+                );
+                for (const [command, resolved] of results) {
+                    const managed = this.pathForCommand(command);
+                    conflicts.set(
+                        command,
+                        resolved &&
+                            (mode === 'windows'
+                                ? resolved.toLowerCase() !==
+                                  managed.toLowerCase()
+                                : resolved !== managed)
+                            ? resolved
+                            : null,
+                    );
+                }
+            }
+            return conflicts;
+        } catch (error) {
+            throw new Error(
+                'Could not check the terminal PATH. Check your shell configuration and try again.',
+                { cause: error },
+            );
+        }
+    }
+
+    /**
+     * Requires one complete, successful lookup record for every requested name.
+     * @param stdout - Process output, possibly including startup messages.
+     * @param marker - Unpredictable delimiter for this process.
+     * @param commands - Names expected in their original lookup order.
+     * @param shell - Shell filename determining missing-command statuses.
+     */
+    private parseLookupBatch(
+        stdout: string,
+        marker: string,
+        commands: string[],
+        shell: string,
+    ): Map<string, string | null> {
+        const results = new Map<string, string | null>();
+        const delimiter = `${marker}\0`;
+        let offset = stdout.indexOf(delimiter);
+        if (offset < 0) throw new Error('Missing command lookup results.');
+        for (const command of commands) {
+            if (!stdout.startsWith(`${delimiter}${command}\0`, offset))
+                throw new Error('Invalid command lookup result.');
+            const start = offset + delimiter.length + command.length + 1;
+            const end = stdout.indexOf('\0', start);
+            const statusEnd = stdout.indexOf('\0', end + 1);
+            if (
+                end < 0 ||
+                statusEnd < 0 ||
+                !stdout.startsWith(delimiter, statusEnd + 1)
+            )
+                throw new Error('Incomplete command lookup result.');
+            const status = stdout.slice(end + 1, statusEnd);
+            if (
+                !['0', '1', ...(shell === 'fish' ? ['127'] : [])].includes(
+                    status,
+                )
+            )
+                throw new Error('Command lookup failed.');
+            const resolved = stdout.slice(start, end).trim();
+            if (status !== '0' && resolved)
+                throw new Error('Invalid missing-command lookup result.');
+            results.set(command, status === '0' && resolved ? resolved : null);
+            offset = statusEnd + 1 + delimiter.length;
+        }
+        if (stdout.slice(offset).includes(delimiter))
+            throw new Error('Unexpected command lookup results.');
+        return results;
+    }
+
+    /**
+     * Rejects names before they enter platform lookup scripts or filenames.
+     * @param command - Untrusted requested command name.
+     */
+    private validateCommand(command: string): void {
+        if (!/^[a-z][a-z0-9-]{0,47}$/.test(command))
+            throw new Error('Invalid command name.');
     }
 
     /** Resolves Zsh's startup directory after it reads the user's .zshenv. */
@@ -190,16 +405,22 @@ export class CommandLinePathAdapter {
     /**
      * Checks the user's interactive shell without executing any Godot command.
      * @param shell - Shell filename used to select lookup syntax.
+     * @param requestedCommand - Portable name being checked.
      */
-    private async findShellConflict(shell: string): Promise<string | null> {
+    private async findShellConflict(
+        shell: string,
+        requestedCommand = 'godot',
+    ): Promise<string | null> {
+        const command = requestedCommand;
         if (!['bash', 'zsh', 'sh', 'fish'].includes(shell)) {
             for (const directory of (this.options.env.PATH || '').split(
                 path.delimiter,
             )) {
-                const candidate = path.resolve(directory || '.', 'godot');
+                const candidate = path.resolve(directory || '.', command);
                 try {
                     await fs.access(candidate, fs.constants.X_OK);
-                    if (candidate !== this.wrapperPath) return candidate;
+                    if (candidate !== this.pathForCommand(command))
+                        return candidate;
                     return null;
                 } catch (error) {
                     if (
@@ -219,8 +440,8 @@ export class CommandLinePathAdapter {
                     [
                         mode,
                         shell === 'fish'
-                            ? "if type -t godot | string match -q function; printf '%s\\n' 'godot (Fish function or alias)'; else; command -s godot; end"
-                            : 'command -v godot',
+                            ? `if type -t ${command} | string match -q function; printf '%s\\n' '${command} (Fish function or alias)'; else; command -s ${command}; end`
+                            : `command -v ${command}`,
                     ],
                     {
                         env: this.options.env,
@@ -228,8 +449,16 @@ export class CommandLinePathAdapter {
                         maxBuffer: 64 * 1024,
                     },
                 );
-                const command = result.stdout.trim().split('\n').at(-1)?.trim();
-                if (command && command !== this.wrapperPath) return command;
+                const resolved = result.stdout
+                    .trim()
+                    .split('\n')
+                    .at(-1)
+                    ?.trim();
+                if (
+                    resolved &&
+                    resolved !== this.pathForCommand(requestedCommand)
+                )
+                    return resolved;
             } catch (error) {
                 // Fish uses 127 for an absent external command; other shells use 1.
                 const code = (error as { code?: number }).code;
@@ -272,8 +501,13 @@ export class CommandLinePathAdapter {
         });
     }
 
-    /** Preserves the raw user registry PATH and broadcasts changes without elevation. */
-    private async registerWindows(): Promise<PathRegistrationResult> {
+    /**
+     * Preserves the raw registry PATH and broadcasts changes without elevation.
+     * @param command - Portable name to check for precedence.
+     */
+    private async registerWindows(
+        command = 'godot',
+    ): Promise<PathRegistrationResult> {
         if (this.options.fixture) {
             const file = path.join(this.binDirectory, '.fixture-user-path');
             const pathChanged =
@@ -306,9 +540,9 @@ try {
   foreach ($entry in ($effective -split ';')) {
     if ([string]::IsNullOrWhiteSpace($entry)) { continue }
     foreach ($extension in @('.com', '.exe', '.bat', '.cmd')) {
-      $candidate = Join-Path $entry ('godot' + $extension)
+      $candidate = Join-Path $entry ('${command}' + $extension)
       if (Test-Path -LiteralPath $candidate -PathType Leaf) {
-        if ($candidate -ine (Join-Path $bin 'godot.cmd')) { Write-Output $candidate }
+        if ($candidate -ine (Join-Path $bin '${command}.cmd')) { Write-Output $candidate }
         return
       }
     }

@@ -1,4 +1,5 @@
 import type {
+    AutomaticCommandLineAliasResult,
     EditorCatalogRelease,
     EditorCatalogResult,
     EditorInstallOrigin,
@@ -11,6 +12,7 @@ import type {
     RemoveEditorsResult,
 } from '@shared/contracts';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     appBridge,
     editorInstallsBridge,
@@ -18,6 +20,7 @@ import {
 } from '../renderer.bridge.ts';
 import { useEditorCatalog } from './editor-catalog.hook.ts';
 import { mapEditorCatalogResult } from './editor-catalog-release.mapper.ts';
+import { useNotifications } from './notifications.hook';
 
 type ReleaseContext = {
     catalogueReleases: EditorCatalogRelease[];
@@ -49,6 +52,7 @@ type ReleaseContext = {
         release?: InstalledRelease;
         releases?: InstalledRelease[];
         duplicate?: InstalledRelease;
+        commandLineAlias?: AutomaticCommandLineAliasResult;
     }>;
     getInstalledRelease: (
         version: string,
@@ -85,6 +89,31 @@ type ReleaseProviderProps = React.PropsWithChildren;
 export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
     children,
 }) => {
+    const { t } = useTranslation('installs');
+    const { showNotification } = useNotifications();
+    /**
+     * Reports command setup independently of a successful editor install.
+     * @param result - Optional automatic alias outcome from the completed operation.
+     */
+    const reportAutomaticAlias = (result?: AutomaticCommandLineAliasResult) => {
+        if (!result) return;
+        showNotification({
+            title: t(
+                result.error
+                    ? 'aliases.automatic.failed'
+                    : 'aliases.automatic.created',
+                { command: result.name },
+            ),
+            description:
+                result.error ||
+                (result.pathChanged
+                    ? t('aliases.automatic.restart')
+                    : undefined),
+            tone: result.error ? 'warning' : 'success',
+            durationMs: result.error ? 15000 : 6000,
+        });
+    };
+
     const { getCatalog, refreshCatalog } = useEditorCatalog();
     const [hasError, setHasError] = React.useState<string>();
     const [catalogueReleases, setCatalogueReleases] = React.useState<
@@ -182,6 +211,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
 
                 if (progress.stage === 'complete' && progress.release) {
                     upsertInstalledRelease(progress.release);
+                    reportAutomaticAlias(progress.commandLineAlias);
                 }
             },
         );
@@ -374,6 +404,7 @@ export const ReleaseProvider: React.FC<ReleaseProviderProps> = ({
         );
 
         if (result.success) {
+            reportAutomaticAlias(result.commandLineAlias);
             setInstalledReleases(
                 result.releases ??
                     (await editorInstallsBridge.getInstalledEditors()),

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import type { ConfirmLayout } from '../../../components/confirm.component';
 
 /**
@@ -13,7 +13,7 @@ export function CommandLineGodotConfirm({
     close,
     renderLayout,
 }: {
-    message: string;
+    message: ReactNode;
     okLabel: string;
     cancelLabel: string;
     onConfirm: () => Promise<boolean>;

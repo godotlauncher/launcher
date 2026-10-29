@@ -233,6 +233,7 @@ suite('prefs.util', (_test) => {
                 confirm_project_remove: true,
                 post_launch_action: 'close_to_tray',
                 auto_open_code_editor: true,
+                auto_create_editor_aliases: false,
                 first_run: true,
                 windows_enable_symlinks: false,
                 linux_credential_storage: 'automatic',
@@ -283,6 +284,7 @@ suite('prefs.util', (_test) => {
                 confirm_project_remove: true,
                 post_launch_action: 'close_to_tray',
                 auto_open_code_editor: true,
+                auto_create_editor_aliases: false,
                 first_run: true,
                 windows_enable_symlinks: false,
                 linux_credential_storage: 'automatic',
@@ -291,6 +293,24 @@ suite('prefs.util', (_test) => {
                 language: 'system',
             });
         });
+    });
+
+    it.each([
+        [undefined, false],
+        [false, false],
+        [true, true],
+        ['true', false],
+        [1, false],
+    ])('normalises automatic aliases %s to %s', async (value, expected) => {
+        fsMock.existsSync.mockReturnValueOnce(true);
+        fsPromisesMock.readFile.mockResolvedValueOnce(
+            JSON.stringify({ auto_create_editor_aliases: value }),
+        );
+        const prefs = await readPrefsFromDisk(
+            '/home/user/.godot/prefs.json',
+            await getDefaultPrefs(),
+        );
+        expect(prefs.auto_create_editor_aliases).toBe(expected);
     });
 
     it.each([
@@ -442,6 +462,7 @@ suite('prefs.util', (_test) => {
         const prefs = await readPrefsFromDisk(prefsPath, { a: 1 });
         expect(prefs).toEqual({
             a: 1,
+            auto_create_editor_aliases: false,
             projects_view_mode: 'cards',
             projects_group_order: ['pinned', 'new', 'recents'],
             projects_tag_filter: [],
@@ -479,6 +500,7 @@ suite('prefs.util', (_test) => {
         expect(fsMock.existsSync).toBeCalledWith(prefsPath);
         expect(prefs).toEqual({
             a: 1,
+            auto_create_editor_aliases: false,
             projects_view_mode: 'cards',
             projects_group_order: ['pinned', 'new', 'recents'],
             projects_tag_filter: [],
@@ -496,6 +518,7 @@ suite('prefs.util', (_test) => {
 
         expect(prefs).toEqual({
             a: 1,
+            auto_create_editor_aliases: false,
             projects_view_mode: 'cards',
             projects_group_order: ['pinned', 'new', 'recents'],
             projects_tag_filter: [],

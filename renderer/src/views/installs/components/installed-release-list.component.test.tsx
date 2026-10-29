@@ -1,9 +1,11 @@
 import type {
+    CommandLineAlias,
     InstalledRelease,
     ReleaseInstallProgress,
 } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getReleaseActionKey } from '../installs-view.model';
 import { InstalledReleaseList } from './installed-release-list.component.tsx';
 
 let installProgress: ReleaseInstallProgress | undefined;
@@ -78,6 +80,7 @@ describe('InstalledReleaseList', () => {
         expect(html).toContain('aria-label="Start the Project Manager"');
         expect(html).toContain('aria-label="Delete Release from This Device"');
         expect(html).not.toContain('btnReleaseMoreOptions');
+        expect(html).toContain('aria-label="Settings"');
     });
 
     it('uses the custom-editor removal action for valid custom rows', () => {
@@ -89,6 +92,7 @@ describe('InstalledReleaseList', () => {
         ]);
 
         expect(html).toContain('aria-label="Remove Custom Editor"');
+        expect(html).toContain('aria-label="Settings"');
         expect(html).not.toContain(
             'aria-label="Delete Release from This Device"',
         );
@@ -113,6 +117,53 @@ describe('InstalledReleaseList', () => {
         expect(html).not.toContain('btnStartProjectManager');
     });
 
+    it('shows the confirmed alias beside an independent default command badge', () => {
+        const release = createInstalledRelease('4.7-stable');
+        const html = renderList([release], false, {
+            aliases: [
+                {
+                    version: release.version,
+                    mono: false,
+                    name: 'godot-studio',
+                    state: 'active',
+                },
+            ],
+            defaultKey: getReleaseActionKey(release),
+        });
+        expect(html).toContain('aria-label="Named alias: godot-studio"');
+        expect(html).toContain('aria-label="Default terminal command"');
+        expect(html).toContain('>godot-studio</span>');
+    });
+
+    it('does not label another flavour or an unresolved reservation as an active alias', () => {
+        const release = createInstalledRelease('4.7-stable');
+        const html = renderList([release], false, {
+            aliases: [
+                {
+                    version: release.version,
+                    mono: true,
+                    name: 'godot-mono',
+                    state: 'active',
+                },
+                {
+                    version: release.version,
+                    mono: false,
+                    name: 'godot-unresolved',
+                    state: 'unresolved',
+                },
+                {
+                    version: '4.8-stable',
+                    mono: false,
+                    name: 'godot48',
+                    state: 'active',
+                },
+            ],
+        });
+        expect(html).not.toContain('aria-label="Named alias:');
+        expect(html).not.toContain('godot-unresolved');
+        expect(html).not.toContain('godot-mono');
+    });
+
     it('marks the whole editor row busy while removal is running', () => {
         const html = renderList([createInstalledRelease('4.7-stable')], true);
 
@@ -128,17 +179,25 @@ describe('InstalledReleaseList', () => {
  *
  * @param rows - The installed editors to render.
  * @param removing - Whether the first editor removal is active.
+ * @param commands - Confirmed alias and default state for the rows.
  * @returns The rendered installed editor list.
  */
-function renderList(rows: InstalledRelease[], removing = false): string {
+function renderList(
+    rows: InstalledRelease[],
+    removing = false,
+    commands: { aliases?: CommandLineAlias[]; defaultKey?: string } = {},
+): string {
     const labels: Record<string, string> = {
         'groups.other': 'Other',
+        'aliases.title': 'Named alias',
+        'commandLine.title': 'Default terminal command',
         'badges.custom': 'Custom',
         'badges.prerelease': 'Prerelease',
         'badges.dotNet': '.NET',
         'status.installing': 'Installing...',
         'messages.unavailableCustomEditorHint': 'Custom editor unavailable.',
         'messages.unavailableHintWithReinstall': 'Editor unavailable.',
+        'common:app.navigation.settings': 'Settings',
         'common:buttons.retry': 'Retry',
         'common:buttons.reinstall': 'Reinstall',
         'common:buttons.remove': 'Remove',
@@ -151,6 +210,8 @@ function renderList(rows: InstalledRelease[], removing = false): string {
     return renderToStaticMarkup(
         <InstalledReleaseList
             rows={rows}
+            commandLineAliases={commands.aliases}
+            commandLineDefaultKey={commands.defaultKey}
             t={(key, options) =>
                 labels[options?.ns ? `${options.ns}:${key}` : key] ?? key
             }
@@ -162,6 +223,7 @@ function renderList(rows: InstalledRelease[], removing = false): string {
             onRemove={vi.fn()}
             onOpenInstalledFolder={vi.fn()}
             onStartProjectManager={vi.fn()}
+            onSettings={vi.fn()}
         />,
     );
 }
