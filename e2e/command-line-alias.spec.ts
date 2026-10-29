@@ -281,7 +281,15 @@ test('edits a saved alias without writing on unchanged, cancelled or discarded d
     await drawer().getByRole('button', { name: 'Close', exact: true }).last().click();
     const discard = page.getByRole('dialog', { name: 'Discard alias changes?', exact: true });
     await expect(discard.getByRole('button', { name: 'Keep editing', exact: true })).toBeFocused();
-    await page.keyboard.press('Escape'); await expect(field()).toHaveValue('godot-work');
+    await discard.getByRole('button', { name: 'Keep editing', exact: true }).click();
+    await expect(field()).toBeFocused();
+    await expect(field()).toHaveValue('godot-work');
+    await field().evaluate((input: HTMLInputElement) => input.setSelectionRange(2, 7, 'backward'));
+    await drawer().getByRole('button', { name: 'Close', exact: true }).last().click();
+    await page.keyboard.press('Escape');
+    await expect(field()).toBeFocused();
+    expect(await field().evaluate((input: HTMLInputElement) => [input.selectionStart, input.selectionEnd, input.selectionDirection])).toEqual([2, 7, 'backward']);
+    await expect(field()).toHaveValue('godot-work');
     await drawer().getByRole('button', { name: 'Close', exact: true }).last().click();
     await discard.getByRole('button', { name: 'Discard changes', exact: true }).click();
     await firstRow.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -455,9 +463,10 @@ test('names both commands in removal confirmations and refuses foreign alias cle
     await firstRow.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Actions', exact: true }).click();
     await page.getByRole('button', { name: 'Remove selected (1)', exact: true }).click();
-    const bulk = page.getByRole('dialog', { name: 'Remove selected editors', exact: true });
+    const bulk = page.getByRole('dialog', { name: 'Remove 1 editor?', exact: true });
     await expect(bulk).toContainText('godot-lifecycle');
-    await expect(bulk).toContainText('This editor is your default command-line Godot.');
+    await expect(bulk).toContainText('The default godot command will be removed. No replacement will be selected.');
+    await expect(bulk.getByRole('list', { name: 'Affected items', exact: true }).locator('code')).toHaveText(['godot', 'godot-lifecycle']);
     await bulk.getByRole('button', { name: 'Cancel', exact: true }).click();
     await page.getByRole('button', { name: 'Disable multi-select' }).click();
 

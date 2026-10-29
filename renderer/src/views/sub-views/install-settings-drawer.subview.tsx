@@ -48,6 +48,7 @@ export function InstallSettingsDrawer({
     const [enabled, setEnabled] = useState(false);
     const [name, setName] = useState('');
     const [editing, setEditing] = useState(false);
+    const commandPanelRef = useRef<HTMLElement>(null);
     const draftSnapshot = useRef<{ target: string; savedName?: string } | null>(
         null,
     );
@@ -86,6 +87,16 @@ export function InstallSettingsDrawer({
             onOpenChange(open);
             return;
         }
+        const field = commandPanelRef.current?.querySelector<HTMLInputElement>(
+            'input:not([type="checkbox"])',
+        );
+        const selection = field
+            ? {
+                  start: field.selectionStart,
+                  end: field.selectionEnd,
+                  direction: field.selectionDirection,
+              }
+            : undefined;
         addCustomConfirm(
             t('aliases.discardTitle'),
             t('aliases.discardMessage'),
@@ -105,7 +116,19 @@ export function InstallSettingsDrawer({
                     text: t('aliases.keepEditing'),
                     typeClass: 'btn-primary',
                     isCancel: true,
-                    onClick: () => true,
+                    onClick: () => {
+                        window.requestAnimationFrame(() => {
+                            if (!field?.isConnected || field.disabled) return;
+                            field.focus({ preventScroll: true });
+                            if (selection)
+                                field.setSelectionRange(
+                                    selection.start,
+                                    selection.end,
+                                    selection.direction ?? undefined,
+                                );
+                        });
+                        return true;
+                    },
                 },
             ],
             undefined,
@@ -121,6 +144,7 @@ export function InstallSettingsDrawer({
         : undefined;
     const selected =
         !!release && commandLine.defaultKey === getReleaseActionKey(release);
+    const unavailableTarget = current ?? release;
     const disabled =
         commandLine.busy ||
         aliasState.pending ||
@@ -175,6 +199,7 @@ export function InstallSettingsDrawer({
                 />
                 <Drawer.Body className="flex min-w-0 flex-1 flex-col gap-4 text-base">
                     <section
+                        ref={commandPanelRef}
                         role="tabpanel"
                         id={`${id}-panel`}
                         aria-labelledby={`${id}-tab`}
@@ -188,7 +213,13 @@ export function InstallSettingsDrawer({
                                 role="alert"
                                 className="text-warning-content dark:text-warning"
                             >
-                                {t('messages.unavailableHint')}
+                                {t(
+                                    unavailableTarget?.source === 'custom' ||
+                                        unavailableTarget?.managed_by_launcher ===
+                                            false
+                                        ? 'messages.unavailableCustomEditorHint'
+                                        : 'messages.unavailableHintWithReinstall',
+                                )}
                             </p>
                         )}
                         {commandLine.loading && (

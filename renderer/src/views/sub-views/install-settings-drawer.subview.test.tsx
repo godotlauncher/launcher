@@ -1,6 +1,7 @@
 import type { InstalledRelease } from '@shared/contracts';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import installsMessages from '../../../../locales/en/installs.json';
 import type { useCommandLineGodot } from '../installs/hooks/command-line-godot.hook';
 import { getReleaseActionKey } from '../installs/installs-view.model';
 import { InstallSettingsDrawer } from './install-settings-drawer.subview';
@@ -10,7 +11,19 @@ vi.mock('../../hooks/alerts.hook', () => ({
 }));
 vi.mock('react-i18next', () => ({
     Trans: ({ i18nKey }: { i18nKey: string }) => <>{i18nKey}</>,
-    useTranslation: () => ({ t: (key: string) => key }),
+    useTranslation: () => ({
+        t: (key: string) => {
+            if (key.startsWith('messages.'))
+                return (
+                    installsMessages.messages[
+                        key.slice(
+                            'messages.'.length,
+                        ) as keyof typeof installsMessages.messages
+                    ] ?? key
+                );
+            return key;
+        },
+    }),
 }));
 const release = {
     version: '4.7-stable',
@@ -107,7 +120,11 @@ describe('InstallSettingsDrawer', () => {
     });
     it('prevents selecting an unavailable target but allows clearing its existing default', () => {
         const unavailable = { ...release, valid: false };
-        expect(renderDrawer({}, unavailable)).toMatch(/<input[^>]+disabled=""/);
+        const html = renderDrawer({}, unavailable);
+        expect(html).toMatch(/<input[^>]+disabled=""/);
+        expect(html).toContain(
+            installsMessages.messages.unavailableHintWithReinstall,
+        );
         const selected = renderDrawer(
             { defaultKey: getReleaseActionKey(release) },
             unavailable,
@@ -116,5 +133,22 @@ describe('InstallSettingsDrawer', () => {
         expect(
             selected.match(/<input[^>]*id="[^"]*-default"[^>]*>/)?.[0],
         ).not.toContain('disabled=""');
+    });
+    it('shows custom-editor recovery without suggesting a reinstall', () => {
+        const html = renderDrawer(
+            {},
+            {
+                ...release,
+                valid: false,
+                source: 'custom',
+                managed_by_launcher: false,
+            },
+        );
+        expect(html).toContain(
+            installsMessages.messages.unavailableCustomEditorHint,
+        );
+        expect(html).not.toContain(
+            installsMessages.messages.unavailableHintWithReinstall,
+        );
     });
 });

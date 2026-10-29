@@ -348,8 +348,9 @@ test('warns on single and bulk removal and clears only the wrapper on confirmed 
     await secondRow.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Actions', exact: true }).click();
     await page.getByRole('button', { name: 'Remove selected (1)', exact: true }).click();
-    const dialog = page.getByRole('dialog', { name: 'Remove selected editors', exact: true });
-    await expect(dialog.getByText(warning, { exact: true })).toBeVisible();
+    const dialog = page.getByRole('dialog', { name: 'Remove 1 editor?', exact: true });
+    await expect(dialog.getByText('The default godot command will be removed. No replacement will be selected.', { exact: true })).toBeVisible();
+    await expect(dialog.getByRole('list', { name: 'Affected items', exact: true }).locator('code')).toHaveText('godot');
     await dialog.getByRole('button', { name: 'Remove selected (1)', exact: true }).click();
     await expect(dialog).not.toBeVisible();
     await expect(fs.stat(wrapper)).rejects.toMatchObject({ code: 'ENOENT' });
