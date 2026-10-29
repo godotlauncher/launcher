@@ -124,6 +124,38 @@ test('cancels and creates a selected manual alias without changing other command
     await expect(fs.access(path.join(bin, 'studio'))).resolves.toBeUndefined();
 });
 
+test('refuses a new collision after review and retries with a fresh selected preview', async () => {
+    await row(0).getByRole('checkbox').uncheck();
+    await row(1).getByRole('checkbox').check();
+    const preference = await fs.readFile(path.join(home, '.gd-launcher', 'prefs.json'), 'utf8');
+    const registry = await fs.readFile(path.join(home, '.gd-launcher', 'command-line-aliases.json'), 'utf8');
+    const defaultCommand = await fs.readFile(path.join(bin, 'godot'), 'utf8');
+    const shellConfig = await fs.readFile(path.join(home, '.bashrc'), 'utf8');
+    await action('Create missing aliases (1)');
+    const modal = page.getByRole('dialog', { name: 'Create named aliases?', exact: true });
+    await expect(modal.getByRole('button', { name: 'Create missing aliases (1)', exact: true })).toBeEnabled();
+    const foreign = path.join(bin, 'godot451');
+    await fs.writeFile(foreign, 'foreign command', { flag: 'wx' });
+    try {
+        await modal.getByRole('button', { name: 'Create missing aliases (1)', exact: true }).click();
+        await expect(modal.getByRole('alert')).toContainText('The command preview has changed. Review the choices again.');
+        expect(await fs.readFile(foreign, 'utf8')).toBe('foreign command');
+        expect(await fs.readFile(path.join(home, '.gd-launcher', 'command-line-aliases.json'), 'utf8')).toBe(registry);
+        expect(await fs.readFile(path.join(bin, 'godot'), 'utf8')).toBe(defaultCommand);
+        expect(await fs.readFile(path.join(home, '.bashrc'), 'utf8')).toBe(shellConfig);
+        expect(await fs.readFile(path.join(home, '.gd-launcher', 'prefs.json'), 'utf8')).toBe(preference);
+    } finally {
+        await fs.unlink(foreign);
+    }
+    await modal.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect(modal.getByRole('alert')).toHaveCount(0);
+    await expect(modal.getByRole('button', { name: 'Create missing aliases (1)', exact: true })).toBeEnabled();
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(fs.access(foreign)).rejects.toThrow();
+    await row(1).getByRole('checkbox').uncheck();
+    await row(0).getByRole('checkbox').check();
+});
+
 test('removes only selected named aliases and keeps the default and preference', async () => {
     await row(0).getByRole('checkbox').check();
     await action('Remove named aliases (1)');

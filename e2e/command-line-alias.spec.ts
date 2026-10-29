@@ -173,6 +173,32 @@ test('stages the version suggestion, validates names and cancels setup without w
     await expect(apply()).toBeFocused();
 });
 
+test('retries a failed availability check without losing the draft or creating a command', async () => {
+    await app.evaluate(({ ipcMain }) => {
+        const channel = 'editorInstalls.checkCommandLineAlias';
+        const ipc = ipcMain as typeof ipcMain & { _invokeHandlers: Map<string, (...args: unknown[]) => unknown> };
+        const handler = ipc._invokeHandlers.get(channel)!;
+        ipcMain.removeHandler(channel);
+        ipcMain.handle(channel, () => {
+            ipcMain.removeHandler(channel);
+            ipcMain.handle(channel, handler);
+            throw new Error('Simulated alias check failure');
+        });
+    });
+    await field().fill('godot-retry');
+    await expect(drawer().getByRole('button', { name: 'Retry', exact: true })).toBeVisible();
+    await expect(apply()).toBeDisabled();
+    await expect(field()).toHaveValue('godot-retry');
+    await expect(fs.access(aliasFile('godot-retry'))).rejects.toThrow();
+    await drawer().getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect(drawer().getByText('Available', { exact: true })).toBeVisible();
+    await expect(field()).toHaveValue('godot-retry');
+    await expect(apply()).toBeEnabled();
+    await expect(fs.access(aliasFile('godot-retry'))).rejects.toThrow();
+    await field().fill('godot-studio');
+    await expect(drawer().getByText('Available', { exact: true })).toBeVisible();
+});
+
 test('returns a failed initial Apply to the editable drawer with its error visible', async () => {
     await apply().click();
     const confirmation = page.getByRole('dialog', { name: 'Add named command?', exact: true });
