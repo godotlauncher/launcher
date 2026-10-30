@@ -13,6 +13,7 @@ import electronUpdater, { type UpdateCheckResult } from 'electron-updater';
 import semver from 'semver';
 import { LAUNCHER_DOWNLOAD_URL } from './constants.js';
 import { isTemplateExitBlocked } from './export-templates/template-exit-guard.util.js';
+import { getExternalProcessEnvironment } from './utils/child-process-environment.util.js';
 import { findExecutable } from './utils/platform.utils.js';
 import { ipcWebContentsSend } from './utils.js';
 
@@ -119,6 +120,7 @@ export async function isRpmOstreeSystem(): Promise<boolean> {
 
     try {
         await execFileAsync(rpmOstreePath, ['status', '--json'], {
+            env: getExternalProcessEnvironment(),
             timeout: RPM_OSTREE_STATUS_TIMEOUT_MS,
             windowsHide: true,
         });

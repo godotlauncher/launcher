@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events';
 import path from 'node:path';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TerminalTarget } from './terminal.types.js';
 import { TerminalAdapterService } from './terminal-adapter.service.js';
 
@@ -76,6 +76,33 @@ describe('TerminalAdapterService', () => {
             isFile: () => true,
             isDirectory: () => true,
         });
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+    });
+
+    it('opens a Linux terminal with host library paths and session values', async () => {
+        vi.spyOn(process, 'platform', 'get').mockReturnValue('linux');
+        vi.stubEnv('APPDIR', '/tmp/.mount_launcher');
+        vi.stubEnv('APPIMAGE', '/downloads/launcher.AppImage');
+        vi.stubEnv('LD_LIBRARY_PATH', '/tmp/.mount_launcher/usr/lib:/opt/lib');
+        vi.stubEnv('DISPLAY', ':42');
+        const child = Object.assign(new EventEmitter(), { unref: vi.fn() });
+        mocks.spawn.mockImplementation(() => {
+            queueMicrotask(() => child.emit('spawn'));
+            return child;
+        });
+        const target = targets.find((item) => item.id === 'konsole');
+        if (!target) throw new Error('Missing konsole fixture');
+        await expect(
+            new TerminalAdapterService().launch(target, '/project'),
+        ).resolves.toEqual({ success: true });
+        const environment = mocks.spawn.mock.lastCall?.[2].env;
+        expect(environment.LD_LIBRARY_PATH).toBe('/opt/lib');
+        expect(environment.DISPLAY).toBe(':42');
+        expect(environment.APPIMAGE).toBeUndefined();
     });
 
     it.each([

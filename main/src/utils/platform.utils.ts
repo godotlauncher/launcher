@@ -12,6 +12,7 @@ import {
     resolveAppPaths,
 } from '../config/index.js';
 import { isDev } from '../utils.js';
+import { getExternalProcessEnvironment } from './child-process-environment.util.js';
 
 const COMMAND_VERSION_TIMEOUT_MS = 3000;
 const FIND_EXECUTABLE_TIMEOUT_MS = 3000;
@@ -38,9 +39,20 @@ export function getDefaultDirs(): {
     return getCurrentAppConfigIfInitialized()?.paths ?? resolveAppPaths();
 }
 
+/** Finds a host command using the external process search path.
+ * @param command - Command name to locate.
+ */
 export async function findExecutable(command: string): Promise<string | null> {
     logger.debug(`Searching for ${command} executable...`);
 
+    const environment = getExternalProcessEnvironment();
+    // Match native executable search when cleanup removed the entire PATH.
+    // Passing an empty PATH to which would introduce a current-directory lookup.
+    const searchPath =
+        environment.PATH ??
+        (process.platform === 'linux' && process.env.PATH !== undefined
+            ? '/usr/bin:/bin'
+            : undefined);
     let timeout: NodeJS.Timeout | undefined;
 
     const timeoutPromise = new Promise<null>((resolve) => {
@@ -54,7 +66,10 @@ export async function findExecutable(command: string): Promise<string | null> {
 
     try {
         return await Promise.race([
-            which(command, { nothrow: true }),
+            which(command, {
+                nothrow: true,
+                path: searchPath,
+            }),
             timeoutPromise,
         ]);
     } finally {
@@ -64,6 +79,9 @@ export async function findExecutable(command: string): Promise<string | null> {
     }
 }
 
+/** Reads a host command version with the external process environment.
+ * @param commandPath - Exact executable to probe.
+ */
 export async function getCommandVersion(commandPath: string): Promise<string> {
     if (!commandPath) {
         return '';
@@ -73,7 +91,11 @@ export async function getCommandVersion(commandPath: string): Promise<string> {
         execFile(
             commandPath,
             ['--version'],
-            { timeout: COMMAND_VERSION_TIMEOUT_MS, windowsHide: true },
+            {
+                timeout: COMMAND_VERSION_TIMEOUT_MS,
+                windowsHide: true,
+                env: getExternalProcessEnvironment(),
+            },
             (error, stdout) => {
                 if (error) {
                     logger.debug(

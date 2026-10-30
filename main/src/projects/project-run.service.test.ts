@@ -117,7 +117,27 @@ describe('ProjectRunService', () => {
 
     afterEach(() => {
         vi.useRealTimers();
+        vi.unstubAllEnvs();
         vi.unstubAllGlobals();
+    });
+
+    it('runs Godot with a clean AppImage environment and retains user .NET settings', async () => {
+        vi.stubGlobal('process', { ...process, platform: 'linux' });
+        vi.stubEnv('APPDIR', '/tmp/.mount_launcher');
+        vi.stubEnv('APPIMAGE', '/downloads/launcher.AppImage');
+        vi.stubEnv(
+            'LD_LIBRARY_PATH',
+            '/tmp/.mount_launcher/usr/lib:/opt/user/lib',
+        );
+        vi.stubEnv('DOTNET_ROOT', '/opt/dotnet');
+        await expect(service.runProject(projectPath)).resolves.toEqual({
+            launched: true,
+        });
+        const environment = mocks.spawn.mock.lastCall?.[2].env;
+        expect(environment.LD_LIBRARY_PATH).toBe('/opt/user/lib');
+        expect(environment.DOTNET_ROOT).toBe('/opt/dotnet');
+        expect(environment.APPDIR).toBeUndefined();
+        expect(environment.APPIMAGE).toBeUndefined();
     });
 
     it('only accepts exact registered paths', async () => {

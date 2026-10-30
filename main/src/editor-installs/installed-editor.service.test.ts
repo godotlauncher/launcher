@@ -281,7 +281,7 @@ describe('InstalledEditorService', () => {
         expect(spawnMocks.spawn).toHaveBeenCalledWith(
             path.resolve(editorPath, 'Contents', 'MacOS', 'Godot'),
             ['-p'],
-            { detached: true, stdio: 'ignore' },
+            { detached: true, stdio: 'ignore', env: expect.any(Object) },
         );
     });
 

@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
+import { getExternalProcessEnvironment } from '../../../utils/child-process-environment.util.js';
 
 const REMOVED_ENVIRONMENT_KEYS = new Set([
     'CURL_CA_BUNDLE',
@@ -48,7 +49,9 @@ export function createGitNetworkEnvironment(
     askPassEnvironment: NodeJS.ProcessEnv,
 ): NodeJS.ProcessEnv {
     const environment: NodeJS.ProcessEnv = {};
-    for (const [key, value] of Object.entries(process.env)) {
+    for (const [key, value] of Object.entries(
+        getExternalProcessEnvironment(),
+    )) {
         const upperKey = key.toUpperCase();
         if (
             upperKey.startsWith('GIT_') ||

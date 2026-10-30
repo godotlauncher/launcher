@@ -36,11 +36,20 @@ describe('GitCloneService', () => {
     afterEach(async () => {
         await fs.rm(supportDirectory, { recursive: true, force: true });
         vi.unstubAllEnvs();
+        vi.unstubAllGlobals();
     });
 
     it('pins public DNS and isolates inherited Git credentials', async () => {
         vi.stubEnv('GIT_CONFIG_COUNT', '1');
         vi.stubEnv('GITHUB_TOKEN', 'inherited-secret');
+        vi.stubGlobal('process', { ...process, platform: 'linux' });
+        vi.stubEnv('APPDIR', '/tmp/.mount_launcher');
+        vi.stubEnv('APPIMAGE', '/downloads/launcher.AppImage');
+        vi.stubEnv('PATH', '/tmp/.mount_launcher:/usr/bin');
+        vi.stubEnv(
+            'LD_LIBRARY_PATH',
+            '/tmp/.mount_launcher/usr/lib:/opt/user/lib',
+        );
         const onProgress = vi.fn();
         executeStreaming.mockImplementationOnce(async (_toolId, request) => {
             request.onStderr?.('Receiving objects: 42%');
@@ -81,6 +90,10 @@ describe('GitCloneService', () => {
         });
         expect(processRequest.env.GIT_CONFIG_COUNT).toBeUndefined();
         expect(processRequest.env.GITHUB_TOKEN).toBeUndefined();
+        expect(processRequest.env.APPDIR).toBeUndefined();
+        expect(processRequest.env.APPIMAGE).toBeUndefined();
+        expect(processRequest.env.PATH).toBe('/usr/bin');
+        expect(processRequest.env.LD_LIBRARY_PATH).toBe('/opt/user/lib');
         expect(onProgress).toHaveBeenCalledWith(42);
         expect(onProgress).toHaveBeenLastCalledWith(100);
         expect(credentials.open).not.toHaveBeenCalled();

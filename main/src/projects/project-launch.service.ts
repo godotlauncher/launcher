@@ -18,6 +18,7 @@ import { getMainWindow, revealMainWindow } from '../mainWindow.js';
 import { TrayAvailabilityService } from '../services/tray-availability.service.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { TerminalService } from '../tool-integration/integrations/terminal/terminal.service.js';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectEditorService } from './project-editor.service.js';
 import {
@@ -154,6 +155,7 @@ export class ProjectLaunchService {
                 launchArguments.push('-w');
             }
             editor = spawn('open', launchArguments, {
+                env: getExternalProcessEnvironment(),
                 detached: true,
                 stdio: 'ignore',
             });
@@ -163,6 +165,7 @@ export class ProjectLaunchService {
                 launchArguments.push('-w');
             }
             editor = spawn(command, launchArguments, {
+                env: getExternalProcessEnvironment(),
                 detached: true,
                 stdio: 'ignore',
             });

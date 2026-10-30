@@ -1,5 +1,5 @@
 import type { ExecFileException } from 'node:child_process';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const processMocks = vi.hoisted(() => ({
     execFile: vi.fn(),
@@ -15,6 +15,11 @@ const installation = {
     version: '1.0.0',
     source: 'detected' as const,
 };
+
+afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+});
 
 describe('ToolProcessExecutor', () => {
     it('executes the exact path and argument array without a shell', async () => {
@@ -130,4 +135,26 @@ describe('ToolProcessExecutor', () => {
             exitCode: null,
         });
     });
+});
+
+it('cleans inherited AppImage values before applying tool overrides', async () => {
+    vi.stubGlobal('process', { ...process, platform: 'linux' });
+    vi.stubEnv('APPDIR', '/tmp/.mount_launcher');
+    vi.stubEnv('APPIMAGE', '/downloads/launcher.AppImage');
+    vi.stubEnv('PATH', '/tmp/.mount_launcher:/usr/bin');
+    vi.stubEnv('LD_LIBRARY_PATH', '/tmp/.mount_launcher/usr/lib:/opt/user/lib');
+    processMocks.execFile.mockImplementation(
+        (_file, _args, _options, callback) => callback(null, '', ''),
+    );
+    await new ToolProcessExecutor().execute(installation, {
+        args: [],
+        env: { LD_LIBRARY_PATH: '/opt/project/lib', CUSTOM: 'project' },
+    });
+    const env = processMocks.execFile.mock.lastCall?.[2].env;
+    expect(env.PATH).toBe('/usr/bin');
+    expect(env.LD_LIBRARY_PATH).toBe('/opt/project/lib');
+    expect(env.CUSTOM).toBe('project');
+    expect(env.APPDIR).toBeUndefined();
+    expect(env.APPIMAGE).toBeUndefined();
+    expect(process.env.APPDIR).toBe('/tmp/.mount_launcher');
 });
