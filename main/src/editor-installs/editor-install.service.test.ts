@@ -139,6 +139,26 @@ describe('EditorInstallService', () => {
         ).toHaveLength(1);
     });
 
+    it('passes the full prerelease version to automatic alias creation after installation', async () => {
+        const release = { ...createRelease('4.8-beta2'), prerelease: true };
+        installedEditors.tryAutomaticAlias.mockResolvedValueOnce({
+            name: 'godot48b2',
+            pathChanged: false,
+        });
+        const result = await createService().installEditor(
+            release,
+            false,
+            'installs',
+        );
+        expect(installedEditors.tryAutomaticAlias).toHaveBeenCalledWith(
+            expect.objectContaining({ version: '4.8-beta2', prerelease: true }),
+        );
+        expect(result).toMatchObject({
+            success: true,
+            commandLineAlias: { name: 'godot48b2', pathChanged: false },
+        });
+    });
+
     it('does not automatically alias a reinstallation with an existing invalid record', async () => {
         installedEditors.getInstalledEditors.mockResolvedValue([
             { version: '4.8-stable', mono: false, valid: false },

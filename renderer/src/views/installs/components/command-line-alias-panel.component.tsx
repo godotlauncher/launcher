@@ -16,14 +16,20 @@ import { Tooltip } from '../../../components/ui/tooltip.component';
 import { editorInstallsBridge } from '../../../renderer.bridge';
 
 /**
- * Suggests a stable numeric command without silently resolving collisions.
+ * Suggests a version and prerelease command without resolving collisions.
  * @param version - Registered version, which may be a custom identifier.
  */
 export function suggestAlias(version: string): string {
-    const match = /^(\d+)\.(\d+)(?:\.(\d+))?/.exec(version);
-    return match
-        ? `godot${match[1]}${match[2]}${match[3] && Number(match[3]) !== 0 ? match[3] : ''}`
-        : 'godot-custom';
+    const match =
+        /^(\d+)\.(\d+)(?:\.(\d+))?(?:-(dev|alpha|beta|rc)\.?(\d+))?/.exec(
+            version,
+        );
+    if (!match) return 'godot-custom';
+    const patch = match[3] && Number(match[3]) !== 0 ? match[3] : '';
+    const prerelease = match[4]
+        ? `${match[4] === 'rc' ? 'rc' : match[4][0]}${match[5]}`
+        : '';
+    return `godot${match[1]}${match[2]}${patch}${prerelease}`;
 }
 
 /**
