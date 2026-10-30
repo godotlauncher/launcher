@@ -821,13 +821,22 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
     };
 
     const runFailureHandler = useRef<
-        (project: ProjectDetails, diagnostic?: string) => void
+        (
+            project: ProjectDetails,
+            diagnostic?: string,
+            diagnosticWarning?: boolean,
+        ) => void
     >(() => {});
-    runFailureHandler.current = (project, diagnostic) => {
+    runFailureHandler.current = (
+        project,
+        diagnostic,
+        diagnosticWarning = false,
+    ) => {
         showProjectRunRecovery({
             project,
             reason: 'launch_failed',
             afterStartup: true,
+            diagnosticWarning,
             diagnostic,
             t,
             addCustomConfirm,
@@ -838,16 +847,24 @@ export const ProjectsProvider: FC<ProjectsProviderProps> = ({ children }) => {
             },
         });
     };
-    useEffect(
-        () =>
-            subscribeAppEvent(
-                'project-run-failed',
-                ({ project, diagnostic }) => {
-                    runFailureHandler.current(project, diagnostic);
-                },
-            ),
-        [],
-    );
+    useEffect(() => {
+        const unsubscribeFailure = subscribeAppEvent(
+            'project-run-failed',
+            ({ project, diagnostic }) => {
+                runFailureHandler.current(project, diagnostic);
+            },
+        );
+        const unsubscribeDiagnostic = subscribeAppEvent(
+            'project-run-diagnostic',
+            ({ project, diagnostic }) => {
+                runFailureHandler.current(project, diagnostic, true);
+            },
+        );
+        return () => {
+            unsubscribeFailure();
+            unsubscribeDiagnostic();
+        };
+    }, []);
 
     const checkProjectValid = (project: ProjectDetails) => {
         const result = projectsBridge.checkProjectValid(project);

@@ -701,6 +701,9 @@
             "already_running": "Bu proje zaten çalışıyor.",
             "launch_failed": "Godot bu projeyi başlatamadı. Hataları denetlemek için Godot'ta açın."
         },
-        "runtimeFailure": "Godot bir hata bildirdi. Denetlemek için bu projeyi Godot'ta açın."
+        "runtimeFailure": "Godot bu projeyi beklenmedik şekilde durdurdu. Hataları kontrol etmek için Godot içinde açın.",
+        "diagnosticTitle": "Godot bir hata bildirdi",
+        "diagnosticWarning": "Proje hâlâ çalışıyor olabilir. Godot bazı hatalardan otomatik olarak kurtulabilir. Kontrol etmek için projeyi Godot içinde açın.",
+        "runtimeFailureTitle": "Proje beklenmedik şekilde durdu"
     }
 }

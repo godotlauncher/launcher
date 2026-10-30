@@ -9,32 +9,43 @@ type RunRecoveryOptions = {
     project: ProjectDetails;
     reason: RunFailureReason;
     afterStartup?: boolean;
+    diagnosticWarning?: boolean;
     diagnostic?: string;
     t: (key: string, options?: Record<string, unknown>) => string;
     addCustomConfirm: ReturnType<typeof useAlerts>['addCustomConfirm'];
     onEditProject: (project: ProjectDetails) => unknown;
 };
 
-/** Offers the existing editor action for failed or unprepared game launches.
+/** Offers editor recovery for diagnostics, failed or unprepared game launches.
  * @param options - Failed project, translated feedback and editor recovery.
  */
 export function showProjectRunRecovery({
     project,
     reason,
     afterStartup = false,
+    diagnosticWarning = false,
     diagnostic,
     t,
     addCustomConfirm,
     onEditProject,
 }: RunRecoveryOptions): void {
     addCustomConfirm(
-        t('runProject.failureTitle', { project: project.name }),
+        t(
+            diagnosticWarning
+                ? 'runProject.diagnosticTitle'
+                : afterStartup
+                  ? 'runProject.runtimeFailureTitle'
+                  : 'runProject.failureTitle',
+            { project: project.name },
+        ),
         <div className="flex flex-col gap-3 text-base">
             <p>
                 {t(
-                    afterStartup
-                        ? 'runProject.runtimeFailure'
-                        : `runProject.reasons.${reason}`,
+                    diagnosticWarning
+                        ? 'runProject.diagnosticWarning'
+                        : afterStartup
+                          ? 'runProject.runtimeFailure'
+                          : `runProject.reasons.${reason}`,
                 )}
             </p>
             {diagnostic && (
@@ -65,6 +76,6 @@ export function showProjectRunRecovery({
                   ]),
         ],
         undefined,
-        'error',
+        diagnosticWarning ? 'warning' : 'error',
     );
 }

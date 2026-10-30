@@ -701,6 +701,9 @@
             "already_running": "このプロジェクトはすでに実行中です。",
             "launch_failed": "Godotはこのプロジェクトを起動できませんでした。Godotで開いてエラーを確認してください。"
         },
-        "runtimeFailure": "Godotがエラーを報告しました。Godotでこのプロジェクトを開いて確認してください。"
+        "runtimeFailure": "Godot がこのプロジェクトを予期せず停止しました。Godot で開いてエラーを確認してください。",
+        "diagnosticTitle": "Godot がエラーを報告しました",
+        "diagnosticWarning": "プロジェクトはまだ実行中の可能性があります。Godot は一部のエラーから自動的に回復できます。Godot でプロジェクトを開いて確認してください。",
+        "runtimeFailureTitle": "プロジェクトが予期せず停止しました"
     }
 }

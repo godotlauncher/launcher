@@ -701,6 +701,9 @@
             "already_running": "Questo progetto è già in esecuzione.",
             "launch_failed": "Godot non ha potuto avviare questo progetto. Aprilo in Godot per verificare gli errori."
         },
-        "runtimeFailure": "Godot ha segnalato un errore. Apri questo progetto in Godot per verificarlo."
+        "runtimeFailure": "Godot ha arrestato questo progetto in modo imprevisto. Aprilo in Godot per verificare la presenza di errori.",
+        "diagnosticTitle": "Godot ha segnalato un errore",
+        "diagnosticWarning": "Il progetto potrebbe essere ancora in esecuzione. Godot può recuperare automaticamente da alcuni errori. Apri il progetto in Godot per verificarlo.",
+        "runtimeFailureTitle": "Il progetto si è arrestato in modo imprevisto"
     }
 }

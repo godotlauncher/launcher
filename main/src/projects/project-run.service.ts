@@ -7,7 +7,10 @@ import type {
 } from '@shared/contracts';
 import logger from 'electron-log';
 import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
-import { publishProjectRunFailure } from './project-events.util.js';
+import {
+    publishProjectRunDiagnostic,
+    publishProjectRunFailure,
+} from './project-events.util.js';
 import { inspectProjectRunReadiness } from './project-run-readiness.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { ProjectsStore } from './projects.store.js';
@@ -107,11 +110,11 @@ export class ProjectRunService {
             );
             let spawned = false;
             let failed = false;
+            let warned = false;
+            let diagnostic: string | undefined;
             let output = '';
-            /** Reports a native or Godot-reported error once per runtime.
-             * @param diagnostic - Optional error line captured from Godot.
-             */
-            const reportFailure = (diagnostic?: string) => {
+            /** Reports a native process failure once per runtime. */
+            const reportFailure = () => {
                 if (failed) return;
                 failed = true;
                 if (output) logger.warn('Godot runtime failed', output);
@@ -123,10 +126,16 @@ export class ProjectRunService {
              * @param line - One line from a single output stream.
              */
             const reportLine = (line: string) => {
-                const diagnostic = line
+                const recognised = line
                     .trim()
                     .match(/^(?:SCRIPT ERROR|ERROR|Error):.*$/)?.[0];
-                if (diagnostic) reportFailure(diagnostic.slice(0, 2000));
+                if (!recognised) return;
+                const bounded = recognised.slice(0, 2000);
+                logger.warn('Godot runtime diagnostic', bounded);
+                diagnostic ??= bounded;
+                if (!spawned || warned || failed) return;
+                warned = true;
+                publishProjectRunDiagnostic(project, diagnostic);
             };
             for (const stream of [child.stdout, child.stderr]) {
                 let pending = '';
