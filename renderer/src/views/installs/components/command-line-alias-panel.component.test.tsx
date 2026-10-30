@@ -19,6 +19,7 @@ describe('manual alias suggestions', () => {
         ['4.8.0-custom.1', 'godot48'],
         ['studio-build', 'godot-custom'],
     ])('suggests %s as %s', (version, expected) => {
-        expect(suggestAlias(version)).toBe(expected);
+        expect(suggestAlias(version, false)).toBe(expected);
+        expect(suggestAlias(version, true)).toBe(`${expected}-dotnet`);
     });
 });

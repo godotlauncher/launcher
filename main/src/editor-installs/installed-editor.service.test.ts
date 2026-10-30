@@ -626,17 +626,22 @@ describe('InstalledEditorService', () => {
         },
     );
 
-    it.each([
-        ['4.8-beta1', 'godot48b1'],
-        ['4.8-beta2', 'godot48b2'],
-        ['4.8-dev1', 'godot48d1'],
-        ['4.8-rc1', 'godot48rc1'],
-        ['4.7.2-rc1', 'godot472rc1'],
-        ['4.8-stable', 'godot48'],
-    ])(
-        'automatically creates %s as %s after registration',
-        async (version, name) => {
-            const release = createRelease(version);
+    it.each(
+        [
+            ['4.8-beta1', 'godot48b1'],
+            ['4.8-beta2', 'godot48b2'],
+            ['4.8-dev1', 'godot48d1'],
+            ['4.8-rc1', 'godot48rc1'],
+            ['4.7.2-rc1', 'godot472rc1'],
+            ['4.8-stable', 'godot48'],
+        ].flatMap(([version, name]) => [
+            { version, name, mono: false },
+            { version, name: `${name}-dotnet`, mono: true },
+        ]),
+    )(
+        'automatically creates $version as $name after registration',
+        async ({ version, name, mono }) => {
+            const release = createRelease(version, { mono });
             preferenceMocks.getUserPreferences.mockResolvedValue({
                 auto_create_editor_aliases: true,
             });
