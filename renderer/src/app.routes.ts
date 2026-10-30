@@ -3,7 +3,8 @@ export type View =
     | 'exportTemplates'
     | 'installs'
     | 'settings'
-    | 'help';
+    | 'help'
+    | 'extensions';
 
 export const settingsTabs = [
     'projects',
@@ -32,6 +33,7 @@ export const appRoutePaths = {
     settings: '/settings',
     settingsTab: (tab: SettingsTab) => `/settings/${tab}`,
     help: '/help',
+    extensions: '/extensions',
     welcome: '/welcome',
 } as const;
 
@@ -41,9 +43,18 @@ export const appViewRoutes: Record<View, string> = {
     exportTemplates: appRoutePaths.exportTemplates,
     settings: appRoutePaths.settingsTab(defaultSettingsTab),
     help: appRoutePaths.help,
+    extensions: appRoutePaths.extensions,
 };
 
+/**
+ * Resolves the active navigation view from the application pathname.
+ * @param pathname - Current application pathname.
+ */
 export function getViewFromPathname(pathname: string): View {
+    if (pathname === appRoutePaths.extensions) {
+        return 'extensions';
+    }
+
     if (pathname.startsWith(appRoutePaths.exportTemplates))
         return 'exportTemplates';
     if (pathname.startsWith(appRoutePaths.installs)) {
@@ -63,14 +74,4 @@ export function getViewFromPathname(pathname: string): View {
 
 export function isSettingsTab(value: string | undefined): value is SettingsTab {
     return settingsTabs.some((tab) => tab === value);
-}
-
-/**
- * Checks whether a pathname targets the Connections settings panel.
- *
- * @param pathname - Current application pathname.
- * @returns Whether the Connections promotional shortcut should be active.
- */
-export function isConnectionsPathname(pathname: string): boolean {
-    return pathname === appRoutePaths.settingsTab('connections');
 }

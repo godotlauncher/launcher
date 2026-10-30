@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 import {
     Blocks,
-    Cable,
     CircleHelp,
     ExternalLink,
     FileOutput,
@@ -10,6 +9,7 @@ import {
     Package,
     Puzzle,
     Settings,
+    Sparkles,
 } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +28,6 @@ import { shouldShowAppLoading } from './app.model';
 import {
     appRoutePaths,
     defaultSettingsTab,
-    isConnectionsPathname,
     isSettingsTab,
     type SettingsTab,
 } from './app.routes';
@@ -46,6 +45,7 @@ import { useTemplateActivity } from './views/export-templates/hooks/template-job
 import { TemplateMigrationProvider } from './views/export-templates/hooks/template-migration.hook';
 import { TemplateStorageProvider } from './views/export-templates/hooks/template-storage.hook';
 import { ExportTemplatesView } from './views/export-templates.view';
+import { ExtensionsView } from './views/extensions.view';
 import { HelpVIew } from './views/help.view';
 import { InstallsView } from './views/installs.view';
 import { OnboardingView } from './views/onboarding.view';
@@ -111,7 +111,7 @@ function WelcomeRoutes() {
     );
 }
 
-/** Renders the application routes. */
+/** Renders the available application pages inside the shared navigation shell. */
 function MainAppRoutes() {
     return (
         <Routes>
@@ -145,6 +145,10 @@ function MainAppRoutes() {
                 <Route
                     path={routeSegment(appRoutePaths.help)}
                     element={<HelpVIew />}
+                />
+                <Route
+                    path={routeSegment(appRoutePaths.extensions)}
+                    element={<ExtensionsView />}
                 />
                 <Route path="*" element={<DefaultRoute />} />
             </Route>
@@ -283,7 +287,6 @@ function MainLayout() {
         clsx({
             'menu-active': currentView === view,
         });
-    const connectionsActive = isConnectionsPathname(location.pathname);
 
     /**
      * Skips the selected release and refreshes shared Settings preferences.
@@ -441,16 +444,20 @@ function MainLayout() {
 
                         <li>
                             <NavLink
-                                to={appRoutePaths.settingsTab('connections')}
-                                data-testid="btnConnections"
+                                to={appRoutePaths.extensions}
+                                data-testid="btnExtensions"
                                 className={clsx('relative', {
-                                    'menu-active': connectionsActive,
+                                    'menu-active': currentView === 'extensions',
                                 })}
                             >
-                                <Cable className="size-5" />
+                                <Blocks className="size-5" />
                                 <span className="flex-1">
-                                    {t('app.navigation.connections')}
+                                    {t('app.navigation.extensions')}
                                 </span>
+                                <Sparkles
+                                    aria-hidden="true"
+                                    className="size-3.5 text-primary"
+                                />
                             </NavLink>
                         </li>
 
@@ -461,9 +468,7 @@ function MainLayout() {
                                 )}
                                 data-testid="btnSettings"
                                 className={clsx('relative', {
-                                    'menu-active':
-                                        currentView === 'settings' &&
-                                        !connectionsActive,
+                                    'menu-active': currentView === 'settings',
                                 })}
                             >
                                 <Settings className="size-5" />

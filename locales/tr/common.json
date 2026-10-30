@@ -30,8 +30,14 @@
         }
     },
     "app": {
+        "extensions": {
+            "comingSoon": "Godot Launcher özelliklerini genişletmenin ve özelleştirmenin yeni bir yolu yakında geliyor.",
+            "discuss": "Konuşmak istediğiniz bir şey mi var?",
+            "joinDiscord": "Discord’a katılın"
+        },
         "loadingMessage": "Her şey hazırlanıyor...",
         "navigation": {
+            "extensions": "Uzantılar",
             "exportTemplates": "Dışa Aktarma Şablonları",
             "projectTemplates": "Proje Şablonları",
             "assets": "Varlıklar",

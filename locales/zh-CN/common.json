@@ -30,8 +30,14 @@
         }
     },
     "app": {
+        "extensions": {
+            "comingSoon": "扩展和自定义 Godot Launcher 的全新方式即将推出。",
+            "discuss": "有什么想讨论的吗？",
+            "joinDiscord": "加入 Discord"
+        },
         "loadingMessage": "准备中...",
         "navigation": {
+            "extensions": "扩展",
             "exportTemplates": "导出模板",
             "projectTemplates": "项目模板",
             "assets": "资源",

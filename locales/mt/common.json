@@ -30,8 +30,14 @@
         }
     },
     "app": {
+        "extensions": {
+            "comingSoon": "Dalwaqt se jkun hemm mod ġdid kif testendi u tippersonalizza Godot Launcher.",
+            "discuss": "Għandek xi ħaġa x’tiddiskuti?",
+            "joinDiscord": "Ingħaqad fuq Discord"
+        },
         "loadingMessage": "Qed nippreparaw kollox...",
         "navigation": {
+            "extensions": "Estensjonijiet",
             "exportTemplates": "Mudelli ta’ esportazzjoni",
             "projectTemplates": "Mudelli ta’ proġetti",
             "assets": "Riżorsi",

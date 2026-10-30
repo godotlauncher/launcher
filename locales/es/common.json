@@ -30,8 +30,14 @@
         }
     },
     "app": {
+        "extensions": {
+            "comingSoon": "Pronto llegará una nueva forma de ampliar y personalizar Godot Launcher.",
+            "discuss": "¿Tienes algo que comentar?",
+            "joinDiscord": "Únete a Discord"
+        },
         "loadingMessage": "Preparando todo...",
         "navigation": {
+            "extensions": "Extensiones",
             "exportTemplates": "Plantillas de exportación",
             "projectTemplates": "Plantillas de proyectos",
             "assets": "Recursos",
