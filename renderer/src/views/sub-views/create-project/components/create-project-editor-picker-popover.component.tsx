@@ -259,7 +259,14 @@ export const CreateProjectEditorPickerPopover: React.FC<
                                 disabled={loading || retryingCatalogue}
                                 onClick={() => void onRetryCatalogue()}
                             >
-                                <RefreshCw size={16} aria-hidden="true" />
+                                <RefreshCw
+                                    size={16}
+                                    aria-hidden="true"
+                                    className={clsx({
+                                        'animate-spin motion-reduce:animate-none':
+                                            loading || retryingCatalogue,
+                                    })}
+                                />
                             </button>
                         </div>
 
