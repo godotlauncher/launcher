@@ -3,6 +3,7 @@ import type {
     ReleaseInstallProgress,
 } from '@shared/contracts';
 import clsx from 'clsx';
+import { RefreshCw } from 'lucide-react';
 import type React from 'react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -249,9 +250,27 @@ export const CreateProjectEditorPickerPopover: React.FC<
                                     {t('editorPicker.prereleases')}
                                 </button>
                             </div>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-ghost btn-square"
+                                aria-label={t('installEditor:buttons.reload')}
+                                title={t('installEditor:buttons.reload')}
+                                aria-busy={loading || retryingCatalogue}
+                                disabled={loading || retryingCatalogue}
+                                onClick={() => void onRetryCatalogue()}
+                            >
+                                <RefreshCw
+                                    size={16}
+                                    aria-hidden="true"
+                                    className={clsx({
+                                        'animate-spin motion-reduce:animate-none':
+                                            loading || retryingCatalogue,
+                                    })}
+                                />
+                            </button>
                         </div>
 
-                        {(catalogueError || retryingCatalogue) && (
+                        {catalogueError && (
                             <div
                                 className="alert alert-warning alert-soft shrink-0 text-warning-content dark:text-warning"
                                 data-testid="createProjectEditorCatalogueError"

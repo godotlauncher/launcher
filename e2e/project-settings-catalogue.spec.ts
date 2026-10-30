@@ -7,8 +7,9 @@ import type {
     ProjectTemplateSettings,
     ReleaseInstallProgress,
     ReleaseSummary,
+    TemplateProjectAssessment,
 } from '@shared/contracts';
-import { SAMPLE_INSTALLED_RELEASES, SAMPLE_PROJECTS } from './support/e2e-fixture-data';
+import { SAMPLE_INSTALLED_RELEASES, SAMPLE_PROJECTS, SAMPLE_PREFS } from './support/e2e-fixture-data';
 import { createFixtureHome, prepareAppWithStubbedData, setAppLanguage } from './support/e2e-fixture-runtime';
 import { getMainWindow } from './splashscreen/getMainWindow';
 
@@ -112,6 +113,54 @@ test.afterAll(async () => {
     await fs.rm(fixtureHome, { recursive: true, force: true });
 });
 
+test('refreshes the editor catalogue without losing staged settings or cached results', async () => {
+    await prepareAppWithStubbedData(page, electronApp, {
+        projects: [project], installedReleases: [installedRelease],
+        availableReleases: [catalogueRelease], availablePrereleases: [],
+    });
+    await electronApp.evaluate(({ ipcMain }) => {
+        const ipc = ipcMain as typeof ipcMain & { _invokeHandlers: Map<string, (...args: any[]) => any> };
+        const original = ipc._invokeHandlers.get('editorCatalog.refreshCatalog')!;
+        const state = globalThis as typeof globalThis & { __finishRefresh?: (fail: boolean) => void };
+        ipcMain.removeHandler('editorCatalog.refreshCatalog');
+        ipcMain.handle('editorCatalog.refreshCatalog', (...args) => new Promise((resolve) => {
+            state.__finishRefresh = (fail) => resolve(fail
+                ? { success: false, error: { type: 'Error', message: 'Simulated refresh failure' } }
+                : original(...args));
+        }));
+    });
+    await page.getByTestId('btnProjects').click();
+    await page.getByTestId('btnProjectSettings').click();
+    const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+    const selected = drawer.getByTestId('selectProjectGodotEditor');
+    const originalSelection = await selected.textContent();
+    await drawer.locator('#projectEditName').fill('Staged name');
+    await selected.click();
+    await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
+    const search = drawer.getByTestId('inputCreateProjectEditorSearch');
+    await search.fill('4.9.3');
+    const reload = drawer.getByRole('button', { name: 'Reload Release List', exact: true });
+    for (const fail of [false, true]) {
+        await reload.click();
+        await expect(reload).toBeDisabled();
+        await expect(reload).toHaveAttribute('aria-busy', 'true');
+        await expect(drawer.getByTestId('createProjectEditorCatalogueError')).toBeHidden();
+        await expect(drawer.getByTestId('createProjectCatalogueEditor_catalogue:4.9.3-stable:mono')).toBeVisible();
+        await electronApp.evaluate((_electron, failed) => {
+            (globalThis as typeof globalThis & { __finishRefresh?: (fail: boolean) => void }).__finishRefresh!(failed);
+        }, fail);
+        await expect(reload).toBeEnabled();
+        await expect(search).toHaveValue('4.9.3');
+        await expect(selected).toHaveText(originalSelection!);
+        await expect(drawer.getByTestId('tabCreateProjectStableEditors')).toHaveAttribute('aria-selected', 'true');
+    }
+    await expect(drawer.getByTestId('createProjectEditorCatalogueError')).toContainText("Couldn't refresh releases");
+    await expect(drawer.getByTestId('createProjectCatalogueEditor_catalogue:4.9.3-stable:mono')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(drawer.locator('#projectEditName')).toHaveValue('Staged name');
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+});
+
 test('saves the console switch independently of an existing windowed choice', async () => {
     const selectedProject = { ...project, open_windowed: true };
     await prepareAppWithStubbedData(page, electronApp, {
@@ -189,6 +238,103 @@ test('saves a catalogue editor before its delayed download and recovers both pro
     await page.getByTestId('tabProjectCards').click();
     await expect(card.getByTestId('btnEditProjectInGodot')).toBeEnabled();
 });
+
+for (const view of ['Cards', 'List', 'Dense'] as const) {
+    test(`keeps the migration offer hidden during a tag-filtered beta editor change in ${view}`, async () => {
+        const projectPath = path.join(fixtureHome, 'beta-project');
+        const editorPath = path.join(fixtureHome, 'beta-editor', 'Godot');
+        await fs.mkdir(projectPath, { recursive: true });
+        await fs.mkdir(path.dirname(editorPath), { recursive: true });
+        await fs.writeFile(path.join(projectPath, 'project.godot'), 'config_version=5');
+        await fs.writeFile(editorPath, 'fixture editor');
+        const beta1 = { ...installedRelease, version: '4.8-beta1', version_number: 4.8, prerelease: true, mono: false, editor_path: editorPath };
+        const betaProject = { ...project, path: projectPath, release: beta1, version: beta1.version, version_number: 4.8, launch_path: editorPath };
+        const beta2 = { ...catalogueRelease, name: '4.8-beta2', version: '4.8-beta2', version_number: 4.8, prerelease: true,
+            assets: [{ name: 'Godot_v4.8-beta2_macos.universal.zip', download_url: 'https://example.invalid/beta2.zip', platform_tags: ['darwin', 'universal'], mono: false }] };
+        await stubBetaMigrationAssessment(projectPath, editorPath);
+        await prepareAppWithStubbedData(page, electronApp, {
+            projects: [betaProject], installedReleases: [beta1], availableReleases: [], availablePrereleases: [beta2],
+            preferences: { ...SAMPLE_PREFS, projects_tag_filter: ['beta-tag'], export_template_migration_offered: false },
+        });
+        await stubCatalogueEditorSave({ initialProject: betaProject, initialInstalledReleases: [beta1] });
+        await page.getByTestId('btnProjects').click();
+        await page.getByTestId(view === 'Dense' ? 'tabProjectDenseList' : `tabProject${view}`).click();
+        await expect(page.getByTestId('btnFilterProjectTags')).toContainText('1');
+        await expect(page.locator('[data-project-path]')).toHaveCount(1);
+        await page.getByTestId('btnProjectSettings').click();
+        const drawer = page.getByRole('dialog', { name: 'Settings catalogue Settings' });
+        await drawer.getByTestId('selectProjectGodotEditor').click();
+        await drawer.getByTestId('tabCreateProjectBrowseEditors').click();
+        await drawer.getByTestId('tabCreateProjectPrereleaseEditors').click();
+        await drawer.getByTestId('createProjectCatalogueEditor_catalogue:4.8-beta2:std').click();
+        await page.evaluate(() => {
+            const observation = { wizardMounts: 0 };
+            const observer = new MutationObserver((records) => {
+                for (const record of records) for (const node of record.addedNodes) {
+                    if (node instanceof Element && (node.matches('[data-testid="templateMigrationWizard"]') ||
+                        node.querySelector('[data-testid="templateMigrationWizard"]'))) observation.wizardMounts += 1;
+                }
+            });
+            observer.observe(document.body, { subtree: true, childList: true });
+            (window as typeof window & { __betaMigrationObservation?: { observation: typeof observation; observer: MutationObserver } }).__betaMigrationObservation = { observation, observer };
+        });
+        await drawer.getByRole('button', { name: 'Update', exact: true }).click();
+        const launch = page.getByTestId(view === 'Cards' ? 'btnEditProjectInGodot' : view === 'Dense' ? 'btnLaunchDenseProject' : 'btnLaunchCompactProject');
+        await expect(launch).toBeDisabled();
+        await expect.poll(() => electronApp.evaluate(() =>
+            (globalThis as typeof globalThis & { __betaMigrationReasons?: string[] }).__betaMigrationReasons ?? [],
+        )).toContain('missing-editor');
+        // Keep the editor unavailable beyond the automatic offer's 500ms interval.
+        await page.waitForTimeout(750);
+        await expect(page.getByTestId('templateMigrationWizard')).toHaveCount(0);
+        await expect(page.locator('[data-project-path]')).toHaveCount(1);
+        await expect(page.locator('[role="dialog"][data-state]')).toHaveCount(0);
+        await page.screenshot({ path: test.info().outputPath(`beta-download-${view.toLowerCase()}.png`) });
+        await completeCatalogueEditorInstall();
+        await expect.poll(readSettingsEvents).toContain('repair:4.8-beta2:false');
+        await expect(launch).toBeEnabled();
+        await expect.poll(() => electronApp.evaluate(() =>
+            (globalThis as typeof globalThis & { __betaMigrationReasons?: string[] }).__betaMigrationReasons?.at(-1),
+        )).toBe('empty');
+        const mounts = await page.evaluate(() => {
+            const state = (window as typeof window & { __betaMigrationObservation?: {
+                observation: { wizardMounts: number }; observer: MutationObserver;
+            } }).__betaMigrationObservation!;
+            state.observer.disconnect();
+            return state.observation.wizardMounts;
+        });
+        expect(mounts).toBe(0);
+    });
+}
+
+/** Uses real template discovery with isolated project files around the delayed editor fixture.
+ * @param projectPath - Project whose editor assignment is changing.
+ * @param editorPath - Existing temporary editor environment used after assignment.
+ */
+async function stubBetaMigrationAssessment(projectPath: string, editorPath: string): Promise<void> {
+    await electronApp.evaluate(({ app, ipcMain, BrowserWindow }, data) => {
+        const { assessProjectTemplates } = process.getBuiltinModule('module').createRequire(`${app.getAppPath()}/package.json`)(`${app.getAppPath()}/dist-electron/export-templates/template-assessment.util.js`) as {
+            assessProjectTemplates: (project: ProjectDetails, root: string) => Promise<TemplateProjectAssessment>;
+        };
+        const state = globalThis as typeof globalThis & { __betaMigrationReasons?: string[] };
+        state.__betaMigrationReasons = [];
+        const tags = { tags: [{ id: 'beta-tag', name: 'Beta work', colour: 1 }], assignments: { [data.projectPath]: ['beta-tag'] } };
+        ipcMain.removeHandler('projectTags.getSnapshot');
+        ipcMain.handle('projectTags.getSnapshot', () => ({ success: true, data: tags }));
+        ipcMain.removeHandler('exportTemplates.connectEmptyProjects');
+        ipcMain.handle('exportTemplates.connectEmptyProjects', () => ({ success: true, data: undefined }));
+        ipcMain.removeHandler('exportTemplates.getMigrationAssessment');
+        ipcMain.handle('exportTemplates.getMigrationAssessment', async () => {
+            const contents = BrowserWindow.getAllWindows().map((win) => win.webContents as typeof win.webContents & { __e2eFixtureProjects?: ProjectDetails[] }).find((item) => item.__e2eFixtureProjects);
+            const projects = (contents?.__e2eFixtureProjects ?? []).filter((item) => item.path === data.projectPath);
+            // The save fixture uses virtual install paths; map valid assignments to real test files.
+            const assessments = await Promise.all(projects.map((item) => assessProjectTemplates({ ...item, launch_path: item.valid ? data.editorPath : '' }, data.sharedRoot)));
+            state.__betaMigrationReasons?.push(...assessments.map((item) => item.reason));
+            return { success: true, data: { projects: assessments, pendingCount: assessments.filter((item) => item.pending && item.reason !== 'empty').length, recoveryIds: [] } };
+        });
+        for (const win of BrowserWindow.getAllWindows()) win.webContents.send('project-tags-updated', tags);
+    }, { projectPath, editorPath, sharedRoot: path.join(fixtureHome, 'shared-templates') });
+}
 
 test('keeps the saved missing selection after a download failure', async () => {
     await prepareAppWithStubbedData(page, electronApp, {

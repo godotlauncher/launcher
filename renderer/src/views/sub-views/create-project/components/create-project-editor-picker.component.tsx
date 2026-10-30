@@ -332,7 +332,7 @@ export const CreateProjectEditorPicker: React.FC<
         closePopover(true);
     };
 
-    /** Retries the catalogue request while preserving the current form state. */
+    /** Refreshes the catalogue while preserving the current form state. */
     const handleRetryCatalogue = useCallback(async () => {
         setIsRetryingCatalogue(true);
         try {

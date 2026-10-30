@@ -248,6 +248,7 @@ export function ProjectExportTemplatesSection({
             ) : (
                 <>
                     <SelectField
+                        size="sm"
                         id="project-template-build"
                         label={t('library.selection')}
                         value={choice}

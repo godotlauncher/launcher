@@ -314,7 +314,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
                         ? 'btn btn-ghost text-base'
                         : appearance === 'chip'
                           ? 'btn btn-ghost w-auto gap-2 text-left text-base'
-                          : 'select text-base flex items-center justify-between gap-2 pe-10 text-left',
+                          : 'select text-base flex items-center justify-between gap-2 text-left',
                     {
                         'w-full': appearance === 'field' && width === 'full',
                         'select-sm text-base':
