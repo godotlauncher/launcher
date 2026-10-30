@@ -198,7 +198,9 @@ export class CommandLineAliasService {
                                 this.sameEditor(binding, release),
                             ),
                     )
-                    .map((release) => suggestAutomaticAlias(release.version))
+                    .map((release) =>
+                        suggestAutomaticAlias(release.version, release.mono),
+                    )
                     .filter(
                         (command) =>
                             !getAliasNameError(command) && !names.has(command),
@@ -215,7 +217,10 @@ export class CommandLineAliasService {
                     this.sameEditor(binding, release),
                 );
                 if (existing) continue;
-                const name = suggestAutomaticAlias(release.version);
+                const name = suggestAutomaticAlias(
+                    release.version,
+                    release.mono,
+                );
                 const item: AutomaticAliasChangeItem = {
                     name,
                     version: release.version,

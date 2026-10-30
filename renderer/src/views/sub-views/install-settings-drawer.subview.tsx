@@ -69,7 +69,7 @@ export function InstallSettingsDrawer({
             draftSnapshot.current.savedName !== savedName
         ) {
             setEnabled(!!savedName);
-            setName(savedName ?? suggestAlias(release.version));
+            setName(savedName ?? suggestAlias(release.version, release.mono));
             setEditing(false);
             draftSnapshot.current = { target, savedName };
         }
@@ -347,7 +347,12 @@ export function InstallSettingsDrawer({
                                     }
                                     setEnabled(value);
                                     if (value && !saved)
-                                        setName(suggestAlias(current.version));
+                                        setName(
+                                            suggestAlias(
+                                                current.version,
+                                                current.mono,
+                                            ),
+                                        );
                                 }}
                                 onNameChange={setName}
                                 onApply={() =>

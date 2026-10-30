@@ -270,7 +270,7 @@ export class InstalledEditorService {
     async tryAutomaticAlias(
         release: InstalledRelease,
     ): Promise<AutomaticCommandLineAliasResult | undefined> {
-        const name = suggestAutomaticAlias(release.version);
+        const name = suggestAutomaticAlias(release.version, release.mono);
         try {
             if (
                 (await getUserPreferences()).auto_create_editor_aliases !== true

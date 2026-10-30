@@ -183,9 +183,10 @@ describe('exclusive alias transactions', () => {
         ['4.7.2-stable', 'godot472'],
         ['4.8.0-custom.1', 'godot48'],
         ['studio-build', 'godot-custom'],
-    ])('suggests automatic command %s as %s', (version, expected) =>
-        expect(suggestAutomaticAlias(version)).toBe(expected),
-    );
+    ])('suggests automatic command %s as %s', (version, expected) => {
+        expect(suggestAutomaticAlias(version, false)).toBe(expected);
+        expect(suggestAutomaticAlias(version, true)).toBe(`${expected}-dotnet`);
+    });
 
     it('creates separate aliases for numbered prereleases and stable', async () => {
         const installed = [
@@ -218,6 +219,44 @@ describe('exclusive alias transactions', () => {
             'godot48rc1',
             'godot48',
         ]);
+    });
+
+    it('creates distinct Standard and .NET aliases for the same versions', async () => {
+        const installed = ['4.8-stable', '4.8-beta1'].flatMap((version) => [
+            editor(version),
+            { ...editor(version), mono: true },
+        ]);
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            installed,
+        );
+        expect(
+            plan.items.map(({ name, action }) => ({ name, action })),
+        ).toEqual(
+            ['godot48', 'godot48-dotnet', 'godot48b1', 'godot48b1-dotnet'].map(
+                (name) => ({ name, action: 'create' }),
+            ),
+        );
+        await service.applyChangeItems(plan.items, installed);
+        expect(entries.map(({ binding }) => binding.name)).toEqual([
+            'godot48',
+            'godot48-dotnet',
+            'godot48b1',
+            'godot48b1-dotnet',
+        ]);
+    });
+
+    it('keeps an existing .NET alias without adding a suffix retroactively', async () => {
+        const dotnet = { ...editor(), mono: true };
+        await service.apply(dotnet, 'my-dotnet', [dotnet]);
+        const saved = structuredClone(entries);
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [dotnet],
+        );
+        expect(plan.items).toEqual([]);
+        await service.applyChangeItems(plan.items, [dotnet]);
+        expect(entries).toEqual(saved);
     });
 
     it('keeps an existing prerelease alias while creating the next beta alias', async () => {
@@ -404,12 +443,12 @@ describe('exclusive alias transactions', () => {
 
     it('skips duplicate suggestions and busy selected targets without overwriting', async () => {
         const first = editor();
-        const mono = { ...first, mono: true };
+        const custom = editor('4.8.0-custom.1');
         const plan = await service.previewChange(
             { enabled: true, mode: 'create-missing' },
-            [first, mono],
+            [first, custom],
             () => undefined,
-            { editors: [first, mono], management: 'manual' },
+            { editors: [first, custom], management: 'manual' },
         );
         expect(plan.items.map((item) => item.action)).toEqual([
             'create',
@@ -509,9 +548,10 @@ describe('exclusive alias transactions', () => {
 
     it('reserves colliding suggested names within a preview', async () => {
         const mono = { ...editor(), mono: true };
+        const customMono = { ...editor('4.8.0-custom.1'), mono: true };
         const result = await service.previewChange(
             { enabled: true, mode: 'create-missing' },
-            [editor(), mono],
+            [mono, customMono],
         );
         expect(result.items.map(({ action }) => action)).toEqual([
             'create',

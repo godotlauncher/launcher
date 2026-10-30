@@ -18,18 +18,20 @@ import { editorInstallsBridge } from '../../../renderer.bridge';
 /**
  * Suggests a version and prerelease command without resolving collisions.
  * @param version - Registered version, which may be a custom identifier.
+ * @param mono - Whether the editor is the .NET edition.
  */
-export function suggestAlias(version: string): string {
+export function suggestAlias(version: string, mono: boolean): string {
     const match =
         /^(\d+)\.(\d+)(?:\.(\d+))?(?:-(dev|alpha|beta|rc)\.?(\d+))?/.exec(
             version,
         );
-    if (!match) return 'godot-custom';
+    const suffix = mono ? '-dotnet' : '';
+    if (!match) return `godot-custom${suffix}`;
     const patch = match[3] && Number(match[3]) !== 0 ? match[3] : '';
     const prerelease = match[4]
         ? `${match[4] === 'rc' ? 'rc' : match[4][0]}${match[5]}`
         : '';
-    return `godot${match[1]}${match[2]}${patch}${prerelease}`;
+    return `godot${match[1]}${match[2]}${patch}${prerelease}${suffix}`;
 }
 
 /**
