@@ -1,5 +1,5 @@
 import type { ProjectTag, ProjectTagSelection } from '@shared/contracts';
-import { ChevronDown, Tag } from 'lucide-react';
+import { Tag } from 'lucide-react';
 import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getSelectedProjectTags, projectTagColours } from './project-tag.model';
@@ -166,7 +166,7 @@ export function ProjectTagPopover({
                         aria-expanded={open}
                         aria-controls={id}
                         aria-label={t('tags.label')}
-                        className="flex min-h-8 w-full min-w-0 items-center gap-2 rounded-md border border-base-content/20 bg-base-100 px-3 py-0.5 text-left focus-visible:outline-2 focus-visible:outline-primary"
+                        className="select select-sm flex w-full min-w-0 items-center gap-2 text-left text-base"
                     >
                         <Tag
                             size={16}
@@ -206,11 +206,6 @@ export function ProjectTagPopover({
                                 </span>
                             )}
                         </span>
-                        <ChevronDown
-                            size={16}
-                            className="shrink-0"
-                            aria-hidden="true"
-                        />
                     </button>
                 </div>
             )}
