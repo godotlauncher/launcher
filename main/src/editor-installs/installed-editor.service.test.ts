@@ -626,6 +626,33 @@ describe('InstalledEditorService', () => {
         },
     );
 
+    it.each([
+        ['4.8-beta1', 'godot48b1'],
+        ['4.8-beta2', 'godot48b2'],
+        ['4.8-dev1', 'godot48d1'],
+        ['4.8-rc1', 'godot48rc1'],
+        ['4.7.2-rc1', 'godot472rc1'],
+        ['4.8-stable', 'godot48'],
+    ])(
+        'automatically creates %s as %s after registration',
+        async (version, name) => {
+            const release = createRelease(version);
+            preferenceMocks.getUserPreferences.mockResolvedValue({
+                auto_create_editor_aliases: true,
+            });
+            await expect(
+                createService().tryAutomaticAlias(release),
+            ).resolves.toEqual({
+                name,
+                pathChanged: false,
+            });
+            expect(commandLine.createAutomaticAlias).toHaveBeenCalledWith(
+                release,
+                name,
+            );
+        },
+    );
+
     it('reports automatic alias failure separately from a successful custom registration', async () => {
         const release = createRelease('4.8-stable', { source: 'custom' });
         manifestMocks.parseCustomEngineManifest.mockResolvedValue(release);

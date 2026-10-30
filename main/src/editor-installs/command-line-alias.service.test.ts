@@ -169,12 +169,73 @@ describe('exclusive alias transactions', () => {
 
     it.each([
         ['4.8-stable', 'godot48'],
-        ['4.8.0-beta1', 'godot48'],
+        ['4.8-beta1', 'godot48b1'],
+        ['4.8-beta2', 'godot48b2'],
+        ['4.8.0-beta1', 'godot48b1'],
+        ['4.8-beta.2', 'godot48b2'],
+        ['4.8-dev1', 'godot48d1'],
+        ['4.8-dev2', 'godot48d2'],
+        ['4.8-alpha1', 'godot48a1'],
+        ['4.8-rc1', 'godot48rc1'],
+        ['4.8-rc2', 'godot48rc2'],
+        ['4.7.2-rc1', 'godot472rc1'],
+        ['4.8.0-stable', 'godot48'],
         ['4.7.2-stable', 'godot472'],
+        ['4.8.0-custom.1', 'godot48'],
         ['studio-build', 'godot-custom'],
     ])('suggests automatic command %s as %s', (version, expected) =>
         expect(suggestAutomaticAlias(version)).toBe(expected),
     );
+
+    it('creates separate aliases for numbered prereleases and stable', async () => {
+        const installed = [
+            '4.8-beta1',
+            '4.8-beta2',
+            '4.8-dev1',
+            '4.8-rc1',
+            '4.8-stable',
+        ].map(editor);
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            installed,
+        );
+        expect(
+            plan.items.map(({ name, action }) => ({ name, action })),
+        ).toEqual(
+            [
+                'godot48b1',
+                'godot48b2',
+                'godot48d1',
+                'godot48rc1',
+                'godot48',
+            ].map((name) => ({ name, action: 'create' })),
+        );
+        await service.applyChangeItems(plan.items, installed);
+        expect(entries.map(({ binding }) => binding.name)).toEqual([
+            'godot48b1',
+            'godot48b2',
+            'godot48d1',
+            'godot48rc1',
+            'godot48',
+        ]);
+    });
+
+    it('keeps an existing prerelease alias while creating the next beta alias', async () => {
+        const first = editor('4.8-beta1');
+        const second = editor('4.8-beta2');
+        await service.apply(first, 'godot48', [first, second]);
+        const saved = structuredClone(entries[0]);
+        const plan = await service.previewChange(
+            { enabled: true, mode: 'create-missing' },
+            [first, second],
+        );
+        expect(plan.items).toMatchObject([
+            { version: second.version, name: 'godot48b2', action: 'create' },
+        ]);
+        await service.applyChangeItems(plan.items, [first, second]);
+        expect(entries[0]).toEqual(saved);
+        expect(entries[1].binding.name).toBe('godot48b2');
+    });
 
     it('does not recover unrelated pending work or replace a saved binding during automatic creation', async () => {
         await service.apply(editor('other'), 'godot-other', [editor('other')]);
