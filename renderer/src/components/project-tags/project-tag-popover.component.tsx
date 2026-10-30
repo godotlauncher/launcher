@@ -166,7 +166,7 @@ export function ProjectTagPopover({
                         aria-expanded={open}
                         aria-controls={id}
                         aria-label={t('tags.label')}
-                        className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-md border border-base-content/20 bg-base-100 px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-primary"
+                        className="flex min-h-8 w-full min-w-0 items-center gap-2 rounded-md border border-base-content/20 bg-base-100 px-3 py-0.5 text-left focus-visible:outline-2 focus-visible:outline-primary"
                     >
                         <Tag
                             size={16}
