@@ -701,6 +701,9 @@
             "already_running": "此项目已在运行。",
             "launch_failed": "Godot 无法启动此项目。请在 Godot 中打开它以检查错误。"
         },
-        "runtimeFailure": "Godot 报告了错误。请在 Godot 中打开此项目进行检查。"
+        "runtimeFailure": "Godot 意外停止了此项目。请在 Godot 中打开它以检查错误。",
+        "diagnosticTitle": "Godot 报告了一个错误",
+        "diagnosticWarning": "项目可能仍在运行。Godot 可以从某些错误中自动恢复。请在 Godot 中打开项目进行检查。",
+        "runtimeFailureTitle": "项目意外停止"
     }
 }

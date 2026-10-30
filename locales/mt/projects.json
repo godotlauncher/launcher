@@ -701,6 +701,9 @@
             "already_running": "Dan il-proġett diġà qed jitħaddem.",
             "launch_failed": "Godot ma setax jibda dan il-proġett. Iftħu f'Godot biex tiċċekkja għal żbalji."
         },
-        "runtimeFailure": "Godot irrapporta żball. Iftaħ dan il-proġett f'Godot biex tiċċekkjah."
+        "runtimeFailure": "Godot waqqaf dan il-proġett bla mistenni. Iftħu f'Godot biex tiċċekkja għal żbalji.",
+        "diagnosticTitle": "Godot irrapporta żball",
+        "diagnosticWarning": "Il-proġett jista' jkun għadu qed jaħdem. Godot jista' jirkupra minn xi żbalji awtomatikament. Iftaħ il-proġett f'Godot biex tiċċekkjah.",
+        "runtimeFailureTitle": "Il-proġett waqaf bla mistenni"
     }
 }

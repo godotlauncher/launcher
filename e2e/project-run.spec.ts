@@ -117,8 +117,8 @@ test('shows failures after startup even when another view is open', async () => 
         await fs.writeFile(executable, '#!/bin/sh\nsleep 2\nexit 7\n', { mode: 0o700 });
         await (await openMenu()).getByRole('button', { name: 'Run project', exact: true }).click();
         await page.getByTestId('btnInstalls').click();
-        const failure = page.getByRole('dialog', { name: 'Could not run "Run Example"', exact: true });
-        await expect(failure.getByText('Godot reported an error. Open this project in Godot to check it.')).toBeVisible({ timeout: 10000 });
+        const failure = page.getByRole('dialog', { name: 'Project stopped unexpectedly', exact: true });
+        await expect(failure.getByText('Godot stopped this project unexpectedly. Open it in Godot to check for errors.')).toBeVisible({ timeout: 10000 });
         await expect(failure.getByRole('button', { name: 'Edit in Godot', exact: true })).toBeEnabled();
         await failure.getByRole('button', { name: 'Close', exact: true }).click();
         await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -128,26 +128,47 @@ test('shows failures after startup even when another view is open', async () => 
     }
 });
 
+test('shows one diagnostic warning and replaces it when the running project fails', async () => {
+    test.skip(process.platform === 'win32', 'The native fixture is a POSIX executable.');
+    const executable = project.release.editor_path;
+    const original = await fs.readFile(executable, 'utf8');
+    const stopFile = path.join(project.path, 'stop-runtime.txt');
+    try {
+        await fs.writeFile(executable, `#!/bin/sh
+sleep 1
+printf "ERROR: Recovered graphics error.\\n" >&2
+printf "SCRIPT ERROR: Another diagnostic.\\n" >&2
+attempt=0
+while [ ! -f stop-runtime.txt ] && [ "$attempt" -lt 100 ]; do
+    sleep 0.1
+    attempt=$((attempt + 1))
+done
+exit 7
+`, { mode: 0o700 });
+        await (await openMenu()).getByRole('button', { name: 'Run project', exact: true }).click();
+        await page.getByTestId('btnInstalls').click();
+        const warning = page.getByRole('dialog', { name: 'Godot reported an error', exact: true });
+        await expect(warning.getByText('ERROR: Recovered graphics error.')).toBeVisible();
+        await expect(page.getByRole('dialog')).toHaveCount(1);
+        await fs.writeFile(stopFile, 'stop');
+        const failure = page.getByRole('dialog', { name: 'Project stopped unexpectedly', exact: true });
+        await expect(failure).toBeVisible();
+        await expect(warning).not.toBeVisible();
+        await failure.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await page.getByTestId('btnProjects').click();
+    } finally {
+        await fs.writeFile(stopFile, 'stop');
+        await fs.writeFile(executable, original, { mode: 0o700 });
+        await fs.rm(stopFile, { force: true });
+    }
+});
+
 test('shows Godot error output even with exit code zero and offers Edit recovery', async ({}, testInfo) => {
     test.skip(process.platform === 'win32', 'The error-output fixture is a POSIX executable.');
     const executable = project.release.editor_path;
     const original = await fs.readFile(executable, 'utf8');
     await fs.writeFile(path.join(project.path, 'project.godot'), '[application]\nrun/main_scene="uid://b"\n');
-    try {
-        await fs.writeFile(executable, '#!/bin/sh\nprintf "ERROR: Resource imports are missing. Open the project in Godot.\\n" >&2\nexit 0\n', { mode: 0o700 });
-        const menu = await openMenu();
-        await expect(menu.getByRole('button', { name: 'Run project', exact: true })).toBeEnabled();
-        await menu.getByRole('button', { name: 'Run project', exact: true }).click();
-        const failure = page.getByRole('dialog', { name: 'Could not run "Run Example"', exact: true });
-        await expect(failure.getByText('Godot reported an error. Open this project in Godot to check it.')).toBeVisible();
-        await expect(failure.getByText('ERROR: Resource imports are missing. Open the project in Godot.')).toBeVisible();
-        await page.screenshot({ path: testInfo.outputPath('godot-error-output.png') });
-        await failure.getByRole('button', { name: 'Close', exact: true }).click();
-    } finally {
-        await fs.writeFile(executable, original, { mode: 0o700 });
-    }
-    await fs.writeFile(path.join(project.path, 'project.godot'), '[application]\nrun/main_scene="res://main.tscn"\n');
-    await stubRunResult({ launched: false, reason: 'launch_failed' });
     await application.evaluate(({ ipcMain }) => {
         const state = globalThis as typeof globalThis & { runRecoveryEdits?: string[] };
         state.runRecoveryEdits = [];
@@ -157,12 +178,30 @@ test('shows Godot error output even with exit code zero and offers Edit recovery
             return { success: true, data: { launched: true } };
         });
     });
+    try {
+        await fs.writeFile(executable, '#!/bin/sh\nprintf "ERROR: Resource imports are missing. Open the project in Godot.\\n" >&2\nexit 0\n', { mode: 0o700 });
+        const menu = await openMenu();
+        await expect(menu.getByRole('button', { name: 'Run project', exact: true })).toBeEnabled();
+        await menu.getByRole('button', { name: 'Run project', exact: true }).click();
+        const failure = page.getByRole('dialog', { name: 'Godot reported an error', exact: true });
+        await expect(failure.getByText('The project may still be running. Godot can recover from some errors automatically. Open the project in Godot to check it.')).toBeVisible();
+        await expect(failure.getByText('ERROR: Resource imports are missing. Open the project in Godot.')).toBeVisible();
+        await page.screenshot({ path: testInfo.outputPath('godot-error-output.png') });
+        await failure.getByRole('button', { name: 'Edit in Godot', exact: true }).click();
+        await expect(failure).not.toBeVisible();
+        await expect.poll(() => application.evaluate(() => (globalThis as typeof globalThis & { runRecoveryEdits?: string[] }).runRecoveryEdits)).toEqual([project.path]);
+    } finally {
+        await fs.writeFile(executable, original, { mode: 0o700 });
+    }
+    await fs.writeFile(path.join(project.path, 'project.godot'), '[application]\nrun/main_scene="res://main.tscn"\n');
+    await stubRunResult({ launched: false, reason: 'launch_failed' });
+
     await (await openMenu()).getByRole('button', { name: 'Run project', exact: true }).click();
     const failure = page.getByRole('dialog', { name: 'Could not run "Run Example"', exact: true });
     await expect(failure.getByText('Godot could not start this project. Open it in Godot to check for errors.')).toBeVisible();
     await failure.getByRole('button', { name: 'Edit in Godot', exact: true }).click();
     await expect(failure).not.toBeVisible();
-    await expect.poll(() => application.evaluate(() => (globalThis as typeof globalThis & { runRecoveryEdits?: string[] }).runRecoveryEdits)).toEqual([project.path]);
+    await expect.poll(() => application.evaluate(() => (globalThis as typeof globalThis & { runRecoveryEdits?: string[] }).runRecoveryEdits)).toEqual([project.path, project.path]);
 });
 
 test('disables another start while the first request is pending and refreshes on focus', async () => {
@@ -251,7 +290,13 @@ printf survived > runtime-survived.txt
     await launchFixtureApp();
     await (await openMenu()).getByRole('button', { name: 'Run project', exact: true }).click();
     await expect.poll(() => fs.readFile(path.join(project.path, 'runtime-ready.txt'), 'utf8').catch(() => '')).toBe('ready');
-    await closeFixtureApp();
+    const nativeExit = new Promise<void>((resolve) => {
+        application.process().once('exit', () => resolve());
+    });
+    const closing = closeFixtureApp();
+    // Playwright teardown can wait for inherited pipes after Electron exits.
+    await nativeExit;
     await fs.writeFile(path.join(project.path, 'launcher-closed.txt'), 'closed');
+    await closing;
     await expect.poll(() => fs.readFile(path.join(project.path, 'runtime-survived.txt'), 'utf8').catch(() => ''), { timeout: 10000 }).toContain('survived');
 });

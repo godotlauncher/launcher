@@ -259,11 +259,10 @@ describe('ProjectRunService', () => {
                 Buffer.from(`${prefix} Project needs attention.\n`),
             );
             expect(mocks.send).toHaveBeenCalledExactlyOnceWith(
-                'project-run-failed',
+                'project-run-diagnostic',
                 expect.anything(),
                 {
                     project,
-                    reason: 'launch_failed',
                     diagnostic: `${prefix} Project needs attention.`,
                 },
             );
@@ -275,14 +274,27 @@ describe('ProjectRunService', () => {
         },
     );
 
-    it('handles an error prefix split across chunks and deduplicates later exit errors', async () => {
+    it('handles fragmented diagnostics, logs later errors and reports a later failure', async () => {
         await service.runProject(projectPath);
         child.stdout.emit('data', Buffer.from('Godot Engine\nERR'));
         expect(mocks.send).not.toHaveBeenCalled();
         child.stdout.emit('data', Buffer.from('OR: Cannot open main scene.\n'));
         child.stderr.emit('data', Buffer.from('ERROR: Another error.\n'));
-        exitChild(child, 1);
         expect(mocks.send).toHaveBeenCalledExactlyOnceWith(
+            'project-run-diagnostic',
+            expect.anything(),
+            {
+                project,
+                diagnostic: 'ERROR: Cannot open main scene.',
+            },
+        );
+        expect(mocks.warn).toHaveBeenCalledWith(
+            'Godot runtime diagnostic',
+            'ERROR: Another error.',
+        );
+        exitChild(child, 1);
+        expect(mocks.send).toHaveBeenCalledTimes(2);
+        expect(mocks.send).toHaveBeenLastCalledWith(
             'project-run-failed',
             expect.anything(),
             {
@@ -301,11 +313,10 @@ describe('ProjectRunService', () => {
             Buffer.from('ERROR: Could not load main scene.\n'),
         );
         expect(mocks.send).toHaveBeenCalledExactlyOnceWith(
-            'project-run-failed',
+            'project-run-diagnostic',
             expect.anything(),
             {
                 project,
-                reason: 'launch_failed',
                 diagnostic: 'ERROR: Could not load main scene.',
             },
         );
@@ -319,11 +330,10 @@ describe('ProjectRunService', () => {
         );
         exitChild(child, 0);
         expect(mocks.send).toHaveBeenCalledExactlyOnceWith(
-            'project-run-failed',
+            'project-run-diagnostic',
             expect.anything(),
             {
                 project,
-                reason: 'launch_failed',
                 diagnostic: 'ERROR: Windows-style diagnostic.',
             },
         );
@@ -335,30 +345,28 @@ describe('ProjectRunService', () => {
         expect(mocks.send).not.toHaveBeenCalled();
         child.stderr.emit('data', Buffer.from(' Full explanation follows.\n'));
         expect(mocks.send).toHaveBeenCalledExactlyOnceWith(
-            'project-run-failed',
+            'project-run-diagnostic',
             expect.anything(),
             {
                 project,
-                reason: 'launch_failed',
                 diagnostic: 'ERROR: Full explanation follows.',
             },
         );
     });
 
-    it('flushes an error without a newline before reporting a failed exit', async () => {
+    it('flushes an unterminated diagnostic on a normal exit', async () => {
         await service.runProject(projectPath);
         child.stderr.emit(
             'data',
             Buffer.from('ERROR: Explanation without a newline.'),
         );
         expect(mocks.send).not.toHaveBeenCalled();
-        exitChild(child, 1);
+        exitChild(child, 0);
         expect(mocks.send).toHaveBeenCalledExactlyOnceWith(
-            'project-run-failed',
+            'project-run-diagnostic',
             expect.anything(),
             {
                 project,
-                reason: 'launch_failed',
                 diagnostic: 'ERROR: Explanation without a newline.',
             },
         );
@@ -378,11 +386,10 @@ describe('ProjectRunService', () => {
         child.stderr.emit('data', Buffer.from('OR: Missing C# class.\n'));
         child.emit('close', 0, null);
         expect(mocks.send).toHaveBeenCalledExactlyOnceWith(
-            'project-run-failed',
+            'project-run-diagnostic',
             expect.anything(),
             {
                 project,
-                reason: 'launch_failed',
                 diagnostic: 'SCRIPT ERROR: Missing C# class.',
             },
         );
@@ -425,6 +432,53 @@ describe('ProjectRunService', () => {
             ).resolves.toEqual({ status: 'ready' });
         },
     );
+
+    it.each(['nonzero', 'signal', 'error'])(
+        'reports a %s failure after warning and warns again on a fresh run',
+        async (failure) => {
+            await service.runProject(projectPath);
+            child.stderr.emit('data', 'ERROR: Recovered graphics error.\n');
+            await expect(service.runProject(projectPath)).resolves.toEqual({
+                launched: false,
+                reason: 'already_running',
+            });
+            if (failure === 'error')
+                child.emit('error', new Error('runtime failed'));
+            exitChild(
+                child,
+                failure === 'signal' ? null : 7,
+                failure === 'signal' ? 'SIGTERM' : null,
+            );
+            expect(mocks.send.mock.calls.map(([event]) => event)).toEqual([
+                'project-run-diagnostic',
+                'project-run-failed',
+            ]);
+            child = createChild();
+            await service.runProject(projectPath);
+            child.stderr.emit('data', 'SCRIPT ERROR: New run.\n');
+            expect(mocks.send.mock.lastCall?.[0]).toBe(
+                'project-run-diagnostic',
+            );
+        },
+    );
+
+    it('logs diagnostics without publishing after a failure or window destruction', async () => {
+        await service.runProject(projectPath);
+        child.emit('error', new Error('runtime failed'));
+        child.stderr.emit('data', 'ERROR: Late output.\n');
+        expect(mocks.send).toHaveBeenCalledTimes(1);
+        mocks.window.mockReturnValue({
+            webContents: { isDestroyed: () => true },
+        });
+        child = createChild();
+        await service.runProject(projectPath);
+        child.stderr.emit('data', 'ERROR: No live window.\n');
+        expect(mocks.send).toHaveBeenCalledTimes(1);
+        expect(mocks.warn).toHaveBeenCalledWith(
+            'Godot runtime diagnostic',
+            'ERROR: No live window.',
+        );
+    });
 
     it('does not publish recovery for a normal exit', async () => {
         await service.runProject(projectPath);

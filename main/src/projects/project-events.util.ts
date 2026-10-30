@@ -38,3 +38,23 @@ export function publishProjectRunFailure(
         logger.warn('Failed to report Godot runtime exit', error);
     }
 }
+
+/** Publishes a Godot diagnostic without inferring process failure.
+ * @param project - Registered project whose runtime reported an error.
+ * @param diagnostic - Bounded error line reported by Godot.
+ */
+export function publishProjectRunDiagnostic(
+    project: ProjectDetails,
+    diagnostic: string,
+): void {
+    const webContents = getMainWindow()?.webContents;
+    if (!webContents || webContents.isDestroyed?.()) return;
+    try {
+        ipcWebContentsSend('project-run-diagnostic', webContents, {
+            project,
+            diagnostic,
+        });
+    } catch (error) {
+        logger.warn('Failed to report Godot runtime diagnostic', error);
+    }
+}
