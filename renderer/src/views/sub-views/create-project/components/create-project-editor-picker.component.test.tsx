@@ -12,6 +12,7 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string, options?: Record<string, string | number>) =>
             ({
+                'installEditor:buttons.reload': 'Reload Release List',
                 'editorPicker.title': 'Godot editor',
                 'editorPicker.installed': 'Installed',
                 'editorPicker.browse': 'Browse releases',
@@ -156,6 +157,10 @@ describe('CreateProjectEditorPicker', () => {
             /<button[^>]*role="tab"[^>]*aria-selected="true"[^>]*>Browse releases<\/button>/,
         );
         expect(html).toContain('placeholder="Search versions"');
+        expect(html).toMatch(
+            /<button[^>]*aria-label="Reload Release List"[^>]*aria-busy="false"/,
+        );
+        expect(html).not.toContain('createProjectEditorCatalogueError');
         expect(html).toContain('>Stable<');
         expect(html).toContain('>Pre-releases<');
         expect(html.match(/Download required/g)).toHaveLength(14);

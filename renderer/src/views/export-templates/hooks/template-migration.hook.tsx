@@ -19,6 +19,7 @@ import { usePreferences } from '../../../hooks/preferences.hook';
 import { useProjects } from '../../../hooks/projects.hook';
 import { exportTemplatesBridge } from '../../../renderer.bridge';
 import { TemplateMigrationWizardModal } from '../components/template-migration-wizard.modal';
+import { hasMigrationCandidates } from '../template-migration-choice.util';
 import {
     mergeMigrationRuns,
     migrationRetryDecisions,
@@ -72,6 +73,16 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
     }
     if (seedRun && !jobs.some((job) => job.id === jobIds[jobIds.length - 1]))
         run = mergeMigrationRuns(run, seedRun);
+    const hasCandidates = Boolean(
+        assessment && hasMigrationCandidates(assessment.projects),
+    );
+    const automaticOfferEligible = Boolean(
+        preferences &&
+            preferences.export_template_migration_offered !== true &&
+            hasCandidates,
+    );
+    const offerEligibleRef = useRef(automaticOfferEligible);
+    offerEligibleRef.current = automaticOfferEligible;
     const offered = useRef(false);
     const request = useRef(0);
     const focusTarget = useRef<HTMLElement | null>(null);
@@ -149,23 +160,18 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
     }, [loadPreferences, savePreferences]);
 
     useEffect(() => {
-        if (introduction && assessment?.pendingCount === 0 && !error) {
+        if (introduction && assessment && !hasCandidates && !error) {
             setVisible(false);
             setIntroduction(false);
             offered.current = false;
         }
-    }, [assessment, introduction, error]);
+    }, [assessment, hasCandidates, introduction, error]);
 
     useEffect(() => {
-        if (
-            !assessment ||
-            preferences?.export_template_migration_offered === true ||
-            offered.current
-        )
-            return;
-        if (!assessment.pendingCount) return;
+        if (!automaticOfferEligible || offered.current) return;
         // Wait for existing dialogs/drawers; an upgrade offer must not interrupt them.
         const timer = window.setInterval(() => {
+            if (!offerEligibleRef.current || offered.current) return;
             const overlays = document.querySelectorAll(
                 'dialog[open], [role="dialog"], :popover-open',
             );
@@ -184,7 +190,7 @@ export function TemplateMigrationProvider({ children }: PropsWithChildren) {
             window.clearInterval(timer);
         }, 500);
         return () => window.clearInterval(timer);
-    }, [assessment, preferences?.export_template_migration_offered]);
+    }, [automaticOfferEligible]);
 
     /** Opens the existing workflow directly from the templates header. */
     const open = useCallback(() => {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
     canChooseMigration,
     changeMigrationChoice,
+    hasMigrationCandidates,
     migrationErrorKey,
     migrationProjectDecision,
     migrationVersionName,
@@ -118,5 +119,56 @@ describe('migration choices', () => {
         expect(migrationErrorKey('exportTemplates:errors.unknown')).toBe(
             'errors.failed',
         );
+    });
+});
+
+describe('automatic migration candidates', () => {
+    it('offers populated projects that can be reviewed', () => {
+        expect(hasMigrationCandidates([project])).toBe(true);
+        expect(hasMigrationCandidates([{ ...project, state: 'ready' }])).toBe(
+            true,
+        );
+    });
+
+    it.each([
+        'unavailable',
+        'blocked',
+        'busy',
+        'recovery',
+        'shared',
+        'separate',
+    ] as const)('does not offer projects in the %s state', (state) => {
+        expect(hasMigrationCandidates([{ ...project, state }])).toBe(false);
+    });
+
+    it('does not offer missing editors or empty and resolved projects', () => {
+        expect(hasMigrationCandidates([])).toBe(false);
+        expect(
+            hasMigrationCandidates([
+                {
+                    ...project,
+                    state: 'unavailable',
+                    reason: 'missing-editor',
+                    setIds: [],
+                },
+                { ...project, state: 'ready', reason: 'empty', setIds: [] },
+                { ...project, pending: false },
+            ]),
+        ).toBe(false);
+    });
+
+    it('still offers a reviewable project when another editor is unavailable', () => {
+        expect(
+            hasMigrationCandidates([
+                {
+                    ...project,
+                    projectPath: 'installing',
+                    state: 'unavailable',
+                    reason: 'missing-editor',
+                    setIds: [],
+                },
+                project,
+            ]),
+        ).toBe(true);
     });
 });

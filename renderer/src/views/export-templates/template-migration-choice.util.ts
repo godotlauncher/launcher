@@ -27,6 +27,17 @@ export function canChooseMigration(
     );
 }
 
+/** Identifies discovered templates that can justify an automatic migration offer.
+ * @param projects - Current migration assessments, including unavailable projects.
+ */
+export function hasMigrationCandidates(
+    projects: TemplateProjectAssessment[],
+): boolean {
+    return projects.some(
+        (project) => project.pending && canChooseMigration(project),
+    );
+}
+
 /** Retains active and inactive choices while reconciling a fresh discovery result.
  * @param projects - Current unresolved projects.
  * @param previous - Choices from the same open session.
