@@ -1,9 +1,18 @@
+import { execFile } from 'node:child_process';
 import * as os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import which from 'which';
 import { __resetCurrentAppConfigForTesting } from '../config/index';
 import { APP_INTERNAL_NAME } from '../constants';
-import { getDefaultDirs } from './platform.utils';
+import {
+    findExecutable,
+    getCommandVersion,
+    getDefaultDirs,
+} from './platform.utils';
+
+vi.mock('which', () => ({ default: vi.fn() }));
+vi.mock('node:child_process', () => ({ execFile: vi.fn() }));
 
 const platformMock = os.platform as unknown as vi.Mock<[], string>;
 const homedirMock = os.homedir as unknown as vi.Mock<[], string>;
@@ -69,6 +78,53 @@ vi.mock('node:os', () => ({
 describe('platform.utils', () => {
     afterEach(() => {
         __resetCurrentAppConfigForTesting();
+        vi.unstubAllEnvs();
+        vi.unstubAllGlobals();
+    });
+
+    it('uses the cleaned PATH for command discovery and a clean environment for version probes', async () => {
+        vi.stubGlobal('process', { ...process, platform: 'linux' });
+        vi.stubEnv('APPDIR', '/tmp/.mount_launcher');
+        vi.stubEnv('APPIMAGE', '/downloads/launcher.AppImage');
+        vi.stubEnv('PATH', '/tmp/.mount_launcher:/usr/bin');
+        vi.stubEnv('LD_LIBRARY_PATH', '/tmp/.mount_launcher/usr/lib');
+        vi.mocked(which).mockResolvedValue('/usr/bin/git');
+        await expect(findExecutable('git')).resolves.toBe('/usr/bin/git');
+        expect(which).toHaveBeenCalledWith('git', {
+            nothrow: true,
+            path: '/usr/bin',
+        });
+        vi.mocked(execFile).mockImplementation((...args: unknown[]) => {
+            (args.at(-1) as (error: null, stdout: string) => void)(
+                null,
+                'git version 2.50\n',
+            );
+            return {} as never;
+        });
+        await expect(getCommandVersion('/usr/bin/git')).resolves.toBe(
+            'git version 2.50',
+        );
+        const environment = vi.mocked(execFile).mock.lastCall?.[2] as {
+            env: NodeJS.ProcessEnv;
+        };
+        expect(environment.env.APPDIR).toBeUndefined();
+        expect(environment.env.LD_LIBRARY_PATH).toBeUndefined();
+    });
+
+    it('uses the native host fallback when AppImage cleanup removes every PATH entry', async () => {
+        vi.stubGlobal('process', { ...process, platform: 'linux' });
+        vi.stubEnv('APPDIR', '/tmp/.mount_launcher');
+        vi.stubEnv('APPIMAGE', '/downloads/launcher.AppImage');
+        vi.stubEnv(
+            'PATH',
+            '/tmp/.mount_launcher:/tmp/.mount_launcher/usr/sbin',
+        );
+        vi.mocked(which).mockResolvedValue('/usr/bin/git');
+        await findExecutable('git');
+        expect(which).toHaveBeenLastCalledWith('git', {
+            nothrow: true,
+            path: '/usr/bin:/bin',
+        });
     });
 
     describe('Windows paths', () => {

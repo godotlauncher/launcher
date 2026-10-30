@@ -6,6 +6,7 @@ import type {
     RunProjectResult,
 } from '@shared/contracts';
 import logger from 'electron-log';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 import { publishProjectRunFailure } from './project-events.util.js';
 import { inspectProjectRunReadiness } from './project-run-readiness.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -97,6 +98,7 @@ export class ProjectRunService {
                       ],
                 {
                     cwd: project.path,
+                    env: getExternalProcessEnvironment(),
                     detached: true,
                     stdio: ['ignore', 'pipe', 'pipe'],
                     shell: false,

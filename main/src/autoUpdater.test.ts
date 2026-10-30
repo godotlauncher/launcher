@@ -271,7 +271,7 @@ describe('autoUpdater', () => {
         expect(mocks.execFile).toHaveBeenCalledWith(
             '/usr/bin/rpm-ostree',
             ['status', '--json'],
-            { timeout: 3000, windowsHide: true },
+            { timeout: 3000, windowsHide: true, env: expect.any(Object) },
             expect.any(Function),
         );
     });

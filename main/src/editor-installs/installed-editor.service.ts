@@ -21,6 +21,7 @@ import logger from 'electron-log';
 import { getUserPreferences } from '../commands/userPreferences.js';
 import type { AppConfig } from '../config/index.js';
 import { t } from '../i18n/index.js';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 import { parseCustomEngineManifest } from '../utils/customEngineManifest.utils.js';
 import { suggestAutomaticAlias } from './command-line-alias.util.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
@@ -632,6 +633,7 @@ export class InstalledEditorService {
                   )
                 : release.editor_path;
         const editor = spawn(launchPath, ['-p'], {
+            env: getExternalProcessEnvironment(),
             detached: true,
             stdio: 'ignore',
         });

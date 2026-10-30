@@ -5,6 +5,7 @@ import path from 'node:path';
 import { Injectable } from '@mariodebono/di';
 import type { TerminalLaunchResult } from '@shared/contracts';
 import logger from 'electron-log';
+import { getExternalProcessEnvironment } from '../../../utils/child-process-environment.util.js';
 import type { TerminalTarget } from './terminal.types.js';
 import { waitForTerminalScriptStart } from './terminal-script-start.util.js';
 
@@ -254,6 +255,7 @@ export class TerminalAdapterService {
                 const child = spawn(executable, args, {
                     cwd: directory,
                     shell: false,
+                    env: getExternalProcessEnvironment(),
                     detached: !dispatcher,
                     stdio: logLinux ? ['ignore', 'ignore', 'pipe'] : 'ignore',
                     windowsHide: target.id !== 'windows-terminal',

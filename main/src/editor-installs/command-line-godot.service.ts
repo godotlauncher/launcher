@@ -28,6 +28,7 @@ import type { AppConfig } from '../config/index.js';
 import { JsonFileStore } from '../json-store/json-file.store.js';
 // biome-ignore lint/style/useImportType: Required for DI constructor metadata
 import { JsonStoreCoordinatorService } from '../json-store/json-store-coordinator.service.js';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 import { CommandLineAliasService } from './command-line-alias.service.js';
 import {
     COMMAND_LINE_GODOT_MARKER,
@@ -85,7 +86,7 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
         const fixture = config.get('e2eFixtures') === true;
         const env = fixture
             ? {
-                  ...process.env,
+                  ...getExternalProcessEnvironment(),
                   HOME: home,
                   USERPROFILE: home,
                   LOCALAPPDATA: path.join(home, 'AppData', 'Local'),
@@ -93,7 +94,7 @@ export class CommandLineGodotService extends JsonFileStore<CommandLineGodotSelec
                   XDG_CONFIG_HOME: path.join(home, '.config'),
                   XDG_DATA_HOME: path.join(home, '.local', 'share'),
               }
-            : { ...process.env };
+            : getExternalProcessEnvironment();
         this.adapter = new CommandLinePathAdapter({
             platform: this.platform,
             home,

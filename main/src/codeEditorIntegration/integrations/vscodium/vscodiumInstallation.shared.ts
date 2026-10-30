@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import logger from 'electron-log';
+import { getExternalProcessEnvironment } from '../../../utils/child-process-environment.util.js';
 import type { CodeEditorInstallation } from '../../codeEditorIntegration.types.js';
 
 export type JSONObject = Record<string, unknown>;
@@ -115,6 +116,11 @@ export function toInstallation(
     };
 }
 
+/** Reads bounded metadata from an external command.
+ * @param executablePath - Exact command executable.
+ * @param args - Literal metadata query arguments.
+ * @param options - Whether command failures should be logged.
+ */
 export function execFileText(
     executablePath: string,
     args: string[],
@@ -125,6 +131,7 @@ export function execFileText(
             executablePath,
             args,
             {
+                env: getExternalProcessEnvironment(),
                 encoding: 'utf8',
                 timeout: 3000,
                 windowsHide: true,

@@ -16,6 +16,7 @@ it('passes paths literally without a shell and waits for process dispatch', asyn
     const folder = '/projects/My Game; $(unexpected)';
     const launching = launchCodeEditorProcess('/tools/code', [folder]);
     expect(mocks.spawn).toHaveBeenCalledWith('/tools/code', [folder], {
+        env: expect.any(Object),
         detached: true,
         stdio: 'ignore',
         shell: false,
@@ -105,3 +106,20 @@ it.each([
         await launching;
     },
 );
+
+it('dispatches Linux code editors without inherited AppImage paths', async () => {
+    vi.stubGlobal('process', { ...process, platform: 'linux' });
+    vi.stubEnv('APPDIR', '/tmp/.mount_launcher');
+    vi.stubEnv('APPIMAGE', '/downloads/launcher.AppImage');
+    vi.stubEnv('PATH', '/tmp/.mount_launcher:/usr/bin');
+    vi.stubEnv('LD_LIBRARY_PATH', '/tmp/.mount_launcher/usr/lib:/opt/lib');
+    const child = Object.assign(new EventEmitter(), { unref: vi.fn() });
+    mocks.spawn.mockReturnValue(child);
+    const launching = launchCodeEditorProcess('/tools/code', ['/project']);
+    const env = mocks.spawn.mock.lastCall?.[2].env;
+    expect(env.PATH).toBe('/usr/bin');
+    expect(env.LD_LIBRARY_PATH).toBe('/opt/lib');
+    expect(env.APPIMAGE).toBeUndefined();
+    child.emit('spawn');
+    await launching;
+});

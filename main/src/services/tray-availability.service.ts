@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import type { OnModuleInit } from '@mariodebono/di';
 import { Injectable } from '@mariodebono/di';
 import logger from 'electron-log/main.js';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 import { findExecutable } from '../utils/platform.utils.js';
 
 const GDBUS_TIMEOUT_MS = 1000;
@@ -54,7 +55,11 @@ export class TrayAvailabilityService implements OnModuleInit {
             execFile(
                 gdbusPath,
                 GDBUS_ARGUMENTS,
-                { timeout: GDBUS_TIMEOUT_MS, windowsHide: true },
+                {
+                    timeout: GDBUS_TIMEOUT_MS,
+                    windowsHide: true,
+                    env: getExternalProcessEnvironment(),
+                },
                 (error, stdout) => {
                     if (error) {
                         logger.debug(

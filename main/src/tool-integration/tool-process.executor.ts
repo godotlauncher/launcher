@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
 import { Injectable } from '@mariodebono/di';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 import {
     TOOL_DEFAULT_EXECUTION_TIMEOUT_MS,
     TOOL_MAX_EXECUTION_TIMEOUT_MS,
@@ -33,10 +34,9 @@ export class ToolProcessExecutor {
                         cwd: request.cwd,
                         env:
                             request.inheritEnv === false
-                                ? request.env
-                                : request.env
-                                  ? { ...process.env, ...request.env }
-                                  : process.env,
+                                ? (request.env ??
+                                  getExternalProcessEnvironment())
+                                : getExternalProcessEnvironment(request.env),
                         encoding: 'utf8',
                         shell: false,
                         timeout,

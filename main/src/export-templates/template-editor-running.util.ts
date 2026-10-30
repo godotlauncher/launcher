@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { ProjectDetails } from '@shared/contracts';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 
 /** Experimental process check retained for future use; no template operation calls it.
  * An open editor does not establish whether export templates are in use.
@@ -24,6 +25,7 @@ export async function assertTemplateEditorsClosed(
               ] as const)
             : (['ps', ['-ax', '-o', 'command=']] as const);
     const { stdout } = await promisify(execFile)(command[0], [...command[1]], {
+        env: getExternalProcessEnvironment(),
         timeout: 10000,
         maxBuffer: 8 * 1024 * 1024,
         windowsHide: true,

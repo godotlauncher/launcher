@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
+import { getExternalProcessEnvironment } from '../utils/child-process-environment.util.js';
 
 /**
  * Dispatches a code editor with literal folder arguments.
@@ -15,7 +16,7 @@ export async function launchCodeEditorProcess(
         path.win32.extname(command).toLowerCase() === '.cmd';
     let executable = command;
     let launchArgs = args;
-    let environment: NodeJS.ProcessEnv | undefined;
+    const environment = getExternalProcessEnvironment();
     if (windowsWrapper) {
         const systemRoot = process.env.SystemRoot;
         if (!systemRoot || !path.win32.isAbsolute(systemRoot))
@@ -27,7 +28,6 @@ export async function launchCodeEditorProcess(
         ];
         if (values.some((value) => /["\r\n\0]/.test(value)))
             throw new Error('Invalid Windows editor path');
-        environment = { ...process.env };
         const launchValues = Object.fromEntries(
             values.map((value, index) => [
                 `GODOT_LAUNCHER_EDITOR_ARG_${index}`,
@@ -48,12 +48,12 @@ export async function launchCodeEditorProcess(
     }
     await new Promise<void>((resolve, reject) => {
         const child = spawn(executable, launchArgs, {
+            env: environment,
             detached: true,
             stdio: 'ignore',
             shell: false,
             ...(windowsWrapper
                 ? {
-                      env: environment,
                       windowsHide: true,
                       windowsVerbatimArguments: true,
                       timeout: 10000,
