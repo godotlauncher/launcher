@@ -3,14 +3,19 @@ import { LAUNCHER_RELEASE_NOTES_URL } from '../app.constants';
 import { getAppReleaseNotesUrl } from './app-update-url.util';
 
 describe('getAppReleaseNotesUrl', () => {
-    it.each(['1.12.0', '1.12.1', '2.0.0-beta.2', '1.12.0+build.42'])(
-        'targets the exact release %s',
-        (version) => {
-            expect(getAppReleaseNotesUrl(version)).toBe(
-                `${LAUNCHER_RELEASE_NOTES_URL}${encodeURIComponent(version)}/`,
-            );
-        },
-    );
+    it.each([
+        ['1.14.0', '1.14.0'],
+        ['1.14.1', '1.14.1'],
+        ['1.14.0-alpha.1', '1.14.0'],
+        ['1.14.0-beta.1', '1.14.0'],
+        ['1.14.0-rc.2', '1.14.0'],
+        ['1.14.0+build.42', '1.14.0'],
+        ['1.14.0-beta.1+build.42', '1.14.0'],
+    ])('targets shared notes for %s', (version, notesVersion) => {
+        expect(getAppReleaseNotesUrl(version)).toBe(
+            `${LAUNCHER_RELEASE_NOTES_URL}${notesVersion}/`,
+        );
+    });
 
     it.each([
         undefined,

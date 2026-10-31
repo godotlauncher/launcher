@@ -10,7 +10,7 @@ let electronApp: ElectronApplication;
 let page: Page;
 let fixtureHome: string;
 const offeredVersion = '99.0.0-beta.2';
-const notesUrl = `https://docs.godotlauncher.org/release-notes/${offeredVersion}/`;
+const notesUrl = 'https://docs.godotlauncher.org/release-notes/99.0.0/';
 
 type UpdateFixtureState = {
     checks: unknown[];
@@ -245,7 +245,7 @@ test('a check failure retries checking and unknown errors offer no guessed retry
     await expect(page.getByTestId('btnAppUpdateRetry')).toHaveCount(0);
 });
 
-test('OSTree guidance offers manual download, exact notes and skip without automatic install', async () => {
+test('OSTree guidance offers manual download, shared notes and skip without automatic install', async () => {
     const manualUrl = 'https://example.invalid/manual-release';
     await emitUpdate({ type: 'manual', available: true, downloaded: false, version: offeredVersion, url: manualUrl });
     await page.getByTestId('btnAppUpdateNotification').click();
