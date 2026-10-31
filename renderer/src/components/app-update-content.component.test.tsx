@@ -158,6 +158,20 @@ describe('AppUpdateContent', () => {
         expect(actions.skipAppUpdate).toHaveBeenCalledWith('1.12.1');
     });
 
+    it('opens shared notes while displaying and skipping the exact prerelease', async () => {
+        const version = '1.14.0-beta.1+build.42';
+        const content = render({ version });
+        expect(renderToStaticMarkup(content)).toContain(
+            `Godot Launcher ${version}`,
+        );
+        await button(content, 'Read release notes').props.onClick?.();
+        await button(content, 'Skip this version').props.onClick?.();
+        expect(actions.openUpdateUrl).toHaveBeenCalledWith(
+            `${LAUNCHER_RELEASE_NOTES_URL}1.14.0/`,
+        );
+        expect(actions.skipAppUpdate).toHaveBeenCalledWith(version);
+    });
+
     it.each([undefined, 'v1.12.1', '1.12.1/unsafe'])(
         'uses generic copy and omits version actions for %s',
         (version) => {
