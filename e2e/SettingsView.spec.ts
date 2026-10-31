@@ -82,10 +82,28 @@ test('Can set theme auto', async () => {
     expect(theme).toBe('auto');
 });
 
-test('Can open the Connections presentation from its shortcut', async () => {
-    const connectionsShortcut = mainPage.getByTestId('btnConnections');
-
-    await connectionsShortcut.click();
+test('Can open Extensions and return to Connections through Settings', async () => {
+    const extensionsShortcut = mainPage.getByTestId('btnExtensions');
+    await extensionsShortcut.click();
+    await expect(mainPage).toHaveURL(/\/extensions$/);
+    await expect(
+        mainPage.getByRole('heading', { name: 'Extensions', exact: true }),
+    ).toBeVisible();
+    await expect(
+        mainPage.getByText('A new way to extend and customise Godot Launcher is coming soon.', {
+            exact: true,
+        }),
+    ).toBeVisible();
+    await expect(mainPage.getByText('Have something to discuss?', { exact: false })).toBeVisible();
+    await expect(mainPage.getByRole('button', { name: 'Join Discord', exact: true })).toBeVisible();
+    await expect(extensionsShortcut).toHaveAttribute('aria-current', 'page');
+    await expect(mainPage.getByTestId('btnConnections')).toHaveCount(0);
+    await mainPage.reload();
+    await expect(
+        mainPage.getByRole('heading', { name: 'Extensions', exact: true }),
+    ).toBeVisible();
+    await mainPage.getByTestId('btnSettings').click();
+    await mainPage.getByTestId('tabConnections').click();
 
     await expect(mainPage).toHaveURL(/\/settings\/connections$/);
     await expect(mainPage.getByTestId('tabConnections')).toHaveAttribute(

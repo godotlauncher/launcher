@@ -318,7 +318,8 @@ test('uses the shared connection dialog from Settings', async () => {
     await fs.mkdir(outputDirectory, { recursive: true });
     for (const theme of THEMES) {
         await applyTheme(mainPage, theme);
-        await mainPage.getByTestId('btnConnections').click();
+        await mainPage.getByTestId('btnSettings').click();
+        await mainPage.getByTestId('tabConnections').click();
         await card.getByRole('button', { name: 'Connect GitHub', exact: true }).click();
         await expect(dialog).toBeVisible();
         await expect(dialog.getByRole('button', { name: 'Continue in browser' })).toBeEnabled();
@@ -328,7 +329,8 @@ test('uses the shared connection dialog from Settings', async () => {
     }
     for (const theme of THEMES) {
         await applyTheme(mainPage, theme);
-        await mainPage.getByTestId('btnConnections').click();
+        await mainPage.getByTestId('btnSettings').click();
+        await mainPage.getByTestId('tabConnections').click();
         await card
             .getByRole('button', { name: 'Connect GitHub', exact: true })
             .click();
@@ -382,7 +384,8 @@ test('uses the shared connection dialog from Settings', async () => {
     await mainPage.keyboard.press('Escape');
     await expect(management).not.toBeVisible();
     await applyTheme(mainPage, THEMES[0]);
-    await mainPage.getByTestId('btnConnections').click();
+    await mainPage.getByTestId('btnSettings').click();
+    await mainPage.getByTestId('tabConnections').click();
     await card.getByRole('button', { name: 'Manage GitHub connections' }).click();
     await management.evaluate(async (element) => {
         await Promise.all(

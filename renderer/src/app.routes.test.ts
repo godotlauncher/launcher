@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     appRoutePaths,
-    isConnectionsPathname,
+    getViewFromPathname,
     isSettingsTab,
     settingsTabs,
 } from './app.routes';
@@ -27,15 +27,12 @@ describe('settings routes', () => {
         );
     });
 
-    it('activates the Connections shortcut only for its canonical route', () => {
-        expect(
-            isConnectionsPathname(appRoutePaths.settingsTab('connections')),
-        ).toBe(true);
-        expect(
-            isConnectionsPathname(appRoutePaths.settingsTab('projects')),
-        ).toBe(false);
-        expect(isConnectionsPathname('/settings/connections/extra')).toBe(
-            false,
+    it('resolves Extensions separately from Connections settings', () => {
+        expect(getViewFromPathname(appRoutePaths.extensions)).toBe(
+            'extensions',
         );
+        expect(
+            getViewFromPathname(appRoutePaths.settingsTab('connections')),
+        ).toBe('settings');
     });
 });

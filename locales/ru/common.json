@@ -30,8 +30,14 @@
         }
     },
     "app": {
+        "extensions": {
+            "comingSoon": "Скоро появится новый способ расширить возможности и настроить Godot Launcher под себя.",
+            "discuss": "Есть что обсудить?",
+            "joinDiscord": "Присоединиться к Discord"
+        },
         "loadingMessage": "Подготовка...",
         "navigation": {
+            "extensions": "Расширения",
             "exportTemplates": "Шаблоны экспорта",
             "projectTemplates": "Шаблоны проектов",
             "assets": "Ресурсы",

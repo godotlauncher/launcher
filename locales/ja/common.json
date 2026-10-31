@@ -30,8 +30,14 @@
         }
     },
     "app": {
+        "extensions": {
+            "comingSoon": "Godot Launcher の機能を拡張し、カスタマイズする新しい方法が近日登場します。",
+            "discuss": "話し合いたいことはありますか？",
+            "joinDiscord": "Discord に参加"
+        },
         "loadingMessage": "準備中...",
         "navigation": {
+            "extensions": "拡張機能",
             "exportTemplates": "エクスポートテンプレート",
             "projectTemplates": "プロジェクトテンプレート",
             "assets": "アセット",

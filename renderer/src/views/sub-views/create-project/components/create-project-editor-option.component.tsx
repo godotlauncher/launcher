@@ -84,7 +84,7 @@ export const CreateProjectEditorOption: React.FC<
             >
                 <HardDrive
                     size={16}
-                    className="shrink-0 text-info"
+                    className="mt-1 shrink-0 self-start text-info"
                     aria-hidden="true"
                 />
                 <EditorOptionLabel
@@ -167,11 +167,15 @@ export const CreateProjectEditorOption: React.FC<
             {props.installedRelease ? (
                 <HardDrive
                     size={16}
-                    className="shrink-0 text-info"
+                    className="mt-1 shrink-0 self-start text-info"
                     aria-hidden="true"
                 />
             ) : (
-                <Download size={16} className="shrink-0" aria-hidden="true" />
+                <Download
+                    size={16}
+                    className="mt-1 shrink-0 self-start"
+                    aria-hidden="true"
+                />
             )}
             <EditorOptionLabel
                 name={props.release.name}
