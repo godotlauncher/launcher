@@ -285,7 +285,6 @@
         "moreOptions": "Diğer seçenekler",
         "stepsLabel": "Çoğaltma adımları",
         "include": "Dahil et",
-        "originalUnchanged": "Asıl proje değişmeden kalır.",
         "gitAndGitHub": "Git ve GitHub",
         "fromSource": "Kaynak: {{name}}"
     }

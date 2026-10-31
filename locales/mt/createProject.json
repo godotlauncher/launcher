@@ -285,7 +285,6 @@
         "moreOptions": "Aktar għażliet",
         "stepsLabel": "Passi tad-duplikazzjoni",
         "include": "Inkludi",
-        "originalUnchanged": "L-oriġinal jibqa' kif inhu.",
         "gitAndGitHub": "Git u GitHub",
         "fromSource": "Minn {{name}}"
     }

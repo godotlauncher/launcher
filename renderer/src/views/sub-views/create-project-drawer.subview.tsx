@@ -295,13 +295,6 @@ export const CreateProjectDrawer: React.FC<CreateProjectDrawerProps> = ({
                                                 : undefined
                                         }
                                         editorLabel={sourceEditorLabel}
-                                        originalUnchangedLabel={
-                                            duplicateStep === 1
-                                                ? t(
-                                                      'duplicate.originalUnchanged',
-                                                  )
-                                                : undefined
-                                        }
                                         editorNotice={editorNotice}
                                     />
                                 </>
