@@ -8,7 +8,6 @@ type DuplicateProjectSummaryProps = {
     name: string;
     destination?: string;
     editorLabel: string;
-    originalUnchangedLabel?: string;
     editorNotice?: string;
 };
 
@@ -22,7 +21,6 @@ export const DuplicateProjectSummary: React.FC<
     name,
     destination,
     editorLabel,
-    originalUnchangedLabel,
     editorNotice,
 }) => (
     <section className="flex min-w-0 flex-col gap-3 py-3">
@@ -59,11 +57,6 @@ export const DuplicateProjectSummary: React.FC<
                     {editorLabel}
                 </p>
             </div>
-            {originalUnchangedLabel && (
-                <p className="hidden max-w-40 text-sm text-base-content/60 sm:block">
-                    {originalUnchangedLabel}
-                </p>
-            )}
         </div>
         {editorNotice && (
             <p

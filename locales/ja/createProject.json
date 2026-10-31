@@ -285,7 +285,6 @@
         "moreOptions": "その他のオプション",
         "stepsLabel": "複製の手順",
         "include": "含める",
-        "originalUnchanged": "元のプロジェクトは変更されません。",
         "gitAndGitHub": "GitとGitHub",
         "fromSource": "複製元: {{name}}"
     }

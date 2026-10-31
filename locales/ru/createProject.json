@@ -285,7 +285,6 @@
         "moreOptions": "Другие параметры",
         "stepsLabel": "Этапы дублирования",
         "include": "Включить",
-        "originalUnchanged": "Оригинал не изменится.",
         "gitAndGitHub": "Git и GitHub",
         "fromSource": "Из {{name}}"
     }

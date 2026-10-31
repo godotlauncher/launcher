@@ -285,7 +285,6 @@
         "moreOptions": "更多選項",
         "stepsLabel": "複製步驟",
         "include": "包含",
-        "originalUnchanged": "原專案保持不變。",
         "gitAndGitHub": "Git 和 GitHub",
         "fromSource": "來源專案：{{name}}"
     }

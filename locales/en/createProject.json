@@ -285,7 +285,6 @@
         "moreOptions": "More options",
         "stepsLabel": "Duplication steps",
         "include": "Include",
-        "originalUnchanged": "Original stays unchanged.",
         "gitAndGitHub": "Git and GitHub",
         "fromSource": "From {{name}}"
     }
