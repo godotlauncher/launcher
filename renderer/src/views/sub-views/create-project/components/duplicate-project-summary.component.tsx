@@ -16,13 +16,7 @@ type DuplicateProjectSummaryProps = {
  */
 export const DuplicateProjectSummary: React.FC<
     DuplicateProjectSummaryProps
-> = ({
-    source,
-    name,
-    destination,
-    editorLabel,
-    editorNotice,
-}) => (
+> = ({ source, name, destination, editorLabel, editorNotice }) => (
     <section className="flex min-w-0 flex-col gap-3 py-3">
         <div className="flex min-w-0 items-center gap-3">
             <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden">
